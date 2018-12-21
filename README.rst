@@ -27,7 +27,6 @@ common system libraries.
 Planned features include:
 
 * Support for Windows
-* Support for macOS
 * Static/dynamic linking toggles for dependencies
 
 Instructions
@@ -36,6 +35,10 @@ Instructions
 To build a Python distribution for Linux x64::
 
     $ ./build-linux.py
+
+To build a Python distribution for macOS::
+
+    $ ./build-macos.py
 
 Requirements
 ============
@@ -47,6 +50,12 @@ The host system must be 64-bit. A Python 3.5+ interpreter must be
 available. The execution environment must have access to a Docker
 daemon (all build operations are performed in Docker containers for
 isolation from the host system).
+
+macOS
+-----
+
+The XCode command line tools must be installed. A Python 3 interpreter
+is required to execute the build. ``/usr/bin/clang`` must exist.
 
 How It Works
 ============

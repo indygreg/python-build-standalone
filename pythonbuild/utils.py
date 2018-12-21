@@ -125,3 +125,8 @@ def create_tar_from_directory(fh, base_path: pathlib.Path):
                 full = base_path / root / f
                 rel = full.relative_to(base_path)
                 tf.add(full, rel)
+
+
+def extract_tar_to_directory(source: pathlib.Path, dest: pathlib.Path):
+    with tarfile.open(source, 'r') as tf:
+        tf.extractall(dest)
