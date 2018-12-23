@@ -152,10 +152,10 @@ DOWNLOADS = {
         'sha256': 'a01a493ed8946fc1c15f63e74fc53299b26ebf705938b4d04a388a746dfdbf9e',
     },
     'sqlite': {
-        'url': 'https://www.sqlite.org/2018/sqlite-autoconf-3250300.tar.gz',
-        'size': 2764429,
-        'sha256': '00ebf97be13928941940cc71de3d67e9f852698233cd98ce2d178fd08092f3dd',
-        'version': '3250300',
+        'url': 'https://www.sqlite.org/2018/sqlite-autoconf-3260000.tar.gz',
+        'size': 2779667,
+        'sha256': '5daa6a3fb7d1e8c767cd59c4ded8da6e4b00c61d3b466d0685e35c4dd6d7bf5d',
+        'version': '3260000',
     },
     'tcl': {
         'url': 'https://prdownloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz',
