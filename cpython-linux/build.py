@@ -377,6 +377,7 @@ def build_cpython(client, image, platform):
     with run_container(client, image) as container:
         copy_toolchain(container, platform=platform)
         install_tools_archive(container, BUILD / ('bzip2-%s.tar' % platform))
+        # TODO build against Berkeley DB to avoid GPLv3.
         install_tools_archive(container, BUILD / ('gdbm-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('libffi-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))

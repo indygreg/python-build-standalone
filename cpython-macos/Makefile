@@ -9,6 +9,9 @@ PLATFORM := macos
 
 default: $(OUTDIR)/cpython-macos.tar
 
+$(OUTDIR)/bdb-macos.tar: $(HERE)/build-bdb.sh
+	$(BUILD) bdb
+
 $(OUTDIR)/bzip2-macos.tar: $(HERE)/build-bzip2.sh
 	$(BUILD) bzip2
 
@@ -36,6 +39,7 @@ $(OUTDIR)/zlib-macos.tar: $(HERE)/build-zlib.sh
 PYTHON_DEPENDS := \
 	$(HERE)/static-modules \
 	$(HERE)/build-cpython.sh \
+	$(OUTDIR)/bdb-macos.tar \
     $(OUTDIR)/bzip2-macos.tar \
     $(OUTDIR)/libffi-macos.tar \
     $(OUTDIR)/ncurses-macos.tar \

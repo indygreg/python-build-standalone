@@ -3,6 +3,13 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 DOWNLOADS = {
+    # 6.0.19 is the last version licensed under the Sleepycat license.
+    'bdb': {
+        'url': 'https://ftp.tw.freebsd.org/distfiles/bdb/db-6.0.19.tar.gz',
+        'size': 36541923,
+        'sha256': '2917c28f60903908c2ca4587ded1363b812c4e830a5326aaa77c9879d13ae18e',
+        'version': '6.0.19',
+    },
     'binutils': {
         'url': 'ftp://ftp.gnu.org/gnu/binutils/binutils-2.31.tar.xz',
         'size': 20445772,

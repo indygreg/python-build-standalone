@@ -130,3 +130,13 @@ readline, which are both licensed under GPL Version 3.
 
 **It is important to understand the licensing requirements when integrating
 the output of this project into derived works.**
+
+Dependency Notes
+================
+
+Python has the option of building its ``_dbm`` extension against
+NDBM, GDBM, and Berkeley DB. Both NDBM and GDBM are GNU GPL Version 3.
+Modern versions of Berkeley DB are GNU AGPL v3. Versions 6.0.19 and
+older are licensed under the Sleepycat License. The Sleepycat License
+is more permissive. So we build the ``_dbm`` extension against BDB
+6.0.19.

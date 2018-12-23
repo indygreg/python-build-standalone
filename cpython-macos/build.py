@@ -31,7 +31,7 @@ SUPPORT = ROOT / 'cpython-macos'
 MACOSX_DEPLOYMENT_TARGET = '10.14'
 
 DISABLED_STATIC_MODULES = {
-    # Not yet supported.
+    # We don't support GDBM because it is GPL v3.
     b'_gdbm',
     # Not yet supported.
     b'_scproxy',
@@ -124,6 +124,7 @@ def build_cpython():
         deps_dir = td / 'deps'
         deps_dir.mkdir()
 
+        extract_tar_to_directory(BUILD / 'bdb-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'bzip2-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'libffi-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'ncurses-macos.tar', deps_dir)
@@ -181,7 +182,7 @@ def main():
     with log_path.open('wb') as log_fh:
         LOG_FH[0] = log_fh
 
-        if action in ('bzip2', 'libffi', 'openssl', 'ncurses', 'sqlite', 'uuid', 'xz', 'zlib'):
+        if action in ('bdb', 'bzip2', 'libffi', 'openssl', 'ncurses', 'sqlite', 'uuid', 'xz', 'zlib'):
             simple_build(action)
 
         elif action == 'cpython':
