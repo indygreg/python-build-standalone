@@ -51,6 +51,12 @@ for d in Modules Objects Parser Programs Python; do
     cp -av $d/*.o /build/out/python/build/$d/
 done
 
+# The object files need to be linked against library dependencies. So copy
+# library files as well.
+mkdir /build/out/python/{lib64,lib}
+cp -av /tools/deps/lib64/*.a /build/out/python/lib64/
+cp -av /tools/deps/lib/*.a /build/out/python/lib/
+
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
 # a custom one can be produced downstream.
