@@ -32,8 +32,6 @@ MACOSX_DEPLOYMENT_TARGET = '10.14'
 
 DISABLED_STATIC_MODULES = {
     # Not yet supported.
-    b'_crypt',
-    # Not yet supported.
     b'_gdbm',
     # Not yet supported.
     b'_scproxy',
