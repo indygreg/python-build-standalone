@@ -33,8 +33,6 @@ MACOSX_DEPLOYMENT_TARGET = '10.14'
 DISABLED_STATIC_MODULES = {
     # We don't support GDBM because it is GPL v3.
     b'_gdbm',
-    # Not yet supported.
-    b'_scproxy',
     # Not available on macOS.
     b'nis',
     # Not available on macOS.

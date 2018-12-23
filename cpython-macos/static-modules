@@ -21,7 +21,7 @@ _lzma _lzmamodule.c -llzma
 _multiprocessing _multiprocessing/multiprocessing.c _multiprocessing/semaphore.c
 _opcode _opcode.c
 _queue _queuemodule.c
-#scproxy _scproxy.c
+_scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 _sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -lsqlite3
 _ssl _ssl.c -lssl -lcrypto
 _testbuffer _testbuffer.c
