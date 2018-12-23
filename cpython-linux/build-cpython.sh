@@ -61,7 +61,11 @@ cp -av /tools/deps/lib/*.a /build/out/python/lib/
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
 # a custom one can be produced downstream.
 # frozen.c is something similar for frozen modules.
+# Setup.dist/Setup.local are useful to parse for active modules and library
+# dependencies.
 cp -av Modules/config.c /build/out/python/build/Modules/
 cp -av Modules/config.c.in /build/out/python/build/Modules/
 cp -av Python/frozen.c /build/out/python/build/Python/
+cp -av Modules/Setup.dist /build/out/python/build/Modules/
+cp -av Modules/Setup.local /build/out/python/build/Modules/
 cp /build/python-licenses.rst /build/out/python/LICENSE.rst
