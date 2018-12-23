@@ -15,6 +15,9 @@ $(OUTDIR)/bdb-macos.tar: $(HERE)/build-bdb.sh
 $(OUTDIR)/bzip2-macos.tar: $(HERE)/build-bzip2.sh
 	$(BUILD) bzip2
 
+$(OUTDIR)/libedit-macos.tar: $(HERE)/build-libedit.sh
+	$(BUILD) libedit
+
 $(OUTDIR)/libffi-macos.tar: $(HERE)/build-libffi.sh
 	$(BUILD) libffi
 
@@ -41,6 +44,7 @@ PYTHON_DEPENDS := \
 	$(HERE)/build-cpython.sh \
 	$(OUTDIR)/bdb-macos.tar \
     $(OUTDIR)/bzip2-macos.tar \
+    $(OUTDIR)/libedit-macos.tar \
     $(OUTDIR)/libffi-macos.tar \
     $(OUTDIR)/ncurses-macos.tar \
     $(OUTDIR)/openssl-macos.tar \

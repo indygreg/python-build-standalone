@@ -37,8 +37,6 @@ DISABLED_STATIC_MODULES = {
     b'nis',
     # Not available on macOS.
     b'ossaudiodev',
-    # Not yet supported.
-    b'readline',
     # Not available on macOS.
     b'spwd',
 }
@@ -124,8 +122,10 @@ def build_cpython():
 
         extract_tar_to_directory(BUILD / 'bdb-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'bzip2-macos.tar', deps_dir)
+        extract_tar_to_directory(BUILD / 'libedit-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'libffi-macos.tar', deps_dir)
-        extract_tar_to_directory(BUILD / 'ncurses-macos.tar', deps_dir)
+        # We use the system ncurses and statically link (for now).
+        #extract_tar_to_directory(BUILD / 'ncurses-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'openssl-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'sqlite-macos.tar', deps_dir)
         extract_tar_to_directory(BUILD / 'uuid-macos.tar', deps_dir)
@@ -180,7 +180,7 @@ def main():
     with log_path.open('wb') as log_fh:
         LOG_FH[0] = log_fh
 
-        if action in ('bdb', 'bzip2', 'libffi', 'openssl', 'ncurses', 'sqlite', 'uuid', 'xz', 'zlib'):
+        if action in ('bdb', 'bzip2', 'libedit', 'libffi', 'openssl', 'ncurses', 'sqlite', 'uuid', 'xz', 'zlib'):
             simple_build(action)
 
         elif action == 'cpython':

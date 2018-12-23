@@ -134,9 +134,31 @@ the output of this project into derived works.**
 Dependency Notes
 ================
 
+DBM
+---
+
 Python has the option of building its ``_dbm`` extension against
 NDBM, GDBM, and Berkeley DB. Both NDBM and GDBM are GNU GPL Version 3.
 Modern versions of Berkeley DB are GNU AGPL v3. Versions 6.0.19 and
 older are licensed under the Sleepycat License. The Sleepycat License
 is more permissive. So we build the ``_dbm`` extension against BDB
 6.0.19.
+
+readline / libedit / ncurses
+----------------------------
+
+Python has the option of building its ``readline`` extension against
+either ``libreadline`` or ``libedit``. ``libreadline`` is licensed GNU
+GPL Version 3 and ``libedit`` has a more permissive license. We choose
+to link against ``libedit`` because of the more permissive license.
+
+``libedit``/``libreadline`` link against a curses library, most likely
+``ncurses``. And ``ncurses`` has tie-ins with a terminal database. This
+is a thorny situation, as terminal databases can be difficult to
+distribute because end-users often want software to respect their
+terminal databases. But for that to work, ``ncurses`` needs to be compiled
+in a way that respects the user's environment.
+
+On macOS, we statically link a ``libedit`` we compile ourselves. We
+dynamically link against ``libncurses``, which is provided by the
+system, typically in ``/usr/lib``.

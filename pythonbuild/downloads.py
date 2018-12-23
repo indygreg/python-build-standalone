@@ -82,6 +82,12 @@ DOWNLOADS = {
         'sha256': '9b45c759ff397512eae4d938ff82827b1bd7ccba49920777e5b5e460baeb245f',
         'version': '7.0.0',
     },
+    'libedit': {
+        'url': 'https://www.thrysoee.dk/editline/libedit-20181209-3.1.tar.gz',
+        'size': 521931,
+        'sha256': '2811d70c0b000f2ca91b7cb1a37203134441743c4fcc9c37b0b687f328611064',
+        'version': '20181209-3.1',
+    },
     'libffi': {
         'url': 'ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz',
         'size': 940837,
