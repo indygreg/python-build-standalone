@@ -92,6 +92,10 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
         if not found_shared:
             continue
 
+        # Stop processing at the #*disabled* line.
+        if line == b'#*disabled*':
+            break
+
         if line.startswith(tuple(b'#%s' % k for k in STATIC_MODULES)):
             line = line[1:]
 
