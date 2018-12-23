@@ -39,6 +39,7 @@ def bootstrap():
 def run():
     import zstandard
     from pythonbuild.downloads import DOWNLOADS
+    from pythonbuild.utils import hash_path
 
     now = datetime.datetime.utcnow()
 
@@ -53,6 +54,9 @@ def run():
     with source_path.open('rb') as ifh, dest_path.open('wb') as ofh:
         cctx = zstandard.ZstdCompressor(level=15)
         cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
+
+    sha256 = hash_path(dest_path)
+    print('%s has SHA256 %s' % (dest_path, sha256))
 
 
 if __name__ == '__main__':
