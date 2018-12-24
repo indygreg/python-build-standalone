@@ -41,10 +41,10 @@ DOWNLOADS = {
         'version': '3.13.0',
     },
     'cpython-3.7': {
-        'url': 'https://www.python.org/ftp/python/3.7.1/Python-3.7.1.tar.xz',
-        'size': 16960060,
-        'sha256': 'fa7e2b8e8c9402f192ad56dc4f814089d1c4466c97d780f5e5acc02c04243d6d',
-        'version': '3.7.1',
+        'url': 'https://www.python.org/ftp/python/3.7.2/Python-3.7.2.tar.xz',
+        'size': 17042320,
+        'sha256': 'd83fe8ce51b1bb48bbcf0550fd265b9a75cdfdfa93f916f9e700aef8444bf1bb',
+        'version': '3.7.2',
     },
     'gcc': {
         'url': 'https://ftp.gnu.org/gnu/gcc/gcc-8.2.0/gcc-8.2.0.tar.xz',
