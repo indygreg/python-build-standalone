@@ -6,6 +6,10 @@ import os
 import re
 import tarfile
 
+from .downloads import (
+    DOWNLOADS,
+)
+
 # Module entries from Setup.dist that we can copy verbatim without
 # issue.
 STATIC_MODULES = {
@@ -64,6 +68,8 @@ UNSUPPORTED_MODULES = {
 
 def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=None):
     """Derive the content of the Modules/Setup.local file."""
+    python_version = DOWNLOADS['cpython-3.7']['version']
+
     # makesetup parses lines with = as extra config options. There appears
     # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
     # around this by producing a Makefile supplement that overrides the build
@@ -74,7 +80,7 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
     disabled |= UNSUPPORTED_MODULES
 
     with tarfile.open(str(cpython_source_archive)) as tf:
-        ifh = tf.extractfile('Python-3.7.1/Modules/Setup.dist')
+        ifh = tf.extractfile('Python-%s/Modules/Setup.dist' % python_version)
         source_lines = ifh.readlines()
 
     found_shared = False
