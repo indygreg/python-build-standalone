@@ -86,12 +86,15 @@ def simple_build(entry):
 
         shutil.copyfile(archive, td / archive.name)
 
+        extract_tar_to_directory(BUILD / 'clang-macos.tar', td)
+        toolchain_path = td / 'clang-macos' / 'bin'
+
         env = dict(os.environ)
         env['%s_VERSION' % entry.upper()] = DOWNLOADS[entry]['version']
 
         # We force a PATH only containing system files: we don't want
         # pollution from homebrew, macports, etc.
-        env['PATH'] = '/usr/bin:/bin'
+        env['PATH'] = '%s:/usr/bin:/bin' % toolchain_path
 
         env['MACOSX_DEPLOYMENT_TARGET'] = MACOSX_DEPLOYMENT_TARGET
         env['NUM_CPUS'] = '%s' % multiprocessing.cpu_count()
@@ -156,6 +159,9 @@ def build_cpython():
     with tempfile.TemporaryDirectory() as td:
         td = pathlib.Path(td)
 
+        extract_tar_to_directory(BUILD / 'clang-macos.tar', td)
+        toolchain_path = td / 'clang-macos' / 'bin'
+
         deps_dir = td / 'deps'
         deps_dir.mkdir()
 
@@ -188,7 +194,7 @@ def build_cpython():
 
         # We force a PATH only containing system files: we don't want
         # pollution from homebrew, macports, etc.
-        env['PATH'] = '/usr/bin:/bin'
+        env['PATH'] = '%s:/usr/bin:/bin' % toolchain_path
 
         env['MACOSX_DEPLOYMENT_TARGET'] = MACOSX_DEPLOYMENT_TARGET
         env['NUM_CPUS'] = '%s' % multiprocessing.cpu_count()
