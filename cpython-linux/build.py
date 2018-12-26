@@ -151,7 +151,6 @@ def container_exec(container, command, user='build',
     inspect_res = container.client.api.exec_inspect(create_res['Id'])
 
     if inspect_res['ExitCode'] != 0:
-        import pdb; pdb.set_trace()
         raise Exception('exit code %d from %s' % (inspect_res['ExitCode'],
                                                   command))
 
