@@ -27,7 +27,7 @@ pushd Python-${PYTHON_VERSION}
 # So we need to set both.
 CFLAGS="-I/tools/deps/include -I/tools/deps/include/ncurses"
 CPPFLAGS=$CFLAGS
-LDFLAGS="-L/tools/deps/lib64 -L/tools/deps/lib"
+LDFLAGS="-L/tools/deps/lib"
 
 CONFIGURE_FLAGS="--prefix=/install --with-openssl=/tools/deps --without-ensurepip"
 
@@ -53,8 +53,7 @@ done
 
 # The object files need to be linked against library dependencies. So copy
 # library files as well.
-mkdir /build/out/python/{lib64,lib}
-cp -av /tools/deps/lib64/*.a /build/out/python/lib64/
+mkdir /build/out/python/lib
 cp -av /tools/deps/lib/*.a /build/out/python/lib/
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
