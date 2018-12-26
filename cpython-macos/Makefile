@@ -9,6 +9,9 @@ PLATFORM := macos
 
 default: $(OUTDIR)/cpython-macos.tar
 
+$(OUTDIR)/clang-macos.tar: $(HERE)/build-clang.sh
+	$(BUILD) clang
+
 $(OUTDIR)/bdb-macos.tar: $(HERE)/build-bdb.sh
 	$(BUILD) bdb
 
@@ -42,6 +45,7 @@ $(OUTDIR)/zlib-macos.tar: $(HERE)/build-zlib.sh
 PYTHON_DEPENDS := \
 	$(HERE)/static-modules \
 	$(HERE)/build-cpython.sh \
+	$(OUTDIR)/clang-macos.tar \
 	$(OUTDIR)/bdb-macos.tar \
     $(OUTDIR)/bzip2-macos.tar \
     $(OUTDIR)/libedit-macos.tar \

@@ -40,6 +40,12 @@ DOWNLOADS = {
         'sha256': '1c6612f3c6dd62959ceaa96c4b64ba7785132de0b9cbc719eea6fe1365cc8d94',
         'version': '3.13.0',
     },
+    'cmake-macos-bin': {
+        'url': 'https://github.com/Kitware/CMake/releases/download/v3.13.2/cmake-3.13.2-Darwin-x86_64.tar.gz',
+        'size': 32049991,
+        'sha256': '747659e5adbf422d9202f053a97439bcd61616420600cc89d07cbd94213d382d',
+        'version': '3.13.2',
+    },
     'cpython-3.7': {
         'url': 'https://www.python.org/ftp/python/3.7.2/Python-3.7.2.tar.xz',
         'size': 17042320,
@@ -133,6 +139,13 @@ DOWNLOADS = {
         'url': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip',
         'size': 77854,
         'sha256': 'd2fea9ff33b3ef353161ed906f260d565ca55b8ca0568fa07b1d2cab90a84a07',
+        'version': '1.8.2',
+    },
+    'ninja-macos-bin': {
+        'url': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip',
+        'size': 77284,
+        'sha256': '0347d55c66061652b26f48769d566761630ffde3143793b29064a57f356542cc',
+        'version': '1.8.2',
     },
     'openssl': {
         'url': 'https://www.openssl.org/source/openssl-1.1.1a.tar.gz',

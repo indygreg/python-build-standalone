@@ -104,6 +104,45 @@ def simple_build(entry):
             create_tar_from_directory(fh, td / 'out')
 
 
+def build_clang():
+    cmake_archive = download_entry('cmake-macos-bin', BUILD)
+    ninja_archive = download_entry('ninja-macos-bin', BUILD)
+    clang_archive = download_entry('clang', BUILD)
+    clang_rt_archive = download_entry('clang-compiler-rt', BUILD)
+    lld_archive = download_entry('lld', BUILD)
+    llvm_archive = download_entry('llvm', BUILD)
+    libcxx_archive = download_entry('libc++', BUILD)
+    libcxxabi_archive = download_entry('libc++abi', BUILD)
+
+    with tempfile.TemporaryDirectory() as td:
+        td = pathlib.Path(td)
+
+        for a in (cmake_archive, ninja_archive, clang_archive, clang_rt_archive,
+                  lld_archive, llvm_archive, libcxx_archive, libcxxabi_archive):
+            shutil.copyfile(a, td / a.name)
+
+        env = {
+            'CMAKE_VERSION': DOWNLOADS['cmake-macos-bin']['version'],
+            'NINJA_VERSION': DOWNLOADS['ninja-macos-bin']['version'],
+            'CLANG_COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt']['version'],
+            'CLANG_VERSION': DOWNLOADS['clang']['version'],
+            'COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt']['version'],
+            'LIBCXX_VERSION': DOWNLOADS['libc++']['version'],
+            'LIBCXXABI_VERSION': DOWNLOADS['libc++abi']['version'],
+            'LLD_VERSION': DOWNLOADS['lld']['version'],
+            'LLVM_VERSION': DOWNLOADS['llvm']['version'],
+
+            'PATH': '/usr/bin:/bin',
+        }
+
+        exec_and_log([SUPPORT / 'build-clang.sh'], td, env)
+
+        dest_path = BUILD / 'clang-macos.tar'
+
+        with dest_path.open('wb') as fh:
+            create_tar_from_directory(fh, td / 'out')
+
+
 def build_cpython():
     python_archive = download_entry('cpython-3.7', BUILD)
     python_version = DOWNLOADS['cpython-3.7']['version']
@@ -182,6 +221,9 @@ def main():
 
         if action in ('bdb', 'bzip2', 'libedit', 'libffi', 'openssl', 'ncurses', 'sqlite', 'uuid', 'xz', 'zlib'):
             simple_build(action)
+
+        elif action == 'clang':
+            build_clang()
 
         elif action == 'cpython':
             build_cpython()
