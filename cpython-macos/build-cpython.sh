@@ -30,7 +30,9 @@ LDFLAGS="-L${DEPS_DIR}/lib"
 CONFIGURE_FLAGS="--prefix=/install --with-openssl=${DEPS_DIR} --without-ensurepip"
 
 if [ -n "${CPYTHON_OPTIMIZED}" ]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations --enable-lto"
+    # TODO add --with-lto (may require build of llvm since Apple doesn't
+    # appear to ship llvm-ar, which is required by --with-lto.
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations"
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
