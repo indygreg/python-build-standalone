@@ -32,7 +32,7 @@ LDFLAGS="-L/tools/deps/lib64 -L/tools/deps/lib"
 CONFIGURE_FLAGS="--prefix=/install --with-openssl=/tools/deps --without-ensurepip"
 
 if [ -n "${CPYTHON_OPTIMIZED}" ]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations --enable-lto"
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations --with-lto"
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
