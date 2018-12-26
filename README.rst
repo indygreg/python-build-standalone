@@ -162,3 +162,56 @@ in a way that respects the user's environment.
 On macOS, we statically link a ``libedit`` we compile ourselves. We
 dynamically link against ``libncurses``, which is provided by the
 system, typically in ``/usr/lib``.
+
+Distribution Format
+===================
+
+The output of a build is referred to as a Python *distribution*.
+
+A distribution is a zstandard-compressed tar file. All paths inside the
+tar archive are prefixed with ``python/``. Within the ``python/`` directory
+are the following well-known paths:
+
+LICENSE.rst
+   Contains license information of software contained in the distribution.
+
+build/
+   Contains build artifacts from compiling Python.
+
+   The exact layout depends on the Python flavor and target system.
+
+   For POSIX distributions, various ``.o`` files are the object files for
+   various compiled sources.
+
+  For CPython, object files exist in the ``Python/``, ``Objects/``,
+  `Parser/``, ``Programs/``, and ``Modules/`` directories. There also
+  exist the special files ``Modules/Setup.dist`` and ``Modules/Setup.local``,
+  which define the Python extension modules produced by the build and their
+  configuration. The ``Modules/config.c.in`` and ``Modules/config.c`` files
+  also contain definitions of the built-in extension modules. The
+  ``Python/frozen.c`` file contains definitions of the frozen modules built-in
+  to the Python interpreter.
+
+install/
+   Contains a working Python installation. This is typically the result of
+   a ``make install`` from Python's build system.
+
+   The exact layout depends on the Python flavor and target system.
+
+   For POSIX distributions, there exists a ``bin/`` directory with executables,
+   such as the main ``pythonX.Y`` binary. There will also be a ``lib/``
+   directory with a ``libpythonX.Y.a`` static library. And the Python standard
+   library is typically in ``lib/pythonX.Y/``.
+
+lib/
+   Contains libraries that the distribution requires.
+
+   Libraries in this directory may be statically embedded in the binaries in
+   the ``build/`` directory.
+
+   Libraries in this directory can also be linked against by downstream
+   consumers wishing to recombine object files in ``build/`` to produce
+   custom binaries.
+
+   For POSIX distributions, this directory will contain various ``.a``
+   libraries.
