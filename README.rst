@@ -28,6 +28,7 @@ Planned features include:
 
 * Support for Windows
 * Static/dynamic linking toggles for dependencies
+* Support for configuring which toolchain/version to use
 
 Instructions
 ============
@@ -136,6 +137,34 @@ readline, which are both licensed under GPL Version 3.
 
 **It is important to understand the licensing requirements when integrating
 the output of this project into derived works.**
+
+Reconsuming Build Artifacts
+===========================
+
+Produced Python distributions contain object files and libraries for the
+built Python and its dependencies. It is possible for downstream consumers
+to take these build artifacts and link them into a new binary.
+
+Reconsuming the build artifacts this way can be a bit fragile due to
+incompatibilities between the host that generated them and the target that
+is consuming them.
+
+To ensure optimal compatibility, it is highly recommended to use the same
+toolchain for all operations.
+
+This is often harder than it sounds. For example, if these build artifacts
+were to be combined into a Rust binary, the version of LLVM that the Rust
+compiler itself was built against can matter. As a concrete example, the
+Rust 1.31 compiler will produce LLVM intrinsics that vary from intrinsics
+that would be produced with LLVM/Clang 7. At linking time, you would get
+errors like the following::
+
+    Intrinsic has incorrect argument type!
+    void (i8*, i8, i64, i1)* @llvm.memset.p0i8.i64
+
+In the future, we will allow configuring the toolchain used so it can match
+requirements of downstream consumers. For the moment, we hard-code the toolchain
+version.
 
 Dependency Notes
 ================

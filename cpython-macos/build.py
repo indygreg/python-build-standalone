@@ -110,12 +110,12 @@ def simple_build(entry):
 def build_clang():
     cmake_archive = download_entry('cmake-macos-bin', BUILD)
     ninja_archive = download_entry('ninja-macos-bin', BUILD)
-    clang_archive = download_entry('clang', BUILD)
-    clang_rt_archive = download_entry('clang-compiler-rt', BUILD)
-    lld_archive = download_entry('lld', BUILD)
-    llvm_archive = download_entry('llvm', BUILD)
-    libcxx_archive = download_entry('libc++', BUILD)
-    libcxxabi_archive = download_entry('libc++abi', BUILD)
+    clang_archive = download_entry('clang-6', BUILD)
+    clang_rt_archive = download_entry('clang-compiler-rt-6', BUILD)
+    lld_archive = download_entry('lld-6', BUILD)
+    llvm_archive = download_entry('llvm-6', BUILD)
+    libcxx_archive = download_entry('libc++-6', BUILD)
+    libcxxabi_archive = download_entry('libc++abi-6', BUILD)
 
     with tempfile.TemporaryDirectory() as td:
         td = pathlib.Path(td)
@@ -127,13 +127,13 @@ def build_clang():
         env = {
             'CMAKE_VERSION': DOWNLOADS['cmake-macos-bin']['version'],
             'NINJA_VERSION': DOWNLOADS['ninja-macos-bin']['version'],
-            'CLANG_COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt']['version'],
-            'CLANG_VERSION': DOWNLOADS['clang']['version'],
-            'COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt']['version'],
-            'LIBCXX_VERSION': DOWNLOADS['libc++']['version'],
-            'LIBCXXABI_VERSION': DOWNLOADS['libc++abi']['version'],
-            'LLD_VERSION': DOWNLOADS['lld']['version'],
-            'LLVM_VERSION': DOWNLOADS['llvm']['version'],
+            'CLANG_COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt-6']['version'],
+            'CLANG_VERSION': DOWNLOADS['clang-6']['version'],
+            'COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt-6']['version'],
+            'LIBCXX_VERSION': DOWNLOADS['libc++-6']['version'],
+            'LIBCXXABI_VERSION': DOWNLOADS['libc++abi-6']['version'],
+            'LLD_VERSION': DOWNLOADS['lld-6']['version'],
+            'LLVM_VERSION': DOWNLOADS['llvm-6']['version'],
 
             'PATH': '/usr/bin:/bin',
         }
