@@ -106,11 +106,13 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
     print('successfully downloaded %s' % url)
 
 
-def download_entry(key: str, dest_path: pathlib.Path) -> pathlib.Path:
+def download_entry(key: str, dest_path: pathlib.Path, local_name=None) -> pathlib.Path:
     entry = DOWNLOADS[key]
     url = entry['url']
 
-    local_path = dest_path / url[url.rindex('/') + 1:]
+    local_name = local_name or url[url.rindex('/') + 1:]
+
+    local_path = dest_path / local_name
     download_to_path(url, local_path, entry['size'], entry['sha256'])
 
     return local_path
