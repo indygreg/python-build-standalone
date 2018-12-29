@@ -13,6 +13,7 @@ from pythonbuild.downloads import (
     DOWNLOADS,
 )
 from pythonbuild.utils import (
+    create_tar_from_directory,
     download_entry,
     extract_tar_to_directory,
 )
@@ -59,7 +60,6 @@ def exec_and_log(args, cwd, env, exit_on_error=True):
     log('process exited %d' % p.returncode)
 
     if p.returncode and exit_on_error:
-        import pdb; pdb.set_trace()
         sys.exit(p.returncode)
 
 
@@ -313,8 +313,10 @@ def build_cpython(pgo=False):
             pcbuild_path,
             os.environ)
 
-        import pdb; pdb.set_trace()
-        log('it worked!')
+        dest_path = BUILD / 'cpython-windows.tar'
+
+        with dest_path.open('wb') as fh:
+            create_tar_from_directory(fh, td / 'out')
 
 
 def main():

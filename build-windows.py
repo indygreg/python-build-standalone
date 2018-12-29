@@ -54,13 +54,13 @@ def run():
     dest_path = DIST / ('cpython-%s-windows-amd64-%s.tar.zst' % (
         DOWNLOADS['cpython-3.7']['version'], now.strftime('%Y%m%dT%H%M')))
 
-    #print('compressing Python archive to %s' % dest_path)
-    #with source_path.open('rb') as ifh, dest_path.open('wb') as ofh:
-    #    cctx = zstandard.ZstdCompressor(level=15)
-    #    cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
-    #
-    #sha256 = hash_path(dest_path)
-    #print('%s has SHA256 %s' % (dest_path, sha256))
+    print('compressing Python archive to %s' % dest_path)
+    with source_path.open('rb') as ifh, dest_path.open('wb') as ofh:
+        cctx = zstandard.ZstdCompressor(level=15)
+        cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
+
+    sha256 = hash_path(dest_path)
+    print('%s has SHA256 %s' % (dest_path, sha256))
 
 
 if __name__ == '__main__':
