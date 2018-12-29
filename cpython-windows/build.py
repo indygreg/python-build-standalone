@@ -294,6 +294,25 @@ def build_cpython(pgo=False):
         else:
             run_msbuild(msbuild, pcbuild_path, configuration='Release')
 
+        out_dir = td / 'out'
+        install_dir = out_dir / 'python' / 'install'
+
+        # The PC/layout directory contains a script for copying files into
+        # a release-like directory. Use that for assembling the standalone
+        # build.
+        exec_and_log(
+            [
+                str(cpython_source_path / 'python.bat'),
+                str(cpython_source_path / 'PC' / 'layout'),
+                '--source', str(cpython_source_path),
+                '--copy', str(install_dir),
+                '--flat-dlls',
+                '--include-dev',
+                '--include-distutils',
+            ],
+            pcbuild_path,
+            os.environ)
+
         import pdb; pdb.set_trace()
         log('it worked!')
 
