@@ -189,6 +189,12 @@ DOWNLOADS = {
         'sha256': 'fc20130f8b7cbd2fb918b2f14e2f429e109c31ddd0fb38fc5d71d9ffed3f9f41',
         'version': '1.1.1a',
     },
+    'openssl-windows-bin': {
+        'url': 'https://github.com/python/cpython-bin-deps/archive/openssl-bin-1.1.0j.tar.gz',
+        'size': 8274446,
+        'sha256': 'c4684e220473fb2bdb0b95e43183c4701b6b103acac5ec23385e41a9a77fc9b1',
+        'version': '1.1.0j',
+    },
     'readline': {
         'url': 'ftp://ftp.gnu.org/gnu/readline/readline-6.3.tar.gz',
         'size': 2468560,
@@ -205,6 +211,7 @@ DOWNLOADS = {
         'size': 2779667,
         'sha256': '5daa6a3fb7d1e8c767cd59c4ded8da6e4b00c61d3b466d0685e35c4dd6d7bf5d',
         'version': '3260000',
+        'actual_version': '3.26.0.0',
     },
     'tcl': {
         'url': 'https://prdownloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz',
@@ -215,6 +222,13 @@ DOWNLOADS = {
         'url': 'https://prdownloads.sourceforge.net/tcl/tk8.6.9.1-src.tar.gz',
         'size': 4364603,
         'sha256': '8fcbcd958a8fd727e279f4cac00971eee2ce271dc741650b1fc33375fb74ebb4',
+    },
+    'tk-windows-bin': {
+        'url': 'https://github.com/python/cpython-bin-deps/archive/86027ce3edda1284ae4bf6c2c580288366af4052.tar.gz',
+        'size': 7162470,
+        'sha256': '34400f7b76a13389a475fc1a4d6e33d5ca21dda6f6ff11b04759865814bdf3d2',
+        'version': '6.6.9',
+        'git_commit': '86027ce3edda1284ae4bf6c2c580288366af4052',
     },
     'uuid': {
         'url': 'https://sourceforge.net/projects/libuuid/files/libuuid-1.0.3.tar.gz',
