@@ -110,7 +110,7 @@ def download_entry(key: str, dest_path: pathlib.Path) -> pathlib.Path:
     entry = DOWNLOADS[key]
     url = entry['url']
 
-    local_path = dest_path / pathlib.Path(url[url.index('/'):]).name
+    local_path = dest_path / url[url.rindex('/') + 1:]
     download_to_path(url, local_path, entry['size'], entry['sha256'])
 
     return local_path
