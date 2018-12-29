@@ -30,7 +30,7 @@ pushd Python-${PYTHON_VERSION}
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
-CFLAGS="-I/tools/deps/include -I/tools/deps/include/ncurses"
+CFLAGS="-fPIC -I/tools/deps/include -I/tools/deps/include/ncurses"
 CPPFLAGS=$CFLAGS
 LDFLAGS="-L/tools/deps/lib"
 
