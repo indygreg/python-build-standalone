@@ -11,6 +11,11 @@ export PATH=/tools/clang-linux64/bin:/tools/host/bin:/tools/deps/bin:$PATH
 export CC=clang
 export CXX=clang++
 
+# configure somehow has problems locating llvm-profdata even though it is in
+# PATH. The macro it is using allows us to specify its path via an
+# environment variable.
+export LLVM_PROFDATA=/tools/clang-linux64/bin/llvm-profdata
+
 # We force linking of external static libraries by removing the shared
 # libraries. This is hacky. But we're building in a temporary container
 # and it gets the job done.
