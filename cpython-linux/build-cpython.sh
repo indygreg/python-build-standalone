@@ -31,8 +31,11 @@ LDFLAGS="-L/tools/deps/lib"
 
 CONFIGURE_FLAGS="--prefix=/install --with-openssl=/tools/deps --without-ensurepip"
 
+# TODO support --with-lto
+# --with-lto will produce .o files that are LLVM bitcode and aren't compatible
+# with downstream consumers that can't handle them.
 if [ -n "${CPYTHON_OPTIMIZED}" ]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations --with-lto"
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations"
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
