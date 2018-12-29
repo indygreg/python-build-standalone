@@ -40,7 +40,7 @@ def log(msg):
         LOG_FH[0].flush()
 
 
-def exec_and_log(args, cwd, env):
+def exec_and_log(args, cwd, env, exit_on_error=True):
     log('executing %s' % ' '.join(args))
 
     p = subprocess.Popen(
@@ -56,8 +56,9 @@ def exec_and_log(args, cwd, env):
 
     p.wait()
 
-    if p.returncode:
-        print('process exited %d' % p.returncode)
+    log('process exited %d' % p.returncode)
+
+    if p.returncode and exit_on_error:
         import pdb; pdb.set_trace()
         sys.exit(p.returncode)
 
@@ -210,14 +211,15 @@ def hack_project_files(td: pathlib.Path, pcbuild_path: pathlib.Path):
         br'<ClInclude Include="$(lzmaDir)windows\vs2017\config.h" />')
 
 
-def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path):
+def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
+                configuration: str):
     python_version = DOWNLOADS['cpython-3.7']['version']
 
     args = [
         str(msbuild),
         str(pcbuild_path / 'pcbuild.proj'),
         '/target:Build',
-        '/property:Configuration=Release',
+        '/property:Configuration=%s' % configuration,
         '/property:Platform=x64',
         '/maxcpucount',
         '/nologo',
@@ -231,7 +233,7 @@ def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path):
     exec_and_log(args, str(pcbuild_path), os.environ)
 
 
-def build_cpython():
+def build_cpython(pgo=False):
     msbuild = find_msbuild()
     log('found MSBuild at %s' % msbuild)
 
@@ -266,7 +268,31 @@ def build_cpython():
 
         hack_project_files(td, pcbuild_path)
 
-        run_msbuild(msbuild, pcbuild_path)
+        if pgo:
+            run_msbuild(msbuild, pcbuild_path, configuration='PGInstrument')
+
+            exec_and_log([
+                str(cpython_source_path / 'python.bat'), '-m', 'test', '--pgo'],
+                str(pcbuild_path),
+                os.environ,
+                exit_on_error=False)
+
+            exec_and_log(
+                [
+                    str(msbuild), str(pcbuild_path / 'pythoncore.vcxproj'),
+                    '/target:KillPython',
+                    '/verbosity:minimal',
+                    '/property:Configuration=PGInstrument',
+                    '/property:Platform=x64',
+                    '/property:KillPython=true',
+                ],
+                pcbuild_path,
+                os.environ)
+
+            run_msbuild(msbuild, pcbuild_path, configuration='PGUpdate')
+
+        else:
+            run_msbuild(msbuild, pcbuild_path, configuration='Release')
 
         import pdb; pdb.set_trace()
         log('it worked!')
