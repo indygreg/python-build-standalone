@@ -637,7 +637,10 @@ def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
         '/verbosity:minimal',
         '/property:IncludeExternals=true',
         '/property:IncludeSSL=true',
-        '/property:IncludeTkinter=true',
+        # TODO support Tkinter
+        '/property:IncludeTkinter=false',
+        # TODO compile test extensions so we can get PGO benefits of tested code.
+        '/property:IncludeTests=false',
         '/property:OverrideVersion=%s' % python_version,
     ]
 
