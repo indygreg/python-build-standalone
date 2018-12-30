@@ -48,8 +48,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     '_lzma': {
         'static_depends': ['liblzma'],
     },
-    # TODO several unresolved symbols.
-    # '_msi': {},
+    '_msi': {},
     # TODO _overlapped.lib(overlapped.obj) : error LNK2005: OverlappedType already defined in _winapi.obj
     #'_overlapped': {},
     '_multiprocessing': {},
@@ -64,8 +63,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     'pyexpat': {},
     'select': {},
     'unicodedata': {},
-    # TODO winsound.lib(winsound.obj) : error LNK2001: unresolved external symbol __imp_PlaySoundW
-    #'winsound': {},
+    'winsound': {},
 }
 
 
