@@ -174,13 +174,13 @@ def add_to_config_c(source_path: pathlib.Path, extension: str, init_fn: str):
 
 
 def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
-    """Remove an extension from the set of extension modules.
+    """Remove an extension from the set of extension/external modules.
 
     Call this when an extension will be compiled into libpython instead of
     compiled as a standalone extension.
     """
 
-    RE_EXTENSION_MODULES = re.compile('<ExtensionModules Include="([^"]+)" />')
+    RE_EXTENSION_MODULES = re.compile('<(Extension|External)Modules Include="([^"]+)" />')
 
     pcbuild_proj_path = source_path / 'PCbuild' / 'pcbuild.proj'
 
@@ -193,8 +193,8 @@ def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
             m = RE_EXTENSION_MODULES.search(line)
 
             if m:
-                modules = [m for m in m.group(1).split(';') if m != extension]
-                line = line.replace(m.group(1), ';'.join(modules))
+                modules = [m for m in m.group(2).split(';') if m != extension]
+                line = line.replace(m.group(2), ';'.join(modules))
 
             lines.append(line)
 
