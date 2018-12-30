@@ -35,8 +35,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         # _asynciomodule.c is included in pythoncore for some reason.
         'allow_missing_preprocessor': True,
     },
-    # TODO dependencies
-    # '_bz2': {},
+     '_bz2': {},
     '_contextvars': {
         # _contextvars.c is included in pythoncore for some reason.
         'allow_missing_preprocessor': True,
