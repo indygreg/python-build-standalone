@@ -592,12 +592,19 @@ def build_cpython(pgo=False):
         # The PC/layout directory contains a script for copying files into
         # a release-like directory. Use that for assembling the standalone
         # build.
+
+        # It doesn't clean up the temp directory it creates. So pass one to it
+        # under our tempdir.
+        layout_tmp = td / 'layouttmp'
+        layout_tmp.mkdir()
+
         exec_and_log(
             [
                 str(cpython_source_path / 'python.bat'),
                 str(cpython_source_path / 'PC' / 'layout'),
                 '--source', str(cpython_source_path),
                 '--copy', str(install_dir),
+                '--temp', str(layout_tmp),
                 '--flat-dlls',
                 '--include-dev',
                 '--include-distutils',
