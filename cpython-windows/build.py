@@ -641,6 +641,13 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
         b'<Projects2 Include="venvlauncher.vcxproj;venvwlauncher.vcxproj" />',
         b'')
 
+    # Ditto for freeze_importlib, which isn't needed since we don't modify
+    # the frozen importlib baked into the source distribution (
+    # Python/importlib.h and Python/importlib_external.h).
+    static_replace_in_file(
+        pcbuild_proj,
+        b'<Projects2 Include="_freeze_importlib.vcxproj" />',
+        b'')
 
 CTYPES_INIT_REPLACE = b'''
 if _os.name == "nt":
