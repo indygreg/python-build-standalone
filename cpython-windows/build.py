@@ -40,8 +40,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         # _contextvars.c is included in pythoncore for some reason.
         'allow_missing_preprocessor': True,
     },
-    # TODO Defines duplicate DllMain.
-    #'_ctypes': {},
+    '_ctypes': {},
     '_decimal': {},
     '_elementtree': {},
     '_hashlib': {},
@@ -608,6 +607,19 @@ def hack_source_files(source_path: pathlib.Path):
     # TODO send this patch upstream.
     overlapped_c = source_path / 'Modules' / 'overlapped.c'
     static_replace_in_file(overlapped_c, b'OverlappedType', b'OOverlappedType')
+
+    # Modules/ctypes/callbacks.c has lines like the following:
+    # #ifndef Py_NO_ENABLE_SHARED
+    # BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvRes)
+    # We currently define Py_ENABLE_SHARED. And I /think/ this check should
+    # also check against Py_BUILD_CORE_BUILTIN because Py_BUILD_CORE_BUILTIN
+    # with Py_ENABLE_SHARED is theoretically a valid configuration.
+    # TODO send this patch upstream.
+    callbacks_c = source_path / 'Modules' / '_ctypes' / 'callbacks.c'
+    static_replace_in_file(
+        callbacks_c,
+        b'#ifndef Py_NO_ENABLE_SHARED\nBOOL WINAPI DllMain(',
+        b'#if !defined(Py_NO_ENABLE_SHARED) && !defined(Py_BUILD_CORE_BUILTIN)\nBOOL WINAPI DllMain(')
 
 
 def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
