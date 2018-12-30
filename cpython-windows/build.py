@@ -55,8 +55,9 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     #'_overlapped': {},
     '_multiprocessing': {},
     '_socket': {},
-    # TODO dependencies
-    #'_sqlite3': {},
+    '_sqlite3': {
+        'static_depends': ['sqlite3'],
+    },
     # TODO dependencies
     #'_ssl': {},
     '_queue': {},
@@ -246,7 +247,13 @@ def make_project_static_library(source_path: pathlib.Path, project: str):
 def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: dict):
     """Converts an extension to a static library."""
 
+    # Make the extension's project emit a static library so we can link
+    # against libpython.
     make_project_static_library(source_path, extension)
+
+    # And do the same thing for its dependencies.
+    for project in entry.get('static_depends', []):
+        make_project_static_library(source_path, project)
 
     proj_path = source_path / 'PCbuild' / ('%s.vcxproj' % extension)
     lines = []
@@ -255,6 +262,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
 
     found_preprocessor = False
     itemgroup_line = None
+    itemdefinitiongroup_line = None
 
     with proj_path.open('r') as fh:
         for i, line in enumerate(fh):
@@ -273,6 +281,10 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
             if '<ItemGroup>' in line and not itemgroup_line:
                 itemgroup_line = i
 
+            # Find the first <ItemDefinitionGroup> entry.
+            if '<ItemDefinitionGroup>' in line and not itemdefinitiongroup_line:
+                itemdefinitiongroup_line = i
+
             lines.append(line)
 
     if not found_preprocessor:
@@ -288,21 +300,38 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
                 '  </ItemDefinitionGroup>',
             ]
 
+            itemdefinitiongroup_line = itemgroup_line + 1
+
+    if 'static_depends' in entry:
+        if not itemdefinitiongroup_line:
+            log('unable to find <ItemDefinitionGroup> for %s' % extension)
+            sys.exit(1)
+
+        log('changing %s to automatically link library dependencies' % extension)
+        lines[itemdefinitiongroup_line + 1:itemdefinitiongroup_line + 1] = [
+            '    <ProjectReference>',
+            '      <LinkLibraryDependencies>true</LinkLibraryDependencies>',
+            '    </ProjectReference>',
+        ]
+
     # Ensure the extension project doesn't depend on pythoncore: as a built-in
     # extension, pythoncore will depend on it.
 
     # This logic is a bit hacky. Ideally we'd parse the file as XML and operate
-    # in the XML domain. But that is more work.
+    # in the XML domain. But that is more work. The goal here is to strip the
+    # <ProjectReference>...</ProjectReference> containing the
+    # <Project>{pythoncore ID}</Project>. This could leave an item <ItemGroup>.
+    # That should be fine.
     start_line, end_line = None, None
     for i, line in enumerate(lines):
         if '<Project>{cf7ac3d1-e2df-41d2-bea6-1e2556cdea26}</Project>' in line:
             for j in range(i, 0, -1):
-                if '<ItemGroup>' in lines[j]:
+                if '<ProjectReference' in lines[j]:
                     start_line = j
                     break
 
             for j in range(i, len(lines) - 1):
-                if '</ItemGroup>' in lines[j]:
+                if '</ProjectReference>' in lines[j]:
                     end_line = j
                     break
 
