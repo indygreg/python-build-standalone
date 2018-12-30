@@ -58,8 +58,9 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     '_sqlite3': {
         'static_depends': ['sqlite3'],
     },
-    # TODO dependencies
-    #'_ssl': {},
+    # See the one-off calls to copy_link_to_lib() to make this work.
+    # TODO build and a static OpenSSL and link to it.
+    '_ssl': {},
     '_queue': {},
     'pyexpat': {},
     'select': {},
@@ -182,7 +183,7 @@ def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
     compiled as a standalone extension.
     """
 
-    RE_EXTENSION_MODULES = re.compile('<(Extension|External)Modules Include="([^"]+)" />')
+    RE_EXTENSION_MODULES = re.compile('<(Extension|External)Modules Include="([^"]+)"')
 
     pcbuild_proj_path = source_path / 'PCbuild' / 'pcbuild.proj'
 
@@ -281,7 +282,8 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
             # data is correct.
             m = RE_PREPROCESSOR_DEFINITIONS.search(line)
 
-            if m:
+            # But don't do it if it is an annotation for an individual source file.
+            if m and '<ClCompile Include=' not in lines[i - 1]:
                 log('adding Py_BUILD_CORE_BUILTIN to %s' % extension)
                 found_preprocessor = True
                 line = line.replace(m.group(1), 'Py_BUILD_CORE_BUILTIN;%s' % m.group(1))
@@ -447,6 +449,38 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
             fh.write('\n'.join(lines))
 
 
+def copy_link_to_lib(p: pathlib.Path):
+    """Copy the contents of a <Link> section to a <Lib> section."""
+
+    lines = []
+    copy_lines = []
+    copy_active = False
+
+    with p.open('r') as fh:
+        for line in fh:
+            line = line.rstrip()
+
+            lines.append(line)
+
+            if '<Link>' in line:
+                copy_active = True
+                continue
+
+            elif '</Link>' in line:
+                copy_active = False
+
+                log('duplicating <Link> section in %s' % p)
+                lines.append('    <Lib>')
+                lines.extend(copy_lines)
+                lines.append('    </Lib>')
+
+            if copy_active:
+                copy_lines.append(line)
+
+    with p.open('w') as fh:
+        fh.write('\n'.join(lines))
+
+
 def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
     # TODO can we pass props into msbuild.exe?
 
@@ -511,6 +545,10 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
     pcbuild_path = cpython_source_path / 'PCbuild'
 
     hack_props(td, pcbuild_path)
+
+    # We need to copy linking settings for dynamic libraries to static libraries.
+    copy_link_to_lib(pcbuild_path / 'openssl.props')
+    copy_link_to_lib(pcbuild_path / '_ssl.vcxproj')
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
