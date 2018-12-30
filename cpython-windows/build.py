@@ -46,8 +46,9 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     '_elementtree': {},
     # TODO dependencies
     #'_hashlib': {},
-    # TODO dependencies
-    #'_lzma': {},
+    '_lzma': {
+        'static_depends': ['liblzma'],
+    },
     # TODO several unresolved symbols.
     # '_msi': {},
     # TODO _overlapped.lib(overlapped.obj) : error LNK2005: OverlappedType already defined in _winapi.obj
@@ -195,6 +196,11 @@ def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
 
             if m:
                 modules = [m for m in m.group(2).split(';') if m != extension]
+
+                # Ignore line if new value is empty.
+                if not modules:
+                    continue
+
                 line = line.replace(m.group(2), ';'.join(modules))
 
             lines.append(line)
@@ -221,6 +227,10 @@ def make_project_static_library(source_path: pathlib.Path, project: str):
                 log('changing %s to a static library' % project)
                 found_config_type = True
                 line = line.replace('DynamicLibrary', 'StaticLibrary')
+
+            elif '<ConfigurationType>StaticLibrary</ConfigurationType>' in line:
+                log('%s is already a static library' % project)
+                return
 
             # Change the output file name from .pyd to .lib because it is no
             # longer an extension.
