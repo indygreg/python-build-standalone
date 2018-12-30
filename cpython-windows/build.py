@@ -56,7 +56,6 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         'static_depends': ['sqlite3'],
     },
     # See the one-off calls to copy_link_to_lib() to make this work.
-    # TODO build and a static OpenSSL and link to it.
     '_ssl': {},
     '_queue': {},
     'pyexpat': {},
@@ -482,6 +481,22 @@ def copy_link_to_lib(p: pathlib.Path):
         fh.write('\n'.join(lines))
 
 
+OPENSSL_PROPS_REMOVE_RULES = b'''
+  <ItemGroup>
+    <_SSLDLL Include="$(opensslOutDir)\libcrypto$(_DLLSuffix).dll" />
+    <_SSLDLL Include="$(opensslOutDir)\libcrypto$(_DLLSuffix).pdb" />
+    <_SSLDLL Include="$(opensslOutDir)\libssl$(_DLLSuffix).dll" />
+    <_SSLDLL Include="$(opensslOutDir)\libssl$(_DLLSuffix).pdb" />
+  </ItemGroup>
+  <Target Name="_CopySSLDLL" Inputs="@(_SSLDLL)" Outputs="@(_SSLDLL->'$(OutDir)%(Filename)%(Extension)')" AfterTargets="Build">
+    <Copy SourceFiles="@(_SSLDLL)" DestinationFolder="$(OutDir)" />
+  </Target>
+  <Target Name="_CleanSSLDLL" BeforeTargets="Clean">
+    <Delete Files="@(_SSLDLL->'$(OutDir)%(Filename)%(Extension)')" />
+  </Target>
+'''
+
+
 def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
     # TODO can we pass props into msbuild.exe?
 
@@ -489,7 +504,6 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
     # build system expects. Modify the config file appropriately.
 
     bzip2_version = DOWNLOADS['bzip2']['version']
-    openssl_bin_version = DOWNLOADS['openssl-windows-bin']['version']
     sqlite_version = DOWNLOADS['sqlite']['version']
     xz_version = DOWNLOADS['xz']['version']
     zlib_version = DOWNLOADS['zlib']['version']
@@ -497,10 +511,13 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
 
     sqlite_path = td / ('sqlite-autoconf-%s' % sqlite_version)
     bzip2_path = td / ('bzip2-%s' % bzip2_version)
-    openssl_bin_path = td / ('cpython-bin-deps-openssl-bin-%s' % openssl_bin_version)
     tcltk_path = td / ('cpython-bin-deps-%s' % tcltk_commit)
     xz_path = td / ('xz-%s' % xz_version)
     zlib_path = td / ('zlib-%s' % zlib_version)
+
+    openssl_root = td / 'openssl' / 'amd64'
+    openssl_libs_path = openssl_root / 'lib'
+    openssl_include_path = openssl_root / 'include'
 
     python_props_path = pcbuild_path / 'python.props'
     lines = []
@@ -515,11 +532,11 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
             elif b'<lzmaDir>' in line:
                 line = b'<lzmaDir>%s\\</lzmaDir>' % xz_path
 
-            # elif b'<opensslDir>' in line:
-            #    line = b'<opensslDir>%s</opensslDir>' % openssl_bin_path,
+            elif b'<opensslIncludeDir>' in line:
+                line = b'<opensslIncludeDir>%s</opensslIncludeDir>' % openssl_include_path
 
             elif b'<opensslOutDir>' in line:
-                line = b'<opensslOutDir>%s\\$(ArchName)\\</opensslOutDir>' % openssl_bin_path
+                line = b'<opensslOutDir>%s\\</opensslOutDir>' % openssl_libs_path
 
             elif b'<sqlite3Dir>' in line:
                 line = b'<sqlite3Dir>%s\\</sqlite3Dir>' % sqlite_path
@@ -539,6 +556,23 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
         br'<tcltkDir>$(ExternalsDir)tcltk-$(TclMajorVersion).$(TclMinorVersion).$(TclPatchLevel).$(TclRevision)\$(ArchName)\</tcltkDir>',
         br'<tcltkDir>%s\$(ArchName)\</tcltkDir>' % tcltk_path)
 
+    # We want to statically link against OpenSSL. This requires using our own
+    # OpenSSL build. This requires some hacking of various files.
+    openssl_props = pcbuild_path / 'openssl.props'
+
+    # We don't need the install rules to copy the libcrypto and libssl DLLs.
+    static_replace_in_file(openssl_props,
+                           OPENSSL_PROPS_REMOVE_RULES.strip().replace(b'\n', b'\r\n'),
+                           b'')
+
+    # We need to copy linking settings for dynamic libraries to static libraries.
+    copy_link_to_lib(pcbuild_path / 'openssl.props')
+
+    # We should look against the static library variants.
+    static_replace_in_file(openssl_props,
+                           b'libcrypto.lib;libssl.lib;',
+                           b'libcrypto_static.lib;libssl_static.lib;')
+
 
 def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
     """Hacks Visual Studio project files to work with our build."""
@@ -546,9 +580,6 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
     pcbuild_path = cpython_source_path / 'PCbuild'
 
     hack_props(td, pcbuild_path)
-
-    # We need to copy linking settings for dynamic libraries to static libraries.
-    copy_link_to_lib(pcbuild_path / 'openssl.props')
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
@@ -592,6 +623,14 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
         liblzma_path,
         br'<ClInclude Include="$(lzmaDir)windows\config.h" />',
         br'<ClInclude Include="$(lzmaDir)windows\vs2017\config.h" />')
+
+    # Our custom OpenSSL build has applink.c in a different location
+    # from the binary OpenSSL distribution. Update it.
+    ssl_proj = pcbuild_path / '_ssl.vcxproj'
+    static_replace_in_file(
+        ssl_proj,
+        br'<ClCompile Include="$(opensslIncludeDir)\applink.c">',
+        br'<ClCompile Include="$(opensslIncludeDir)\openssl\applink.c">')
 
     for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
         init_fn = entry.get('init', 'PyInit_%s' % extension)
@@ -876,16 +915,15 @@ def build_cpython(pgo=False):
 
     activeperl_installer = download_entry('activeperl', BUILD)
     bzip2_archive = download_entry('bzip2', BUILD)
-    #openssl_archive = download_entry('openssl', BUILD)
-    openssl_bin_archive = download_entry('openssl-windows-bin', BUILD)
     sqlite_archive = download_entry('sqlite', BUILD)
     tk_bin_archive = download_entry('tk-windows-bin', BUILD, local_name='tk-windows-bin.tar.gz')
     xz_archive = download_entry('xz', BUILD)
     zlib_archive = download_entry('zlib', BUILD)
 
     python_archive = download_entry('cpython-3.7', BUILD)
-
     python_version = DOWNLOADS['cpython-3.7']['version']
+
+    openssl_bin_archive = BUILD / 'openssl-windows.tar'
 
     with tempfile.TemporaryDirectory() as td:
         td = pathlib.Path(td)
