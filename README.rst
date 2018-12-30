@@ -41,6 +41,13 @@ To build a Python distribution for macOS::
 
     $ ./build-macos.py
 
+To build a Python distribution for Windows x64::
+
+   # Install ActivePerl
+   # From a Visual Studio 2017 x64 native tools command prompt:
+   $ set PERL=c:\path\to\activeperl\bin\perl.exe
+   $ py.exe build-windows.py
+
 Requirements
 ============
 

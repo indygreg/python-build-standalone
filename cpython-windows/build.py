@@ -7,6 +7,7 @@ import concurrent.futures
 import os
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -768,6 +769,104 @@ def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
     exec_and_log(args, str(pcbuild_path), os.environ)
 
 
+def build_openssl_for_arch(perl_path, arch: str, openssl_archive, nasm_archive,
+                           build_root: pathlib.Path):
+    openssl_version = DOWNLOADS['openssl']['version']
+    nasm_version = DOWNLOADS['nasm-windows-bin']['version']
+
+
+    log('extracting %s to %s' % (openssl_archive, build_root))
+    extract_tar_to_directory(openssl_archive, build_root)
+    log('extracting %s to %s' % (nasm_archive, build_root))
+    extract_tar_to_directory(nasm_archive, build_root)
+
+    nasm_path = build_root / ('cpython-bin-deps-nasm-%s' % nasm_version)
+
+    env = dict(os.environ)
+    # Add Perl and nasm paths to front of PATH.
+    env['PATH'] = '%s;%s;%s' % (
+        perl_path.parent,
+        nasm_path,
+        env['PATH'],
+    )
+
+    source_root = build_root / ('openssl-%s' % openssl_version)
+
+    if arch == 'x86':
+        configure = 'VC-WIN32'
+        prefix = '32'
+    elif arch == 'amd64':
+        configure = 'VC-WIN64A'
+        prefix = '64'
+    else:
+        print('invalid architecture: %s' % arch)
+        sys.exit(1)
+
+    # The official CPython OpenSSL builds hack ms/uplink.c to change the
+    # ``GetModuleHandle(NULL)`` invocation to load things from _ssl.pyd
+    # instead. But since we statically link the _ssl extension, this hackery
+    # is not required.
+
+    # Set DESTDIR to affect install location.
+    dest_dir = build_root / 'install'
+    env['DESTDIR'] = str(dest_dir)
+    install_root = dest_dir / prefix
+
+    exec_and_log([str(perl_path), 'Configure', configure, 'no-idea', 'no-mdc2',
+                  '--prefix=/%s' % prefix], source_root, env)
+    exec_and_log(['nmake'], source_root, env)
+
+    # We don't care about accessory files, docs, etc. So just run `install_sw`
+    # target to get the main files.
+    exec_and_log(['nmake', 'install_sw'], source_root, env)
+
+    # Copy the _static libraries as well.
+    for l in ('crypto', 'ssl'):
+        basename = 'lib%s_static.lib' % l
+        source = source_root / basename
+        dest = install_root / 'lib' / basename
+        log('copying %s to %s' % (source, dest))
+        shutil.copyfile(source, dest)
+
+
+def build_openssl(perl_path: pathlib.Path):
+    """Build OpenSSL from sources using the Perl executable specified."""
+
+    # First ensure the dependencies are in place.
+    openssl_archive = download_entry('openssl', BUILD)
+    nasm_archive = download_entry('nasm-windows-bin', BUILD)
+
+    with tempfile.TemporaryDirectory() as td:
+        td = pathlib.Path(td)
+
+        root_32 = td / 'x86'
+        root_64 = td / 'x64'
+        root_32.mkdir()
+        root_64.mkdir()
+
+        # Then build the 32 and 64 bit OpenSSL installs in parallel
+        # (because nmake doesn't do parallel builds).
+        # TODO we need to adjust the environment to pull in a x86 toolchain
+        # in order for this to work.
+        fs = []
+        with concurrent.futures.ThreadPoolExecutor(2) as e:
+            #fs.append(e.submit(build_openssl_for_arch, perl_path, 'x86',
+            #                   openssl_archive, nasm_archive, root_32))
+            fs.append(e.submit(build_openssl_for_arch, perl_path, 'amd64',
+                               openssl_archive, nasm_archive, root_64))
+
+        for f in fs:
+            f.result()
+
+        install = td / 'out'
+        #shutil.copytree(root_32 / 'install' / '32', install / 'openssl' / 'win32')
+        shutil.copytree(root_64 / 'install' / '64', install / 'openssl' / 'amd64')
+
+        dest_archive = BUILD / 'openssl-windows.tar'
+        with dest_archive.open('wb') as fh:
+            create_tar_from_directory(fh, install)
+
+
 def build_cpython(pgo=False):
     msbuild = find_msbuild()
     log('found MSBuild at %s' % msbuild)
@@ -775,6 +874,7 @@ def build_cpython(pgo=False):
     # The python.props file keys off MSBUILD, so it needs to be set.
     os.environ['MSBUILD'] = str(msbuild)
 
+    activeperl_installer = download_entry('activeperl', BUILD)
     bzip2_archive = download_entry('bzip2', BUILD)
     #openssl_archive = download_entry('openssl', BUILD)
     openssl_bin_archive = download_entry('openssl-windows-bin', BUILD)
@@ -864,11 +964,17 @@ def main():
     BUILD.mkdir(exist_ok=True)
 
     log_path = BUILD / 'build.log'
-    LOG_PREFIX[0] = 'cpython'
 
     with log_path.open('wb') as log_fh:
         LOG_FH[0] = log_fh
 
+        # TODO need better dependency checking.
+        openssl_out = BUILD / 'openssl-windows.tar'
+        if not openssl_out.exists():
+            LOG_PREFIX[0] = 'openssl'
+            build_openssl(pathlib.Path(os.environ['PERL']))
+
+        LOG_PREFIX[0] = 'cpython'
         build_cpython()
 
 if __name__ == '__main__':

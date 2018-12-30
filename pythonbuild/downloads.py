@@ -3,6 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 DOWNLOADS = {
+    'activeperl': {
+        'url': 'https://downloads.activestate.com/ActivePerl/releases/5.26.3.2603/ActivePerl-5.26.3.2603-MSWin32-x64-a95bce075.exe',
+        'size': 22429768,
+        'sha256': 'bbd88265ab6d0ceb5ec2a6cd9870b0e9cd35b0d9be7671df840b0f239726b28d',
+        'version': '5.26.3.2603',
+    },
     # 6.0.19 is the last version licensed under the Sleepycat license.
     'bdb': {
         'url': 'https://ftp.tw.freebsd.org/distfiles/bdb/db-6.0.19.tar.gz',
@@ -194,6 +200,12 @@ DOWNLOADS = {
         'size': 8274446,
         'sha256': 'c4684e220473fb2bdb0b95e43183c4701b6b103acac5ec23385e41a9a77fc9b1',
         'version': '1.1.0j',
+    },
+    'nasm-windows-bin': {
+        'url': 'https://github.com/python/cpython-bin-deps/archive/nasm-2.11.06.tar.gz',
+        'size': 384826,
+        'sha256': '8af0ae5ceed63fa8a2ded611d44cc341027a91df22aaaa071efedc81437412a5',
+        'version': '2.11.06',
     },
     'readline': {
         'url': 'ftp://ftp.gnu.org/gnu/readline/readline-6.3.tar.gz',
