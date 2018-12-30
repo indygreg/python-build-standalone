@@ -265,6 +265,9 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
         make_project_static_library(source_path, project)
 
     proj_path = source_path / 'PCbuild' / ('%s.vcxproj' % extension)
+
+    copy_link_to_lib(proj_path)
+
     lines = []
 
     RE_PREPROCESSOR_DEFINITIONS = re.compile('<PreprocessorDefinitions[^>]*>([^<]+)</PreprocessorDefinitions>')
@@ -547,7 +550,6 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
 
     # We need to copy linking settings for dynamic libraries to static libraries.
     copy_link_to_lib(pcbuild_path / 'openssl.props')
-    copy_link_to_lib(pcbuild_path / '_ssl.vcxproj')
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
