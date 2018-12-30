@@ -3,6 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import concurrent.futures
 import os
 import pathlib
 import re
@@ -548,13 +549,11 @@ def build_cpython(pgo=False):
     with tempfile.TemporaryDirectory() as td:
         td = pathlib.Path(td)
 
-        log('extracting CPython sources to %s' % td)
-        extract_tar_to_directory(python_archive, td)
-
-        for a in (bzip2_archive, openssl_bin_archive, sqlite_archive,
-                  tk_bin_archive, xz_archive, zlib_archive):
-            log('extracting %s to %s' % (a, td))
-            extract_tar_to_directory(a, td)
+        with concurrent.futures.ThreadPoolExecutor(7) as e:
+            for a in (python_archive, bzip2_archive, openssl_bin_archive,
+                      sqlite_archive, tk_bin_archive, xz_archive, zlib_archive):
+                log('extracting %s to %s' % (a, td))
+                e.submit(extract_tar_to_directory, a, td)
 
         cpython_source_path = td / ('Python-%s' % python_version)
         pcbuild_path = cpython_source_path / 'PCBuild'
