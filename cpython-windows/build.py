@@ -203,35 +203,62 @@ def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
         fh.write('\n'.join(lines))
 
 
-def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: dict):
-    """Converts an extension to a static library."""
+def make_project_static_library(source_path: pathlib.Path, project: str):
+    """Turn a project file into a static library."""
 
-    proj_path = source_path / 'PCbuild' / ('%s.vcxproj' % extension)
+    proj_path = source_path / 'PCbuild' / ('%s.vcxproj' % project)
     lines = []
-
-    RE_PREPROCESSOR_DEFINITIONS = re.compile('<PreprocessorDefinitions[^>]*>([^<]+)</PreprocessorDefinitions>')
 
     found_config_type = False
     found_target_ext = False
-    found_preprocessor = False
-    itemgroup_line = None
 
     with proj_path.open('r') as fh:
-        for i, line in enumerate(fh):
+        for line in fh:
             line = line.rstrip()
 
             # Change the project configuration to a static library.
             if '<ConfigurationType>DynamicLibrary</ConfigurationType>' in line:
-                log('changing %s to a static library' % extension)
+                log('changing %s to a static library' % project)
                 found_config_type = True
                 line = line.replace('DynamicLibrary', 'StaticLibrary')
 
             # Change the output file name from .pyd to .lib because it is no
             # longer an extension.
             if '<TargetExt>.pyd</TargetExt>' in line:
-                log('changing output of %s to a .lib' % extension)
+                log('changing output of %s to a .lib' % project)
                 found_target_ext = True
                 line = line.replace('.pyd', '.lib')
+
+            lines.append(line)
+
+    if not found_config_type:
+        log('failed to adjust config type for %s' % project)
+        sys.exit(1)
+
+    if not found_target_ext:
+        log('failed to adjust target extension for %s' % project)
+        sys.exit(1)
+
+    with proj_path.open('w') as fh:
+        fh.write('\n'.join(lines))
+
+
+def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: dict):
+    """Converts an extension to a static library."""
+
+    make_project_static_library(source_path, extension)
+
+    proj_path = source_path / 'PCbuild' / ('%s.vcxproj' % extension)
+    lines = []
+
+    RE_PREPROCESSOR_DEFINITIONS = re.compile('<PreprocessorDefinitions[^>]*>([^<]+)</PreprocessorDefinitions>')
+
+    found_preprocessor = False
+    itemgroup_line = None
+
+    with proj_path.open('r') as fh:
+        for i, line in enumerate(fh):
+            line = line.rstrip()
 
             # Add Py_BUILD_CORE_BUILTIN to preprocessor definitions so linkage
             # data is correct.
@@ -247,14 +274,6 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
                 itemgroup_line = i
 
             lines.append(line)
-
-    if not found_config_type:
-        log('failed to adjust config type for %s' % extension)
-        sys.exit(1)
-
-    if not found_target_ext:
-        log('failed to adjust target extension for %s' % extension)
-        sys.exit(1)
 
     if not found_preprocessor:
         if entry.get('allow_missing_preprocessor'):
