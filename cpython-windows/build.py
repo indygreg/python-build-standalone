@@ -622,6 +622,25 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
 
     copy_link_to_lib(pythoncore_proj)
 
+    # We don't need to produce pythonw.exe, python_uwp.exe, venvlauncher.exe,
+    # and their *w variants. Cut them from the build to save time.
+
+    pcbuild_proj = pcbuild_path / 'pcbuild.proj'
+
+    static_replace_in_file(
+        pcbuild_proj,
+        b'<Projects2 Include="python.vcxproj;pythonw.vcxproj" />',
+        b'<Projects2 Include="python.vcxproj" />'
+    )
+    static_replace_in_file(
+        pcbuild_proj,
+        b'<Projects2 Include="python_uwp.vcxproj;pythonw_uwp.vcxproj" Condition="$(IncludeUwp)" />',
+        b'')
+    static_replace_in_file(
+        pcbuild_proj,
+        b'<Projects2 Include="venvlauncher.vcxproj;venvwlauncher.vcxproj" />',
+        b'')
+
 
 CTYPES_INIT_REPLACE = b'''
 if _os.name == "nt":
@@ -708,6 +727,12 @@ def hack_source_files(source_path: pathlib.Path):
     static_replace_in_file(
         layout_main,
         b'    yield from in_build(PYTHON_DLL_NAME)\n',
+        b'')
+
+    # We don't produce a pythonw.exe.
+    static_replace_in_file(
+        layout_main,
+        b'        yield from in_build("pythonw.exe", new_name="pythonw")\n',
         b'')
 
 
