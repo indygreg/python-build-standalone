@@ -371,6 +371,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
 
             if m:
                 log('changing pythoncore to link against %s.lib' % extension)
+                # TODO do we need this with static linking?
                 line = line.replace(m.group(1), r'$(OutDir)%s.lib;%s' % (
                     extension, m.group(1)))
 
@@ -597,6 +598,40 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
         add_to_config_c(cpython_source_path, extension, init_fn)
         convert_to_static_library(cpython_source_path, extension, entry)
 
+    # pythoncore.vcxproj produces libpython. Typically pythonXY.dll. We change
+    # it to produce a static library.
+    pythoncore_proj = pcbuild_path / 'pythoncore.vcxproj'
+
+    # Need to replace Py_ENABLE_SHARED with Py_NO_ENABLE_SHARED so symbol
+    # visibility is proper.
+
+    # Replacing it in the global properties file has the most bang for our buck.
+    pyproject_props = pcbuild_path / 'pyproject.props'
+    static_replace_in_file(
+        pyproject_props,
+        b'<PreprocessorDefinitions>WIN32;',
+        b'<PreprocessorDefinitions>Py_NO_ENABLE_SHARED;WIN32;')
+
+    static_replace_in_file(pythoncore_proj, b'Py_ENABLE_SHARED', b'Py_NO_ENABLE_SHARED')
+
+    # Make libpython a static library.
+    static_replace_in_file(
+        pythoncore_proj,
+        b'<ConfigurationType>DynamicLibrary</ConfigurationType>',
+        b'<ConfigurationType>StaticLibrary</ConfigurationType>')
+
+    copy_link_to_lib(pythoncore_proj)
+
+
+CTYPES_INIT_REPLACE = b'''
+if _os.name == "nt":
+    pythonapi = PyDLL("python dll", None, _sys.dllhandle)
+elif _sys.platform == "cygwin":
+    pythonapi = PyDLL("libpython%d.%d.dll" % _sys.version_info[:2])
+else:
+    pythonapi = PyDLL(None)
+'''
+
 
 def hack_source_files(source_path: pathlib.Path):
     """Apply source modifications to make things work."""
@@ -620,6 +655,60 @@ def hack_source_files(source_path: pathlib.Path):
         callbacks_c,
         b'#ifndef Py_NO_ENABLE_SHARED\nBOOL WINAPI DllMain(',
         b'#if !defined(Py_NO_ENABLE_SHARED) && !defined(Py_BUILD_CORE_BUILTIN)\nBOOL WINAPI DllMain(')
+
+    # Lib/ctypes/__init__.py needs to populate the Python API version. On
+    # Windows, it assumes a ``pythonXY`` is available. On Cygwin, a
+    # ``libpythonXY`` DLL. The former assumes that ``sys.dllhandle`` is
+    # available. And ``sys.dllhandle`` is only populated if ``MS_COREDLL``
+    # (a deprecated symbol) is defined. And ``MS_COREDLL`` is not defined
+    # if ``Py_NO_ENABLE_SHARED`` is defined. The gist of it is that ctypes
+    # assumes that Python on Windows will use a Python DLL.
+    #
+    # The ``pythonapi`` handle obtained in ``ctypes/__init__.py`` needs to
+    # expose a handle on the Python API. If we have a static library, that
+    # handle should be the current binary. So all the fancy logic to find
+    # the DLL can be simplified.
+    #
+    # But, ``PyDLL(None)`` doesn't work out of the box because this is
+    # translated into a call to ``LoadLibrary(NULL)``. Unlike ``dlopen()``,
+    # ``LoadLibrary()`` won't accept a NULL value. So, we need a way to
+    # get an ``HMODULE`` for the current executable. Arguably the best way
+    # to do this is with ``GetModuleHandleEx()`` using the following C code:
+    #
+    #   HMODULE hModule = NULL;
+    #   GetModuleHandleEx(
+    #     GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+    #     (LPCSTR)SYMBOL_IN_CURRENT_MODULE,
+    #     &hModule);
+    #
+    # The ``ctypes`` module has handles on function pointers in the current
+    # binary. One would think we'd be able to use ``ctypes.cast()`` +
+    # ``ctypes.addressof()`` to get a pointer to a symbol in the current
+    # executable. But the addresses appear to be to heap allocated PyObject
+    # instances, which won't work.
+    #
+    # An ideal solution would be to expose the ``HMODULE`` of the current
+    # module. We /should/ be able to change the behavior of ``sys.dllhandle``
+    # to facilitate this. But this is a bit more work. Our hack is to instead
+    # use ``sys.executable`` with ``LoadLibrary()``. This should hopefully be
+    # "good enough."
+    #
+    # TODO improve the logic upstream
+    ctypes_init = source_path / 'Lib' / 'ctypes' / '__init__.py'
+    static_replace_in_file(
+        ctypes_init,
+        CTYPES_INIT_REPLACE.strip(),
+        b'pythonapi = PyDLL(_sys.executable)')
+
+    # Producing statically linked binaries invalidates assumptions in the
+    # layout tool. Update the tool accordingly.
+    layout_main = source_path / 'PC' / 'layout' / 'main.py'
+
+    # We no longer have a pythonXX.dll file.
+    static_replace_in_file(
+        layout_main,
+        b'    yield from in_build(PYTHON_DLL_NAME)\n',
+        b'')
 
 
 def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
