@@ -137,9 +137,10 @@ def static_replace_in_file(p: pathlib.Path, search, replace):
     # Build should be as deterministic as possible. Assert that wanted changes
     # actually occur.
     if search not in data:
-        print('search string (%s) not in %s' % (search, p))
+        log('search string (%s) not in %s' % (search, p))
         sys.exit(1)
 
+    log('replacing `%s` with `%s` in %s' % (search, replace, p))
     data = data.replace(search, replace)
 
     with p.open('wb') as fh:
