@@ -44,8 +44,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     #'_ctypes': {},
     '_decimal': {},
     '_elementtree': {},
-    # TODO dependencies
-    #'_hashlib': {},
+    '_hashlib': {},
     '_lzma': {
         'static_depends': ['liblzma'],
     },
