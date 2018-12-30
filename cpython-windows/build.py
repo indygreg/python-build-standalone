@@ -49,8 +49,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         'static_depends': ['liblzma'],
     },
     '_msi': {},
-    # TODO _overlapped.lib(overlapped.obj) : error LNK2005: OverlappedType already defined in _winapi.obj
-    #'_overlapped': {},
+    '_overlapped': {},
     '_multiprocessing': {},
     '_socket': {},
     '_sqlite3': {
@@ -600,6 +599,17 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
         convert_to_static_library(cpython_source_path, extension, entry)
 
 
+def hack_source_files(source_path: pathlib.Path):
+    """Apply source modifications to make things work."""
+
+    # Modules/_winapi.c and Modules/overlapped.c both define an
+    # ``OverlappedType`` symbol. We rename one to make the symbol conflict
+    # go away.
+    # TODO send this patch upstream.
+    overlapped_c = source_path / 'Modules' / 'overlapped.c'
+    static_replace_in_file(overlapped_c, b'OverlappedType', b'OOverlappedType')
+
+
 def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
                 configuration: str):
     python_version = DOWNLOADS['cpython-3.7']['version']
@@ -654,6 +664,7 @@ def build_cpython(pgo=False):
         pcbuild_path = cpython_source_path / 'PCBuild'
 
         hack_project_files(td, cpython_source_path)
+        hack_source_files(cpython_source_path)
 
         if pgo:
             run_msbuild(msbuild, pcbuild_path, configuration='PGInstrument')
