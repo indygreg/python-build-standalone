@@ -5,6 +5,7 @@
 
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -24,6 +25,46 @@ SUPPORT = ROOT / 'cpython-windows'
 
 LOG_PREFIX = [None]
 LOG_FH = [None]
+
+# Extensions that need to be converted from standalone to built-in.
+# Key is name of VS project representing the standalone extension.
+# Value is dict describing the extension.
+CONVERT_TO_BUILTIN_EXTENSIONS = {
+    '_asyncio': {
+        # _asynciomodule.c is included in pythoncore for some reason.
+        'allow_missing_preprocessor': True,
+    },
+    # TODO dependencies
+    # '_bz2': {},
+    '_contextvars': {
+        # _contextvars.c is included in pythoncore for some reason.
+        'allow_missing_preprocessor': True,
+    },
+    # TODO Defines duplicate DllMain.
+    #'_ctypes': {},
+    '_decimal': {},
+    '_elementtree': {},
+    # TODO dependencies
+    #'_hashlib': {},
+    # TODO dependencies
+    #'_lzma': {},
+    # TODO several unresolved symbols.
+    # '_msi': {},
+    # TODO _overlapped.lib(overlapped.obj) : error LNK2005: OverlappedType already defined in _winapi.obj
+    #'_overlapped': {},
+    '_multiprocessing': {},
+    '_socket': {},
+    # TODO dependencies
+    #'_sqlite3': {},
+    # TODO dependencies
+    #'_ssl': {},
+    '_queue': {},
+    'pyexpat': {},
+    'select': {},
+    'unicodedata': {},
+    # TODO winsound.lib(winsound.obj) : error LNK2001: unresolved external symbol __imp_PlaySoundW
+    #'winsound': {},
+}
 
 
 def log(msg):
@@ -104,6 +145,250 @@ def static_replace_in_file(p: pathlib.Path, search, replace):
     with p.open('wb') as fh:
         fh.write(data)
 
+
+def add_to_config_c(source_path: pathlib.Path, extension: str, init_fn: str):
+    """Add an extension to PC/config.c"""
+
+    config_c_path = source_path / 'PC' / 'config.c'
+
+    lines = []
+
+    with config_c_path.open('r') as fh:
+        for line in fh:
+            line = line.rstrip()
+
+            # Insert the init function declaration before the _inittab struct.
+            if line.startswith('struct _inittab'):
+                log('adding %s declaration to config.c' % init_fn)
+                lines.append('extern PyObject* %s(void);' % init_fn)
+
+            # Insert the extension in the _inittab struct.
+            if line.lstrip().startswith('/* Sentinel */'):
+                log('marking %s as a built-in extension module' % extension)
+                lines.append('{"%s", %s},' % (extension, init_fn))
+
+            lines.append(line)
+
+    with config_c_path.open('w') as fh:
+        fh.write('\n'.join(lines))
+
+
+def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
+    """Remove an extension from the set of extension modules.
+
+    Call this when an extension will be compiled into libpython instead of
+    compiled as a standalone extension.
+    """
+
+    RE_EXTENSION_MODULES = re.compile('<ExtensionModules Include="([^"]+)" />')
+
+    pcbuild_proj_path = source_path / 'PCbuild' / 'pcbuild.proj'
+
+    lines = []
+
+    with pcbuild_proj_path.open('r') as fh:
+        for line in fh:
+            line = line.rstrip()
+
+            m = RE_EXTENSION_MODULES.search(line)
+
+            if m:
+                modules = [m for m in m.group(1).split(';') if m != extension]
+                line = line.replace(m.group(1), ';'.join(modules))
+
+            lines.append(line)
+
+    with pcbuild_proj_path.open('w') as fh:
+        fh.write('\n'.join(lines))
+
+
+def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: dict):
+    """Converts an extension to a static library."""
+
+    proj_path = source_path / 'PCbuild' / ('%s.vcxproj' % extension)
+    lines = []
+
+    RE_PREPROCESSOR_DEFINITIONS = re.compile('<PreprocessorDefinitions[^>]*>([^<]+)</PreprocessorDefinitions>')
+
+    found_config_type = False
+    found_target_ext = False
+    found_preprocessor = False
+    itemgroup_line = None
+
+    with proj_path.open('r') as fh:
+        for i, line in enumerate(fh):
+            line = line.rstrip()
+
+            # Change the project configuration to a static library.
+            if '<ConfigurationType>DynamicLibrary</ConfigurationType>' in line:
+                log('changing %s to a static library' % extension)
+                found_config_type = True
+                line = line.replace('DynamicLibrary', 'StaticLibrary')
+
+            # Change the output file name from .pyd to .lib because it is no
+            # longer an extension.
+            if '<TargetExt>.pyd</TargetExt>' in line:
+                log('changing output of %s to a .lib' % extension)
+                found_target_ext = True
+                line = line.replace('.pyd', '.lib')
+
+            # Add Py_BUILD_CORE_BUILTIN to preprocessor definitions so linkage
+            # data is correct.
+            m = RE_PREPROCESSOR_DEFINITIONS.search(line)
+
+            if m:
+                log('adding Py_BUILD_CORE_BUILTIN to %s' % extension)
+                found_preprocessor = True
+                line = line.replace(m.group(1), 'Py_BUILD_CORE_BUILTIN;%s' % m.group(1))
+
+            # Find the first <ItemGroup> entry.
+            if '<ItemGroup>' in line and not itemgroup_line:
+                itemgroup_line = i
+
+            lines.append(line)
+
+    if not found_config_type:
+        log('failed to adjust config type for %s' % extension)
+        sys.exit(1)
+
+    if not found_target_ext:
+        log('failed to adjust target extension for %s' % extension)
+        sys.exit(1)
+
+    if not found_preprocessor:
+        if entry.get('allow_missing_preprocessor'):
+            log('not adjusting preprocessor definitions for %s' % extension)
+        else:
+            log('introducing <PreprocessorDefinitions> to %s' % extension)
+            lines[itemgroup_line:itemgroup_line] = [
+                '  <ItemDefinitionGroup>',
+                '    <ClCompile>',
+                '      <PreprocessorDefinitions>Py_BUILD_CORE_BUILTIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>',
+                '    </ClCompile>',
+                '  </ItemDefinitionGroup>',
+            ]
+
+    # Ensure the extension project doesn't depend on pythoncore: as a built-in
+    # extension, pythoncore will depend on it.
+
+    # This logic is a bit hacky. Ideally we'd parse the file as XML and operate
+    # in the XML domain. But that is more work.
+    start_line, end_line = None, None
+    for i, line in enumerate(lines):
+        if '<Project>{cf7ac3d1-e2df-41d2-bea6-1e2556cdea26}</Project>' in line:
+            for j in range(i, 0, -1):
+                if '<ItemGroup>' in lines[j]:
+                    start_line = j
+                    break
+
+            for j in range(i, len(lines) - 1):
+                if '</ItemGroup>' in lines[j]:
+                    end_line = j
+                    break
+
+            break
+
+    if start_line is not None and end_line is not None:
+        log('stripping pythoncore dependency from %s' % extension)
+        for line in lines[start_line:end_line + 1]:
+            log(line)
+
+        lines = lines[:start_line] + lines[end_line + 1:]
+
+    with proj_path.open('w') as fh:
+        fh.write('\n'.join(lines))
+
+    # Tell pythoncore to link against the static .lib.
+    RE_ADDITIONAL_DEPENDENCIES = re.compile('<AdditionalDependencies>([^<]+)</AdditionalDependencies>')
+
+    pythoncore_path = source_path / 'PCbuild' / 'pythoncore.vcxproj'
+    lines = []
+
+    with pythoncore_path.open('r') as fh:
+        for line in fh:
+            line = line.rstrip()
+
+            m = RE_ADDITIONAL_DEPENDENCIES.search(line)
+
+            if m:
+                log('changing pythoncore to link against %s.lib' % extension)
+                line = line.replace(m.group(1), r'$(OutDir)%s.lib;%s' % (
+                    extension, m.group(1)))
+
+            lines.append(line)
+
+    with pythoncore_path.open('w') as fh:
+        fh.write('\n'.join(lines))
+
+    # Change pythoncore to depend on the extension project.
+
+    # pcbuild.proj is the file that matters for msbuild. And order within
+    # matters. We remove the extension from the "ExtensionModules" set of
+    # projects. Then we re-add the project to before "pythoncore."
+    remove_from_extension_modules(source_path, extension)
+
+    pcbuild_proj_path = source_path / 'PCbuild' / 'pcbuild.proj'
+
+    with pcbuild_proj_path.open('r') as fh:
+        data = fh.read()
+
+    data = data.replace('<Projects Include="pythoncore.vcxproj">',
+                        '    <Projects Include="%s.vcxproj" />\n    <Projects Include="pythoncore.vcxproj">' % extension)
+
+    with pcbuild_proj_path.open('w') as fh:
+        fh.write(data)
+
+    # We don't technically need to modify the solution since msbuild doesn't
+    # use it. But it enables debugging inside Visual Studio, which is
+    # convenient.
+    RE_PROJECT = re.compile('Project\("\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942\}"\) = "([^"]+)", "[^"]+", "{([^\}]+)\}"')
+
+    pcbuild_sln_path = source_path / 'PCbuild' / 'pcbuild.sln'
+    lines = []
+
+    extension_id = None
+    pythoncore_line = None
+
+    with pcbuild_sln_path.open('r') as fh:
+        # First pass buffers the file, finds the ID of the extension project,
+        # and finds where the pythoncore project is defined.
+        for i, line in enumerate(fh):
+            line = line.rstrip()
+
+            m = RE_PROJECT.search(line)
+
+            if m and m.group(1) == extension:
+                extension_id = m.group(2)
+
+            if m and m.group(1) == 'pythoncore':
+                pythoncore_line = i
+
+            lines.append(line)
+
+    # Not all projects are in the solution(!!!). Since we don't use the
+    # solution for building, that's fine to ignore.
+    if not extension_id:
+        log('failed to find project %s in solution' % extension)
+
+    if not pythoncore_line:
+        log('failed to find pythoncore project in solution')
+
+    if extension_id and pythoncore_line:
+        log('making pythoncore depend on %s' % extension)
+
+        needs_section = not lines[pythoncore_line + 1].lstrip().startswith('ProjectSection')
+        offset = 1 if needs_section else 2
+
+        lines.insert(pythoncore_line + offset, '\t\t{%s} = {%s}' % (extension_id, extension_id))
+
+        if needs_section:
+            lines.insert(pythoncore_line + 1, '\tProjectSection(ProjectDependencies) = postProject')
+            lines.insert(pythoncore_line + 3, '\tEndProjectSection')
+
+        with pcbuild_sln_path.open('w') as fh:
+            fh.write('\n'.join(lines))
+
+
 def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
     # TODO can we pass props into msbuild.exe?
 
@@ -162,8 +447,10 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
         br'<tcltkDir>%s\$(ArchName)\</tcltkDir>' % tcltk_path)
 
 
-def hack_project_files(td: pathlib.Path, pcbuild_path: pathlib.Path):
+def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
     """Hacks Visual Studio project files to work with our build."""
+
+    pcbuild_path = cpython_source_path / 'PCbuild'
 
     hack_props(td, pcbuild_path)
 
@@ -209,6 +496,12 @@ def hack_project_files(td: pathlib.Path, pcbuild_path: pathlib.Path):
         liblzma_path,
         br'<ClInclude Include="$(lzmaDir)windows\config.h" />',
         br'<ClInclude Include="$(lzmaDir)windows\vs2017\config.h" />')
+
+    for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
+        init_fn = entry.get('init', 'PyInit_%s' % extension)
+
+        add_to_config_c(cpython_source_path, extension, init_fn)
+        convert_to_static_library(cpython_source_path, extension, entry)
 
 
 def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
@@ -266,7 +559,7 @@ def build_cpython(pgo=False):
         cpython_source_path = td / ('Python-%s' % python_version)
         pcbuild_path = cpython_source_path / 'PCBuild'
 
-        hack_project_files(td, pcbuild_path)
+        hack_project_files(td, cpython_source_path)
 
         if pgo:
             run_msbuild(msbuild, pcbuild_path, configuration='PGInstrument')
