@@ -667,7 +667,9 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
     copy_link_to_lib(pythoncore_proj)
 
     # We don't need to produce pythonw.exe, python_uwp.exe, venvlauncher.exe,
-    # and their *w variants. Cut them from the build to save time.
+    # and their *w variants. Or the python3.dll, pyshellext, or pylauncher.
+    # Cut them from the build to save time and so their presence doesn't
+    # interfere with packaging up the build artifacts.
 
     pcbuild_proj = pcbuild_path / 'pcbuild.proj'
 
@@ -682,7 +684,23 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
         b'')
     static_replace_in_file(
         pcbuild_proj,
+        b'<Projects Include="venvlauncher.vcxproj;venvwlauncher.vcxproj" />',
+        b'')
+    static_replace_in_file(
+        pcbuild_proj,
         b'<Projects2 Include="venvlauncher.vcxproj;venvwlauncher.vcxproj" />',
+        b'')
+    static_replace_in_file(
+        pcbuild_proj,
+        b'<Projects Include="python3dll.vcxproj" />',
+        b'')
+    static_replace_in_file(
+        pcbuild_proj,
+        b'<Projects Include="pylauncher.vcxproj;pywlauncher.vcxproj" />',
+        b'')
+    static_replace_in_file(
+        pcbuild_proj,
+        b'<Projects Include="pyshellext.vcxproj" />',
         b'')
 
     # Ditto for freeze_importlib, which isn't needed since we don't modify
