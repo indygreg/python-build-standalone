@@ -371,7 +371,11 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
 
             if m:
                 log('changing pythoncore to link against %s.lib' % extension)
-                # TODO do we need this with static linking?
+                # TODO we shouldn't need this with static linking if the
+                # project is configured to link library dependencies.
+                # But removing it results in unresolved external symbols
+                # when linking the python project. There /might/ be a
+                # visibility issue with the PyMODINIT_FUNC macro.
                 line = line.replace(m.group(1), r'$(OutDir)%s.lib;%s' % (
                     extension, m.group(1)))
 
