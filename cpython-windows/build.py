@@ -1193,7 +1193,9 @@ def build_cpython(pgo=False):
             [
                 str(cpython_source_path / 'python.bat'),
                 str(cpython_source_path / 'PC' / 'layout'),
+                '-vv',
                 '--source', str(cpython_source_path),
+                '--build', str(pcbuild_path / 'amd64'),
                 '--copy', str(install_dir),
                 '--temp', str(layout_tmp),
                 '--flat-dlls',
