@@ -1144,8 +1144,6 @@ def build_cpython(pgo=False):
             config_c = fh.read()
 
         builtin_extensions = parse_config_c(config_c)
-        # Normalize "NULL" init function to None for JSON serialization.
-        builtin_extensions = {k: v if v != 'NULL' else None for k, v in builtin_extensions.items()}
 
         hack_project_files(td, cpython_source_path)
         hack_source_files(cpython_source_path)
@@ -1214,7 +1212,7 @@ def build_cpython(pgo=False):
         # Create PYTHON.json file describing this distribution.
         python_info = {
             # TODO bump version number once format is somewhat stable.
-            'version': 0,
+            'version': '0',
             'os': 'windows',
             'arch': 'x86_64',
             'python_flavor': 'cpython',

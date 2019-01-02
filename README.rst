@@ -292,8 +292,8 @@ builtin_extensions
    For CPython, this map is populated by parsing the ``config.c`` file used
    by the build.
 
-   The initialization function may be the JSON value ``null``, meaning there
-   is no initialization function.
+   The string value may be ``NULL``, which may need to be handled specially
+   by consumers.
 
 core
    A map describing the core Python distribution (essentially libpython).
