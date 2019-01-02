@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import concurrent.futures
+import json
 import os
 import pathlib
 import re
@@ -14,6 +15,9 @@ import tempfile
 
 from pythonbuild.downloads import (
     DOWNLOADS,
+)
+from pythonbuild.cpython import (
+    parse_config_c,
 )
 from pythonbuild.utils import (
     create_tar_from_directory,
@@ -928,6 +932,175 @@ def build_openssl(perl_path: pathlib.Path):
             create_tar_from_directory(fh, install)
 
 
+RE_ADDITIONAL_DEPENDENCIES = re.compile('<AdditionalDependencies>([^<]+)</AdditionalDependencies>')
+
+
+def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.Path,
+                                   arch: str, config: str):
+    """Collect build artifacts from Python.
+
+    Copies them into an output directory and returns a data structure describing
+    the files.
+    """
+    outputs_path = pcbuild_path / arch
+    intermediates_path = pcbuild_path / 'obj' / ('37%s_%s' % (arch, config))
+
+    if not outputs_path.exists():
+        log('%s does not exist' % outputs_path)
+        sys.exit(1)
+
+    if not intermediates_path.exists():
+        log('%s does not exist' % intermediates_path)
+        sys.exit(1)
+
+    # Things we want to collect:
+    # 1. object files that contribute to libpython
+    # 2. static libraries for dependencies
+    # 3. pdb files for static libraries
+
+    # The build throws everything in the same directory hierarchy, so we can't
+    # easily filter by path to identify e.g. core versus extensions. We rely on
+    # tagging projects instead. We validate that all directories are known to
+    # us.
+
+    # Projects that aren't relevant to us.
+    ignore_projects = {
+        # We don't care about build artifacts for the python executable.
+        'python',
+    }
+
+    other_projects = {
+        'pythoncore',
+    }
+
+    # Projects providing dependencies.
+    depends_projects = set()
+
+    # Projects that provide extensions.
+    extension_projects = set()
+
+    for extension, entry in CONVERT_TO_BUILTIN_EXTENSIONS.items():
+        extension_projects.add(extension)
+        depends_projects |= set(entry.get('static_depends', []))
+
+    dirs = {p for p in os.listdir(intermediates_path)}
+
+    known_projects = ignore_projects | other_projects | depends_projects | extension_projects
+
+    unknown = dirs - known_projects
+
+    if unknown:
+        log('encountered build directory for unknown projects: %s' % ', '.join(sorted(unknown)))
+        sys.exit(1)
+
+    res = {
+        'core': {
+            'objs': [],
+        },
+        'extensions': {},
+        'links': {
+            'core': [],
+            'extensions': {},
+        },
+    }
+
+    def process_project(project: pathlib.Path, dest_dir: pathlib.Path):
+        for f in sorted(os.listdir(intermediates_path / project)):
+            p = intermediates_path / project / f
+            dest = dest_dir / p.name
+
+            if p.suffix == '.obj':
+                log('copying object file %s to %s' % (p, dest_dir))
+                shutil.copyfile(p, dest)
+                yield f
+
+            elif p.suffix == '.pdb':
+                log('copying pdb file: %s to %s' % (p, dest_dir))
+                shutil.copyfile(p, dest)
+
+    def find_additional_dependencies(project: pathlib.Path):
+        vcproj = pcbuild_path / ('%s.vcxproj' % project)
+
+        with vcproj.open('r') as fh:
+            for line in fh:
+                m = RE_ADDITIONAL_DEPENDENCIES.search(line)
+
+                if not m:
+                    continue
+
+                depends = set(m.group(1).split(';'))
+                depends.discard('%(AdditionalDependencies)')
+
+                return depends
+
+        return set()
+
+
+    # Copy object files for core sources into their own directory.
+    core_dir = out_dir / 'build' / 'core'
+    core_dir.mkdir(parents=True)
+
+    for obj in process_project('pythoncore', core_dir):
+        res['core']['objs'].append('build/core/%s' % obj)
+
+    # We hack up pythoncore.vcxproj and the list in it when this function
+    # runs isn't totally accurate. We hardcode the list from the CPython
+    # distribution.
+    # TODO pull from unaltered file
+    res['core']['system_lib_depends'] = [
+        'shlwapi.lib',
+        'version.lib',
+        'ws2_32.lib',
+    ]
+
+    # Copy files for extensions into their own directories.
+    for ext in sorted(extension_projects):
+        dest_dir = out_dir / 'build' / 'extensions' / ext
+        dest_dir.mkdir(parents=True)
+
+        res['extensions'][ext] = {
+            'objs': [],
+            'init_fn': 'PyInit_%s' % ext,
+            'static_lib': None,
+            'system_lib_depends': list(sorted(find_additional_dependencies(ext))),
+        }
+
+        for obj in process_project(ext, dest_dir):
+            res['extensions'][ext]['objs'].append('build/extensions/%s/%s' % (ext, obj))
+
+        # Copy the extension static library.
+        ext_static = outputs_path / ('%s.lib' % ext)
+        dest = dest_dir / ('%s.lib' % ext)
+        res['extensions'][ext]['static_lib'] = 'build/extensions/%s/%s.lib' % (ext, ext)
+        log('copying static extension %s' % ext_static)
+        shutil.copyfile(ext_static, dest)
+
+    lib_dir = out_dir / 'build' / 'lib'
+    lib_dir.mkdir()
+
+    # Copy static libraries for dependencies into the lib directory.
+    for depend in sorted(depends_projects):
+        source = outputs_path / ('%s.lib' % depend)
+        dest = lib_dir / ('%s.lib' % depend)
+
+        log('copying static library %s' % source)
+        shutil.copyfile(source, dest)
+
+        pdb_path = intermediates_path / depend / ('%s.pdb' % depend)
+        dest = lib_dir / ('%s.pdb' % depend)
+        log('copying pdb %s' % pdb_path)
+        shutil.copyfile(pdb_path, dest)
+
+    for ext, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
+        for lib in entry.get('static_depends', []):
+            res['links']['extensions'].setdefault(ext, []).append({
+                'name': lib,
+                'path_static':  'build/lib/%s.lib' % lib,
+            })
+
+    return res
+
+
 def build_cpython(pgo=False):
     msbuild = find_msbuild()
     log('found MSBuild at %s' % msbuild)
@@ -959,6 +1132,21 @@ def build_cpython(pgo=False):
         cpython_source_path = td / ('Python-%s' % python_version)
         pcbuild_path = cpython_source_path / 'PCBuild'
 
+        out_dir = td / 'out'
+
+        build_dir = out_dir / 'python' / 'build'
+        build_dir.mkdir(parents=True)
+
+        # Parse config.c before we hack it up: we want a pristine copy.
+        config_c_path = cpython_source_path / 'PC' / 'config.c'
+
+        with config_c_path.open('r') as fh:
+            config_c = fh.read()
+
+        builtin_extensions = parse_config_c(config_c)
+        # Normalize "NULL" init function to None for JSON serialization.
+        builtin_extensions = {k: v if v != 'NULL' else None for k, v in builtin_extensions.items()}
+
         hack_project_files(td, cpython_source_path)
         hack_source_files(cpython_source_path)
 
@@ -984,11 +1172,12 @@ def build_cpython(pgo=False):
                 os.environ)
 
             run_msbuild(msbuild, pcbuild_path, configuration='PGUpdate')
+            artifact_config = 'PGUpdate'
 
         else:
             run_msbuild(msbuild, pcbuild_path, configuration='Release')
+            artifact_config = 'Release'
 
-        out_dir = td / 'out'
         install_dir = out_dir / 'python' / 'install'
 
         # The PC/layout directory contains a script for copying files into
@@ -1013,6 +1202,32 @@ def build_cpython(pgo=False):
             ],
             pcbuild_path,
             os.environ)
+
+        # Now copy the build artifacts into the output directory.
+        build_info = collect_python_build_artifacts(
+            pcbuild_path, out_dir / 'python', 'amd64', artifact_config)
+
+        build_info['builtin_extensions'] = builtin_extensions
+
+        # Create PYTHON.json file describing this distribution.
+        python_info = {
+            # TODO bump version number once format is somewhat stable.
+            'version': 0,
+            'os': 'windows',
+            'arch': 'x86_64',
+            'python_flavor': 'cpython',
+            'python_version': python_version,
+            'python_exe': 'install/python.exe',
+            'python_include': 'install/include',
+            'python_stdlib': 'install/Lib',
+            'build_info': build_info,
+        }
+
+        with (out_dir / 'python' / 'PYTHON.json').open('w') as fh:
+            json.dump(python_info, fh, sort_keys=True, indent=4)
+
+        # Copy software licenses file.
+        shutil.copyfile(ROOT / 'python-licenses.rst', out_dir / 'python' / 'LICENSE.rst')
 
         dest_path = BUILD / 'cpython-windows.tar'
 

@@ -147,3 +147,38 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
             (target, b' '.join(extra_cflags[target])))
 
     return b'\n'.join(dest_lines), b'\n'.join(make_lines)
+
+
+RE_INITTAB_ENTRY = re.compile('\{"([^"]+)", ([^\}]+)\},')
+
+
+def parse_config_c(s: str):
+    """Parse the contents of a config.c file.
+
+    The file defines external symbols for module init functions and the
+    mapping of module name to module initializer function.
+    """
+
+    # Some config.c files have #ifdef. We don't care about those because
+    # in all cases the condition is true.
+
+    extensions = {}
+
+    seen_inittab = False
+
+    for line in s.splitlines():
+        if line.startswith('struct _inittab'):
+            seen_inittab = True
+
+        if not seen_inittab:
+            continue
+
+        if '/* Sentinel */' in line:
+            break
+
+        m = RE_INITTAB_ENTRY.search(line)
+
+        if m:
+            extensions[m.group(1)] = m.group(2)
+
+    return extensions

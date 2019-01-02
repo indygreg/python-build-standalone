@@ -214,46 +214,145 @@ A distribution is a zstandard-compressed tar file. All paths inside the
 tar archive are prefixed with ``python/``. Within the ``python/`` directory
 are the following well-known paths:
 
+PYTHON.json
+   Machine readable file describing this Python distribution.
+
+   See the ``PYTHON.json File`` section for the format of this file.
+
 LICENSE.rst
    Contains license information of software contained in the distribution.
 
-build/
-   Contains build artifacts from compiling Python.
+By convention, the ``build/`` directory contains artifacts from building
+this distribution (object files, libraries, etc) and the ``install/`` directory
+contains a working, self-contained Python installation of this distribution.
+The ``PYTHON.json`` file should be read to determine where specific entities
+are located within the archive.
 
-   The exact layout depends on the Python flavor and target system.
+PYTHON.json File
+----------------
 
-   For POSIX distributions, various ``.o`` files are the object files for
-   various compiled sources.
+The ``PYTHON.json`` file describes the Python distribution in a machine
+readable manner. This file is meant to be opened by downstream consumers
+of this distribution so that they may learn things about the distribution
+without have to resort to heuristics.
 
-  For CPython, object files exist in the ``Python/``, ``Objects/``,
-  `Parser/``, ``Programs/``, and ``Modules/`` directories. There also
-  exist the special files ``Modules/Setup.dist`` and ``Modules/Setup.local``,
-  which define the Python extension modules produced by the build and their
-  configuration. The ``Modules/config.c.in`` and ``Modules/config.c`` files
-  also contain definitions of the built-in extension modules. The
-  ``Python/frozen.c`` file contains definitions of the frozen modules built-in
-  to the Python interpreter.
+The file contains a JSON map. This map has the following keys:
 
-install/
-   Contains a working Python installation. This is typically the result of
-   a ``make install`` from Python's build system.
+version
+   Version number of the file format. Currently ``0`` until semantics are
+   stabilized.
 
-   The exact layout depends on the Python flavor and target system.
+os
+   Target operating system for the distribution. e.g. ``linux``, ``macos``,
+   or ``windows``.
 
-   For POSIX distributions, there exists a ``bin/`` directory with executables,
-   such as the main ``pythonX.Y`` binary. There will also be a ``lib/``
-   directory with a ``libpythonX.Y.a`` static library. And the Python standard
-   library is typically in ``lib/pythonX.Y/``.
+arch
+   Target architecture for the distribution. e.g. ``x86`` (32-bit) or
+   ``x86_64`` (64-bit).
 
-lib/
-   Contains libraries that the distribution requires.
+python_favor
+   Type of Python distribution. e.g. ``cpython``.
 
-   Libraries in this directory may be statically embedded in the binaries in
-   the ``build/`` directory.
+python_version
+   Version of Python being distribution. e.g. ``3.7.2``.
 
-   Libraries in this directory can also be linked against by downstream
-   consumers wishing to recombine object files in ``build/`` to produce
-   custom binaries.
+python_exe
+   Relative path to main Python interpreter executable.
 
-   For POSIX distributions, this directory will contain various ``.a``
-   libraries.
+python_include
+   Relative path to include path for Python headers. If this path is on
+   the compiler's include path, ``#include <Python.h>`` should work.
+
+python_stdlib
+   Relative path to Python's standard library (where ``.py`` and resource
+   files are located).
+
+build_info
+   A map describing build configuration and artifacts for this distribution.
+
+   See the ``build_info Data`` section below.
+
+build_info Data
+---------------
+
+The ``build_info`` key in the ``PYTHON.json`` file describes build artifacts
+in the Python distribution. The primary goal of the data is to give downstream
+distribution consumers enough details to integrate build artifacts into their
+own build systems. This includes the ability to produce a Python binary with a
+custom set of built-in extension modules.
+
+This map has the following keys:
+
+builtin_extensions
+   A map of extension name to the extension's module initialization function
+   name. e.g. the ``_abc`` key would correspond to the ``_abc`` extension module
+   and its value ``PyInit__abc`` would signify that the ``PyInit__abc()``
+   function should be called to initialize the extension module.
+
+   For CPython, this map is populated by parsing the ``config.c`` file used
+   by the build.
+
+   The initialization function may be the JSON value ``null``, meaning there
+   is no initialization function.
+
+core
+   A map describing the core Python distribution (essentially libpython).
+
+   objs
+      An array of paths to object files constituting the Python core distribution.
+
+      Core object files are typically object files that are linked together to
+      create libpython.
+
+   system_lib_depends
+      An array of extra system libraries this library depends on.
+
+extensions
+   A map of extension names to a map describing the extension.
+
+   Extensions are non-core/non-essential parts of the Python distribution that
+   are frequently built as standalone entities.
+
+   Names in this map denote the name of the extension module.
+
+   Values are maps with the following keys:
+
+   init_fn
+      The name of the extension module initialization function for this
+      extension.
+
+   objs
+      An array of paths to object files constituting this extension module.
+
+   static_lib
+      The path to a static library defining this extension module.
+
+   system_lib_depends
+      An array of extra system libraries this extension depends on.
+
+links
+   A map describing additional linking information needed for this distribution.
+
+   Some core distributions and extensions may require linking against additional
+   libraries. This map describes those requirements.
+
+   This map has the following keys:
+
+   core
+      An array of link requirement maps.
+
+   extensions
+      A map of extension name to an array of link requirement maps.
+
+   Each entry in the link array is a map with the following keys:
+
+   name
+      Name of the library being linked against.
+
+   path_static
+      Path to the static version of this library, if available in the
+      distribution.
+
+   path_dynamic
+      Path to the dynamic version of this library, if available in the
+      distribution.
