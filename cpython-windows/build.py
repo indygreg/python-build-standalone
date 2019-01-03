@@ -1059,6 +1059,7 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         dest_dir.mkdir(parents=True)
 
         res['extensions'][ext] = {
+            'builtin': False,
             'objs': [],
             'init_fn': 'PyInit_%s' % ext,
             'static_lib': None,
@@ -1213,6 +1214,7 @@ def build_cpython(pgo=False):
                 sys.exit(1)
 
             build_info['extensions'][ext] = {
+                'builtin': True,
                 'objs': [],
                 'init_fn': init_fn,
                 'static_lib': None,

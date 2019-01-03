@@ -305,6 +305,11 @@ extensions
 
    Values are maps with the following keys:
 
+   builtin
+      Boolean indicating if this extension is built-in to libpython. If true,
+      the extension is baked into the core distribution / object files. If
+      false, the extension is distributed as a standalone, loadable library.
+
    init_fn
       The name of the extension module initialization function for this
       extension.
