@@ -292,8 +292,8 @@ core
       Core object files are typically object files that are linked together to
       create libpython.
 
-   system_lib_depends
-      An array of extra system libraries this library depends on.
+   links
+      An array of linking requirement maps. (See below for data format.)
 
 extensions
    A map of extension names to a map describing the extension.
@@ -317,38 +317,29 @@ extensions
       The string value may be ``NULL``, which may need special handling by
       consumers.
 
+   links
+      An array of linking requirement maps. (See below for data format.)
+
    objs
       An array of paths to object files constituting this extension module.
 
    static_lib
       The path to a static library defining this extension module.
 
-   system_lib_depends
-      An array of extra system libraries this extension depends on.
+Each entry in a ``links`` array is a map with the following keys:
 
-links
-   A map describing additional linking information needed for this distribution.
+name
+  Name of the library being linked against.
 
-   Some core distributions and extensions may require linking against additional
-   libraries. This map describes those requirements.
+path_static
+  Path to the static version of this library, if available in the
+  distribution.
 
-   This map has the following keys:
+path_dynamic
+  Path to the dynamic version of this library, if available in the
+  distribution.
 
-   core
-      An array of link requirement maps.
-
-   extensions
-      A map of extension name to an array of link requirement maps.
-
-   Each entry in the link array is a map with the following keys:
-
-   name
-      Name of the library being linked against.
-
-   path_static
-      Path to the static version of this library, if available in the
-      distribution.
-
-   path_dynamic
-      Path to the dynamic version of this library, if available in the
-      distribution.
+If an entry does not have a ``path_static`` or ``path_dynamic`` entry, it
+is assumed to be a *system* library dependency. System libraries are
+typically passed into the linker by name only and found using default
+library search paths.

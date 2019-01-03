@@ -998,10 +998,6 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
             'objs': [],
         },
         'extensions': {},
-        'links': {
-            'core': [],
-            'extensions': {},
-        },
     }
 
     def process_project(project: pathlib.Path, dest_dir: pathlib.Path):
@@ -1047,10 +1043,16 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
     # runs isn't totally accurate. We hardcode the list from the CPython
     # distribution.
     # TODO pull from unaltered file
-    res['core']['system_lib_depends'] = [
-        'shlwapi.lib',
-        'version.lib',
-        'ws2_32.lib',
+    res['core']['links'] = [
+        {
+            'name': 'shlwapi.lib',
+        },
+        {
+            'name': 'version.lib',
+        },
+        {
+            'name': 'ws2_32.lib',
+        },
     ]
 
     # Copy files for extensions into their own directories.
@@ -1063,11 +1065,17 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
             'objs': [],
             'init_fn': 'PyInit_%s' % ext,
             'static_lib': None,
-            'system_lib_depends': list(sorted(find_additional_dependencies(ext))),
+            'links': [{'name': n} for n in sorted(find_additional_dependencies(ext))],
         }
 
         for obj in process_project(ext, dest_dir):
             res['extensions'][ext]['objs'].append('build/extensions/%s/%s' % (ext, obj))
+
+        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('static_depends', []):
+            res['extensions'][ext]['links'].append({
+                'name': lib,
+                'path_static': 'build/lib/%s.lib' % lib,
+            })
 
         # Copy the extension static library.
         ext_static = outputs_path / ('%s.lib' % ext)
@@ -1091,13 +1099,6 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         dest = lib_dir / ('%s.pdb' % depend)
         log('copying pdb %s' % pdb_path)
         shutil.copyfile(pdb_path, dest)
-
-    for ext, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
-        for lib in entry.get('static_depends', []):
-            res['links']['extensions'].setdefault(ext, []).append({
-                'name': lib,
-                'path_static':  'build/lib/%s.lib' % lib,
-            })
 
     return res
 
@@ -1217,8 +1218,8 @@ def build_cpython(pgo=False):
                 'builtin': True,
                 'objs': [],
                 'init_fn': init_fn,
+                'links': [],
                 'static_lib': None,
-                'system_lib_depends': [],
             }
 
         # Create PYTHON.json file describing this distribution.
