@@ -1207,7 +1207,17 @@ def build_cpython(pgo=False):
         build_info = collect_python_build_artifacts(
             pcbuild_path, out_dir / 'python', 'amd64', artifact_config)
 
-        build_info['builtin_extensions'] = builtin_extensions
+        for ext, init_fn in sorted(builtin_extensions.items()):
+            if ext in build_info['extensions']:
+                log('built-in extension should not have a build entry: %s' % ext)
+                sys.exit(1)
+
+            build_info['extensions'][ext] = {
+                'objs': [],
+                'init_fn': init_fn,
+                'static_lib': None,
+                'system_lib_depends': [],
+            }
 
         # Create PYTHON.json file describing this distribution.
         python_info = {

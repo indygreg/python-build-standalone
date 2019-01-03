@@ -283,18 +283,6 @@ custom set of built-in extension modules.
 
 This map has the following keys:
 
-builtin_extensions
-   A map of extension name to the extension's module initialization function
-   name. e.g. the ``_abc`` key would correspond to the ``_abc`` extension module
-   and its value ``PyInit__abc`` would signify that the ``PyInit__abc()``
-   function should be called to initialize the extension module.
-
-   For CPython, this map is populated by parsing the ``config.c`` file used
-   by the build.
-
-   The string value may be ``NULL``, which may need to be handled specially
-   by consumers.
-
 core
    A map describing the core Python distribution (essentially libpython).
 
@@ -320,6 +308,9 @@ extensions
    init_fn
       The name of the extension module initialization function for this
       extension.
+
+      The string value may be ``NULL``, which may need special handling by
+      consumers.
 
    objs
       An array of paths to object files constituting this extension module.
