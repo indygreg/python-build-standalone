@@ -821,7 +821,7 @@ def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
         '/property:Platform=x64',
         '/maxcpucount',
         '/nologo',
-        '/verbosity:minimal',
+        '/verbosity:normal',
         '/property:IncludeExternals=true',
         '/property:IncludeSSL=true',
         # TODO support Tkinter
@@ -1163,7 +1163,7 @@ def build_cpython(pgo=False):
                 [
                     str(msbuild), str(pcbuild_path / 'pythoncore.vcxproj'),
                     '/target:KillPython',
-                    '/verbosity:minimal',
+                    '/verbosity:normal',
                     '/property:Configuration=PGInstrument',
                     '/property:Platform=x64',
                     '/property:KillPython=true',
