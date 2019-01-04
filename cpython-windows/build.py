@@ -662,6 +662,14 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
 
     static_replace_in_file(pythoncore_proj, b'Py_ENABLE_SHARED', b'Py_NO_ENABLE_SHARED')
 
+    # Disable whole program optimization because it interferes with the format
+    # of object files and makes it so we can't easily consume their symbols.
+    # TODO this /might/ be OK once we figure out symbol exporting issues.
+    static_replace_in_file(
+        pyproject_props,
+        b'<WholeProgramOptimization>true</WholeProgramOptimization>',
+        b'<WholeProgramOptimization>false</WholeProgramOptimization>')
+
     # Make libpython a static library.
     static_replace_in_file(
         pythoncore_proj,
