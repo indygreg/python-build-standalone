@@ -460,11 +460,7 @@ def python_build_info(container, setup_local):
                     })
 
         bi['extensions'][extension] = {
-            # All extensions are compiled as built-in extensions, even if they
-            # aren't built-in by default. This field is capturing the extension
-            # config from the perspective of our distribution, not the CPython
-            # distribution.
-            'builtin': True,
+            'in_core': False,
             'init_fn': 'PyInit_%s' % extension,
             'links': links,
             'objs': list(sorted(objs)),

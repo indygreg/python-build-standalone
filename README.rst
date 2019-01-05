@@ -305,10 +305,19 @@ extensions
 
    Values are maps with the following keys:
 
-   builtin
-      Boolean indicating if this extension is built-in to libpython. If true,
-      the extension is baked into the core distribution / object files. If
-      false, the extension is distributed as a standalone, loadable library.
+   in_core
+      Boolean indicating if this extension is defined by the core distribution.
+
+      If true, object files should be in the ``['core']['objs']`` array, not the
+      ``objs`` array in this map.
+
+      Downstream consumers should key off this value to determine how to
+      assemble this extension's code into a new distribution.
+
+      This field was introduced to support Windows, where CPython's Visual
+      Studio project files define various extensions as part of the project
+      providing libpython. This is in contrast to make-based builds, where
+      the ``Modules/Setup.*`` files treat each extension as separate entities.
 
    init_fn
       The name of the extension module initialization function for this
@@ -324,7 +333,8 @@ extensions
       An array of paths to object files constituting this extension module.
 
    static_lib
-      The path to a static library defining this extension module.
+      The path to a static library defining this extension module. May not
+      be defined.
 
 Each entry in a ``links`` array is a map with the following keys:
 

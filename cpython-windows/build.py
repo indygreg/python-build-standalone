@@ -1171,7 +1171,7 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         additional_depends -= CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('ignore_additional_depends', set())
 
         res['extensions'][ext] = {
-            'builtin': False,
+            'in_core': False,
             'objs': [],
             'init_fn': 'PyInit_%s' % ext,
             'static_lib': None,
@@ -1331,7 +1331,7 @@ def build_cpython(pgo=False):
                 sys.exit(1)
 
             build_info['extensions'][ext] = {
-                'builtin': True,
+                'in_core': True,
                 'objs': [],
                 'init_fn': init_fn,
                 'links': [],
