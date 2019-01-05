@@ -6,6 +6,7 @@
 import argparse
 import contextlib
 import io
+import json
 import os
 import pathlib
 import sys
@@ -363,6 +364,115 @@ def build_tcltk(client, image, platform):
         download_tools_archive(container, BUILD / dest_path)
 
 
+def python_build_info(container, setup_local):
+    """Obtain build metadata for the Python distribution."""
+
+    bi = {
+        'core': {
+            'objs': [],
+            'links': [],
+        },
+        'extensions': {}
+    }
+
+    # Object files for the core distribution are found by walking the
+    # build artifacts.
+    core_objs = set()
+
+    res = container.exec_run(
+        ['/usr/bin/find', '/build/out/python/build', '-name', '*.o'],
+        user='build')
+
+    for line in res[1].splitlines():
+        if not line.strip():
+            continue
+
+        p = pathlib.Path(os.fsdecode(line))
+        rel_path = p.relative_to('/build/out/python')
+
+        if rel_path.parts[1] in ('Objects', 'Parser', 'Python'):
+            core_objs.add(rel_path)
+
+    for p in sorted(core_objs):
+        log('adding core object file: %s' % p)
+        bi['core']['objs'].append(str(p))
+
+    libraries = set()
+
+    for line in container.exec_run(
+        ['/usr/bin/find', '/build/out/python/build/lib', '-name', '*.a'],
+        user='build')[1].splitlines():
+
+        if not line.strip():
+            continue
+
+        f = line[len('/build/out/python/build/lib/'):].decode('ascii')
+
+        # Strip "lib" prefix and ".a" suffix.
+        libname = f[3:-2]
+
+        libraries.add(libname)
+
+    # Extension data is derived by "parsing" the Setup.local file.
+    for line in setup_local.splitlines():
+        if line.startswith(b'*static*'):
+            continue
+
+        if line.startswith(b'*disabled*'):
+            break
+
+        if not line:
+            continue
+
+        if b'#' in line:
+            log('unexpected # in Setup.local content')
+            sys.exit(1)
+
+        words = line.split()
+
+        extension = words[0].decode('ascii')
+        links = []
+
+        objs = set()
+
+        for word in words:
+            # Arguments looking like C source files are converted to object files.
+            if word.endswith(b'.c'):
+                obj = 'build/Modules/%s.o' % word[:-2].decode('ascii')
+                log('adding object file %s for extension %s' % (obj, extension))
+                objs.add(obj)
+
+            # Arguments looking like link libraries are converted to library
+            # dependencies.
+            elif word.startswith(b'-l'):
+                libname = word[2:].decode('ascii')
+                log('adding library %s for extension %s' % (libname, extension))
+
+                if libname in libraries:
+                    links.append({
+                        'name': libname,
+                        'path_static': 'build/lib/lib%s.a' % libname,
+                    })
+                else:
+                    links.append({
+                        'name': libname,
+                        'system': True,
+                    })
+
+        bi['extensions'][extension] = {
+            # All extensions are compiled as built-in extensions, even if they
+            # aren't built-in by default. This field is capturing the extension
+            # config from the perspective of our distribution, not the CPython
+            # distribution.
+            'builtin': True,
+            'init_fn': 'PyInit_%s' % extension,
+            'links': links,
+            'objs': list(sorted(objs)),
+        }
+
+    return bi
+
+
 def build_cpython(client, image, platform):
     """Build CPythin in a Docker image'"""
     python_archive = download_entry('cpython-3.7', BUILD)
@@ -413,14 +523,36 @@ def build_cpython(client, image, platform):
                                    archive_path='Makefile.extra')
 
         env = {
-            'CPYTHON_OPTIMIZED': '1',
+            #'CPYTHON_OPTIMIZED': '1',
             'PYTHON_VERSION': DOWNLOADS['cpython-3.7']['version'],
         }
 
         container_exec(container, '/build/build-cpython.sh',
                        environment=env)
-        dest_path = BUILD / ('cpython-%s.tar' % platform)
 
+        # Create PYTHON.json file describing this distribution.
+        python_info = {
+            # TODO bump version number once format is somewhat stable.
+            'version': '0',
+            'os': 'linux',
+            'arch': 'x86_64',
+            'python_flavor': 'cpython',
+            'python_version': DOWNLOADS['cpython-3.7']['version'],
+            'python_exe': 'install/bin/python',
+            'python_include': 'install/include/python3.7m',
+            'python_stdlib': 'install/lib/python3.7',
+            'build_info': python_build_info(container, setup_local_content),
+        }
+
+        with tempfile.NamedTemporaryFile('w') as fh:
+            json.dump(python_info, fh, sort_keys=True, indent=4)
+            fh.flush()
+
+            copy_file_to_container(fh.name, container,
+                                   '/build/out/python',
+                                   archive_path='PYTHON.json')
+
+        dest_path = BUILD / ('cpython-%s.tar' % platform)
         data, stat = container.get_archive('/build/out/python')
 
         with dest_path.open('wb') as fh:
