@@ -60,8 +60,11 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     '_sqlite3': {
         'static_depends': ['sqlite3'],
     },
-    # See the one-off calls to copy_link_to_lib() to make this work.
-    '_ssl': {},
+    # See the one-off calls to copy_link_to_lib() and elsewhere to hack up
+    # project files.
+    '_ssl': {
+        'static_depends_no_project': ['libcrypto_static', 'libssl_static'],
+    },
     '_queue': {},
     'pyexpat': {},
     'select': {},
@@ -1107,6 +1110,12 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
                 'path_static': 'build/lib/%s.lib' % lib,
             })
 
+        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('static_depends_no_project', []):
+            res['extensions'][ext]['links'].append({
+                'name': lib,
+                'path_static': 'build/lib/%s.lib' % lib
+            })
+
         # Copy the extension static library.
         ext_static = outputs_path / ('%s.lib' % ext)
         dest = dest_dir / ('%s.lib' % ext)
@@ -1251,6 +1260,14 @@ def build_cpython(pgo=False):
                 'links': [],
                 'static_lib': None,
             }
+
+        # Copy OpenSSL libraries as a one-off.
+        for lib in ('crypto', 'ssl'):
+            name = 'lib%s_static.lib' % lib
+            source = td / 'openssl' / 'amd64' / 'lib' / name
+            dest = out_dir / 'python' / 'build' / 'lib' / name
+            log('copying %s to %s' % (source, dest))
+            shutil.copyfile(source, dest)
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
