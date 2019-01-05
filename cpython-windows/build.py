@@ -1065,6 +1065,21 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
             'name': 'ws2_32',
             'system': True,
         },
+
+        # In addition to the ones explicitly in the project, there are some
+        # implicit link libraries not present. We list those as well.
+        {
+            'name': 'Ole32',
+            'system': True,
+        },
+        {
+            'name': 'OleAut32',
+            'system': True,
+        },
+        {
+            'name': 'User32',
+            'system': True,
+        },
     ]
 
     # Copy files for extensions into their own directories.
