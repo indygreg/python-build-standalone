@@ -50,6 +50,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     '_elementtree': {},
     '_hashlib': {},
     '_lzma': {
+        'ignore_additional_depends': {'$(OutDir)liblzma$(PyDebugExt).lib'},
         'static_depends': ['liblzma'],
     },
     '_msi': {},
@@ -1068,12 +1069,15 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         dest_dir = out_dir / 'build' / 'extensions' / ext
         dest_dir.mkdir(parents=True)
 
+        additional_depends = find_additional_dependencies(ext)
+        additional_depends -= CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('ignore_additional_depends', set())
+
         res['extensions'][ext] = {
             'builtin': False,
             'objs': [],
             'init_fn': 'PyInit_%s' % ext,
             'static_lib': None,
-            'links': [{'name': n, 'system': True} for n in sorted(find_additional_dependencies(ext))],
+            'links': [{'name': n, 'system': True} for n in sorted(additional_depends)],
         }
 
         for obj in process_project(ext, dest_dir):
