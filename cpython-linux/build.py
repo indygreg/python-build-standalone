@@ -438,7 +438,10 @@ def python_build_info(container, setup_local):
         for word in words:
             # Arguments looking like C source files are converted to object files.
             if word.endswith(b'.c'):
-                obj = 'build/Modules/%s.o' % word[:-2].decode('ascii')
+                # Object files are named according to the basename: parent
+                # directories they may happen to reside in are stripped out.
+                p = pathlib.Path(word.decode('ascii'))
+                obj = 'build/Modules/%s' % p.with_suffix('.o').name
                 log('adding object file %s for extension %s' % (obj, extension))
                 objs.add(obj)
 
