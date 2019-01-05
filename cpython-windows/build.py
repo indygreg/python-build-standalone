@@ -727,6 +727,67 @@ def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
         b'<Projects2 Include="_freeze_importlib.vcxproj" />',
         b'')
 
+
+PYPORT_EXPORT_SEARCH = b'''
+#if defined(__CYGWIN__)
+#       define HAVE_DECLSPEC_DLL
+#endif
+
+/* only get special linkage if built as shared or platform is Cygwin */
+#if defined(Py_ENABLE_SHARED) || defined(__CYGWIN__)
+#       if defined(HAVE_DECLSPEC_DLL)
+#               if defined(Py_BUILD_CORE) || defined(Py_BUILD_CORE_BUILTIN)
+#                       define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
+#                       define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
+        /* module init functions inside the core need no external linkage */
+        /* except for Cygwin to handle embedding */
+#                       if defined(__CYGWIN__)
+#                               define PyMODINIT_FUNC __declspec(dllexport) PyObject*
+#                       else /* __CYGWIN__ */
+#                               define PyMODINIT_FUNC PyObject*
+#                       endif /* __CYGWIN__ */
+#               else /* Py_BUILD_CORE */
+        /* Building an extension module, or an embedded situation */
+        /* public Python functions and data are imported */
+        /* Under Cygwin, auto-import functions to prevent compilation */
+        /* failures similar to those described at the bottom of 4.1: */
+        /* http://docs.python.org/extending/windows.html#a-cookbook-approach */
+#                       if !defined(__CYGWIN__)
+#                               define PyAPI_FUNC(RTYPE) __declspec(dllimport) RTYPE
+#                       endif /* !__CYGWIN__ */
+#                       define PyAPI_DATA(RTYPE) extern __declspec(dllimport) RTYPE
+        /* module init functions outside the core must be exported */
+#                       if defined(__cplusplus)
+#                               define PyMODINIT_FUNC extern "C" __declspec(dllexport) PyObject*
+#                       else /* __cplusplus */
+#                               define PyMODINIT_FUNC __declspec(dllexport) PyObject*
+#                       endif /* __cplusplus */
+#               endif /* Py_BUILD_CORE */
+#       endif /* HAVE_DECLSPEC_DLL */
+#endif /* Py_ENABLE_SHARED */
+
+/* If no external linkage macros defined by now, create defaults */
+#ifndef PyAPI_FUNC
+#       define PyAPI_FUNC(RTYPE) RTYPE
+#endif
+#ifndef PyAPI_DATA
+#       define PyAPI_DATA(RTYPE) extern RTYPE
+#endif
+#ifndef PyMODINIT_FUNC
+#       if defined(__cplusplus)
+#               define PyMODINIT_FUNC extern "C" PyObject*
+#       else /* __cplusplus */
+#               define PyMODINIT_FUNC PyObject*
+#       endif /* __cplusplus */
+#endif
+'''
+
+PYPORT_EXPORT_REPLACE = b'''
+#define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
+#define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
+#define PyMODINIT_FUNC __declspec(dllexport) PyObject*
+'''
+
 CTYPES_INIT_REPLACE = b'''
 if _os.name == "nt":
     pythonapi = PyDLL("python dll", None, _sys.dllhandle)
@@ -739,6 +800,22 @@ else:
 
 def hack_source_files(source_path: pathlib.Path):
     """Apply source modifications to make things work."""
+
+    # The PyAPI_FUNC, PyAPI_DATA, and PyMODINIT_FUNC macros define symbol
+    # visibility. By default, pyport.h looks at Py_ENABLE_SHARED, __CYGWIN__,
+    # Py_BUILD_CORE, Py_BUILD_CORE_BUILTIN, etc to determine what the macros
+    # should be. The logic assumes that Python is being built in a certain
+    # manner - notably that extensions are standalone dynamic libraries.
+    #
+    # We force the use of __declspec(dllexport) in all cases to ensure that
+    # API symbols are exported. This annotation becomes embedded within the
+    # object file. When that object file is linked, the symbol is exported
+    # from the final binary. For statically linked binaries, this behavior
+    # may not be needed. However, by exporting the symbols we allow downstream
+    # consumers of the object files to produce a binary that can be
+    # dynamically linked. This is a useful property to have.
+    pyport_h = source_path / 'Include' / 'pyport.h'
+    static_replace_in_file(pyport_h, PYPORT_EXPORT_SEARCH, PYPORT_EXPORT_REPLACE)
 
     # Modules/_winapi.c and Modules/overlapped.c both define an
     # ``OverlappedType`` symbol. We rename one to make the symbol conflict
