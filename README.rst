@@ -329,17 +329,23 @@ extensions
 Each entry in a ``links`` array is a map with the following keys:
 
 name
-  Name of the library being linked against.
+   Name of the library being linked against.
 
 path_static
-  Path to the static version of this library, if available in the
-  distribution.
+   Path to the static version of this library, if available in the
+   distribution.
 
 path_dynamic
-  Path to the dynamic version of this library, if available in the
-  distribution.
+   Path to the dynamic version of this library, if available in the
+   distribution.
 
-If an entry does not have a ``path_static`` or ``path_dynamic`` entry, it
-is assumed to be a *system* library dependency. System libraries are
-typically passed into the linker by name only and found using default
-library search paths.
+framework
+   Denotes that the link target is a macOS framework.
+
+system
+   Denotes that the link target is a system library.
+
+   On Windows, ``name`` will typically be a filename ending in ``.lib``.
+
+   System libraries are typically passed into the linker by name only and
+   found using default library search paths.
