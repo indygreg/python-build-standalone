@@ -345,7 +345,5 @@ framework
 system
    Denotes that the link target is a system library.
 
-   On Windows, ``name`` will typically be a filename ending in ``.lib``.
-
    System libraries are typically passed into the linker by name only and
    found using default library search paths.

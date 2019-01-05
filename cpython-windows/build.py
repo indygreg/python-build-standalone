@@ -1054,13 +1054,16 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
     # TODO pull from unaltered file
     res['core']['links'] = [
         {
-            'name': 'shlwapi.lib',
+            'name': 'shlwapi',
+            'system': True,
         },
         {
-            'name': 'version.lib',
+            'name': 'version',
+            'system': True,
         },
         {
-            'name': 'ws2_32.lib',
+            'name': 'ws2_32',
+            'system': True,
         },
     ]
 
@@ -1077,7 +1080,7 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
             'objs': [],
             'init_fn': 'PyInit_%s' % ext,
             'static_lib': None,
-            'links': [{'name': n, 'system': True} for n in sorted(additional_depends)],
+            'links': [{'name': n[:-4], 'system': True} for n in sorted(additional_depends)],
         }
 
         for obj in process_project(ext, dest_dir):
