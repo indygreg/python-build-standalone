@@ -378,6 +378,7 @@ def python_build_info(container, setup_local):
     # Object files for the core distribution are found by walking the
     # build artifacts.
     core_objs = set()
+    modules_objs = set()
 
     res = container.exec_run(
         ['/usr/bin/find', '/build/out/python/build', '-name', '*.o'],
@@ -392,6 +393,9 @@ def python_build_info(container, setup_local):
 
         if rel_path.parts[1] in ('Objects', 'Parser', 'Python'):
             core_objs.add(rel_path)
+
+        if rel_path.parts[1] == 'Modules':
+            modules_objs.add(rel_path)
 
     for p in sorted(core_objs):
         log('adding core object file: %s' % p)
@@ -440,10 +444,16 @@ def python_build_info(container, setup_local):
             if word.endswith(b'.c'):
                 # Object files are named according to the basename: parent
                 # directories they may happen to reside in are stripped out.
-                p = pathlib.Path(word.decode('ascii'))
-                obj = 'build/Modules/%s' % p.with_suffix('.o').name
-                log('adding object file %s for extension %s' % (obj, extension))
-                objs.add(obj)
+                source_path = pathlib.Path(word.decode('ascii'))
+                obj_path = pathlib.Path('build/Modules/%s' % source_path.with_suffix('.o').name)
+                log('adding object file %s for extension %s' % (obj_path, extension))
+                objs.add(str(obj_path))
+
+                # Mark object file as used so we don't include it in the core
+                # object files below. .remove() would be nicer, as we would catch
+                # missing object files. But some sources (like math.c) are used by
+                # multiple modules!
+                modules_objs.discard(obj_path)
 
             # Arguments looking like link libraries are converted to library
             # dependencies.
@@ -468,6 +478,12 @@ def python_build_info(container, setup_local):
             'links': links,
             'objs': list(sorted(objs)),
         }
+
+    # Any paths left in modules_objs are not part of any extension and are
+    # instead part of the core distribution.
+    for p in sorted(modules_objs):
+        log('adding core object file %s' % p)
+        bi['core']['objs'].append(str(p))
 
     return bi
 
