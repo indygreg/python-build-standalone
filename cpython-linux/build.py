@@ -551,10 +551,11 @@ def build_cpython(client, image, platform):
         install_tools_archive(container, BUILD / ('bzip2-%s.tar' % platform))
         # TODO build against Berkeley DB to avoid GPLv3.
         install_tools_archive(container, BUILD / ('gdbm-%s.tar' % platform))
+        # TODO support libedit/libreadline toggle
+        install_tools_archive(container, BUILD / ('libedit-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('libffi-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('openssl-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('readline-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('sqlite-%s.tar' % platform))
         # tk requires a bunch of X11 stuff.
         #install_tools_archive(container, BUILD / ('tcltk-%s.tar' % platform))

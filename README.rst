@@ -223,6 +223,9 @@ On macOS, we statically link a ``libedit`` we compile ourselves. We
 dynamically link against ``libncurses``, which is provided by the
 system, typically in ``/usr/lib``.
 
+On Linux, we statically link a ``libedit`` we compile ourselves, which
+is compiled against a ``libncurses`` we build ourselves.
+
 Distribution Format
 ===================
 

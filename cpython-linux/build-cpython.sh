@@ -28,6 +28,14 @@ mv Setup.local Python-${PYTHON_VERSION}/Modules/Setup.local
 
 pushd Python-${PYTHON_VERSION}
 
+# Python supports using libedit instead of readline. But Modules/readline.c
+# has all of this behind ``#ifdef __APPLE__`` instead of a more specific
+# feature flag. All occurrences of __APPLE__ in that file are related to
+# libedit. So we just replace the content. USE_LIBEDIT comes from our
+# static-modules file.
+# TODO make changes upstream to allow libedit to more easily be used
+sed -i s/__APPLE__/USE_LIBEDIT/g Modules/readline.c
+
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
 CFLAGS="-fPIC -I/tools/deps/include -I/tools/deps/include/ncurses"
