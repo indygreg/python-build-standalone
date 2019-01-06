@@ -564,7 +564,7 @@ def build_cpython(client, image, platform):
                                    archive_path='Makefile.extra')
 
         env = {
-            #'CPYTHON_OPTIMIZED': '1',
+            'CPYTHON_OPTIMIZED': '1',
             'PYTHON_VERSION': DOWNLOADS['cpython-3.7']['version'],
         }
 
