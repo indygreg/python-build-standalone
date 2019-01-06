@@ -32,13 +32,14 @@ There is support for producing 64-bit CPython distributions for Windows,
 macOS, and Linux. All distributions are highly self-contained and have
 limited shared library dependencies. Static linking is used aggressively.
 
-Planned features include:
+Planned and features include:
 
 * Static/dynamic linking toggles for dependencies
 * Support for configuring which toolchain/version to use
 * Support for BSDs
-* (maybe) Support for iOS and/or Android
-* (maybe) Support for Windows 32-bit
+* Support for iOS and/or Android
+* Support for Windows 32-bit
+* Support for Python distributions that aren't CPython
 
 Instructions
 ============
