@@ -2,33 +2,43 @@
 Python Standalone Builds
 ========================
 
-This project contains code for building Python distributions that are
-self-contained and highly portable (the binaries can be executed
-on most target machines).
+This project produces self-contained, highly-portable Python
+distributions. These Python distributions contain a fully-usable,
+full-features Python installation as well as their build artifacts
+(object files, libraries, etc).
 
-The intended audience of this project are people wanting to produce
-applications that embed Python in a larger executable. The artifacts
-that this project produces make it easier to build highly-portable
-applications containing Python.
+The included build artifacts can be recombined by downstream
+repackagers to derive a custom Python distribution, possibly without
+certain features like SQLite and OpenSSL. This is useful for
+embedding Python in a larger binary, where a full Python is
+often not needed and where interfacing with the Python C API
+is desirable. (See the
+`PyOxidizer <https://github.com/indygreg/PyOxidizer>`_ sister project
+for such a downstream repackager.)
 
-Most consumers of this project can bypass the building of artifacts
-and consume the pre-built binaries produced from it.
+The Python distributions are built in a manner to minimize
+run-time dependencies. This includes limiting the CPU instructions
+that can be used and limiting the set of shared libraries required
+at run-time. The goal is for the produced distribution to work on
+any system for the targeted architecture.
 
 Project Status
 ==============
 
-The project can be considered alpha quality. It is still in a heavy state
-of flux.
+The project can be considered beta quality. It is still under active
+development.
 
-Currently, it produces a nearly full-featured CPython distribution for
-Linux that is fully statically linked with the exception of some very
-common system libraries.
+There is support for producing 64-bit CPython distributions for Windows,
+macOS, and Linux. All distributions are highly self-contained and have
+limited shared library dependencies. Static linking is used aggressively.
 
 Planned features include:
 
-* Support for Windows
 * Static/dynamic linking toggles for dependencies
 * Support for configuring which toolchain/version to use
+* Support for BSDs
+* (maybe) Support for iOS and/or Android
+* (maybe) Support for Windows 32-bit
 
 Instructions
 ============
@@ -70,6 +80,13 @@ with the Clang toolchain that is built. If ``/usr/include`` does not
 exist, try running the installer. e.g.::
 
     open /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
+
+Windows
+-------
+
+Visual Studio 2017 (or later) is required.
+
+ActivePerl must be installed.
 
 How It Works
 ============
