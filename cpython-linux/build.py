@@ -532,7 +532,7 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
     return bi
 
 
-def build_cpython(client, image, platform):
+def build_cpython(client, image, platform, optimized=False):
     """Build CPythin in a Docker image'"""
     python_archive = download_entry('cpython-3.7', BUILD)
 
@@ -587,9 +587,11 @@ def build_cpython(client, image, platform):
                                    archive_path='Makefile.extra')
 
         env = {
-            'CPYTHON_OPTIMIZED': '1',
             'PYTHON_VERSION': DOWNLOADS['cpython-3.7']['version'],
         }
+
+        if optimized:
+            env['CPYTHON_OPTIMIZED'] = '1'
 
         container_exec(container, '/build/build-cpython.sh',
                        environment=env)
@@ -617,7 +619,14 @@ def build_cpython(client, image, platform):
                                    '/build/out/python',
                                    archive_path='PYTHON.json')
 
-        dest_path = BUILD / ('cpython-%s.tar' % platform)
+        basename = 'cpython-%s' % platform
+
+        if optimized:
+            basename += '-pgo'
+
+        basename += '.tar'
+
+        dest_path = BUILD / basename
         data, stat = container.get_archive('/build/out/python')
 
         with dest_path.open('wb') as fh:
@@ -637,17 +646,21 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--platform')
+    parser.add_argument('--optimized', action='store_true')
     parser.add_argument('action')
 
     args = parser.parse_args()
 
     action = args.action
 
-    log_path = BUILD / ('build.%s.log' % action)
-    LOG_PREFIX[0] = action
+    name = action
     if args.platform:
-        log_path = BUILD / ('build.%s-%s.log' % (action, args.platform))
-        LOG_PREFIX[0] = '%s-%s' % (action, args.platform)
+        name += '-%s' % args.platform
+    if args.optimized:
+        name += '-pgo'
+
+    log_path = BUILD / ('build.%s.log' % name)
+    LOG_PREFIX[0] = name
 
     with log_path.open('wb') as log_fh:
         LOG_FH[0] = log_fh
@@ -676,7 +689,8 @@ def main():
             build_tcltk(client, get_image(client, 'build'), platform=args.platform)
 
         elif action == 'cpython':
-            build_cpython(client, get_image(client, 'build'), platform=args.platform)
+            build_cpython(client, get_image(client, 'build'), platform=args.platform,
+                          optimized=args.optimized)
 
         else:
             print('unknown build action: %s' % action)

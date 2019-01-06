@@ -47,6 +47,8 @@ Instructions
 To build a Python distribution for Linux x64::
 
     $ ./build-linux.py
+    # With profile-guided optimizations (generated code should be faster):
+    $ ./build-linux.py --optimized
 
 To build a Python distribution for macOS::
 

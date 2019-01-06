@@ -17,7 +17,7 @@ TOOLCHAIN_DEPENDS := \
     $(OUTDIR)/clang-linux64.tar \
     $(NULL)
 
-default: $(OUTDIR)/cpython-linux64.tar
+default: $(OUTDIR)/cpython-linux64$(if $(PYBUILD_OPTIMIZED),-pgo,).tar
 
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
 	$(BUILD) image-$*
@@ -88,3 +88,6 @@ PYTHON_DEPENDS := \
 
 $(OUTDIR)/cpython-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) cpython
+
+$(OUTDIR)/cpython-$(PLATFORM)-pgo.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
+	$(BUILD) --platform $(PLATFORM) --optimized cpython
