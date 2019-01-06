@@ -17,7 +17,8 @@ import docker
 import jinja2
 
 from pythonbuild.cpython import (
-    derive_setup_local
+    derive_setup_local,
+    parse_setup_line,
 )
 from pythonbuild.downloads import (
     DOWNLOADS,
@@ -364,7 +365,7 @@ def build_tcltk(client, image, platform):
         download_tools_archive(container, BUILD / dest_path)
 
 
-def python_build_info(container, setup_local):
+def python_build_info(container, setup_dist, setup_local):
     """Obtain build metadata for the Python distribution."""
 
     bi = {
@@ -417,7 +418,66 @@ def python_build_info(container, setup_local):
 
         libraries.add(libname)
 
-    # Extension data is derived by "parsing" the Setup.local file.
+    # Extension data is derived by "parsing" the Setup.dist and Setup.local files.
+
+    def process_setup_line(line):
+        d = parse_setup_line(line)
+
+        if not d:
+            return
+
+        extension = d['extension']
+        log('processing extension %s' % extension)
+
+        objs = []
+
+        for obj in sorted(d['posix_obj_paths']):
+            obj = pathlib.Path('build') / obj
+            log('adding object file %s for extension %s' % (obj, extension))
+            objs.append(str(obj))
+
+            # Mark object file as used so we don't include it in the core
+            # object files below. .remove() would be nicer, as we would catch
+            # missing object files. But some sources (like math.c) are used by
+            # multiple modules!
+            modules_objs.discard(obj)
+
+        links = []
+
+        for libname in sorted(d['links']):
+            log('adding library %s for extension %s' % (libname, extension))
+
+            if libname in libraries:
+                links.append({
+                    'name': libname,
+                    'path_static': 'build/lib/lib%s.a' % libname,
+                })
+            else:
+                links.append({
+                    'name': libname,
+                    'system': True,
+                })
+
+        bi['extensions'][extension] = {
+            'in_core': False,
+            'init_fn': 'PyInit_%s' % extension,
+            'links': links,
+            'objs': objs,
+        }
+
+
+    found_start = False
+
+    for line in setup_dist.splitlines():
+        if not found_start:
+            if line.startswith(b'PYTHONPATH='):
+                found_start = True
+                continue
+
+            continue
+
+        process_setup_line(line)
+
     for line in setup_local.splitlines():
         if line.startswith(b'*static*'):
             continue
@@ -425,59 +485,7 @@ def python_build_info(container, setup_local):
         if line.startswith(b'*disabled*'):
             break
 
-        if not line:
-            continue
-
-        if b'#' in line:
-            log('unexpected # in Setup.local content')
-            sys.exit(1)
-
-        words = line.split()
-
-        extension = words[0].decode('ascii')
-        links = []
-
-        objs = set()
-
-        for word in words:
-            # Arguments looking like C source files are converted to object files.
-            if word.endswith(b'.c'):
-                # Object files are named according to the basename: parent
-                # directories they may happen to reside in are stripped out.
-                source_path = pathlib.Path(word.decode('ascii'))
-                obj_path = pathlib.Path('build/Modules/%s' % source_path.with_suffix('.o').name)
-                log('adding object file %s for extension %s' % (obj_path, extension))
-                objs.add(str(obj_path))
-
-                # Mark object file as used so we don't include it in the core
-                # object files below. .remove() would be nicer, as we would catch
-                # missing object files. But some sources (like math.c) are used by
-                # multiple modules!
-                modules_objs.discard(obj_path)
-
-            # Arguments looking like link libraries are converted to library
-            # dependencies.
-            elif word.startswith(b'-l'):
-                libname = word[2:].decode('ascii')
-                log('adding library %s for extension %s' % (libname, extension))
-
-                if libname in libraries:
-                    links.append({
-                        'name': libname,
-                        'path_static': 'build/lib/lib%s.a' % libname,
-                    })
-                else:
-                    links.append({
-                        'name': libname,
-                        'system': True,
-                    })
-
-        bi['extensions'][extension] = {
-            'in_core': False,
-            'init_fn': 'PyInit_%s' % extension,
-            'links': links,
-            'objs': list(sorted(objs)),
-        }
+        process_setup_line(line)
 
     # Any paths left in modules_objs are not part of any extension and are
     # instead part of the core distribution.
@@ -495,7 +503,7 @@ def build_cpython(client, image, platform):
     with (SUPPORT / 'static-modules').open('rb') as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
 
-    setup_local_content, extra_make_content = derive_setup_local(
+    setup_dist_content, setup_local_content, extra_make_content = derive_setup_local(
         static_modules_lines, python_archive)
 
     with run_container(client, image) as container:
@@ -556,7 +564,7 @@ def build_cpython(client, image, platform):
             'python_exe': 'install/bin/python',
             'python_include': 'install/include/python3.7m',
             'python_stdlib': 'install/lib/python3.7',
-            'build_info': python_build_info(container, setup_local_content),
+            'build_info': python_build_info(container, setup_dist_content, setup_local_content),
         }
 
         with tempfile.NamedTemporaryFile('w') as fh:

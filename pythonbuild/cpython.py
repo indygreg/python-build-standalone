@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import os
+import pathlib
 import re
 import tarfile
 
@@ -64,6 +65,42 @@ STATIC_MODULES = {
 UNSUPPORTED_MODULES = {
     b'_tkinter',
 }
+
+
+def parse_setup_line(line: bytes):
+    """Parse a line in a ``Setup.*`` file."""
+    if b'#' in line:
+        line = line[:line.index(b'#')].rstrip()
+
+    if not line:
+        return
+
+    words = line.split()
+
+    extension = words[0].decode('ascii')
+
+    objs = set()
+    links = set()
+
+    for word in words:
+        # Arguments looking like C source files are converted to object files.
+        if word.endswith(b'.c'):
+            # Object files are named according to the basename: parent
+            # directories they may happen to reside in are stripped out.
+            source_path = pathlib.Path(word.decode('ascii'))
+            obj_path = pathlib.Path('Modules/%s' % source_path.with_suffix('.o').name)
+            objs.add(obj_path)
+
+        # Arguments looking like link libraries are converted to library
+        # dependencies.
+        elif word.startswith(b'-l'):
+            links.add(word[2:].decode('ascii'))
+
+    return {
+        'extension': extension,
+        'posix_obj_paths': objs,
+        'links': links,
+    }
 
 
 def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=None):
@@ -146,7 +183,7 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
             b'%s: PY_STDMODULE_CFLAGS += %s' %
             (target, b' '.join(extra_cflags[target])))
 
-    return b'\n'.join(dest_lines), b'\n'.join(make_lines)
+    return b'\n'.join(source_lines), b'\n'.join(dest_lines), b'\n'.join(make_lines)
 
 
 RE_INITTAB_ENTRY = re.compile('\{"([^"]+)", ([^\}]+)\},')
