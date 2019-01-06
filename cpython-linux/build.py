@@ -18,6 +18,7 @@ import jinja2
 
 from pythonbuild.cpython import (
     derive_setup_local,
+    parse_config_c,
     parse_setup_line,
 )
 from pythonbuild.downloads import (
@@ -365,7 +366,7 @@ def build_tcltk(client, image, platform):
         download_tools_archive(container, BUILD / dest_path)
 
 
-def python_build_info(container, setup_dist, setup_local):
+def python_build_info(container, config_c_in, setup_dist, setup_local):
     """Obtain build metadata for the Python distribution."""
 
     bi = {
@@ -487,6 +488,19 @@ def python_build_info(container, setup_dist, setup_local):
 
         process_setup_line(line)
 
+    # There are also a setup of built-in extensions defined in config.c.in which
+    # aren't built using the Setup.* files and are part of the core libpython
+    # distribution. Define extensions entries for these so downstream consumers
+    # can register their PyInit_ functions.
+    for name, init_fn in sorted(config_c_in.items()):
+        log('adding in-core extension %s' % name)
+        bi['extensions'][name] = {
+            'in_core': True,
+            'init_fn': init_fn,
+            'links': [],
+            'objs': [],
+        }
+
     # Any paths left in modules_objs are not part of any extension and are
     # instead part of the core distribution.
     for p in sorted(modules_objs):
@@ -503,8 +517,12 @@ def build_cpython(client, image, platform):
     with (SUPPORT / 'static-modules').open('rb') as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
 
-    setup_dist_content, setup_local_content, extra_make_content = derive_setup_local(
-        static_modules_lines, python_archive)
+    setup = derive_setup_local(static_modules_lines, python_archive)
+
+    config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
+    setup_dist_content = setup['setup_dist']
+    setup_local_content = setup['setup_local']
+    extra_make_content = setup['make_data']
 
     with run_container(client, image) as container:
         copy_toolchain(container, platform=platform)
@@ -564,7 +582,8 @@ def build_cpython(client, image, platform):
             'python_exe': 'install/bin/python',
             'python_include': 'install/include/python3.7m',
             'python_stdlib': 'install/lib/python3.7',
-            'build_info': python_build_info(container, setup_dist_content, setup_local_content),
+            'build_info': python_build_info(container, config_c_in,
+                                            setup_dist_content, setup_local_content),
         }
 
         with tempfile.NamedTemporaryFile('w') as fh:

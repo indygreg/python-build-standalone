@@ -120,6 +120,9 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
         ifh = tf.extractfile('Python-%s/Modules/Setup.dist' % python_version)
         source_lines = ifh.readlines()
 
+        ifh = tf.extractfile('Python-%s/Modules/config.c.in' % python_version)
+        config_c_in = ifh.read()
+
     found_shared = False
 
     dest_lines = []
@@ -183,7 +186,12 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
             b'%s: PY_STDMODULE_CFLAGS += %s' %
             (target, b' '.join(extra_cflags[target])))
 
-    return b'\n'.join(source_lines), b'\n'.join(dest_lines), b'\n'.join(make_lines)
+    return {
+        'config_c_in': config_c_in,
+        'setup_dist': b'\n'.join(source_lines),
+        'setup_local': b'\n'.join(dest_lines),
+        'make_data': b'\n'.join(make_lines),
+    }
 
 
 RE_INITTAB_ENTRY = re.compile('\{"([^"]+)", ([^\}]+)\},')
