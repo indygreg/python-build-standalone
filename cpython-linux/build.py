@@ -548,9 +548,9 @@ def build_cpython(client, image, platform):
 
     with run_container(client, image) as container:
         copy_toolchain(container, platform=platform)
+        # TODO support bdb/gdbm toggle
+        install_tools_archive(container, BUILD / ('bdb-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('bzip2-%s.tar' % platform))
-        # TODO build against Berkeley DB to avoid GPLv3.
-        install_tools_archive(container, BUILD / ('gdbm-%s.tar' % platform))
         # TODO support libedit/libreadline toggle
         install_tools_archive(container, BUILD / ('libedit-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('libffi-%s.tar' % platform))
