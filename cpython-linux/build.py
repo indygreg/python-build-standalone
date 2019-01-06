@@ -669,7 +669,7 @@ def main():
         elif action == 'readline':
             build_readline(client, get_image(client, 'build'), platform=args.platform)
 
-        elif action in ('bzip2', 'gdbm', 'libffi', 'ncurses', 'openssl', 'sqlite', 'uuid', 'xz', 'zlib'):
+        elif action in ('bdb', 'bzip2', 'gdbm', 'libffi', 'ncurses', 'openssl', 'sqlite', 'uuid', 'xz', 'zlib'):
             simple_build(client, get_image(client, 'build'), action, platform=args.platform)
 
         elif action == 'tcltk':

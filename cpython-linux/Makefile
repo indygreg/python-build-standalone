@@ -31,6 +31,9 @@ $(OUTDIR)/gcc-linux64.tar: $(OUTDIR)/binutils-linux64.tar $(HERE)/build-gcc.sh
 $(OUTDIR)/clang-linux64.tar: $(OUTDIR)/binutils-linux64.tar $(OUTDIR)/gcc-linux64.tar $(OUTDIR)/image-clang.tar $(HERE)/build-clang.sh
 	$(BUILD) clang
 
+$(OUTDIR)/bdb-%.tar: $(OUTDIR)/image-build.tar $(TOOLCHAIN_DEPENDS) $(HERE)/build-bdb.sh
+	$(BUILD) --platform $* bdb
+
 $(OUTDIR)/bzip2-%.tar: $(OUTDIR)/image-build.tar $(TOOLCHAIN_DEPENDS) $(HERE)/build-bzip2.sh
 	$(BUILD) --platform $* bzip2
 
@@ -68,6 +71,7 @@ $(OUTDIR)/zlib-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-zlib.sh
 	$(BUILD) --platform $(PLATFORM) zlib
 
 PYTHON_DEPENDS := \
+    $(OUTDIR)/bdb-$(PLATFORM).tar \
     $(OUTDIR)/bzip2-$(PLATFORM).tar \
     $(OUTDIR)/gdbm-$(PLATFORM).tar \
     $(OUTDIR)/libedit-$(PLATFORM).tar \
