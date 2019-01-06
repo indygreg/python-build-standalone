@@ -81,8 +81,9 @@ def parse_setup_line(line: bytes):
 
     objs = set()
     links = set()
+    frameworks = set()
 
-    for word in words:
+    for i, word in enumerate(words):
         # Arguments looking like C source files are converted to object files.
         if word.endswith(b'.c'):
             # Object files are named according to the basename: parent
@@ -96,10 +97,14 @@ def parse_setup_line(line: bytes):
         elif word.startswith(b'-l'):
             links.add(word[2:].decode('ascii'))
 
+        elif word == b'-framework':
+            frameworks.add(words[i + 1].decode('ascii'))
+
     return {
         'extension': extension,
         'posix_obj_paths': objs,
         'links': links,
+        'frameworks': frameworks,
     }
 
 

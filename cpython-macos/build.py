@@ -4,6 +4,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import argparse
+import json
 import multiprocessing
 import os
 import pathlib
@@ -13,7 +14,9 @@ import sys
 import tempfile
 
 from pythonbuild.cpython import (
-    derive_setup_local
+    derive_setup_local,
+    parse_config_c,
+    parse_setup_line,
 )
 from pythonbuild.downloads import (
     DOWNLOADS,
@@ -146,6 +149,140 @@ def build_clang():
             create_tar_from_directory(fh, td / 'out')
 
 
+def python_build_info(python_path: pathlib.Path, config_c_in,
+                      setup_dist, setup_local):
+    bi = {
+        'core': {
+            'objs': [],
+            'links': [],
+        },
+        'extensions': {},
+    }
+
+    # This is very similar to the Linux code and could probably be
+    # consolidated...
+    core_objs = set()
+    modules_objs = set()
+
+    for root, dirs, files in os.walk(python_path / 'build'):
+        for f in files:
+            p = pathlib.Path(root) / f
+            rel_path = p.relative_to(python_path)
+
+            if p.suffix != '.o':
+                continue
+
+            if rel_path.parts[1] in ('Objects', 'Parser', 'Python'):
+                core_objs.add(rel_path)
+
+            elif rel_path.parts[1] == 'Modules':
+                modules_objs.add(rel_path)
+
+    for p in sorted(core_objs):
+        log('adding core object file %s' % p)
+        bi['core']['objs'].append(str(p))
+
+    libraries = set()
+
+    for f in os.listdir(python_path / 'build' / 'lib'):
+        if not f.endswith('.a'):
+            continue
+
+        # Strip "lib" prefix and ".a" suffix.
+        libname = f[3:-2]
+        libraries.add(libname)
+
+    # Extensions are derived by parsing the Setup.dist and Setup.local
+    # files.
+
+    def process_setup_line(line):
+        d = parse_setup_line(line)
+
+        if not d:
+            return
+
+        extension = d['extension']
+        log('processing extension %s' % extension)
+
+        objs = []
+
+        for obj in sorted(d['posix_obj_paths']):
+            obj = pathlib.Path('build') / obj
+            log('adding object file %s for extension %s' % (obj, extension))
+            objs.append(str(obj))
+
+            modules_objs.discard(obj)
+
+        links = []
+
+        for framework in sorted(d['frameworks']):
+            log('adding framework %s for extension %s' % (framework, extension))
+
+            links.append({
+                'name': framework,
+                'framework': True,
+            })
+
+        for libname in sorted(d['links']):
+            log('adding library %s for extension %s' % (libname, extension))
+
+            if libname in libraries:
+                links.append({
+                    'name': libname,
+                    'path_static': 'build/lib/lib%s.a' % libname,
+                })
+            else:
+                links.append({
+                    'name': libname,
+                    'system': True,
+                })
+
+        bi['extensions'][extension] = {
+            'in_core': False,
+            'init_fn': 'PyInit_%s' % extension,
+            'links': links,
+            'objs': objs,
+        }
+
+    found_start = False
+
+    for line in setup_dist.splitlines():
+        if not found_start:
+            if line.startswith(b'PYTHONPATH='):
+                found_start = True
+                continue
+
+            continue
+
+        process_setup_line(line)
+
+    for line in setup_local.splitlines():
+        if line.startswith(b'*static*'):
+            continue
+
+        if line.startswith(b'*disabled*'):
+            break
+
+        process_setup_line(line)
+
+    for name, init_fn in sorted(config_c_in.items()):
+        log('adding in-core extension %s' % name)
+        bi['extensions'][name] = {
+            'in_core': True,
+            'init_fn': init_fn,
+            'links': [],
+            'objs': [],
+        }
+
+    # Any paths left in modules_objs are not part of any extensions and
+    # are instead part of the core distribution.
+    for p in sorted(modules_objs):
+        log('adding core object file %s' % p)
+        bi['core']['objs'].append(str(p))
+
+    return bi
+
+
 def build_cpython():
     python_archive = download_entry('cpython-3.7', BUILD)
     python_version = DOWNLOADS['cpython-3.7']['version']
@@ -153,8 +290,13 @@ def build_cpython():
     with (SUPPORT / 'static-modules').open('rb') as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
 
-    setup_local_content, extra_make_content = derive_setup_local(
+    setup = derive_setup_local(
         static_modules_lines, python_archive, disabled=DISABLED_STATIC_MODULES)
+
+    config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
+    setup_dist_content = setup['setup_dist']
+    setup_local_content = setup['setup_local']
+    extra_make_content = setup['make_data']
 
     with tempfile.TemporaryDirectory() as td:
         td = pathlib.Path(td)
@@ -202,6 +344,26 @@ def build_cpython():
         env['CPYTHON_OPTIMIZED'] = '1'
 
         exec_and_log([SUPPORT / 'build-cpython.sh'], td, env)
+
+        # Create PYTHON.json file describing this distribution.
+        python_info = {
+            # TODO bump version number once format is somewhat stable.
+            'version': '0',
+            'os': 'macos',
+            'arch': 'x86_64',
+            'python_flavor': 'cpython',
+            'python_version': python_version,
+            'python_exe': 'install/bin/python3',
+            'python_include': 'install/include/python3.7m',
+            'python_stdlib': 'install/lib/python3.7',
+            'build_info': python_build_info(td / 'out' / 'python',
+                                            config_c_in,
+                                            setup_dist_content,
+                                            setup_local_content),
+        }
+
+        with (td / 'out' / 'python' / 'PYTHON.json').open('w') as fh:
+            json.dump(python_info, fh, sort_keys=True, indent=4)
 
         dest_path = BUILD / 'cpython-macos.tar'
 
