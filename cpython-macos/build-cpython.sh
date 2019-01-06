@@ -51,8 +51,8 @@ done
 
 # The object files need to be linked against library dependencies. So copy
 # library files as well.
-mkdir ${ROOT}/out/python/lib
-cp -av ${DEPS_DIR}/lib/*.a ${ROOT}/out/python/lib/
+mkdir ${ROOT}/out/python/build/lib
+cp -av ${DEPS_DIR}/lib/*.a ${ROOT}/out/python/build/lib/
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
