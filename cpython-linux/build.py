@@ -318,12 +318,34 @@ def build_clang(client, image):
                                tools_path)
 
 
+def build_libedit(client, image, platform):
+    libedit_archive = download_entry('libedit', BUILD)
+
+    with run_container(client, image) as container:
+        copy_toolchain(container, platform=platform)
+        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
+        copy_file_to_container(libedit_archive, container, '/build')
+        copy_file_to_container(SUPPORT / 'build-libedit.sh', container,
+                               '/build')
+
+        env = {
+            'TOOLCHAIN': 'clang-linux64',
+            'LIBEDIT_VERSION': DOWNLOADS['libedit']['version'],
+        }
+
+        add_target_env(env, platform)
+
+        container_exec(container, '/build/build-libedit.sh', environment=env)
+        dest_path = 'libedit-%s.tar' % platform
+        download_tools_archive(container, BUILD / dest_path, 'deps')
+
+
 def build_readline(client, image, platform):
     readline_archive = download_entry('readline', BUILD)
 
     with run_container(client, image) as container:
         copy_toolchain(container, platform=platform)
-        install_tools_archive(container, BUILD / ('ncurses-%s.tar'% platform))
+        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
         copy_file_to_container(readline_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-readline.sh', container,
                                '/build')
@@ -639,6 +661,9 @@ def main():
 
         elif action == 'gcc':
             build_gcc(client, get_image(client, 'gcc'))
+
+        elif action == 'libedit':
+            build_libedit(client, get_image(client, 'build'), platform=args.platform)
 
         elif action == 'readline':
             build_readline(client, get_image(client, 'build'), platform=args.platform)

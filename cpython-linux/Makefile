@@ -46,6 +46,9 @@ $(OUTDIR)/ncurses-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-ncurses.sh
 $(OUTDIR)/openssl-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-openssl.sh
 	$(BUILD) --platform $* openssl
 
+$(OUTDIR)/libedit-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-libedit.sh
+	$(BUILD) --platform $* libedit
+
 $(OUTDIR)/readline-%.tar: $(TOOLCHAIN_DEPENDS) $(OUTDIR)/ncurses-$(PLATFORM).tar $(HERE)/build-readline.sh
 	$(BUILD) --platform $* readline
 
@@ -67,6 +70,7 @@ $(OUTDIR)/zlib-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-zlib.sh
 PYTHON_DEPENDS := \
     $(OUTDIR)/bzip2-$(PLATFORM).tar \
     $(OUTDIR)/gdbm-$(PLATFORM).tar \
+    $(OUTDIR)/libedit-$(PLATFORM).tar \
     $(OUTDIR)/libffi-$(PLATFORM).tar \
     $(OUTDIR)/ncurses-$(PLATFORM).tar \
     $(OUTDIR)/openssl-$(PLATFORM).tar \
