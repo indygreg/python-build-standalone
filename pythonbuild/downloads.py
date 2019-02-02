@@ -17,10 +17,10 @@ DOWNLOADS = {
         'version': '6.0.19',
     },
     'binutils': {
-        'url': 'ftp://ftp.gnu.org/gnu/binutils/binutils-2.31.tar.xz',
-        'size': 20445772,
-        'sha256': '231036df7ef02049cdbff0681f4575e571f26ea8086cf70c2dcd3b6c0f4216bf',
-        'version': '2.31',
+        'url': 'ftp://ftp.gnu.org/gnu/binutils/binutils-2.32.tar.xz',
+        'size': 20774880,
+        'sha256': '0ab6c55dd86a92ed561972ba15b9b70a8b9f75557f896446c82e8b36e473ee04',
+        'version': '2.32',
     },
     'bzip2': {
         'url': 'https://ftp.sunet.se/mirror/archive/ftp.sunet.se/pub/Linux/distributions/bifrost/download/src/bzip2-1.0.6.tar.gz',
