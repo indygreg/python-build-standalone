@@ -4,7 +4,7 @@ Python Standalone Builds
 
 This project produces self-contained, highly-portable Python
 distributions. These Python distributions contain a fully-usable,
-full-features Python installation as well as their build artifacts
+full-featured Python installation as well as their build artifacts
 (object files, libraries, etc).
 
 The included build artifacts can be recombined by downstream
@@ -257,7 +257,7 @@ PYTHON.json File
 The ``PYTHON.json`` file describes the Python distribution in a machine
 readable manner. This file is meant to be opened by downstream consumers
 of this distribution so that they may learn things about the distribution
-without have to resort to heuristics.
+without having to resort to heuristics.
 
 The file contains a JSON map. This map has the following keys:
 
@@ -273,7 +273,7 @@ arch
    Target architecture for the distribution. e.g. ``x86`` (32-bit) or
    ``x86_64`` (64-bit).
 
-python_favor
+python_flavor
    Type of Python distribution. e.g. ``cpython``.
 
 python_version
