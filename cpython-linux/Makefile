@@ -49,7 +49,7 @@ $(OUTDIR)/ncurses-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-ncurses.sh
 $(OUTDIR)/openssl-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-openssl.sh
 	$(BUILD) --platform $* openssl
 
-$(OUTDIR)/libedit-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-libedit.sh
+$(OUTDIR)/libedit-%.tar: $(TOOLCHAIN_DEPENDS) $(OUTDIR)/ncurses-%.tar $(HERE)/build-libedit.sh
 	$(BUILD) --platform $* libedit
 
 $(OUTDIR)/readline-%.tar: $(TOOLCHAIN_DEPENDS) $(OUTDIR)/ncurses-$(PLATFORM).tar $(HERE)/build-readline.sh
