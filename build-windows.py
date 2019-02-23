@@ -37,9 +37,8 @@ def bootstrap():
 
 
 def run():
-    import zstandard
     from pythonbuild.downloads import DOWNLOADS
-    from pythonbuild.utils import hash_path
+    from pythonbuild.utils import compress_python_archive
 
     now = datetime.datetime.utcnow()
 
@@ -51,16 +50,9 @@ def run():
                    bufsize=0)
 
     source_path = BUILD / 'cpython-windows.tar'
-    dest_path = DIST / ('cpython-%s-windows-amd64-%s.tar.zst' % (
+
+    compress_python_archive(source_path, DIST, 'cpython-%s-windows-amd64-%s' % (
         DOWNLOADS['cpython-3.7']['version'], now.strftime('%Y%m%dT%H%M')))
-
-    print('compressing Python archive to %s' % dest_path)
-    with source_path.open('rb') as ifh, dest_path.open('wb') as ofh:
-        cctx = zstandard.ZstdCompressor(level=15)
-        cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
-
-    sha256 = hash_path(dest_path)
-    print('%s has SHA256 %s' % (dest_path, sha256))
 
 
 if __name__ == '__main__':

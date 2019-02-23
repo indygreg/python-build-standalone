@@ -9,6 +9,8 @@ import pathlib
 import tarfile
 import urllib.request
 
+import zstandard
+
 from .downloads import (
     DOWNLOADS,
 )
@@ -132,3 +134,26 @@ def create_tar_from_directory(fh, base_path: pathlib.Path):
 def extract_tar_to_directory(source: pathlib.Path, dest: pathlib.Path):
     with tarfile.open(source, 'r') as tf:
         tf.extractall(dest)
+
+
+def compress_python_archive(source_path: pathlib.Path,
+                            dist_path: pathlib.Path,
+                            basename: str):
+    dest_path = dist_path / ('%s.tar.zst' % basename)
+    temp_path = dist_path / ('%s.tar.zst.tmp' % basename)
+
+    print('compressing Python archive to %s' % dest_path)
+
+    try:
+        with source_path.open('rb') as ifh, temp_path.open('wb') as ofh:
+            cctx = zstandard.ZstdCompressor(level=15)
+            cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
+
+        temp_path.rename(dest_path)
+    except Exception:
+        temp_path.unlink()
+        raise
+
+    print('%s has SHA256 %s' % (dest_path, hash_path(dest_path)))
+
+    return dest_path
