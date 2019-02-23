@@ -67,7 +67,7 @@ UNSUPPORTED_MODULES = {
 }
 
 
-def parse_setup_line(line: bytes):
+def parse_setup_line(line: bytes, variant: str):
     """Parse a line in a ``Setup.*`` file."""
     if b'#' in line:
         line = line[:line.index(b'#')].rstrip()
@@ -89,7 +89,13 @@ def parse_setup_line(line: bytes):
             # Object files are named according to the basename: parent
             # directories they may happen to reside in are stripped out.
             source_path = pathlib.Path(word.decode('ascii'))
-            obj_path = pathlib.Path('Modules/%s' % source_path.with_suffix('.o').name)
+
+            if variant:
+                obj_path = pathlib.Path('Modules/VARIANT-%s-%s-%s' % (
+                    extension, variant, source_path.with_suffix('.o').name))
+            else:
+                obj_path = pathlib.Path('Modules/%s' % source_path.with_suffix('.o').name)
+
             objs.add(obj_path)
 
         # Arguments looking like link libraries are converted to library
@@ -105,6 +111,7 @@ def parse_setup_line(line: bytes):
         'posix_obj_paths': objs,
         'links': links,
         'frameworks': frameworks,
+        'variant': variant or 'default',
     }
 
 
@@ -160,8 +167,82 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
             dest_lines.append(line)
 
     RE_DEFINE = re.compile(b'-D[^=]+=[^\s]+')
+    RE_VARIANT = re.compile(b'VARIANT=([^\s]+)\s')
+
+    seen_variants = set()
 
     for line in static_modules_lines:
+        # We supplement the format to support declaring extension variants.
+        # A variant results in multiple compiles of a given extension.
+        # However, the CPython build system doesn't take kindly to this because
+        # a) we can only have a single extension with a given name
+        # b) it assumes the init function matches the extension name
+        # c) attempting to link multiple variants into the same binary can often
+        #    result in duplicate symbols when variants use different libraries
+        #    implementing the same API.
+        #
+        # When we encounter a variant, we only pass the 1st variant through to
+        # Setup.local. We then supplement the Makefile with rules to build
+        # remaining variants.
+        m = RE_VARIANT.search(line)
+        if m:
+            line = RE_VARIANT.sub(b'', line)
+            variant = m.group(1)
+            extension = line.split()[0]
+
+            cflags = []
+            ldflags = []
+
+            for w in line.split()[1:]:
+                if w.startswith((b'-I', b'-D')):
+                    cflags.append(w)
+                elif w.startswith((b'-L', b'-l')):
+                    ldflags.append(w)
+                elif w.endswith(b'.c'):
+                    pass
+                else:
+                    raise ValueError('unexpected content in Setup variant line: %s' % w)
+
+            if extension in seen_variants:
+                sources = [w for w in line.split() if w.endswith(b'.c')]
+                object_files = []
+                for source in sources:
+                    basename = os.path.basename(source)[:-2]
+
+                    # Use a unique name to ensure there aren't collisions
+                    # across extension variants.
+                    object_file = b'Modules/VARIANT-%s-%s-%s.o' % (
+                        extension, variant, basename)
+                    object_files.append(object_file)
+                    make_lines.append(
+                        b'%s: $(srcdir)/Modules/%s; '
+                        b'$(CC) $(PY_BUILTIN_MODULE_CFLAGS) '
+                        b'%s -c $(srcdir)/Modules/%s -o %s' % (
+                            object_file, source, b' '.join(cflags),
+                            source, object_file))
+
+                extension_target = b'Modules/%s-VARIANT-%s$(EXT_SUFFIX)' % (
+                    extension, variant)
+
+                make_lines.append(b'%s: %s' % (
+                    extension_target, b' '.join(object_files)))
+                make_lines.append(
+                    b'\t$(BLDSHARED) %s %s -o Modules/%s-VARIANT-%s$(EXT_SUFFIX)' %
+                    (b' '.join(object_files), b' '.join(ldflags),
+                     extension, variant))
+                make_lines.append(
+                    b'\techo "%s" > Modules/VARIANT-%s-%s.data' % (
+                        line, extension, variant))
+
+                # Add dependencies to $(LIBRARY) target to force compilation of
+                # extension variant.
+                make_lines.append(b'$(LIBRARY): %s' % extension_target)
+
+                continue
+
+            else:
+                seen_variants.add(extension)
+
         # makesetup parses lines with = as extra config options. There appears
         # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
         # around this by detecting the syntax we'd like to support and move the

@@ -17,16 +17,17 @@ pushd libedit-${LIBEDIT_VERSION}
 
 cflags="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include -I/tools/deps/include/ncurses"
 
+# Install to /tools/deps/libedit so it doesn't conflict with readline's files.
 CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="-L/tools/deps/lib" \
     ./configure \
         --build=x86_64-unknown-linux-gnu \
         --host=${TARGET} \
-        --prefix=/tools/deps \
+        --prefix=/tools/deps/libedit \
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out
 
 # Alias readline/{history.h, readline.h} for readline compatibility.
-mkdir /build/out/tools/deps/include/readline
-ln -s ../editline/readline.h /build/out/tools/deps/include/readline/readline.h
-ln -s ../editline/readline.h /build/out/tools/deps/include/readline/history.h
+mkdir /build/out/tools/deps/libedit/include/readline
+ln -s ../editline/readline.h /build/out/tools/deps/libedit/include/readline/readline.h
+ln -s ../editline/readline.h /build/out/tools/deps/libedit/include/readline/history.h

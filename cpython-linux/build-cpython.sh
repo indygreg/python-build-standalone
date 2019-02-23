@@ -28,13 +28,15 @@ mv Setup.local Python-${PYTHON_VERSION}/Modules/Setup.local
 
 pushd Python-${PYTHON_VERSION}
 
+cp Modules/readline.c Modules/readline-libedit.c
+
 # Python supports using libedit instead of readline. But Modules/readline.c
 # has all of this behind ``#ifdef __APPLE__`` instead of a more specific
 # feature flag. All occurrences of __APPLE__ in that file are related to
 # libedit. So we just replace the content. USE_LIBEDIT comes from our
 # static-modules file.
 # TODO make changes upstream to allow libedit to more easily be used
-sed -i s/__APPLE__/USE_LIBEDIT/g Modules/readline.c
+sed -i s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
@@ -71,10 +73,14 @@ for d in Modules Objects Parser Programs Python; do
     cp -av $d/*.o /build/out/python/build/$d/
 done
 
+# Also copy extension variant metadata files.
+cp -av Modules/VARIANT-*.data /build/out/python/build/Modules/
+
 # The object files need to be linked against library dependencies. So copy
 # library files as well.
 mkdir /build/out/python/build/lib
 cp -av /tools/deps/lib/*.a /build/out/python/build/lib/
+cp -av /tools/deps/libedit/lib/*.a /build/out/python/build/lib/
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so

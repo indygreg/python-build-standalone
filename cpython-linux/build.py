@@ -443,14 +443,14 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
 
     # Extension data is derived by "parsing" the Setup.dist and Setup.local files.
 
-    def process_setup_line(line):
-        d = parse_setup_line(line)
+    def process_setup_line(line, variant=None):
+        d = parse_setup_line(line, variant)
 
         if not d:
             return
 
         extension = d['extension']
-        log('processing extension %s' % extension)
+        log('processing extension %s (variant %s)' % (extension, d['variant']))
 
         objs = []
 
@@ -481,13 +481,13 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
                     'system': True,
                 })
 
-        bi['extensions'][extension] = [{
+        bi['extensions'].setdefault(extension, []).append({
             'in_core': False,
             'init_fn': 'PyInit_%s' % extension,
             'links': links,
             'objs': objs,
-            'variant': 'default',
-        }]
+            'variant': d['variant'],
+        })
 
 
     found_start = False
@@ -511,19 +511,37 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
 
         process_setup_line(line)
 
+    # Extension variants are denoted by the presence of
+    # Modules/VARIANT-<extension>-<variant>.data files that describe the
+    # extension. Find those files and process them.
+    data, stat = container.get_archive('/build/out/python/build/Modules')
+    data = io.BytesIO(b''.join(data))
+
+    tf = tarfile.open(fileobj=data)
+
+    for ti in tf:
+        basename = os.path.basename(ti.name)
+
+        if not basename.startswith('VARIANT-') or not basename.endswith('.data'):
+            continue
+
+        variant = basename[:-5].split('-')[2]
+        line = tf.extractfile(ti).read().strip()
+        process_setup_line(line, variant=variant)
+
     # There are also a setup of built-in extensions defined in config.c.in which
     # aren't built using the Setup.* files and are part of the core libpython
     # distribution. Define extensions entries for these so downstream consumers
     # can register their PyInit_ functions.
     for name, init_fn in sorted(config_c_in.items()):
         log('adding in-core extension %s' % name)
-        bi['extensions'][name] = [{
+        bi['extensions'].setdefault(name, []).append({
             'in_core': True,
             'init_fn': init_fn,
             'links': [],
             'objs': [],
             'variant': 'default',
-        }]
+        })
 
     # Any paths left in modules_objs are not part of any extension and are
     # instead part of the core distribution.
@@ -553,11 +571,11 @@ def build_cpython(client, image, platform, optimized=False):
         # TODO support bdb/gdbm toggle
         install_tools_archive(container, BUILD / ('bdb-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('bzip2-%s.tar' % platform))
-        # TODO support libedit/libreadline toggle
         install_tools_archive(container, BUILD / ('libedit-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('libffi-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('openssl-%s.tar' % platform))
+        install_tools_archive(container, BUILD / ('readline-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('sqlite-%s.tar' % platform))
         # tk requires a bunch of X11 stuff.
         #install_tools_archive(container, BUILD / ('tcltk-%s.tar' % platform))
