@@ -319,14 +319,20 @@ core
       An array of linking requirement maps. (See below for data format.)
 
 extensions
-   A map of extension names to a map describing the extension.
+   A map of extension names to an array of maps describing candidate extensions.
 
    Extensions are non-core/non-essential parts of the Python distribution that
    are frequently built as standalone entities.
 
    Names in this map denote the name of the extension module.
 
-   Values are maps with the following keys:
+   Values are arrays of maps. Each map represents a potential candidate
+   providing the extension. There is frequently only a single extension
+   candidate. Multiple candidates can occur if there are e.g. varying
+   libraries an extension can be linked against to supply underlying
+   functionality.
+
+   Each map has the following keys:
 
    in_core
       Boolean indicating if this extension is defined by the core distribution.
@@ -358,6 +364,11 @@ extensions
    static_lib
       The path to a static library defining this extension module. May not
       be defined.
+
+   variant
+      String describing this extension variant. Downstream consumers can key off
+      this value to choose an appropriate extension variant when there are
+      multiple options.
 
 Each entry in a ``links`` array is a map with the following keys:
 

@@ -237,12 +237,13 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
                     'system': True,
                 })
 
-        bi['extensions'][extension] = {
+        bi['extensions'][extension] = [{
             'in_core': False,
             'init_fn': 'PyInit_%s' % extension,
             'links': links,
             'objs': objs,
-        }
+            'variant': 'default',
+        }]
 
     found_start = False
 
@@ -267,12 +268,13 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
 
     for name, init_fn in sorted(config_c_in.items()):
         log('adding in-core extension %s' % name)
-        bi['extensions'][name] = {
+        bi['extensions'][name] = [{
             'in_core': True,
             'init_fn': init_fn,
             'links': [],
             'objs': [],
-        }
+            'variant': 'default',
+        }]
 
     # Any paths left in modules_objs are not part of any extensions and
     # are instead part of the core distribution.

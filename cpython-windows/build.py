@@ -1170,13 +1170,14 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         additional_depends = find_additional_dependencies(ext)
         additional_depends -= CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('ignore_additional_depends', set())
 
-        res['extensions'][ext] = {
+        res['extensions'][ext] = [{
             'in_core': False,
             'objs': [],
             'init_fn': 'PyInit_%s' % ext,
             'static_lib': None,
             'links': [{'name': n[:-4], 'system': True} for n in sorted(additional_depends)],
-        }
+            'variant': 'default',
+        }]
 
         for obj in process_project(ext, dest_dir):
             res['extensions'][ext]['objs'].append('build/extensions/%s/%s' % (ext, obj))
@@ -1196,7 +1197,7 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         # Copy the extension static library.
         ext_static = outputs_path / ('%s.lib' % ext)
         dest = dest_dir / ('%s.lib' % ext)
-        res['extensions'][ext]['static_lib'] = 'build/extensions/%s/%s.lib' % (ext, ext)
+        res['extensions'][ext][0]['static_lib'] = 'build/extensions/%s/%s.lib' % (ext, ext)
         log('copying static extension %s' % ext_static)
         shutil.copyfile(ext_static, dest)
 
