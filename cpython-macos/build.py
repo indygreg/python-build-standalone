@@ -196,7 +196,7 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
     # files.
 
     def process_setup_line(line):
-        d = parse_setup_line(line)
+        d = parse_setup_line(line, variant=None)
 
         if not d:
             return
