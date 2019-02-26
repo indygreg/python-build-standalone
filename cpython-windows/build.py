@@ -160,7 +160,7 @@ def add_to_config_c(source_path: pathlib.Path, extension: str, init_fn: str):
 
     lines = []
 
-    with config_c_path.open('r') as fh:
+    with config_c_path.open('r', encoding='utf8') as fh:
         for line in fh:
             line = line.rstrip()
 
@@ -176,7 +176,7 @@ def add_to_config_c(source_path: pathlib.Path, extension: str, init_fn: str):
 
             lines.append(line)
 
-    with config_c_path.open('w') as fh:
+    with config_c_path.open('w', encoding='utf8') as fh:
         fh.write('\n'.join(lines))
 
 
@@ -193,7 +193,7 @@ def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
 
     lines = []
 
-    with pcbuild_proj_path.open('r') as fh:
+    with pcbuild_proj_path.open('r', encoding='utf8') as fh:
         for line in fh:
             line = line.rstrip()
 
@@ -210,7 +210,7 @@ def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
 
             lines.append(line)
 
-    with pcbuild_proj_path.open('w') as fh:
+    with pcbuild_proj_path.open('w', encoding='utf8') as fh:
         fh.write('\n'.join(lines))
 
 
@@ -223,7 +223,7 @@ def make_project_static_library(source_path: pathlib.Path, project: str):
     found_config_type = False
     found_target_ext = False
 
-    with proj_path.open('r') as fh:
+    with proj_path.open('r', encoding='utf8') as fh:
         for line in fh:
             line = line.rstrip()
 
@@ -254,7 +254,7 @@ def make_project_static_library(source_path: pathlib.Path, project: str):
         log('failed to adjust target extension for %s' % project)
         sys.exit(1)
 
-    with proj_path.open('w') as fh:
+    with proj_path.open('w', encoding='utf8') as fh:
         fh.write('\n'.join(lines))
 
 
@@ -281,7 +281,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
     itemgroup_line = None
     itemdefinitiongroup_line = None
 
-    with proj_path.open('r') as fh:
+    with proj_path.open('r', encoding='utf8') as fh:
         for i, line in enumerate(fh):
             line = line.rstrip()
 
@@ -362,7 +362,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
 
         lines = lines[:start_line] + lines[end_line + 1:]
 
-    with proj_path.open('w') as fh:
+    with proj_path.open('w', encoding='utf8') as fh:
         fh.write('\n'.join(lines))
 
     # Tell pythoncore to link against the static .lib.
@@ -371,7 +371,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
     pythoncore_path = source_path / 'PCbuild' / 'pythoncore.vcxproj'
     lines = []
 
-    with pythoncore_path.open('r') as fh:
+    with pythoncore_path.open('r', encoding='utf8') as fh:
         for line in fh:
             line = line.rstrip()
 
@@ -389,7 +389,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
 
             lines.append(line)
 
-    with pythoncore_path.open('w') as fh:
+    with pythoncore_path.open('w', encoding='utf8') as fh:
         fh.write('\n'.join(lines))
 
     # Change pythoncore to depend on the extension project.
@@ -401,13 +401,13 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
 
     pcbuild_proj_path = source_path / 'PCbuild' / 'pcbuild.proj'
 
-    with pcbuild_proj_path.open('r') as fh:
+    with pcbuild_proj_path.open('r', encoding='utf8') as fh:
         data = fh.read()
 
     data = data.replace('<Projects Include="pythoncore.vcxproj">',
                         '    <Projects Include="%s.vcxproj" />\n    <Projects Include="pythoncore.vcxproj">' % extension)
 
-    with pcbuild_proj_path.open('w') as fh:
+    with pcbuild_proj_path.open('w', encoding='utf8') as fh:
         fh.write(data)
 
     # We don't technically need to modify the solution since msbuild doesn't
@@ -421,7 +421,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
     extension_id = None
     pythoncore_line = None
 
-    with pcbuild_sln_path.open('r') as fh:
+    with pcbuild_sln_path.open('r', encoding='utf8') as fh:
         # First pass buffers the file, finds the ID of the extension project,
         # and finds where the pythoncore project is defined.
         for i, line in enumerate(fh):
@@ -457,7 +457,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
             lines.insert(pythoncore_line + 1, '\tProjectSection(ProjectDependencies) = postProject')
             lines.insert(pythoncore_line + 3, '\tEndProjectSection')
 
-        with pcbuild_sln_path.open('w') as fh:
+        with pcbuild_sln_path.open('w', encoding='utf8') as fh:
             fh.write('\n'.join(lines))
 
 
@@ -468,7 +468,7 @@ def copy_link_to_lib(p: pathlib.Path):
     copy_lines = []
     copy_active = False
 
-    with p.open('r') as fh:
+    with p.open('r', encoding='utf8') as fh:
         for line in fh:
             line = line.rstrip()
 
@@ -489,7 +489,7 @@ def copy_link_to_lib(p: pathlib.Path):
             if copy_active:
                 copy_lines.append(line)
 
-    with p.open('w') as fh:
+    with p.open('w', encoding='utf8') as fh:
         fh.write('\n'.join(lines))
 
 
@@ -1106,7 +1106,7 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
     def find_additional_dependencies(project: pathlib.Path):
         vcproj = pcbuild_path / ('%s.vcxproj' % project)
 
-        with vcproj.open('r') as fh:
+        with vcproj.open('r', encoding='utf8') as fh:
             for line in fh:
                 m = RE_ADDITIONAL_DEPENDENCIES.search(line)
 
@@ -1259,7 +1259,7 @@ def build_cpython(pgo=False):
         # Parse config.c before we hack it up: we want a pristine copy.
         config_c_path = cpython_source_path / 'PC' / 'config.c'
 
-        with config_c_path.open('r') as fh:
+        with config_c_path.open('r', encoding='utf8') as fh:
             config_c = fh.read()
 
         builtin_extensions = parse_config_c(config_c)
@@ -1361,7 +1361,7 @@ def build_cpython(pgo=False):
             'build_info': build_info,
         }
 
-        with (out_dir / 'python' / 'PYTHON.json').open('w') as fh:
+        with (out_dir / 'python' / 'PYTHON.json').open('w', encoding='utf8') as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
         # Copy software licenses file.
