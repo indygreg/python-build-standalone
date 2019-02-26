@@ -3,12 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 DOWNLOADS = {
-    'activeperl': {
-        'url': 'https://downloads.activestate.com/ActivePerl/releases/5.26.3.2603/ActivePerl-5.26.3.2603-MSWin32-x64-a95bce075.exe',
-        'size': 22429768,
-        'sha256': 'bbd88265ab6d0ceb5ec2a6cd9870b0e9cd35b0d9be7671df840b0f239726b28d',
-        'version': '5.26.3.2603',
-    },
     # 6.0.19 is the last version licensed under the Sleepycat license.
     'bdb': {
         'url': 'https://ftp.tw.freebsd.org/distfiles/bdb/db-6.0.19.tar.gz',
@@ -224,6 +218,12 @@ DOWNLOADS = {
         'sha256': '5daa6a3fb7d1e8c767cd59c4ded8da6e4b00c61d3b466d0685e35c4dd6d7bf5d',
         'version': '3260000',
         'actual_version': '3.26.0.0',
+    },
+    'strawberryperl': {
+        'url': 'http://strawberryperl.com/download/5.28.1.1/strawberry-perl-5.28.1.1-32bit-portable.zip',
+        'size': 143242779,
+        'sha256': '8b15c7c9574989568254a7859e473b7d5f68a1145d2e4418036600a81b13805c',
+        'version': '5.28.1.1',
     },
     'tcl': {
         'url': 'https://prdownloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz',
