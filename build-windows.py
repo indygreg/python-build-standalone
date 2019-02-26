@@ -56,10 +56,6 @@ def run():
 
 
 if __name__ == '__main__':
-    if 'PERL' not in os.environ:
-        print('PERL must point to a perl executable')
-        sys.exit(1)
-
     try:
         if 'PYBUILD_BOOTSTRAPPED' not in os.environ:
             bootstrap()

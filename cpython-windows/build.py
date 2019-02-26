@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 
 from pythonbuild.downloads import (
     DOWNLOADS,
@@ -928,7 +929,6 @@ def build_openssl_for_arch(perl_path, arch: str, openssl_archive, nasm_archive,
     openssl_version = DOWNLOADS['openssl']['version']
     nasm_version = DOWNLOADS['nasm-windows-bin']['version']
 
-
     log('extracting %s to %s' % (openssl_archive, build_root))
     extract_tar_to_directory(openssl_archive, build_root)
     log('extracting %s to %s' % (nasm_archive, build_root))
@@ -1227,7 +1227,6 @@ def build_cpython(pgo=False):
     # The python.props file keys off MSBUILD, so it needs to be set.
     os.environ['MSBUILD'] = str(msbuild)
 
-    activeperl_installer = download_entry('activeperl', BUILD)
     bzip2_archive = download_entry('bzip2', BUILD)
     sqlite_archive = download_entry('sqlite', BUILD)
     tk_bin_archive = download_entry('tk-windows-bin', BUILD, local_name='tk-windows-bin.tar.gz')
@@ -1373,6 +1372,15 @@ def build_cpython(pgo=False):
             create_tar_from_directory(fh, td / 'out')
 
 
+def fetch_strawberry_perl() -> pathlib.Path:
+    strawberryperl_zip = download_entry('strawberryperl', BUILD)
+    strawberryperl = BUILD / 'strawberry-perl'
+    strawberryperl.mkdir(exist_ok=True)
+    with zipfile.ZipFile(strawberryperl_zip) as zf:
+        zf.extractall(strawberryperl)
+    return strawberryperl
+
+
 def main():
     BUILD.mkdir(exist_ok=True)
 
@@ -1384,8 +1392,9 @@ def main():
         # TODO need better dependency checking.
         openssl_out = BUILD / 'openssl-windows.tar'
         if not openssl_out.exists():
+            perl_path = fetch_strawberry_perl() / 'perl' / 'bin' / 'perl.exe'
             LOG_PREFIX[0] = 'openssl'
-            build_openssl(pathlib.Path(os.environ['PERL']))
+            build_openssl(perl_path)
 
         LOG_PREFIX[0] = 'cpython'
         build_cpython()
