@@ -1180,16 +1180,16 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         }]
 
         for obj in process_project(ext, dest_dir):
-            res['extensions'][ext]['objs'].append('build/extensions/%s/%s' % (ext, obj))
+            res['extensions'][ext][0]['objs'].append('build/extensions/%s/%s' % (ext, obj))
 
         for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('static_depends', []):
-            res['extensions'][ext]['links'].append({
+            res['extensions'][ext][0]['links'].append({
                 'name': lib,
                 'path_static': 'build/lib/%s.lib' % lib,
             })
 
         for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('static_depends_no_project', []):
-            res['extensions'][ext]['links'].append({
+            res['extensions'][ext][0]['links'].append({
                 'name': lib,
                 'path_static': 'build/lib/%s.lib' % lib
             })
