@@ -9,7 +9,7 @@ PLATFORM := macos
 
 TOOLCHAIN_DEPENDENCIES := $(OUTDIR)/clang-macos.tar
 
-default: $(OUTDIR)/cpython-macos.tar
+default: $(OUTDIR)/cpython-macos$(if $(PYBUILD_OPTIMIZED),-pgo,).tar
 
 $(OUTDIR)/clang-macos.tar: $(HERE)/build-clang.sh
 	$(BUILD) clang
@@ -63,3 +63,6 @@ PYTHON_DEPENDS := \
 
 $(OUTDIR)/cpython-macos.tar: $(PYTHON_DEPENDS)
 	$(BUILD) cpython
+
+$(OUTDIR)/cpython-macos-pgo.tar: $(PYTHON_DEPENDS)
+	$(BUILD) --optimized cpython

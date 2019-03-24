@@ -3,6 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import argparse
 import datetime
 import os
 import pathlib
@@ -22,6 +23,11 @@ MAKE_DIR = ROOT / 'cpython-macos'
 
 
 def bootstrap():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--optimized', action='store_true')
+
+    args = parser.parse_args()
+
     BUILD.mkdir(exist_ok=True)
     DIST.mkdir(exist_ok=True)
 
@@ -33,6 +39,10 @@ def bootstrap():
     os.environ['PYBUILD_BOOTSTRAPPED'] = '1'
     os.environ['PATH'] = '%s:%s' % (str(VENV / 'bin'), os.environ['PATH'])
     os.environ['PYTHONPATH'] = str(ROOT)
+
+    if args.optimized:
+        os.environ['PYBUILD_OPTIMIZED'] = '1'
+
     subprocess.run([str(PYTHON), __file__], check=True)
 
 
@@ -45,10 +55,20 @@ def run():
     subprocess.run(['make'],
                    cwd=str(MAKE_DIR), check=True)
 
-    source_path = BUILD / 'cpython-macos.tar'
+    basename = 'cpython-macos'
+    extra = ''
 
-    compress_python_archive(source_path, DIST, 'cpython-%s-macos-%s' % (
-        DOWNLOADS['cpython-3.7']['version'], now.strftime('%Y%m%dT%H%M')))
+    if 'PYBUILD_OPTIMIZED' in os.environ:
+        basename += '-pgo'
+        extra = '-pgo'
+
+    basename += '.tar'
+
+    source_path = BUILD / basename
+
+    compress_python_archive(source_path, DIST, 'cpython-%s-macos%s-%s' % (
+        DOWNLOADS['cpython-3.7']['version'], extra,
+        now.strftime('%Y%m%dT%H%M')))
 
 
 if __name__ == '__main__':

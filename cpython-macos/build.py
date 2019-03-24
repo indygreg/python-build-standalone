@@ -285,7 +285,7 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
     return bi
 
 
-def build_cpython():
+def build_cpython(optimized=False):
     python_archive = download_entry('cpython-3.7', BUILD)
     python_version = DOWNLOADS['cpython-3.7']['version']
 
@@ -343,7 +343,8 @@ def build_cpython():
         env['MACOSX_DEPLOYMENT_TARGET'] = MACOSX_DEPLOYMENT_TARGET
         env['NUM_CPUS'] = '%s' % multiprocessing.cpu_count()
 
-        env['CPYTHON_OPTIMIZED'] = '1'
+        if optimized:
+            env['CPYTHON_OPTIMIZED'] = '1'
 
         exec_and_log([SUPPORT / 'build-cpython.sh'], td, env)
 
@@ -367,7 +368,14 @@ def build_cpython():
         with (td / 'out' / 'python' / 'PYTHON.json').open('w') as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
-        dest_path = BUILD / 'cpython-macos.tar'
+        basename = 'cpython-macos'
+
+        if optimized:
+            basename += '-pgo'
+
+        basename += '.tar'
+
+        dest_path = BUILD / basename
 
         with dest_path.open('wb') as fh:
             create_tar_from_directory(fh, td / 'out')
@@ -377,6 +385,7 @@ def main():
     BUILD.mkdir(exist_ok=True)
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--optimized', action='store_true')
     parser.add_argument('action')
 
     args = parser.parse_args()
@@ -396,7 +405,7 @@ def main():
             build_clang()
 
         elif action == 'cpython':
-            build_cpython()
+            build_cpython(optimized=args.optimized)
 
         else:
             print('unknown build action: %s' % action)
