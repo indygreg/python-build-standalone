@@ -10,8 +10,8 @@ ROOT=`pwd`
 export CC=clang
 export CXX=clang++
 
-tar -xf sqlite-autoconf-3260000.tar.gz
-pushd sqlite-autoconf-3260000
+tar -xf sqlite-autoconf-3280000.tar.gz
+pushd sqlite-autoconf-3280000
 
 CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure --prefix /
 

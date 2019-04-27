@@ -213,11 +213,11 @@ DOWNLOADS = {
         'sha256': 'a01a493ed8946fc1c15f63e74fc53299b26ebf705938b4d04a388a746dfdbf9e',
     },
     'sqlite': {
-        'url': 'https://www.sqlite.org/2018/sqlite-autoconf-3260000.tar.gz',
-        'size': 2779667,
-        'sha256': '5daa6a3fb7d1e8c767cd59c4ded8da6e4b00c61d3b466d0685e35c4dd6d7bf5d',
-        'version': '3260000',
-        'actual_version': '3.26.0.0',
+        'url': 'https://www.sqlite.org/2019/sqlite-autoconf-3280000.tar.gz',
+        'size': 2810415,
+        'sha256': 'd61b5286f062adfce5125eaf544d495300656908e61fca143517afcc0a89b7c3',
+        'version': '3280000',
+        'actual_version': '3.28.0.0',
     },
     'strawberryperl': {
         'url': 'http://strawberryperl.com/download/5.28.1.1/strawberry-perl-5.28.1.1-32bit-portable.zip',
