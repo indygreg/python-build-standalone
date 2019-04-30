@@ -189,12 +189,6 @@ DOWNLOADS = {
         'sha256': '5c557b023230413dfb0756f3137a13e6d726838ccd1430888ad15bfb2b43ea4b',
         'version': '1.1.1b',
     },
-    'openssl-windows-bin': {
-        'url': 'https://github.com/python/cpython-bin-deps/archive/openssl-bin-1.1.0j.tar.gz',
-        'size': 8274446,
-        'sha256': 'c4684e220473fb2bdb0b95e43183c4701b6b103acac5ec23385e41a9a77fc9b1',
-        'version': '1.1.0j',
-    },
     'nasm-windows-bin': {
         'url': 'https://github.com/python/cpython-bin-deps/archive/nasm-2.11.06.tar.gz',
         'size': 384826,
