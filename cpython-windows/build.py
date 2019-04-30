@@ -118,7 +118,11 @@ def find_msbuild():
         print('%s does not exist' % vswhere)
         sys.exit(1)
 
-    p = subprocess.check_output([str(vswhere), '-latest', '-property', 'installationPath', '-products', '*'])
+    p = subprocess.check_output([
+        str(vswhere),
+        # Visual Studio 2017.
+        '-version', '[15,16)',
+        '-property', 'installationPath', '-products', '*'])
 
     # Strictly speaking the output may not be UTF-8.
     p = pathlib.Path(p.strip().decode('utf-8'))
