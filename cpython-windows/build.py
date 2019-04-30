@@ -509,7 +509,7 @@ OPENSSL_PROPS_REMOVE_RULES = b'''
     <Copy SourceFiles="@(_SSLDLL)" DestinationFolder="$(OutDir)" />
   </Target>
   <Target Name="_CleanSSLDLL" BeforeTargets="Clean">
-    <Delete Files="@(_SSLDLL->'$(OutDir)%(Filename)%(Extension)')" />
+    <Delete Files="@(_SSLDLL->'$(OutDir)%(Filename)%(Extension)')" TreatErrorsAsWarnings="true" />
   </Target>
 '''
 
