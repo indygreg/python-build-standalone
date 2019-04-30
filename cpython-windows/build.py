@@ -1330,13 +1330,14 @@ def build_cpython(pgo=False):
                 log('built-in extension should not have a build entry: %s' % ext)
                 sys.exit(1)
 
-            build_info['extensions'][ext] = {
+            build_info['extensions'][ext] = [{
                 'in_core': True,
                 'objs': [],
                 'init_fn': init_fn,
                 'links': [],
                 'static_lib': None,
-            }
+                'variant': 'default',
+            }]
 
         # Copy OpenSSL libraries as a one-off.
         for lib in ('crypto', 'ssl'):
