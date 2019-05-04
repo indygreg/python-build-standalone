@@ -624,7 +624,7 @@ def build_cpython(client, image, platform, optimized=False):
             'arch': 'x86_64',
             'python_flavor': 'cpython',
             'python_version': DOWNLOADS['cpython-3.7']['version'],
-            'python_exe': 'install/bin/python',
+            'python_exe': 'install/bin/python3.7',
             'python_include': 'install/include/python3.7m',
             'python_stdlib': 'install/lib/python3.7',
             'build_info': python_build_info(container, config_c_in,
