@@ -358,6 +358,10 @@ extensions
    objs
       An array of paths to object files constituting this extension module.
 
+   required
+      Boolean indicating if this extension is required to initialize the Python
+      interpreter.
+
    static_lib
       The path to a static library defining this extension module. May not
       be defined.

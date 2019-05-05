@@ -35,6 +35,17 @@ SUPPORT = ROOT / 'cpython-linux'
 LOG_PREFIX = [None]
 LOG_FH = [None]
 
+REQUIRED_EXTENSIONS = {
+    '_codecs',
+    '_io',
+    '_signal',
+    '_thread',
+    '_tracemalloc',
+    '_weakref',
+    'faulthandler',
+    'posix',
+}
+
 
 def log(msg):
     if isinstance(msg, bytes):
@@ -560,6 +571,10 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
             'objs': [],
             'variant': 'default',
         })
+
+    for extension, entries in bi['extensions'].items():
+        for entry in entries:
+            entry['required'] = extension in REQUIRED_EXTENSIONS
 
     # Any paths left in modules_objs are not part of any extension and are
     # instead part of the core distribution.
