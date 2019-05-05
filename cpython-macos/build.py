@@ -44,6 +44,17 @@ DISABLED_STATIC_MODULES = {
     b'spwd',
 }
 
+REQUIRED_EXTENSIONS = {
+    '_codecs',
+    '_io',
+    '_signal',
+    '_thread',
+    '_tracemalloc',
+    '_weakref',
+    'faulthandler',
+    'posix',
+}
+
 LOG_PREFIX = [None]
 LOG_FH = [None]
 
@@ -275,6 +286,10 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
             'objs': [],
             'variant': 'default',
         }]
+
+    for extension, entries in bi['extensions'].items():
+        for entry in entries:
+            entry['required'] = extension in REQUIRED_EXTENSIONS
 
     # Any paths left in modules_objs are not part of any extensions and
     # are instead part of the core distribution.
