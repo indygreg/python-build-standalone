@@ -318,6 +318,24 @@ def build_clang(client, image):
                                tools_path)
 
 
+def build_musl(client, image):
+    musl_archive = download_entry('musl', BUILD)
+
+    with run_container(client, image) as container:
+        copy_file_to_container(musl_archive, container, '/build')
+        copy_file_to_container(SUPPORT / 'build-musl.sh', container, '/build')
+
+        env = {
+            'MUSL_VERSION': DOWNLOADS['musl']['version'],
+        }
+
+        container_exec(container, '/build/build-musl.sh',
+                       environment=env)
+
+        download_tools_archive(container, BUILD / 'musl-linux64.tar',
+                               'host')
+
+
 def build_libedit(client, image, platform):
     libedit_archive = download_entry('libedit', BUILD)
 
@@ -695,6 +713,9 @@ def main():
 
         elif action == 'gcc':
             build_gcc(client, get_image(client, 'gcc'))
+
+        elif action == 'musl':
+            build_musl(client, get_image(client, 'gcc'))
 
         elif action == 'libedit':
             build_libedit(client, get_image(client, 'build'), platform=args.platform)

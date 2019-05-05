@@ -165,6 +165,12 @@ DOWNLOADS = {
         'sha256': '7a62ac1a04408614fccdc506e4844b10cf0ad2c2b1677097f8f35d3a1344a950',
         'version': '3.1.6',
     },
+    'musl': {
+        'url': 'https://www.musl-libc.org/releases/musl-1.1.22.tar.gz',
+        'size': 987296,
+        'sha256': '8b0941a48d2f980fd7036cfbd24aa1d414f03d9a0652ecbd5ec5c7ff1bee29e3',
+        'version': '1.1.22',
+    },
     'ncurses': {
         'url': 'https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.1.tar.gz',
         'size': 3365395,

@@ -11,10 +11,15 @@ COMMON_DEPENDS := \
 
 PLATFORM := linux64
 
-TOOLCHAIN_DEPENDS := \
+BASE_TOOLCHAIN_DEPENDS := \
     $(OUTDIR)/binutils-linux64.tar \
     $(OUTDIR)/gcc-linux64.tar \
     $(OUTDIR)/clang-linux64.tar \
+    $(NULL)
+
+TOOLCHAIN_DEPENDS := \
+    $(BASE_TOOLCHAIN_DEPENDS) \
+    $(OUTDIR)/musl-linux64.tar \
     $(NULL)
 
 default: $(OUTDIR)/cpython-linux64$(if $(PYBUILD_OPTIMIZED),-pgo,).tar
@@ -30,6 +35,9 @@ $(OUTDIR)/gcc-linux64.tar: $(OUTDIR)/binutils-linux64.tar $(HERE)/build-gcc.sh
 
 $(OUTDIR)/clang-linux64.tar: $(OUTDIR)/binutils-linux64.tar $(OUTDIR)/gcc-linux64.tar $(OUTDIR)/image-clang.tar $(HERE)/build-clang.sh
 	$(BUILD) clang
+
+$(OUTDIR)/musl-linux64.tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
+	$(BUILD) musl
 
 $(OUTDIR)/bdb-%.tar: $(OUTDIR)/image-build.tar $(TOOLCHAIN_DEPENDS) $(HERE)/build-bdb.sh
 	$(BUILD) --platform $* bdb
