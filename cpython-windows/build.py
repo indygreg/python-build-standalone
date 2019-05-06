@@ -1363,8 +1363,7 @@ def build_cpython(pgo=False):
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            # TODO bump version number once format is somewhat stable.
-            'version': '0',
+            'version': '1',
             'os': 'windows',
             'arch': 'x86_64',
             'python_flavor': 'cpython',

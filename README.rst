@@ -259,8 +259,7 @@ without having to resort to heuristics.
 The file contains a JSON map. This map has the following keys:
 
 version
-   Version number of the file format. Currently ``0`` until semantics are
-   stabilized.
+   Version number of the file format. Currently ``1``.
 
 os
    Target operating system for the distribution. e.g. ``linux``, ``macos``,
