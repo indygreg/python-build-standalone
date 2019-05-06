@@ -69,6 +69,16 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     'winsound': {},
 }
 
+REQUIRED_EXTENSIONS = {
+    '_codecs',
+    '_io',
+    '_signal',
+    '_thread',
+    '_tracemalloc',
+    '_weakref',
+    'faulthandler',
+}
+
 
 def log(msg):
     if isinstance(msg, bytes):
@@ -1338,6 +1348,10 @@ def build_cpython(pgo=False):
                 'static_lib': None,
                 'variant': 'default',
             }]
+
+        for extension, entries in build_info['extensions'].items():
+            for entry in entries:
+                entry['required'] = extension in REQUIRED_EXTENSIONS
 
         # Copy OpenSSL libraries as a one-off.
         for lib in ('crypto', 'ssl'):
