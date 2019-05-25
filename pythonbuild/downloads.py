@@ -65,10 +65,10 @@ DOWNLOADS = {
         'version': '3.7.3',
     },
     'gcc': {
-        'url': 'https://ftp.gnu.org/gnu/gcc/gcc-8.2.0/gcc-8.2.0.tar.xz',
-        'size': 63460876,
-        'sha256': '196c3c04ba2613f893283977e6011b2345d1cd1af9abeac58e916b1aab3e0080',
-        'version': '8.2.0',
+        'url': 'https://ftp.gnu.org/gnu/gcc/gcc-9.1.0/gcc-9.1.0.tar.xz',
+        'size': 70546856,
+        'sha256': '79a66834e96a6050d8fe78db2c3b32fb285b230b855d0a66288235bc04b327a0',
+        'version': '9.1.0',
     },
     'gdbm': {
         'url': 'ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.18.1.tar.gz',
