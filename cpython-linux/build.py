@@ -176,7 +176,7 @@ def install_tools_archive(container, source: pathlib.Path):
         user='root')
 
 
-def copy_toolchain(container, platform=None, gcc=False):
+def copy_toolchain(container, gcc=False):
     install_tools_archive(container, BUILD / 'binutils-linux64.tar')
 
     if gcc:
@@ -214,7 +214,7 @@ def simple_build(client, image, entry, platform):
     archive = download_entry(entry, BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container, platform=platform)
+        copy_toolchain(container)
         copy_file_to_container(archive, container, '/build')
         copy_file_to_container(SUPPORT / ('build-%s.sh' % entry),
                                container, '/build')
@@ -299,7 +299,6 @@ def build_clang(client, image):
                   lld_archive, llvm_archive, libcxx_archive, libcxxabi_archive):
             copy_file_to_container(a, container, '/build')
 
-        toolchain_platform = None
         tools_path = 'clang-linux64'
         suffix = 'linux64'
         build_sh = 'build-clang.sh'
@@ -317,7 +316,7 @@ def build_clang(client, image):
             'LLVM_VERSION': DOWNLOADS['llvm']['version'],
         }
 
-        copy_toolchain(container, toolchain_platform, gcc=gcc)
+        copy_toolchain(container, gcc=gcc)
 
         copy_file_to_container(SUPPORT / build_sh, container,
                                '/build')
@@ -351,7 +350,7 @@ def build_libedit(client, image, platform):
     libedit_archive = download_entry('libedit', BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container, platform=platform)
+        copy_toolchain(container)
         install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
         copy_file_to_container(libedit_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-libedit.sh', container,
@@ -373,7 +372,7 @@ def build_readline(client, image, platform):
     readline_archive = download_entry('readline', BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container, platform=platform)
+        copy_toolchain(container)
         install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
         copy_file_to_container(readline_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-readline.sh', container,
@@ -398,7 +397,7 @@ def build_tcltk(client, image, platform):
     x11_archive = download_entry('libx11', BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container, platform=platform)
+        copy_toolchain(container)
 
         copy_file_to_container(tcl_archive, container, '/build')
         copy_file_to_container(tk_archive, container, '/build')
@@ -600,7 +599,7 @@ def build_cpython(client, image, platform, optimized=False):
     extra_make_content = setup['make_data']
 
     with run_container(client, image) as container:
-        copy_toolchain(container, platform=platform)
+        copy_toolchain(container)
         # TODO support bdb/gdbm toggle
         install_tools_archive(container, BUILD / ('bdb-%s.tar' % platform))
         install_tools_archive(container, BUILD / ('bzip2-%s.tar' % platform))
