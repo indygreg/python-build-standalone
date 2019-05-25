@@ -7,6 +7,9 @@ set -e
 
 cd /build
 
+export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export CC=clang
+
 tar -xf musl-${MUSL_VERSION}.tar.gz
 
 pushd musl-${MUSL_VERSION}

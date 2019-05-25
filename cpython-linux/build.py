@@ -332,11 +332,13 @@ def build_musl(client, image):
     musl_archive = download_entry('musl', BUILD)
 
     with run_container(client, image) as container:
+        copy_toolchain(container)
         copy_file_to_container(musl_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-musl.sh', container, '/build')
 
         env = {
             'MUSL_VERSION': DOWNLOADS['musl']['version'],
+            'TOOLCHAIN': 'clang-linux64',
         }
 
         container_exec(container, '/build/build-musl.sh',
