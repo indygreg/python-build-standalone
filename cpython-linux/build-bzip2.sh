@@ -15,7 +15,7 @@ pushd bzip2-${BZIP2_VERSION}
 
 make -j `nproc` install \
     AR=/tools/host/bin/${TOOLCHAIN_PREFIX}ar \
-    CC=clang \
+    CC="${CC}" \
     CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" \
     LDFLAGS="${EXTRA_TARGET_LDFLAGS}" \
     PREFIX=/build/out/tools/deps

@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/clang-linux64/bin:/tools/host/bin:/tools/deps/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 # configure somehow has problems locating llvm-profdata even though it is in
 # PATH. The macro it is using allows us to specify its path via an
@@ -25,6 +23,8 @@ tar -xf Python-${PYTHON_VERSION}.tar.xz
 
 cat Setup.local
 mv Setup.local Python-${PYTHON_VERSION}/Modules/Setup.local
+
+cat Makefile.extra
 
 pushd Python-${PYTHON_VERSION}
 
@@ -43,6 +43,12 @@ sed -i s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c
 CFLAGS="-fPIC -I/tools/deps/include -I/tools/deps/include/ncurses"
 CPPFLAGS=$CFLAGS
 LDFLAGS="-L/tools/deps/lib"
+
+if [ "${CC}" = "musl-clang" ]; then
+    CFLAGS="${CFLAGS} -static"
+    CPPFLAGS="${CPPFLAGS} -static"
+    LDFLAGS="${LDFLAGS} -static"
+fi
 
 CONFIGURE_FLAGS="--prefix=/install --with-openssl=/tools/deps --without-ensurepip"
 

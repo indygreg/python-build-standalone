@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf tcl8.6.9-src.tar.gz
 

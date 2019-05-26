@@ -8,13 +8,13 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf sqlite-autoconf-3280000.tar.gz
 pushd sqlite-autoconf-3280000
 
-CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure --prefix /tools/deps
+CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure \
+    --prefix /tools/deps \
+    --disable-shared
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

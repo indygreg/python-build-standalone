@@ -11,6 +11,10 @@ COMMON_DEPENDS := \
 
 PLATFORM := linux64
 
+ifdef PYBUILD_MUSL
+    PLATFORM := $(PLATFORM)-musl
+endif
+
 BASE_TOOLCHAIN_DEPENDS := \
     $(OUTDIR)/binutils-linux64.tar \
     $(OUTDIR)/gcc-linux64.tar \
@@ -22,7 +26,7 @@ TOOLCHAIN_DEPENDS := \
     $(OUTDIR)/musl-linux64.tar \
     $(NULL)
 
-default: $(OUTDIR)/cpython-linux64$(if $(PYBUILD_OPTIMIZED),-pgo,).tar
+default: $(OUTDIR)/cpython-$(PLATFORM)$(if $(PYBUILD_OPTIMIZED),-pgo,).tar
 
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
 	$(BUILD) image-$*

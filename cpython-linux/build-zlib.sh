@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf zlib-${ZLIB_VERSION}.tar.gz
 

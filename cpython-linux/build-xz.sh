@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf xz-${XZ_VERSION}.tar.gz
 
@@ -17,6 +15,7 @@ pushd xz-${XZ_VERSION}
 
 CFLAGS="-fPIC" CPPFLAGS="-fPIC" CCASFLAGS="-fPIC" ./configure \
     --prefix=/tools/deps \
+    --disable-shared \
     --disable-xz \
     --disable-xzdec \
     --disable-lzmadec \

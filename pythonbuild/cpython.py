@@ -115,7 +115,8 @@ def parse_setup_line(line: bytes, variant: str):
     }
 
 
-def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=None):
+def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=None,
+                       musl=False):
     """Derive the content of the Modules/Setup.local file."""
     python_version = DOWNLOADS['cpython-3.7']['version']
 
@@ -127,6 +128,11 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
 
     disabled = disabled or set()
     disabled |= UNSUPPORTED_MODULES
+
+    if musl:
+        # Missing header dependencies.
+        disabled.add(b'nis')
+        disabled.add(b'ossaudiodev')
 
     with tarfile.open(str(cpython_source_archive)) as tf:
         ifh = tf.extractfile('Python-%s/Modules/Setup.dist' % python_version)
@@ -172,6 +178,14 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
     seen_variants = set()
 
     for line in static_modules_lines:
+        if not line.strip():
+            continue
+
+        # This was added to support musl, since not all extensions build in the
+        # musl environment.
+        if line.split()[0] in disabled:
+            continue
+
         # We supplement the format to support declaring extension variants.
         # A variant results in multiple compiles of a given extension.
         # However, the CPython build system doesn't take kindly to this because
@@ -221,15 +235,20 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
                             object_file, source, b' '.join(cflags),
                             source, object_file))
 
+                # This is kind of a lie in the case of musl. That's fine.
                 extension_target = b'Modules/%s-VARIANT-%s$(EXT_SUFFIX)' % (
                     extension, variant)
 
                 make_lines.append(b'%s: %s' % (
                     extension_target, b' '.join(object_files)))
-                make_lines.append(
-                    b'\t$(BLDSHARED) %s %s -o Modules/%s-VARIANT-%s$(EXT_SUFFIX)' %
-                    (b' '.join(object_files), b' '.join(ldflags),
-                     extension, variant))
+
+                # We can't link a shared library in MUSL since everything is static.
+                if not musl:
+                    make_lines.append(
+                        b'\t$(BLDSHARED) %s %s -o Modules/%s-VARIANT-%s$(EXT_SUFFIX)' %
+                        (b' '.join(object_files), b' '.join(ldflags),
+                        extension, variant))
+
                 make_lines.append(
                     b'\techo "%s" > Modules/VARIANT-%s-%s.data' % (
                         line, extension, variant))

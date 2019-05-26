@@ -8,13 +8,13 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf libuuid-${UUID_VERSION}.tar.gz
 pushd libuuid-${UUID_VERSION}
 
-CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure --prefix=/tools/deps
+CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure \
+    --prefix=/tools/deps \
+    --disable-shared
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

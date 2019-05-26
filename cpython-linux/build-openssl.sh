@@ -8,14 +8,19 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf openssl-${OPENSSL_VERSION}.tar.gz
 
 pushd openssl-${OPENSSL_VERSION}
 
-/usr/bin/perl ./Configure --prefix=/tools/deps linux-x86_64
+# musl is missing support for various primitives.
+# TODO disable secure memory is a bit scary. We should look into a proper
+# workaround.
+if [ "${CC}" = "musl-clang" ]; then
+    EXTRA_FLAGS="no-async -DOPENSSL_NO_ASYNC -D__STDC_NO_ATOMICS__=1 no-engine -DOPENSSL_NO_SECURE_MEMORY "
+fi
+
+/usr/bin/perl ./Configure --prefix=/tools/deps linux-x86_64 no-shared ${EXTRA_FLAGS}
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

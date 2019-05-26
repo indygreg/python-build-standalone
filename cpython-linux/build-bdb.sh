@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf db-${BDB_VERSION}.tar.gz
 
@@ -19,7 +17,8 @@ CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ..
     --build=x86_64-unknown-linux-gnu \
     --target=${TARGET} \
     --prefix=/tools/deps \
-    --enable-dbm
+    --enable-dbm \
+    --disable-shared
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

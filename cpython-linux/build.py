@@ -176,7 +176,7 @@ def install_tools_archive(container, source: pathlib.Path):
         user='root')
 
 
-def copy_toolchain(container, gcc=False):
+def copy_toolchain(container, gcc=False, musl=False):
     install_tools_archive(container, BUILD / 'binutils-linux64.tar')
 
     if gcc:
@@ -186,6 +186,9 @@ def copy_toolchain(container, gcc=False):
 
     if clang_linux64.exists():
         install_tools_archive(container, clang_linux64)
+
+    if musl:
+        install_tools_archive(container, BUILD / 'musl-linux64.tar')
 
 
 def copy_rust(container):
@@ -210,25 +213,32 @@ def add_target_env(env, platform):
     env['TARGET'] = 'x86_64-unknown-linux-gnu'
 
 
-def simple_build(client, image, entry, platform):
+def simple_build(client, image, entry, platform, musl=False):
     archive = download_entry(entry, BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container)
+        copy_toolchain(container, musl=musl)
         copy_file_to_container(archive, container, '/build')
         copy_file_to_container(SUPPORT / ('build-%s.sh' % entry),
                                container, '/build')
 
         env = {
+            'CC': 'clang',
             'TOOLCHAIN': 'clang-linux64',
             '%s_VERSION' % entry.upper(): DOWNLOADS[entry]['version'],
         }
+        if musl:
+            env['CC'] = 'musl-clang'
 
         add_target_env(env, platform)
 
         container_exec(container, '/build/build-%s.sh' % entry,
                        environment=env)
-        dest_path = '%s-%s.tar' % (entry, platform)
+
+        basename = '%s-%s' % (entry, platform)
+        if musl:
+            basename += '-musl'
+        dest_path = '%s.tar' % basename
         download_tools_archive(container, BUILD / dest_path, 'deps')
 
 
@@ -348,58 +358,82 @@ def build_musl(client, image):
                                'host')
 
 
-def build_libedit(client, image, platform):
+def build_libedit(client, image, platform, musl=False):
     libedit_archive = download_entry('libedit', BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container)
-        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
+        copy_toolchain(container, musl=musl)
+
+        dep_platform = platform
+        if musl:
+            dep_platform += '-musl'
+
+        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % dep_platform))
         copy_file_to_container(libedit_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-libedit.sh', container,
                                '/build')
 
         env = {
+            'CC': 'clang',
             'TOOLCHAIN': 'clang-linux64',
             'LIBEDIT_VERSION': DOWNLOADS['libedit']['version'],
         }
 
+        if musl:
+            env['CC'] = 'musl-clang'
+
         add_target_env(env, platform)
 
         container_exec(container, '/build/build-libedit.sh', environment=env)
-        dest_path = 'libedit-%s.tar' % platform
+        basename = 'libedit-%s' % platform
+        if musl:
+            basename += '-musl'
+        dest_path = '%s.tar' % basename
         download_tools_archive(container, BUILD / dest_path, 'deps')
 
 
-def build_readline(client, image, platform):
+def build_readline(client, image, platform, musl=False):
     readline_archive = download_entry('readline', BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container)
-        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
+        copy_toolchain(container, musl=musl)
+
+        dep_platform = platform
+        if musl:
+            dep_platform += '-musl'
+
+        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % dep_platform))
         copy_file_to_container(readline_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-readline.sh', container,
                                '/build')
 
         env = {
+            'CC': 'clang',
             'TOOLCHAIN': 'clang-linux64',
             'READLINE_VERSION': DOWNLOADS['readline']['version'],
         }
+
+        if musl:
+            env['CC'] = 'musl-clang'
 
         add_target_env(env, platform)
 
         container_exec(container, '/build/build-readline.sh',
                        environment=env)
-        dest_path = 'readline-%s.tar' % platform
+        basename = 'readline-%s' % platform
+        if musl:
+            basename += '-musl'
+        dest_path = '%s.tar' % basename
         download_tools_archive(container, BUILD / dest_path, 'deps')
 
 
-def build_tcltk(client, image, platform):
+def build_tcltk(client, image, platform, musl=False):
     tcl_archive = download_entry('tcl', BUILD)
     tk_archive = download_entry('tk', BUILD)
     x11_archive = download_entry('libx11', BUILD)
 
     with run_container(client, image) as container:
-        copy_toolchain(container)
+        copy_toolchain(container, musl=musl)
 
         copy_file_to_container(tcl_archive, container, '/build')
         copy_file_to_container(tk_archive, container, '/build')
@@ -414,7 +448,10 @@ def build_tcltk(client, image, platform):
         container_exec(container, '/build/build-tcltk.sh',
                        environment=env)
 
-        dest_path = 'tcltk-%s.tar' % platform
+        basename = 'tcltk-%s' % platform
+        if musl:
+            basename += '-musl'
+        dest_path = '%s.tar' % basename
         download_tools_archive(container, BUILD / dest_path)
 
 
@@ -586,14 +623,15 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
     return bi
 
 
-def build_cpython(client, image, platform, optimized=False):
+def build_cpython(client, image, platform, optimized=False, musl=False):
     """Build CPythin in a Docker image'"""
     python_archive = download_entry('cpython-3.7', BUILD)
 
     with (SUPPORT / 'static-modules').open('rb') as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
 
-    setup = derive_setup_local(static_modules_lines, python_archive)
+    setup = derive_setup_local(static_modules_lines, python_archive,
+                               musl=musl)
 
     config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
     setup_dist_content = setup['setup_dist']
@@ -601,21 +639,26 @@ def build_cpython(client, image, platform, optimized=False):
     extra_make_content = setup['make_data']
 
     with run_container(client, image) as container:
-        copy_toolchain(container)
+        copy_toolchain(container, musl=musl)
+
+        dep_platform = platform
+        if musl:
+            dep_platform += '-musl'
+
         # TODO support bdb/gdbm toggle
-        install_tools_archive(container, BUILD / ('bdb-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('bzip2-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('libedit-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('libffi-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('openssl-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('readline-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('sqlite-%s.tar' % platform))
+        install_tools_archive(container, BUILD / ('bdb-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('bzip2-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('libedit-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('libffi-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('openssl-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('readline-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('sqlite-%s.tar' % dep_platform))
         # tk requires a bunch of X11 stuff.
-        #install_tools_archive(container, BUILD / ('tcltk-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('uuid-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('xz-%s.tar' % platform))
-        install_tools_archive(container, BUILD / ('zlib-%s.tar' % platform))
+        #install_tools_archive(container, BUILD / ('tcltk-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('uuid-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('xz-%s.tar' % dep_platform))
+        install_tools_archive(container, BUILD / ('zlib-%s.tar' % dep_platform))
         #copy_rust(container)
         copy_file_to_container(python_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-cpython.sh', container,
@@ -641,8 +684,12 @@ def build_cpython(client, image, platform, optimized=False):
                                    archive_path='Makefile.extra')
 
         env = {
+            'CC': 'clang',
             'PYTHON_VERSION': DOWNLOADS['cpython-3.7']['version'],
         }
+
+        if musl:
+            env['CC'] = 'musl-clang'
 
         if optimized:
             env['CPYTHON_OPTIMIZED'] = '1'
@@ -674,6 +721,8 @@ def build_cpython(client, image, platform, optimized=False):
 
         basename = 'cpython-%s' % platform
 
+        if musl:
+            basename += '-musl'
         if optimized:
             basename += '-pgo'
 
@@ -712,6 +761,13 @@ def main():
     if args.optimized:
         name += '-pgo'
 
+    platform = args.platform
+    musl = False
+
+    if platform and platform.endswith('-musl'):
+        musl = True
+        platform = platform[:-5]
+
     log_path = BUILD / ('build.%s.log' % name)
     LOG_PREFIX[0] = name
 
@@ -733,20 +789,24 @@ def main():
             build_musl(client, get_image(client, 'gcc'))
 
         elif action == 'libedit':
-            build_libedit(client, get_image(client, 'build'), platform=args.platform)
+            build_libedit(client, get_image(client, 'build'), platform=platform,
+                          musl=musl)
 
         elif action == 'readline':
-            build_readline(client, get_image(client, 'build'), platform=args.platform)
+            build_readline(client, get_image(client, 'build'), platform=platform,
+                           musl=musl)
 
         elif action in ('bdb', 'bzip2', 'gdbm', 'libffi', 'ncurses', 'openssl', 'sqlite', 'uuid', 'xz', 'zlib'):
-            simple_build(client, get_image(client, 'build'), action, platform=args.platform)
+            simple_build(client, get_image(client, 'build'), action, platform=platform,
+                         musl=musl)
 
         elif action == 'tcltk':
-            build_tcltk(client, get_image(client, 'build'), platform=args.platform)
+            build_tcltk(client, get_image(client, 'build'), platform=platform,
+                        musl=musl)
 
         elif action == 'cpython':
-            build_cpython(client, get_image(client, 'build'), platform=args.platform,
-                          optimized=args.optimized)
+            build_cpython(client, get_image(client, 'build'), platform=platform,
+                          musl=musl, optimized=args.optimized)
 
         else:
             print('unknown build action: %s' % action)

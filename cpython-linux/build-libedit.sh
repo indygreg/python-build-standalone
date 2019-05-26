@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf libedit-${LIBEDIT_VERSION}.tar.gz
 
@@ -17,12 +15,18 @@ pushd libedit-${LIBEDIT_VERSION}
 
 cflags="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include -I/tools/deps/include/ncurses"
 
+# musl doesn't define __STDC_ISO_10646__, so work around that.
+if [ "${CC}" = "musl-clang" ]; then
+    cflags="${cflags} -D__STDC_ISO_10646__=201103L"
+fi
+
 # Install to /tools/deps/libedit so it doesn't conflict with readline's files.
 CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="-L/tools/deps/lib" \
     ./configure \
         --build=x86_64-unknown-linux-gnu \
         --host=${TARGET} \
         --prefix=/tools/deps/libedit \
+        --disable-shared
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

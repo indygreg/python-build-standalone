@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf libffi-${LIBFFI_VERSION}.tar.gz
 
@@ -18,7 +16,8 @@ pushd libffi-${LIBFFI_VERSION}
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
     --build=x86_64-unknown-linux-gnu \
     --host=${TARGET} \
-    --prefix=/tools/deps
+    --prefix=/tools/deps \
+    --disable-shared
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

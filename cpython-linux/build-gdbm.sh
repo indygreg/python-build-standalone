@@ -8,8 +8,6 @@ set -ex
 cd /build
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export CC=clang
-export CXX=clang++
 
 tar -xf gdbm-${GDBM_VERSION}.tar.gz
 
@@ -21,6 +19,7 @@ CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./
     --build=x86_64-unknown-linux-gnu \
     --target=${TARGET} \
     --prefix=/tools/deps \
+    --disable-shared \
     --enable-libgdbm-compat
 
 make -j `nproc`
