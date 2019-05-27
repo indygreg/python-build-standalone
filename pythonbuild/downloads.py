@@ -23,10 +23,10 @@ DOWNLOADS = {
         'version': '1.0.6',
     },
     'clang': {
-        'url': 'http://releases.llvm.org/7.0.1/cfe-7.0.1.src.tar.xz',
-        'size': 12488668,
-        'sha256': 'a45b62dde5d7d5fdcdfa876b0af92f164d434b06e9e89b5d0b1cbc65dfe3f418',
-        'version': '7.0.1',
+        'url': 'http://releases.llvm.org/8.0.0/cfe-8.0.0.src.tar.xz',
+        'size': 12868468,
+        'sha256': '084c115aab0084e63b23eee8c233abb6739c399e29966eaeccfc6e088e0b736b',
+        'version': '8.0.0',
     },
     'clang-6': {
         'url': 'http://releases.llvm.org/6.0.1/cfe-6.0.1.src.tar.xz',
@@ -35,10 +35,10 @@ DOWNLOADS = {
         'version': '6.0.1',
     },
     'clang-compiler-rt': {
-        'url': 'http://releases.llvm.org/7.0.1/compiler-rt-7.0.1.src.tar.xz',
-        'size': 1864520,
-        'sha256': '782edfc119ee172f169c91dd79f2c964fb6b248bd9b73523149030ed505bbe18',
-        'version': '7.0.1',
+        'url': 'http://releases.llvm.org/8.0.0/compiler-rt-8.0.0.src.tar.xz',
+        'size': 1903020,
+        'sha256': 'b435c7474f459e71b2831f1a4e3f1d21203cb9c0172e94e9d9b69f50354f21b1',
+        'version': '8.0.0',
     },
     'clang-compiler-rt-6': {
         'url': 'http://releases.llvm.org/6.0.1/compiler-rt-6.0.1.src.tar.xz',
@@ -89,10 +89,10 @@ DOWNLOADS = {
         'version': '0.18',
     },
     'libc++': {
-        'url': 'http://releases.llvm.org/7.0.1/libcxx-7.0.1.src.tar.xz',
-        'size': 1638188,
-        'sha256': '020002618b319dc2a8ba1f2cba88b8cc6a209005ed8ad29f9de0c562c6ebb9f1',
-        'version': '7.0.1',
+        'url': 'http://releases.llvm.org/8.0.0/libcxx-8.0.0.src.tar.xz',
+        'size': 1752308,
+        'sha256': 'c2902675e7c84324fb2c1e45489220f250ede016cc3117186785d9dc291f9de2',
+        'version': '8.0.0',
     },
     'libc++-6': {
         'url': 'http://releases.llvm.org/6.0.1/libcxx-6.0.1.src.tar.xz',
@@ -101,10 +101,10 @@ DOWNLOADS = {
         'version': '6.0.1',
     },
     'libc++abi': {
-        'url': 'http://releases.llvm.org/7.0.1/libcxxabi-7.0.1.src.tar.xz',
-        'size': 535096,
-        'sha256': '8168903a157ca7ab8423d3b974eaa497230b1564ceb57260be2bd14412e8ded8',
-        'version': '7.0.1',
+        'url': 'http://releases.llvm.org/8.0.0/libcxxabi-8.0.0.src.tar.xz',
+        'size': 539040,
+        'sha256': 'c2d6de9629f7c072ac20ada776374e9e3168142f20a46cdb9d6df973922b07cd',
+        'version': '8.0.0',
     },
     'libc++abi-6': {
         'url': 'http://releases.llvm.org/6.0.1/libcxxabi-6.0.1.src.tar.xz',
@@ -130,10 +130,10 @@ DOWNLOADS = {
         'sha256': '2ddc05170baf70dd650ee6108c5882eb657cafaf61a5b5261badb26703122518',
     },
     'lld': {
-        'url': 'http://releases.llvm.org/7.0.1/lld-7.0.1.src.tar.xz',
-        'size': 912812,
-        'sha256': '8869aab2dd2d8e00d69943352d3166d159d7eae2615f66a684f4a0999fc74031',
-        'version': '7.0.1',
+        'url': 'http://releases.llvm.org/8.0.0/lld-8.0.0.src.tar.xz',
+        'size': 999864,
+        'sha256': '9caec8ec922e32ffa130f0fb08e4c5a242d7e68ce757631e425e9eba2e1a6e37',
+        'version': '8.0.0',
     },
     'lld-6': {
         'url': 'http://releases.llvm.org/6.0.1/lld-6.0.1.src.tar.xz',
@@ -142,10 +142,10 @@ DOWNLOADS = {
         'version': '6.0.1',
     },
     'llvm': {
-        'url': 'http://releases.llvm.org/7.0.1/llvm-7.0.1.src.tar.xz',
-        'size': 28311056,
-        'sha256': 'a38dfc4db47102ec79dcc2aa61e93722c5f6f06f0a961073bd84b78fb949419b',
-        'version': '7.0.1',
+        'url': 'http://releases.llvm.org/8.0.0/llvm-8.0.0.src.tar.xz',
+        'size': 30503732,
+        'sha256': '8872be1b12c61450cacc82b3d153eab02be2546ef34fa3580ed14137bb26224c',
+        'version': '8.0.0',
     },
     'llvm-6': {
         'url': 'http://releases.llvm.org/6.0.1/llvm-6.0.1.src.tar.xz',
