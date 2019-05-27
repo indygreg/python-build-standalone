@@ -26,6 +26,11 @@ TOOLCHAIN_DEPENDS := \
     $(OUTDIR)/musl-linux64.tar \
     $(NULL)
 
+PYTHON_DEP_DEPENDS := \
+    $(OUTDIR)/image-build.tar \
+    $(TOOLCHAIN_DEPENDS) \
+    $(NULL)
+
 default: $(OUTDIR)/cpython-$(PLATFORM)$(if $(PYBUILD_OPTIMIZED),-pgo,).tar
 
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
@@ -43,40 +48,40 @@ $(OUTDIR)/clang-linux64.tar: $(OUTDIR)/binutils-linux64.tar $(OUTDIR)/gcc-linux6
 $(OUTDIR)/musl-linux64.tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
 	$(BUILD) musl
 
-$(OUTDIR)/bdb-%.tar: $(OUTDIR)/image-build.tar $(TOOLCHAIN_DEPENDS) $(HERE)/build-bdb.sh
+$(OUTDIR)/bdb-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
 	$(BUILD) --platform $* bdb
 
-$(OUTDIR)/bzip2-%.tar: $(OUTDIR)/image-build.tar $(TOOLCHAIN_DEPENDS) $(HERE)/build-bzip2.sh
+$(OUTDIR)/bzip2-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip2.sh
 	$(BUILD) --platform $* bzip2
 
-$(OUTDIR)/gdbm-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-gdbm.sh
+$(OUTDIR)/gdbm-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
 	$(BUILD) --platform $* gdbm
 
-$(OUTDIR)/libffi-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-libffi.sh
+$(OUTDIR)/libffi-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
 	$(BUILD) --platform $* libffi
 
-$(OUTDIR)/ncurses-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-ncurses.sh
+$(OUTDIR)/ncurses-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
 	$(BUILD) --platform $* ncurses
 
-$(OUTDIR)/openssl-%.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-openssl.sh
+$(OUTDIR)/openssl-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-openssl.sh
 	$(BUILD) --platform $* openssl
 
-$(OUTDIR)/libedit-%.tar: $(TOOLCHAIN_DEPENDS) $(OUTDIR)/ncurses-%.tar $(HERE)/build-libedit.sh
+$(OUTDIR)/libedit-%.tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-%.tar $(HERE)/build-libedit.sh
 	$(BUILD) --platform $* libedit
 
-$(OUTDIR)/readline-%.tar: $(TOOLCHAIN_DEPENDS) $(OUTDIR)/ncurses-$(PLATFORM).tar $(HERE)/build-readline.sh
+$(OUTDIR)/readline-%.tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(PLATFORM).tar $(HERE)/build-readline.sh
 	$(BUILD) --platform $* readline
 
-$(OUTDIR)/sqlite-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-sqlite.sh
+$(OUTDIR)/sqlite-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-sqlite.sh
 	$(BUILD) --platform $(PLATFORM) sqlite
 
-$(OUTDIR)/tcltk-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-tcltk.sh
+$(OUTDIR)/tcltk-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-tcltk.sh
 	$(BUILD) --platform $(PLATFORM) tcltk
 
-$(OUTDIR)/uuid-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-uuid.sh
+$(OUTDIR)/uuid-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-uuid.sh
 	$(BUILD) --platform $(PLATFORM) uuid
 
-$(OUTDIR)/xz-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-xz.sh
+$(OUTDIR)/xz-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xz.sh
 	$(BUILD) --platform $(PLATFORM) xz
 
 $(OUTDIR)/zlib-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-zlib.sh
@@ -98,8 +103,8 @@ PYTHON_DEPENDS := \
     $(HERE)/static-modules \
     $(NULL)
 
-$(OUTDIR)/cpython-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
+$(OUTDIR)/cpython-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) cpython
 
-$(OUTDIR)/cpython-$(PLATFORM)-pgo.tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
+$(OUTDIR)/cpython-$(PLATFORM)-pgo.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) --optimized cpython
