@@ -28,6 +28,27 @@ cat Makefile.extra
 
 pushd Python-${PYTHON_VERSION}
 
+# Code that runs at ctypes module import time does not work with
+# non-dynamic binaries. Patch Python to work around this.
+# See https://bugs.python.org/issue37060.
+patch -p1 << EOF
+diff --git a/Lib/ctypes/__init__.py b/Lib/ctypes/__init__.py
+--- a/Lib/ctypes/__init__.py
++++ b/Lib/ctypes/__init__.py
+@@ -441,7 +441,10 @@ if _os.name == "nt":
+ elif _sys.platform == "cygwin":
+     pythonapi = PyDLL("libpython%d.%d.dll" % _sys.version_info[:2])
+ else:
+-    pythonapi = PyDLL(None)
++    try:
++        pythonapi = PyDLL(None)
++    except OSError:
++        pythonapi = None
+
+
+ if _os.name == "nt":
+EOF
+
 cp Modules/readline.c Modules/readline-libedit.c
 
 # Python supports using libedit instead of readline. But Modules/readline.c
