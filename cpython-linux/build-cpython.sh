@@ -70,7 +70,7 @@ make -j `nproc` install DESTDIR=/build/out/python
 
 # Downstream consumers don't require bytecode files. So remove them.
 # Ideally we'd adjust the build system. But meh.
-find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
+find /build/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
 
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
