@@ -20,6 +20,8 @@ export LLVM_PROFDATA=/tools/clang-linux64/bin/llvm-profdata
 find /tools/deps -name '*.so*' -exec rm {} \;
 
 tar -xf Python-${PYTHON_VERSION}.tar.xz
+unzip setuptools-${SETUPTOOLS_VERSION}.zip
+tar -xf pip-${PIP_VERSION}.tar.gz
 
 cat Setup.local
 mv Setup.local Python-${PYTHON_VERSION}/Modules/Setup.local
@@ -88,6 +90,55 @@ cat ../Makefile.extra >> Makefile
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out/python
+
+# Install pip so we can patch it to work with non-dynamic executables
+# and work around https://github.com/pypa/pip/issues/6543. But pip's bundled
+# setuptools has the same bug! So we need to install a patched version.
+pushd /build/setuptools-${SETUPTOOLS_VERSION}
+patch -p1 <<EOF
+diff --git a/setuptools/glibc.py b/setuptools/glibc.py
+index a134591c..c9c3f378 100644
+--- a/setuptools/glibc.py
++++ b/setuptools/glibc.py
+@@ -14,7 +14,10 @@ def glibc_version_string():
+     # manpage says, "If filename is NULL, then the returned handle is for the
+     # main program". This way we can let the linker do the work to figure out
+     # which libc our process is actually using.
+-    process_namespace = ctypes.CDLL(None)
++    try:
++        process_namespace = ctypes.CDLL(None)
++    except OSError:
++        return None
+     try:
+         gnu_get_libc_version = process_namespace.gnu_get_libc_version
+     except AttributeError:
+EOF
+
+/build/out/python/install/bin/python3 setup.py install
+popd
+
+pushd /build/pip-${PIP_VERSION}
+patch -p1 <<EOF
+diff --git a/src/pip/_internal/utils/glibc.py b/src/pip/_internal/utils/glibc.py
+--- a/src/pip/_internal/utils/glibc.py
++++ b/src/pip/_internal/utils/glibc.py
+@@ -18,7 +18,10 @@ def glibc_version_string():
+     # manpage says, "If filename is NULL, then the returned handle is for the
+     # main program". This way we can let the linker do the work to figure out
+     # which libc our process is actually using.
+-    process_namespace = ctypes.CDLL(None)
++    try:
++        process_namespace = ctypes.CDLL(None)
++    except OSError:
++        return None
+     try:
+         gnu_get_libc_version = process_namespace.gnu_get_libc_version
+     except AttributeError:
+
+EOF
+
+/build/out/python/install/bin/python3 setup.py install
+popd
 
 # Downstream consumers don't require bytecode files. So remove them.
 # Ideally we'd adjust the build system. But meh.

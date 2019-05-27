@@ -201,6 +201,12 @@ DOWNLOADS = {
         'sha256': '8af0ae5ceed63fa8a2ded611d44cc341027a91df22aaaa071efedc81437412a5',
         'version': '2.11.06',
     },
+    'pip': {
+        'url': 'https://files.pythonhosted.org/packages/93/ab/f86b61bef7ab14909bd7ec3cd2178feb0a1c86d451bc9bccd5a1aedcde5f/pip-19.1.1.tar.gz',
+        'size': 1334144,
+        'sha256': '44d3d7d3d30a1eb65c7e5ff1173cdf8f7467850605ac7cc3707b6064bddd0958',
+        'version': '19.1.1',
+    },
     'readline': {
         'url': 'ftp://ftp.gnu.org/gnu/readline/readline-6.3.tar.gz',
         'size': 2468560,
@@ -211,6 +217,12 @@ DOWNLOADS = {
         'url': 'https://static.rust-lang.org/dist/rust-1.30.1-x86_64-unknown-linux-gnu.tar.gz',
         'size': 236997689,
         'sha256': 'a01a493ed8946fc1c15f63e74fc53299b26ebf705938b4d04a388a746dfdbf9e',
+    },
+    'setuptools': {
+        'url': 'https://files.pythonhosted.org/packages/1d/64/a18a487b4391a05b9c7f938b94a16d80305bf0369c6b0b9509e86165e1d3/setuptools-41.0.1.zip',
+        'size': 849016,
+        'sha256': 'a222d126f5471598053c9a77f4b5d4f26eaa1f150ad6e01dcf1a42e185d05613',
+        'version': '41.0.1',
     },
     'sqlite': {
         'url': 'https://www.sqlite.org/2019/sqlite-autoconf-3280000.tar.gz',

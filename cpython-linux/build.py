@@ -626,6 +626,8 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
 def build_cpython(client, image, platform, optimized=False, musl=False):
     """Build CPythin in a Docker image'"""
     python_archive = download_entry('cpython-3.7', BUILD)
+    setuptools_archive = download_entry('setuptools', BUILD)
+    pip_archive = download_entry('pip', BUILD)
 
     with (SUPPORT / 'static-modules').open('rb') as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
@@ -661,6 +663,8 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
         install_tools_archive(container, BUILD / ('zlib-%s.tar' % dep_platform))
         #copy_rust(container)
         copy_file_to_container(python_archive, container, '/build')
+        copy_file_to_container(setuptools_archive, container, '/build')
+        copy_file_to_container(pip_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-cpython.sh', container,
                                '/build')
         copy_file_to_container(ROOT / 'python-licenses.rst', container, '/build')
@@ -685,7 +689,9 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
 
         env = {
             'CC': 'clang',
+            'PIP_VERSION': DOWNLOADS['pip']['version'],
             'PYTHON_VERSION': DOWNLOADS['cpython-3.7']['version'],
+            'SETUPTOOLS_VERSION': DOWNLOADS['setuptools']['version'],
         }
 
         if musl:
