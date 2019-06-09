@@ -9,6 +9,8 @@ DOWNLOADS = {
         'size': 36541923,
         'sha256': '2917c28f60903908c2ca4587ded1363b812c4e830a5326aaa77c9879d13ae18e',
         'version': '6.0.19',
+        'licenses': ['Sleepycat'],
+        'license_file': 'LICENSE.bdb.txt',
     },
     'binutils': {
         'url': 'ftp://ftp.gnu.org/gnu/binutils/binutils-2.32.tar.xz',
@@ -21,6 +23,8 @@ DOWNLOADS = {
         'size': 782025,
         'sha256': 'a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd',
         'version': '1.0.6',
+        'licenses': ['bzip2-1.0.6'],
+        'license_file': 'LICENSE.bzip2.txt',
     },
     'clang': {
         'url': 'http://releases.llvm.org/8.0.0/cfe-8.0.0.src.tar.xz',
@@ -63,6 +67,8 @@ DOWNLOADS = {
         'size': 17108364,
         'sha256': 'da60b54064d4cfcd9c26576f6df2690e62085123826cff2e667e72a91952d318',
         'version': '3.7.3',
+        'licenses': ['Python-2.0', 'CNRI-Python'],
+        'license_file': 'LICENSE.cpython.txt',
     },
     'gcc': {
         'url': 'https://ftp.gnu.org/gnu/gcc/gcc-9.1.0/gcc-9.1.0.tar.xz',
@@ -75,6 +81,8 @@ DOWNLOADS = {
         'size': 941863,
         'sha256': '86e613527e5dba544e73208f42b78b7c022d4fa5a6d5498bf18c8d6f745b91dc',
         'version': '1.18.1',
+        'licenses': ['GPL-3.0-or-later'],
+        'license_file': 'LICENSE.gdbm.txt',
     },
     'gmp': {
         'url': 'https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz',
@@ -117,12 +125,16 @@ DOWNLOADS = {
         'size': 521931,
         'sha256': '2811d70c0b000f2ca91b7cb1a37203134441743c4fcc9c37b0b687f328611064',
         'version': '20181209-3.1',
+        'licenses': ['BSD-3-Clause'],
+        'license_file': 'LICENSE.libedit.txt',
     },
     'libffi': {
         'url': 'ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz',
         'size': 940837,
         'sha256': 'd06ebb8e1d9a22d19e38d63fdb83954253f39bedc5d46232a05645685722ca37',
         'version': '3.2.1',
+        'licenses': ['MIT'],
+        'license_file': 'LICENSE.libffi.txt',
     },
     'libx11': {
         'url': 'https://www.x.org/releases/X11R7.7/src/lib/libX11-1.5.0.tar.gz',
@@ -176,6 +188,8 @@ DOWNLOADS = {
         'size': 3365395,
         'sha256': 'aa057eeeb4a14d470101eff4597d5833dcef5965331be3528c08d99cebaa0d17',
         'version': '6.1',
+        'licenses': ['X11'],
+        'license_file': 'LICENSE.ncurses.txt',
     },
     'ninja-linux-bin': {
         'url': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip',
@@ -194,6 +208,8 @@ DOWNLOADS = {
         'size': 8213737,
         'sha256': '5c557b023230413dfb0756f3137a13e6d726838ccd1430888ad15bfb2b43ea4b',
         'version': '1.1.1b',
+        'licenses': ['OpenSSL'],
+        'license_file': 'LICENSE.openssl.txt',
     },
     'nasm-windows-bin': {
         'url': 'https://github.com/python/cpython-bin-deps/archive/nasm-2.11.06.tar.gz',
@@ -212,6 +228,8 @@ DOWNLOADS = {
         'size': 2468560,
         'sha256': '56ba6071b9462f980c5a72ab0023893b65ba6debb4eeb475d7a563dc65cafd43',
         'version': '6.3',
+        'licenses': ['GPL-3.0'],
+        'license_file': 'LICENSE.readline.txt',
     },
     'rust': {
         'url': 'https://static.rust-lang.org/dist/rust-1.30.1-x86_64-unknown-linux-gnu.tar.gz',
@@ -230,6 +248,7 @@ DOWNLOADS = {
         'sha256': 'd61b5286f062adfce5125eaf544d495300656908e61fca143517afcc0a89b7c3',
         'version': '3280000',
         'actual_version': '3.28.0.0',
+        'license_file': 'LICENSE.sqlite.txt',
     },
     'strawberryperl': {
         'url': 'http://strawberryperl.com/download/5.28.1.1/strawberry-perl-5.28.1.1-32bit-portable.zip',
@@ -259,17 +278,24 @@ DOWNLOADS = {
         'size': 318256,
         'sha256': '46af3275291091009ad7f1b899de3d0cea0252737550e7919d17237997db5644',
         'version': '1.0.3',
+        'licenses': ['BSD-3-Clause'],
+        'license_file': 'LICENSE.libuuid.txt',
     },
     'xz': {
         'url': 'https://tukaani.org/xz/xz-5.2.4.tar.gz',
         'size': 1572354,
         'sha256': 'b512f3b726d3b37b6dc4c8570e137b9311e7552e8ccbab4d39d47ce5f4177145',
         'version': '5.2.4',
+        # liblzma is in the public domain. Other parts of code have licenses. But
+        # we only use liblzma.
+        'license_file': 'LICENSE.liblzma.txt',
     },
     'zlib': {
         'url': 'https://zlib.net/zlib-1.2.11.tar.gz',
         'size': 607698,
         'sha256': 'c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1',
         'version': '1.2.11',
+        'licenses': ['Zlib'],
+        'license_file': 'LICENSE.zlib.txt',
     },
 }
