@@ -22,6 +22,7 @@ from pythonbuild.downloads import (
     DOWNLOADS,
 )
 from pythonbuild.utils import (
+    add_license_to_link_entry,
     create_tar_from_directory,
     download_entry,
     extract_tar_to_directory,
@@ -238,10 +239,14 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
             log('adding library %s for extension %s' % (libname, extension))
 
             if libname in libraries:
-                links.append({
+                entry = {
                     'name': libname,
                     'path_static': 'build/lib/lib%s.a' % libname,
-                })
+                }
+
+                add_license_to_link_entry(entry)
+
+                links.append(entry)
             else:
                 links.append({
                     'name': libname,
@@ -346,7 +351,9 @@ def build_cpython(optimized=False):
         with makefile_extra_path.open('wb') as fh:
             fh.write(extra_make_content)
 
-        shutil.copyfile(ROOT / 'python-licenses.rst', td / 'python-licenses.rst')
+        for f in sorted(os.listdir(ROOT)):
+            if f.startswith('LICENSE.') and f.endswith('.txt'):
+                shutil.copyfile(ROOT / f, td / f)
 
         env = dict(os.environ)
         env['PYTHON_VERSION'] = python_version
@@ -365,7 +372,7 @@ def build_cpython(optimized=False):
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            'version': '1',
+            'version': '2',
             'os': 'macos',
             'arch': 'x86_64',
             'python_flavor': 'cpython',
@@ -377,6 +384,8 @@ def build_cpython(optimized=False):
                                             config_c_in,
                                             setup_dist_content,
                                             setup_local_content),
+            'licenses': DOWNLOADS['cpython-3.7']['licenses'],
+            'license_path': 'licenses/LICENSE.cpython.txt',
         }
 
         with (td / 'out' / 'python' / 'PYTHON.json').open('w') as fh:
