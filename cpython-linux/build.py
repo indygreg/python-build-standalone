@@ -25,6 +25,7 @@ from pythonbuild.downloads import (
     DOWNLOADS,
 )
 from pythonbuild.utils import (
+    add_license_to_link_entry,
     download_entry,
 )
 
@@ -538,10 +539,14 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
             log('adding library %s for extension %s' % (libname, extension))
 
             if libname in libraries:
-                links.append({
+                entry = {
                     'name': libname,
                     'path_static': 'build/lib/lib%s.a' % libname,
-                })
+                }
+
+                add_license_to_link_entry(entry)
+
+                links.append(entry)
             else:
                 links.append({
                     'name': libname,
@@ -667,7 +672,10 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
         copy_file_to_container(pip_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-cpython.sh', container,
                                '/build')
-        copy_file_to_container(ROOT / 'python-licenses.rst', container, '/build')
+
+        for f in sorted(os.listdir(ROOT)):
+            if f.startswith('LICENSE.') and f.endswith('.txt'):
+                copy_file_to_container(ROOT / f, container, '/build')
 
         # TODO copy latest pip/setuptools.
 
@@ -705,7 +713,7 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            'version': '1',
+            'version': '2',
             'os': 'linux',
             'arch': 'x86_64',
             'python_flavor': 'cpython',
@@ -715,6 +723,8 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
             'python_stdlib': 'install/lib/python3.7',
             'build_info': python_build_info(container, config_c_in,
                                             setup_dist_content, setup_local_content),
+            'licenses': DOWNLOADS['cpython-3.7']['licenses'],
+            'license_path': 'licenses/LICENSE.cpython.txt',
         }
 
         with tempfile.NamedTemporaryFile('w') as fh:

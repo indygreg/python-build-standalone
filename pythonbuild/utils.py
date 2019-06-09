@@ -157,3 +157,23 @@ def compress_python_archive(source_path: pathlib.Path,
     print('%s has SHA256 %s' % (dest_path, hash_path(dest_path)))
 
     return dest_path
+
+
+def add_license_to_link_entry(entry):
+    """Add licenses keys to a ``link`` entry for JSON distribution info."""
+    name = entry['name']
+
+    for value in DOWNLOADS.values():
+        if name not in value.get('library_names', []):
+            continue
+
+        # Don't add licenses annotations if they aren't defined. This leaves
+        # things as "unknown" to consumers.
+        if 'licenses' not in value:
+            continue
+
+        entry['licenses'] = value['licenses']
+        entry['license_path'] = 'licenses/%s' % value['license_file']
+        entry['license_public_domain'] = value.get('license_public_domain', False)
+
+        return

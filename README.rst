@@ -239,9 +239,6 @@ PYTHON.json
 
    See the ``PYTHON.json File`` section for the format of this file.
 
-LICENSE.rst
-   Contains license information of software contained in the distribution.
-
 By convention, the ``build/`` directory contains artifacts from building
 this distribution (object files, libraries, etc) and the ``install/`` directory
 contains a working, self-contained Python installation of this distribution.
@@ -259,7 +256,7 @@ without having to resort to heuristics.
 The file contains a JSON map. This map has the following keys:
 
 version
-   Version number of the file format. Currently ``1``.
+   Version number of the file format. Currently ``2``.
 
 os
    Target operating system for the distribution. e.g. ``linux``, ``macos``,
@@ -290,6 +287,17 @@ build_info
    A map describing build configuration and artifacts for this distribution.
 
    See the ``build_info Data`` section below.
+
+licenses
+   Array of strings containing the license shortname identifiers from the
+   SPDX license list (https://spdx.org/licenses/) for the Python distribution.
+
+  (Version 2 or above only.)
+
+license_path
+   Path to a text file containing the license for this Python distribution.
+
+   (Version 2 or above only.)
 
 build_info Data
 ---------------
@@ -391,3 +399,25 @@ system
 
    System libraries are typically passed into the linker by name only and
    found using default library search paths.
+
+licenses
+   Array of strings containing the license shortname identifiers from the
+   SPDX license list (https://spdx.org/licenses/).
+
+   If this field is missing, licenses are unknown. Empty array denotes no known
+   licenses.
+
+   (Version 2 or above only.)
+
+license_path
+   Path to a text file containing the license for this library.
+
+   (Version 2 or above only.)
+
+license_public_domain
+   Bool indicating that the library is in the public domain.
+
+   There is no SPDX identifier for public domain. And we want to be explicit
+   about something being in the public domain because of the legal implications.
+
+   (Version 2 or above only.)

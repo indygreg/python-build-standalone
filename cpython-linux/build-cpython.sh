@@ -171,4 +171,6 @@ cp -av Modules/config.c.in /build/out/python/build/Modules/
 cp -av Python/frozen.c /build/out/python/build/Python/
 cp -av Modules/Setup.dist /build/out/python/build/Modules/
 cp -av Modules/Setup.local /build/out/python/build/Modules/
-cp /build/python-licenses.rst /build/out/python/LICENSE.rst
+
+mkdir /build/out/python/licenses
+cp /build/LICENSE.*.txt /build/out/python/licenses/
