@@ -153,9 +153,6 @@ Licensing
 Python and its various dependencies are governed by varied software use
 licenses. This impacts the rights and requirements of downstream consumers.
 
-The ``python-licenses.rst`` file contained in this repository and produced
-artifacts summarizes the licenses of various components.
-
 Most licenses are fairly permissive. Notable exceptions to this are GDBM and
 readline, which are both licensed under GPL Version 3.
 
