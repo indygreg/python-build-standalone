@@ -157,7 +157,9 @@ Most licenses are fairly permissive. Notable exceptions to this are GDBM and
 readline, which are both licensed under GPL Version 3.
 
 **It is important to understand the licensing requirements when integrating
-the output of this project into derived works.**
+the output of this project into derived works.** To help with this, the
+JSON document describing the Python distribution contains licensing metadata
+and the archive contains copies of license texts.
 
 Reconsuming Build Artifacts
 ===========================
