@@ -1270,6 +1270,9 @@ def build_cpython(pgo=False):
     python_archive = download_entry('cpython-3.7', BUILD)
     python_version = DOWNLOADS['cpython-3.7']['version']
 
+    setuptools_archive = download_entry('setuptools', BUILD)
+    pip_archive = download_entry('pip', BUILD)
+
     openssl_bin_archive = BUILD / 'openssl-windows.tar'
 
     with tempfile.TemporaryDirectory() as td:
@@ -1277,9 +1280,13 @@ def build_cpython(pgo=False):
 
         with concurrent.futures.ThreadPoolExecutor(7) as e:
             for a in (python_archive, bzip2_archive, openssl_bin_archive,
-                      sqlite_archive, tk_bin_archive, xz_archive, zlib_archive):
+                      pip_archive, sqlite_archive, tk_bin_archive, xz_archive,
+                      zlib_archive):
                 log('extracting %s to %s' % (a, td))
                 e.submit(extract_tar_to_directory, a, td)
+
+        with zipfile.ZipFile(setuptools_archive) as zf:
+            zf.extractall(td)
 
         cpython_source_path = td / ('Python-%s' % python_version)
         pcbuild_path = cpython_source_path / 'PCBuild'
@@ -1353,6 +1360,25 @@ def build_cpython(pgo=False):
                 '--include-distutils',
             ],
             pcbuild_path,
+            os.environ)
+
+        # Install setuptools and pip.
+        exec_and_log(
+            [
+                str(install_dir / 'python.exe'),
+                'setup.py',
+                'install',
+            ],
+            str(td / ('setuptools-%s' % DOWNLOADS['setuptools']['version'])),
+            os.environ)
+
+        exec_and_log(
+            [
+                str(install_dir / 'python.exe'),
+                'setup.py',
+                'install',
+            ],
+            str(td / ('pip-%s' % DOWNLOADS['pip']['version'])),
             os.environ)
 
         # Now copy the build artifacts into the output directory.
