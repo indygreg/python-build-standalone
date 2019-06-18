@@ -79,6 +79,18 @@ REQUIRED_EXTENSIONS = {
     'faulthandler',
 }
 
+# Used to annotate licenses.
+EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY = {
+    '_bz2': 'bzip2',
+    '_ctypes': 'libffi',
+    '_hashlib': 'openssl',
+    '_lzma': 'xz',
+    '_sqlite3': 'sqlite',
+    '_ssl': 'openssl',
+    '_uuid': 'uuid',
+    'zlib': 'zlib',
+}
+
 
 def log(msg):
     if isinstance(msg, bytes):
@@ -1204,6 +1216,16 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
                 'path_static': 'build/lib/%s.lib' % lib
             })
 
+        if ext in EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY:
+            download_entry = DOWNLOADS[EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY[ext]]
+
+            # This will raise if no license metadata defined. This is
+            # intentional because EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY is
+            # manually curated and we want to fail fast.
+            entry['licenses'] = download_entry['licenses']
+            entry['license_paths'] = ['licenses/%s' % download_entry['license_file']]
+            entry['license_public_domain'] = download_entry.get('license_public_domain')
+
         res['extensions'][ext] = [entry]
 
         # Copy the extension static library.
@@ -1363,9 +1385,15 @@ def build_cpython(pgo=False):
             log('copying %s to %s' % (source, dest))
             shutil.copyfile(source, dest)
 
+        licenses_dir = out_dir / 'python' / 'licenses'
+        licenses_dir.mkdir()
+        for f in sorted(os.listdir(ROOT)):
+            if f.startswith('LICENSE.') and f.endswith('.txt'):
+                shutil.copyfile(ROOT / f, licenses_dir / f)
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            'version': '1',
+            'version': '2',
             'os': 'windows',
             'arch': 'x86_64',
             'python_flavor': 'cpython',
@@ -1374,13 +1402,12 @@ def build_cpython(pgo=False):
             'python_include': 'install/include',
             'python_stdlib': 'install/Lib',
             'build_info': build_info,
+            'licenses': DOWNLOADS['cpython-3.7']['licenses'],
+            'license_path': 'licenses/LICENSE.cpython.txt',
         }
 
         with (out_dir / 'python' / 'PYTHON.json').open('w', encoding='utf8') as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
-
-        # Copy software licenses file.
-        shutil.copyfile(ROOT / 'python-licenses.rst', out_dir / 'python' / 'LICENSE.rst')
 
         dest_path = BUILD / 'cpython-windows.tar'
 
