@@ -69,3 +69,6 @@ cp -av Modules/config.c.in ${ROOT}/out/python/build/Modules/
 cp -av Python/frozen.c ${ROOT}/out/python/build/Python/
 cp -av Modules/Setup.dist ${ROOT}/out/python/build/Modules/
 cp -av Modules/Setup.local ${ROOT}/out/python/build/Modules/
+
+mkdir ${ROOT}/out/python/licenses
+cp -av ${ROOT}/LICENSE.*.txt ${ROOT}/out/python/licenses/
