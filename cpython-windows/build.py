@@ -1180,29 +1180,31 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
         additional_depends = find_additional_dependencies(ext)
         additional_depends -= CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('ignore_additional_depends', set())
 
-        res['extensions'][ext] = [{
+        entry = {
             'in_core': False,
             'objs': [],
             'init_fn': 'PyInit_%s' % ext,
             'static_lib': None,
             'links': [{'name': n[:-4], 'system': True} for n in sorted(additional_depends)],
             'variant': 'default',
-        }]
+        }
 
         for obj in process_project(ext, dest_dir):
-            res['extensions'][ext][0]['objs'].append('build/extensions/%s/%s' % (ext, obj))
+            entry['objs'].append('build/extensions/%s/%s' % (ext, obj))
 
         for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('static_depends', []):
-            res['extensions'][ext][0]['links'].append({
+            entry['links'].append({
                 'name': lib,
                 'path_static': 'build/lib/%s.lib' % lib,
             })
 
         for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get('static_depends_no_project', []):
-            res['extensions'][ext][0]['links'].append({
+            entry['links'].append({
                 'name': lib,
                 'path_static': 'build/lib/%s.lib' % lib
             })
+
+        res['extensions'][ext] = [entry]
 
         # Copy the extension static library.
         ext_static = outputs_path / ('%s.lib' % ext)
