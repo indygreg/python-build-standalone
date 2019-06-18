@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 
 from pythonbuild.cpython import (
     derive_setup_local,
@@ -310,6 +311,8 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
 def build_cpython(optimized=False):
     python_archive = download_entry('cpython-3.7', BUILD)
     python_version = DOWNLOADS['cpython-3.7']['version']
+    setuptools_archive = download_entry('setuptools', BUILD)
+    pip_archive = download_entry('pip', BUILD)
 
     with (SUPPORT / 'static-modules').open('rb') as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
@@ -344,6 +347,10 @@ def build_cpython(optimized=False):
         extract_tar_to_directory(BUILD / 'zlib-macos.tar', deps_dir)
 
         extract_tar_to_directory(python_archive, td)
+        extract_tar_to_directory(pip_archive, td)
+
+        with zipfile.ZipFile(setuptools_archive) as zf:
+            zf.extractall(td)
 
         setup_local_path = td / ('Python-%s' % python_version) / 'Modules' / 'Setup.local'
         with setup_local_path.open('wb') as fh:
@@ -359,6 +366,8 @@ def build_cpython(optimized=False):
 
         env = dict(os.environ)
         env['PYTHON_VERSION'] = python_version
+        env['SETUPTOOLS_VERSION'] = DOWNLOADS['setuptools']['version']
+        env['PIP_VERSION'] = DOWNLOADS['pip']['version']
 
         # We force a PATH only containing system files: we don't want
         # pollution from homebrew, macports, etc.

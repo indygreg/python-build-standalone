@@ -42,6 +42,14 @@ cat ../Makefile.extra >> Makefile
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
+pushd ${ROOT}/setuptools-${SETUPTOOLS_VERSION}
+${ROOT}/out/python/install/bin/python3 setup.py install
+popd
+
+pushd ${ROOT}/pip-${PIP_VERSION}
+${ROOT}/out/python/install/bin/python3 setup.py install
+popd
+
 # Downstream consumers don't require bytecode files. So remove them.
 # Ideally we'd adjust the build system. But meh.
 find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
