@@ -32,7 +32,7 @@ ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / 'build'
 SUPPORT = ROOT / 'cpython-macos'
 
-MACOSX_DEPLOYMENT_TARGET = '10.14'
+MACOSX_DEPLOYMENT_TARGET = '10.9'
 
 DISABLED_STATIC_MODULES = {
     # We don't support GDBM because it is GPL v3.
