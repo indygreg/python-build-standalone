@@ -359,6 +359,33 @@ extensions
       The string value may be ``NULL``, which may need special handling by
       consumers.
 
+   licenses
+      Array of strings containing the license shortname identifiers from the
+      SPDX license list (https://spdx.org/licenses/).
+
+      If this field is missing, licenses are unknown. Empty array denotes no known
+      licenses.
+
+      The license applies to additional libraries needed by this extension, not
+      the extension itself, as extensions should be licensed the same as the
+      Python distribution.
+
+      (Version 2 or above only.)
+
+   license_path
+      Paths to text files containing the licenses for this extension.
+
+      (Version 2 or above only.)
+
+   license_public_domain
+      Bool indicating that the license for the extension is in the public
+      domain.
+
+      There is no SPDX identifier for public domain. And we want to be explicit
+      about something being in the public domain because of the legal implications.
+
+      (Version 2 or above only.)
+
    links
       An array of linking requirement maps. (See below for data format.)
 
@@ -399,25 +426,3 @@ system
 
    System libraries are typically passed into the linker by name only and
    found using default library search paths.
-
-licenses
-   Array of strings containing the license shortname identifiers from the
-   SPDX license list (https://spdx.org/licenses/).
-
-   If this field is missing, licenses are unknown. Empty array denotes no known
-   licenses.
-
-   (Version 2 or above only.)
-
-license_path
-   Path to a text file containing the license for this library.
-
-   (Version 2 or above only.)
-
-license_public_domain
-   Bool indicating that the library is in the public domain.
-
-   There is no SPDX identifier for public domain. And we want to be explicit
-   about something being in the public domain because of the legal implications.
-
-   (Version 2 or above only.)

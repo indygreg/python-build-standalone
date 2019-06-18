@@ -159,21 +159,34 @@ def compress_python_archive(source_path: pathlib.Path,
     return dest_path
 
 
-def add_license_to_link_entry(entry):
-    """Add licenses keys to a ``link`` entry for JSON distribution info."""
-    name = entry['name']
+def add_licenses_to_extension_entry(entry):
+    """Add licenses keys to a ``extensions`` entry for JSON distribution info."""
 
-    for value in DOWNLOADS.values():
-        if name not in value.get('library_names', []):
-            continue
+    have_licenses = False
+    licenses = set()
+    license_paths = set()
+    license_public_domain = None
 
-        # Don't add licenses annotations if they aren't defined. This leaves
-        # things as "unknown" to consumers.
-        if 'licenses' not in value:
-            continue
+    for link in entry['links']:
+        name = link['name']
 
-        entry['licenses'] = value['licenses']
-        entry['license_path'] = 'licenses/%s' % value['license_file']
-        entry['license_public_domain'] = value.get('license_public_domain', False)
+        for value in DOWNLOADS.values():
+            if name not in value.get('library_names', []):
+                continue
 
+            # Don't add licenses annotations if they aren't defined. This leaves
+            # things as "unknown" to consumers.
+            if 'licenses' not in value:
+                continue
+
+            have_licenses = True
+            licenses |= set(value['licenses'])
+            license_paths.add('licenses/%s' % value['license_file'])
+            license_public_domain = value.get('license_public_domain', False)
+
+    if not have_licenses:
         return
+
+    entry['licenses'] = sorted(licenses)
+    entry['license_paths'] = sorted(license_paths)
+    entry['license_public_domain'] = license_public_domain

@@ -22,7 +22,7 @@ from pythonbuild.downloads import (
     DOWNLOADS,
 )
 from pythonbuild.utils import (
-    add_license_to_link_entry,
+    add_licenses_to_extension_entry,
     create_tar_from_directory,
     download_entry,
     extract_tar_to_directory,
@@ -244,8 +244,6 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
                     'path_static': 'build/lib/lib%s.a' % libname,
                 }
 
-                add_license_to_link_entry(entry)
-
                 links.append(entry)
             else:
                 links.append({
@@ -253,13 +251,17 @@ def python_build_info(python_path: pathlib.Path, config_c_in,
                     'system': True,
                 })
 
-        bi['extensions'][extension] = [{
+        entry = {
             'in_core': False,
             'init_fn': 'PyInit_%s' % extension,
             'links': links,
             'objs': objs,
             'variant': 'default',
-        }]
+        }
+
+        add_licenses_to_extension_entry(entry)
+
+        bi['extensions'][extension] = [entry]
 
     found_start = False
 

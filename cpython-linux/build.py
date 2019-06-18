@@ -25,7 +25,7 @@ from pythonbuild.downloads import (
     DOWNLOADS,
 )
 from pythonbuild.utils import (
-    add_license_to_link_entry,
+    add_licenses_to_extension_entry,
     download_entry,
 )
 
@@ -544,8 +544,6 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
                     'path_static': 'build/lib/lib%s.a' % libname,
                 }
 
-                add_license_to_link_entry(entry)
-
                 links.append(entry)
             else:
                 links.append({
@@ -553,14 +551,17 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
                     'system': True,
                 })
 
-        bi['extensions'].setdefault(extension, []).append({
+        entry = {
             'in_core': False,
             'init_fn': 'PyInit_%s' % extension,
             'links': links,
             'objs': objs,
             'variant': d['variant'],
-        })
+        }
 
+        add_licenses_to_extension_entry(entry)
+
+        bi['extensions'].setdefault(extension, []).append(entry)
 
     found_start = False
 
