@@ -97,6 +97,7 @@ cmake \
     -DLIBCXX_LIBCPPABI_VERSION="" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
+    -DLLVM_INSTALL_UTILS=ON \
     ../../llvm
 
 LD_LIBRARY_PATH=/tools/host/lib64 ninja install
@@ -131,6 +132,7 @@ cmake \
     -DLIBCXX_LIBCPPABI_VERSION="" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
+    -DLLVM_INSTALL_UTILS=ON \
     ../../llvm
 
 LD_LIBRARY_PATH=/tools/clang-stage1/lib ninja install
@@ -165,6 +167,7 @@ cmake \
     -DLIBCXX_LIBCPPABI_VERSION="" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
+    -DLLVM_INSTALL_UTILS=ON \
     ../../llvm
 
 LD_LIBRARY_PATH=/tools/clang-stage2/lib DESTDIR=/build/out ninja install
