@@ -630,7 +630,7 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
 
 
 def build_cpython(client, image, platform, optimized=False, musl=False):
-    """Build CPythin in a Docker image'"""
+    """Build CPython in a Docker image'"""
     python_archive = download_entry('cpython-3.7', BUILD)
     setuptools_archive = download_entry('setuptools', BUILD)
     pip_archive = download_entry('pip', BUILD)
