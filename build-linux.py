@@ -24,6 +24,7 @@ MAKE_DIR = ROOT / 'cpython-linux'
 
 def bootstrap():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
     parser.add_argument('--musl', action='store_true')
     parser.add_argument('--optimized', action='store_true')
 
@@ -41,6 +42,8 @@ def bootstrap():
     os.environ['PATH'] = '%s:%s' % (str(VENV / 'bin'), os.environ['PATH'])
     os.environ['PYTHONPATH'] = str(ROOT)
 
+    if args.debug:
+        os.environ['PYBUILD_DEBUG'] = '1'
     if args.musl:
         os.environ['PYBUILD_MUSL'] = '1'
     if args.optimized:
@@ -64,6 +67,9 @@ def run():
     if 'PYBUILD_MUSL' in os.environ:
         basename += '-musl'
         extra = '-musl'
+    if 'PYBUILD_DEBUG' in os.environ:
+        basename += '-debug'
+        extra += '-debug'
     if 'PYBUILD_OPTIMIZED' in os.environ:
         basename += '-pgo'
         extra = '-pgo'

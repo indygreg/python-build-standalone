@@ -116,7 +116,7 @@ def parse_setup_line(line: bytes, variant: str):
 
 
 def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=None,
-                       musl=False):
+                       musl=False, debug=False):
     """Derive the content of the Modules/Setup.local file."""
     python_version = DOWNLOADS['cpython-3.7']['version']
 
@@ -133,6 +133,10 @@ def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=No
         # Missing header dependencies.
         disabled.add(b'nis')
         disabled.add(b'ossaudiodev')
+
+    if debug:
+        # Doesn't work in debug builds.
+        disabled.add(b'xxlimited')
 
     with tarfile.open(str(cpython_source_archive)) as tf:
         ifh = tf.extractfile('Python-%s/Modules/Setup.dist' % python_version)

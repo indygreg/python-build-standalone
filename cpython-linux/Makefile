@@ -15,6 +15,16 @@ ifdef PYBUILD_MUSL
     PLATFORM := $(PLATFORM)-musl
 endif
 
+ifdef PYBUILD_DEBUG
+	DEFAULT_EXTRA := -debug
+else
+ifdef PYBUILD_OPTIMIZED
+	DEFAULT_EXTRA := -pgo
+else
+	DEFAULT_EXTRA :=
+endif
+endif
+
 BASE_TOOLCHAIN_DEPENDS := \
     $(OUTDIR)/binutils-linux64.tar \
     $(OUTDIR)/gcc-linux64.tar \
@@ -31,7 +41,7 @@ PYTHON_DEP_DEPENDS := \
     $(TOOLCHAIN_DEPENDS) \
     $(NULL)
 
-default: $(OUTDIR)/cpython-$(PLATFORM)$(if $(PYBUILD_OPTIMIZED),-pgo,).tar
+default: $(OUTDIR)/cpython-$(PLATFORM)$(DEFAULT_EXTRA).tar
 
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
 	$(BUILD) image-$*
@@ -105,6 +115,9 @@ PYTHON_DEPENDS := \
 
 $(OUTDIR)/cpython-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) cpython
+
+$(OUTDIR)/cpython-$(PLATFORM)-debug.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
+	$(BUILD) --platform $(PLATFORM) --debug cpython
 
 $(OUTDIR)/cpython-$(PLATFORM)-pgo.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) --optimized cpython

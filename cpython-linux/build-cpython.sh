@@ -75,6 +75,10 @@ fi
 
 CONFIGURE_FLAGS="--prefix=/install --with-openssl=/tools/deps --without-ensurepip"
 
+if [ -n "${CPYTHON_DEBUG}" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-pydebug"
+fi
+
 # TODO support --with-lto
 # --with-lto will produce .o files that are LLVM bitcode and aren't compatible
 # with downstream consumers that can't handle them.

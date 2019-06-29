@@ -629,7 +629,7 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
     return bi
 
 
-def build_cpython(client, image, platform, optimized=False, musl=False):
+def build_cpython(client, image, platform, debug=False, optimized=False, musl=False):
     """Build CPython in a Docker image'"""
     python_archive = download_entry('cpython-3.7', BUILD)
     setuptools_archive = download_entry('setuptools', BUILD)
@@ -639,7 +639,7 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
 
     setup = derive_setup_local(static_modules_lines, python_archive,
-                               musl=musl)
+                               musl=musl, debug=debug)
 
     config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
     setup_dist_content = setup['setup_dist']
@@ -706,11 +706,17 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
         if musl:
             env['CC'] = 'musl-clang'
 
+        if debug:
+            env['CPYTHON_DEBUG'] = '1'
         if optimized:
             env['CPYTHON_OPTIMIZED'] = '1'
 
         container_exec(container, '/build/build-cpython.sh',
                        environment=env)
+
+        fully_qualified_name = 'python%s%sm' % (
+            '3.7', 'd' if debug else ''
+        )
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
@@ -719,8 +725,8 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
             'arch': 'x86_64',
             'python_flavor': 'cpython',
             'python_version': DOWNLOADS['cpython-3.7']['version'],
-            'python_exe': 'install/bin/python3.7',
-            'python_include': 'install/include/python3.7m',
+            'python_exe': 'install/bin/%s' % fully_qualified_name,
+            'python_include': 'install/include/%s' % fully_qualified_name,
             'python_stdlib': 'install/lib/python3.7',
             'build_info': python_build_info(container, config_c_in,
                                             setup_dist_content, setup_local_content),
@@ -740,6 +746,8 @@ def build_cpython(client, image, platform, optimized=False, musl=False):
 
         if musl:
             basename += '-musl'
+        if debug:
+            basename += '-debug'
         if optimized:
             basename += '-pgo'
 
@@ -764,6 +772,7 @@ def main():
         return 1
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
     parser.add_argument('--platform')
     parser.add_argument('--optimized', action='store_true')
     parser.add_argument('action')
@@ -775,6 +784,8 @@ def main():
     name = action
     if args.platform:
         name += '-%s' % args.platform
+    if args.debug:
+        name += '-debug'
     if args.optimized:
         name += '-pgo'
 
@@ -823,7 +834,7 @@ def main():
 
         elif action == 'cpython':
             build_cpython(client, get_image(client, 'build'), platform=platform,
-                          musl=musl, optimized=args.optimized)
+                          musl=musl, debug=args.debug, optimized=args.optimized)
 
         else:
             print('unknown build action: %s' % action)
