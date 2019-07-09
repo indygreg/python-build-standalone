@@ -45,14 +45,16 @@ def run():
     env = dict(os.environ)
     env['PYTHONUNBUFFERED'] = '1'
 
+    arch = 'x86' if os.environ.get('Platform') == 'x86' else 'amd64'
+
     subprocess.run([str(PYTHON), 'build.py'],
                    cwd=str(WINDOWS_DIR), env=env, check=True,
                    bufsize=0)
 
-    source_path = BUILD / 'cpython-windows.tar'
+    source_path = BUILD / ('cpython-windows-%s.tar' % arch)
 
-    compress_python_archive(source_path, DIST, 'cpython-%s-windows-amd64-%s' % (
-        DOWNLOADS['cpython-3.7']['version'], now.strftime('%Y%m%dT%H%M')))
+    compress_python_archive(source_path, DIST, 'cpython-%s-windows-%s-%s' % (
+        DOWNLOADS['cpython-3.7']['version'], arch, now.strftime('%Y%m%dT%H%M')))
 
 
 if __name__ == '__main__':

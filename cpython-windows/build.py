@@ -532,7 +532,7 @@ OPENSSL_PROPS_REMOVE_RULES = b'''
 '''
 
 
-def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
+def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str):
     # TODO can we pass props into msbuild.exe?
 
     # Our dependencies are in different directories from what CPython's
@@ -550,7 +550,7 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
     xz_path = td / ('xz-%s' % xz_version)
     zlib_path = td / ('zlib-%s' % zlib_version)
 
-    openssl_root = td / 'openssl' / 'amd64'
+    openssl_root = td / 'openssl' / arch
     openssl_libs_path = openssl_root / 'lib'
     openssl_include_path = openssl_root / 'include'
 
@@ -609,12 +609,13 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path):
                            b'libcrypto_static.lib;libssl_static.lib;')
 
 
-def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path):
+def hack_project_files(td: pathlib.Path, cpython_source_path: pathlib.Path,
+                       build_directory: str):
     """Hacks Visual Studio project files to work with our build."""
 
     pcbuild_path = cpython_source_path / 'PCbuild'
 
-    hack_props(td, pcbuild_path)
+    hack_props(td, pcbuild_path, build_directory)
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
@@ -922,7 +923,7 @@ def hack_source_files(source_path: pathlib.Path):
 
 
 def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
-                configuration: str):
+                configuration: str, platform: str):
     python_version = DOWNLOADS['cpython-3.7']['version']
 
     args = [
@@ -930,7 +931,7 @@ def run_msbuild(msbuild: pathlib.Path, pcbuild_path: pathlib.Path,
         str(pcbuild_path / 'pcbuild.proj'),
         '/target:Build',
         '/property:Configuration=%s' % configuration,
-        '/property:Platform=x64',
+        '/property:Platform=%s' % platform,
         '/maxcpucount',
         '/nologo',
         '/verbosity:normal',
@@ -1005,7 +1006,7 @@ def build_openssl_for_arch(perl_path, arch: str, openssl_archive, nasm_archive,
         shutil.copyfile(source, dest)
 
 
-def build_openssl(perl_path: pathlib.Path):
+def build_openssl(perl_path: pathlib.Path, arch: str):
     """Build OpenSSL from sources using the Perl executable specified."""
 
     # First ensure the dependencies are in place.
@@ -1026,19 +1027,26 @@ def build_openssl(perl_path: pathlib.Path):
         # in order for this to work.
         fs = []
         with concurrent.futures.ThreadPoolExecutor(2) as e:
-            #fs.append(e.submit(build_openssl_for_arch, perl_path, 'x86',
-            #                   openssl_archive, nasm_archive, root_32))
-            fs.append(e.submit(build_openssl_for_arch, perl_path, 'amd64',
-                               openssl_archive, nasm_archive, root_64))
+            if arch == 'x86':
+                fs.append(e.submit(build_openssl_for_arch, perl_path, 'x86',
+                                   openssl_archive, nasm_archive, root_32))
+            elif arch == 'amd64':
+                fs.append(e.submit(build_openssl_for_arch, perl_path, 'amd64',
+                                   openssl_archive, nasm_archive, root_64))
+            else:
+                raise ValueError('unhandled arch: %s' % arch)
 
         for f in fs:
             f.result()
 
         install = td / 'out'
-        #shutil.copytree(root_32 / 'install' / '32', install / 'openssl' / 'win32')
-        shutil.copytree(root_64 / 'install' / '64', install / 'openssl' / 'amd64')
 
-        dest_archive = BUILD / 'openssl-windows.tar'
+        if arch == 'x86':
+            shutil.copytree(root_32 / 'install' / '32', install / 'openssl' / 'win32')
+        else:
+            shutil.copytree(root_64 / 'install' / '64', install / 'openssl' / 'amd64')
+
+        dest_archive = BUILD / ('openssl-windows-%s.tar' % arch)
         with dest_archive.open('wb') as fh:
             create_tar_from_directory(fh, install)
 
@@ -1254,7 +1262,7 @@ def collect_python_build_artifacts(pcbuild_path: pathlib.Path, out_dir: pathlib.
     return res
 
 
-def build_cpython(pgo=False):
+def build_cpython(arch: str, pgo=False):
     msbuild = find_msbuild()
     log('found MSBuild at %s' % msbuild)
 
@@ -1273,7 +1281,18 @@ def build_cpython(pgo=False):
     setuptools_archive = download_entry('setuptools', BUILD)
     pip_archive = download_entry('pip', BUILD)
 
-    openssl_bin_archive = BUILD / 'openssl-windows.tar'
+    openssl_bin_archive = BUILD / ('openssl-windows-%s.tar' % arch)
+
+    if arch == 'amd64':
+        build_platform = 'x64'
+        build_directory = 'amd64'
+        json_arch = 'x86_64'
+    elif arch == 'x86':
+        build_platform = 'win32'
+        build_directory = 'win32'
+        json_arch = 'x86'
+    else:
+        raise ValueError('unhandled arch: %s' % arch)
 
     with tempfile.TemporaryDirectory() as td:
         td = pathlib.Path(td)
@@ -1304,11 +1323,12 @@ def build_cpython(pgo=False):
 
         builtin_extensions = parse_config_c(config_c)
 
-        hack_project_files(td, cpython_source_path)
+        hack_project_files(td, cpython_source_path, build_directory)
         hack_source_files(cpython_source_path)
 
         if pgo:
-            run_msbuild(msbuild, pcbuild_path, configuration='PGInstrument')
+            run_msbuild(msbuild, pcbuild_path, configuration='PGInstrument',
+                        platform=build_platform)
 
             exec_and_log([
                 str(cpython_source_path / 'python.bat'), '-m', 'test', '--pgo'],
@@ -1322,17 +1342,19 @@ def build_cpython(pgo=False):
                     '/target:KillPython',
                     '/verbosity:normal',
                     '/property:Configuration=PGInstrument',
-                    '/property:Platform=x64',
+                    '/property:Platform=%s' % build_platform,
                     '/property:KillPython=true',
                 ],
                 pcbuild_path,
                 os.environ)
 
-            run_msbuild(msbuild, pcbuild_path, configuration='PGUpdate')
+            run_msbuild(msbuild, pcbuild_path, configuration='PGUpdate',
+                        platform=build_platform)
             artifact_config = 'PGUpdate'
 
         else:
-            run_msbuild(msbuild, pcbuild_path, configuration='Release')
+            run_msbuild(msbuild, pcbuild_path, configuration='Release',
+                        platform=build_platform)
             artifact_config = 'Release'
 
         install_dir = out_dir / 'python' / 'install'
@@ -1352,7 +1374,7 @@ def build_cpython(pgo=False):
                 str(cpython_source_path / 'PC' / 'layout'),
                 '-vv',
                 '--source', str(cpython_source_path),
-                '--build', str(pcbuild_path / 'amd64'),
+                '--build', str(pcbuild_path / build_directory),
                 '--copy', str(install_dir),
                 '--temp', str(layout_tmp),
                 '--flat-dlls',
@@ -1383,7 +1405,7 @@ def build_cpython(pgo=False):
 
         # Now copy the build artifacts into the output directory.
         build_info = collect_python_build_artifacts(
-            pcbuild_path, out_dir / 'python', 'amd64', artifact_config)
+            pcbuild_path, out_dir / 'python', build_directory, artifact_config)
 
         for ext, init_fn in sorted(builtin_extensions.items()):
             if ext in build_info['extensions']:
@@ -1406,7 +1428,7 @@ def build_cpython(pgo=False):
         # Copy OpenSSL libraries as a one-off.
         for lib in ('crypto', 'ssl'):
             name = 'lib%s_static.lib' % lib
-            source = td / 'openssl' / 'amd64' / 'lib' / name
+            source = td / 'openssl' / build_directory / 'lib' / name
             dest = out_dir / 'python' / 'build' / 'lib' / name
             log('copying %s to %s' % (source, dest))
             shutil.copyfile(source, dest)
@@ -1421,7 +1443,7 @@ def build_cpython(pgo=False):
         python_info = {
             'version': '2',
             'os': 'windows',
-            'arch': 'x86_64',
+            'arch': json_arch,
             'python_flavor': 'cpython',
             'python_version': python_version,
             'python_exe': 'install/python.exe',
@@ -1435,7 +1457,7 @@ def build_cpython(pgo=False):
         with (out_dir / 'python' / 'PYTHON.json').open('w', encoding='utf8') as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
-        dest_path = BUILD / 'cpython-windows.tar'
+        dest_path = BUILD / ('cpython-windows-%s.tar' % arch)
 
         with dest_path.open('wb') as fh:
             create_tar_from_directory(fh, td / 'out')
@@ -1458,15 +1480,18 @@ def main():
     with log_path.open('wb') as log_fh:
         LOG_FH[0] = log_fh
 
+        arch = 'x86' if os.environ.get('Platform') == 'x86' else 'amd64'
+
         # TODO need better dependency checking.
-        openssl_out = BUILD / 'openssl-windows.tar'
+        openssl_out = BUILD / ('openssl-windows-%s.tar' % arch)
         if not openssl_out.exists():
             perl_path = fetch_strawberry_perl() / 'perl' / 'bin' / 'perl.exe'
             LOG_PREFIX[0] = 'openssl'
-            build_openssl(perl_path)
+            build_openssl(perl_path, arch)
 
         LOG_PREFIX[0] = 'cpython'
-        build_cpython()
+        build_cpython(arch)
+
 
 if __name__ == '__main__':
     sys.exit(main())
