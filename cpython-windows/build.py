@@ -1018,24 +1018,17 @@ def build_openssl(perl_path: pathlib.Path, arch: str):
 
         root_32 = td / 'x86'
         root_64 = td / 'x64'
-        root_32.mkdir()
-        root_64.mkdir()
 
-        # Then build the 32 and 64 bit OpenSSL installs in parallel
-        # (because nmake doesn't do parallel builds).
-        fs = []
-        with concurrent.futures.ThreadPoolExecutor(2) as e:
-            if arch == 'x86':
-                fs.append(e.submit(build_openssl_for_arch, perl_path, 'x86',
-                                   openssl_archive, nasm_archive, root_32))
-            elif arch == 'amd64':
-                fs.append(e.submit(build_openssl_for_arch, perl_path, 'amd64',
-                                   openssl_archive, nasm_archive, root_64))
-            else:
-                raise ValueError('unhandled arch: %s' % arch)
-
-        for f in fs:
-            f.result()
+        if arch == 'x86':
+            root_32.mkdir()
+            build_openssl_for_arch(perl_path, 'x86', openssl_archive,
+                                   nasm_archive, root_32)
+        elif arch == 'amd64':
+            root_64.mkdir()
+            build_openssl_for_arch(perl_path, 'amd64', openssl_archive,
+                                   nasm_archive, root_64)
+        else:
+            raise ValueError('unhandled arch: %s' % arch)
 
         install = td / 'out'
 
