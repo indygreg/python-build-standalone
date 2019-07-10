@@ -1023,8 +1023,6 @@ def build_openssl(perl_path: pathlib.Path, arch: str):
 
         # Then build the 32 and 64 bit OpenSSL installs in parallel
         # (because nmake doesn't do parallel builds).
-        # TODO we need to adjust the environment to pull in a x86 toolchain
-        # in order for this to work.
         fs = []
         with concurrent.futures.ThreadPoolExecutor(2) as e:
             if arch == 'x86':
