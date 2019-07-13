@@ -51,14 +51,53 @@ diff --git a/Lib/ctypes/__init__.py b/Lib/ctypes/__init__.py
  if _os.name == "nt":
 EOF
 
+# libedit on non-macOS requires various hacks because readline.c assumes
+# libedit is only used on macOS and its readline/libedit detection code
+# makes various assumptions about the macOS environment.
+#
+# USE_LIBEDIT comes from our static-modules file.
+#
+# TODO make upstream patches to readline.c to properly support libedit
+# on other platforms.
 cp Modules/readline.c Modules/readline-libedit.c
 
-# Python supports using libedit instead of readline. But Modules/readline.c
-# has all of this behind ``#ifdef __APPLE__`` instead of a more specific
-# feature flag. All occurrences of __APPLE__ in that file are related to
-# libedit. So we just replace the content. USE_LIBEDIT comes from our
-# static-modules file.
-# TODO make changes upstream to allow libedit to more easily be used
+# readline.c assumes that a modern readline API version has a free_history_entry().
+# but libedit does not. Change the #ifdef accordingly.
+#
+# Similarly, we invoke configure using readline, which sets
+# HAVE_RL_COMPLETION_SUPPRESS_APPEND improperly. So hack that. This is a bug
+# in our build system, as we should probably be invoking configure again when
+# using libedit.
+patch -p1 << EOF
+diff --git a/Modules/readline-libedit.c b/Modules/readline-libedit.c
+index 57335fe911..f3e83ff932 100644
+--- a/Modules/readline-libedit.c
++++ b/Modules/readline-libedit.c
+@@ -486,7 +486,7 @@ set the word delimiters for completion");
+
+ /* _py_free_history_entry: Utility function to free a history entry. */
+
+-#if defined(RL_READLINE_VERSION) && RL_READLINE_VERSION >= 0x0500
++#ifndef USE_LIBEDIT
+
+ /* Readline version >= 5.0 introduced a timestamp field into the history entry
+    structure; this needs to be freed to avoid a memory leak.  This version of
+@@ -1032,7 +1032,7 @@ flex_complete(const char *text, int start, int end)
+ #ifdef HAVE_RL_COMPLETION_APPEND_CHARACTER
+     rl_completion_append_character ='\0';
+ #endif
+-#ifdef HAVE_RL_COMPLETION_SUPPRESS_APPEND
++#ifndef USE_LIBEDIT
+     rl_completion_suppress_append = 0;
+ #endif
+
+
+EOF
+
+# Modules/readline.c has various libedit conditions behind an
+# ``#ifdef __APPLE__`` instead of a more specific feature flag. All
+# occurrences of __APPLE__ in that file are related to libedit. So we
+# just replace the content.
 sed -i s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
