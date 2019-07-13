@@ -456,7 +456,7 @@ def build_tcltk(client, image, platform, musl=False):
         download_tools_archive(container, BUILD / dest_path)
 
 
-def python_build_info(container, config_c_in, setup_dist, setup_local):
+def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=False):
     """Obtain build metadata for the Python distribution."""
 
     bi = {
@@ -559,7 +559,12 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
             'variant': d['variant'],
         }
 
-        add_licenses_to_extension_entry(entry)
+        if libressl:
+            ignore_keys = {'openssl'}
+        else:
+            ignore_keys = {'libressl'}
+
+        add_licenses_to_extension_entry(entry, ignore_keys=ignore_keys)
 
         bi['extensions'].setdefault(extension, []).append(entry)
 
@@ -629,7 +634,8 @@ def python_build_info(container, config_c_in, setup_dist, setup_local):
     return bi
 
 
-def build_cpython(client, image, platform, debug=False, optimized=False, musl=False):
+def build_cpython(client, image, platform, debug=False, optimized=False, musl=False,
+                  libressl=False):
     """Build CPython in a Docker image'"""
     python_archive = download_entry('cpython-3.7', BUILD)
     setuptools_archive = download_entry('setuptools', BUILD)
@@ -659,7 +665,12 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         install_tools_archive(container, BUILD / ('libedit-%s.tar' % dep_platform))
         install_tools_archive(container, BUILD / ('libffi-%s.tar' % dep_platform))
         install_tools_archive(container, BUILD / ('ncurses-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('openssl-%s.tar' % dep_platform))
+
+        if libressl:
+            install_tools_archive(container, BUILD / ('libressl-%s.tar' % dep_platform))
+        else:
+            install_tools_archive(container, BUILD / ('openssl-%s.tar' % dep_platform))
+
         install_tools_archive(container, BUILD / ('readline-%s.tar' % dep_platform))
         install_tools_archive(container, BUILD / ('sqlite-%s.tar' % dep_platform))
         # tk requires a bunch of X11 stuff.
@@ -729,7 +740,8 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
             'python_include': 'install/include/%s' % fully_qualified_name,
             'python_stdlib': 'install/lib/python3.7',
             'build_info': python_build_info(container, config_c_in,
-                                            setup_dist_content, setup_local_content),
+                                            setup_dist_content, setup_local_content,
+                                            libressl=libressl),
             'licenses': DOWNLOADS['cpython-3.7']['licenses'],
             'license_path': 'licenses/LICENSE.cpython.txt',
         }
@@ -824,7 +836,7 @@ def main():
             build_readline(client, get_image(client, 'build'), platform=platform,
                            musl=musl)
 
-        elif action in ('bdb', 'bzip2', 'gdbm', 'libffi', 'ncurses', 'openssl', 'sqlite', 'uuid', 'xz', 'zlib'):
+        elif action in ('bdb', 'bzip2', 'gdbm', 'libffi', 'libressl', 'ncurses', 'openssl', 'sqlite', 'uuid', 'xz', 'zlib'):
             simple_build(client, get_image(client, 'build'), action, platform=platform,
                          musl=musl)
 
@@ -834,7 +846,8 @@ def main():
 
         elif action == 'cpython':
             build_cpython(client, get_image(client, 'build'), platform=platform,
-                          musl=musl, debug=args.debug, optimized=args.optimized)
+                          musl=musl, debug=args.debug, optimized=args.optimized,
+                          libressl='PYBUILD_LIBRESSL' in os.environ)
 
         else:
             print('unknown build action: %s' % action)

@@ -141,6 +141,15 @@ DOWNLOADS = {
         'licenses': ['MIT'],
         'license_file': 'LICENSE.libffi.txt',
     },
+    'libressl': {
+        'url': 'https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.9.2.tar.gz',
+        'size': 3607549,
+        'sha256': 'c4c78167fae325b47aebd8beb54b6041d6f6a56b3743f4bd5d79b15642f9d5d4',
+        'version': '2.9.2',
+        'library_names': ['crypto', 'ssl'],
+        'licenses': ['OpenSSL'],
+        'license_file': 'LICENSE.libressl.txt',
+    },
     'libx11': {
         'url': 'https://www.x.org/releases/X11R7.7/src/lib/libX11-1.5.0.tar.gz',
         'size': 3073820,

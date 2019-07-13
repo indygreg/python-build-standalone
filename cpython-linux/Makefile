@@ -79,6 +79,9 @@ $(OUTDIR)/openssl-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-openssl.sh
 $(OUTDIR)/libedit-%.tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-%.tar $(HERE)/build-libedit.sh
 	$(BUILD) --platform $* libedit
 
+$(OUTDIR)/libressl-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libressl.sh
+	$(BUILD) --platform $* libressl
+
 $(OUTDIR)/readline-%.tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(PLATFORM).tar $(HERE)/build-readline.sh
 	$(BUILD) --platform $* readline
 
@@ -104,7 +107,6 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/libedit-$(PLATFORM).tar \
     $(OUTDIR)/libffi-$(PLATFORM).tar \
     $(OUTDIR)/ncurses-$(PLATFORM).tar \
-    $(OUTDIR)/openssl-$(PLATFORM).tar \
     $(OUTDIR)/readline-$(PLATFORM).tar \
     $(OUTDIR)/sqlite-$(PLATFORM).tar \
     $(OUTDIR)/uuid-$(PLATFORM).tar \
@@ -112,6 +114,12 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/zlib-$(PLATFORM).tar \
     $(HERE)/static-modules \
     $(NULL)
+
+ifdef PYBUILD_LIBRESSL
+PYTHON_DEPENDS += $(OUTDIR)/libressl-$(PLATFORM).tar
+else
+PYTHON_DEPENDS += $(OUTDIR)/openssl-$(PLATFORM).tar
+endif
 
 $(OUTDIR)/cpython-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) cpython

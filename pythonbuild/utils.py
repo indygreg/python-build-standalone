@@ -159,7 +159,7 @@ def compress_python_archive(source_path: pathlib.Path,
     return dest_path
 
 
-def add_licenses_to_extension_entry(entry):
+def add_licenses_to_extension_entry(entry, ignore_keys=None):
     """Add licenses keys to a ``extensions`` entry for JSON distribution info."""
 
     have_licenses = False
@@ -170,7 +170,10 @@ def add_licenses_to_extension_entry(entry):
     for link in entry['links']:
         name = link['name']
 
-        for value in DOWNLOADS.values():
+        for key, value in DOWNLOADS.items():
+            if ignore_keys and key in ignore_keys:
+                continue
+
             if name not in value.get('library_names', []):
                 continue
 

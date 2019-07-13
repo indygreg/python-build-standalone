@@ -25,6 +25,7 @@ MAKE_DIR = ROOT / 'cpython-linux'
 def bootstrap():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--libressl', action='store_true')
     parser.add_argument('--musl', action='store_true')
     parser.add_argument('--optimized', action='store_true')
 
@@ -44,6 +45,8 @@ def bootstrap():
 
     if args.debug:
         os.environ['PYBUILD_DEBUG'] = '1'
+    if args.libressl:
+        os.environ['PYBUILD_LIBRESSL'] = '1'
     if args.musl:
         os.environ['PYBUILD_MUSL'] = '1'
     if args.optimized:
