@@ -52,8 +52,11 @@ def run():
 
     now = datetime.datetime.utcnow()
 
+    env = dict(os.environ)
+    env['PYTHONUNBUFFERED'] = '1'
+
     subprocess.run(['make'],
-                   cwd=str(MAKE_DIR), check=True)
+                   cwd=str(MAKE_DIR), env=env, check=True)
 
     basename = 'cpython-macos'
     extra = ''
