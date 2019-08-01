@@ -234,10 +234,10 @@ DOWNLOADS = {
         'version': '2.11.06',
     },
     'pip': {
-        'url': 'https://files.pythonhosted.org/packages/93/ab/f86b61bef7ab14909bd7ec3cd2178feb0a1c86d451bc9bccd5a1aedcde5f/pip-19.1.1.tar.gz',
-        'size': 1334144,
-        'sha256': '44d3d7d3d30a1eb65c7e5ff1173cdf8f7467850605ac7cc3707b6064bddd0958',
-        'version': '19.1.1',
+        'url': 'https://files.pythonhosted.org/packages/8b/8a/1b2aadd922db1afe6bc107b03de41d6d37a28a5923383e60695fba24ae81/pip-19.2.1.tar.gz',
+        'size': 1376932,
+        'sha256': '258d702483dd749400aec59c23d638a5b2249ae28a0f478b6cab12ad45681a80',
+        'version': '19.2.1',
     },
     'readline': {
         'url': 'ftp://ftp.gnu.org/gnu/readline/readline-6.3.tar.gz',
