@@ -72,6 +72,14 @@ DOWNLOADS = {
         'licenses': ['Python-2.0', 'CNRI-Python'],
         'license_file': 'LICENSE.cpython.txt',
     },
+    'cpython-3.8': {
+        'url': 'https://www.python.org/ftp/python/3.8.0/Python-3.8.0b3.tar.xz',
+        'size': 17768608,
+        'sha256': 'cd7a81efcc9f82e20f9d6a41fd6f9859ddc2a082dcbc3fa62932e53b6f41980f',
+        'version': '3.8.0b3',
+        'licenses': ['Python-2.0', 'CNRI-Python'],
+        'license_file': 'LICENSE.cpython.txt',
+    },
     'gcc': {
         'url': 'https://ftp.gnu.org/gnu/gcc/gcc-9.1.0/gcc-9.1.0.tar.xz',
         'size': 70546856,
