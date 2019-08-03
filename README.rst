@@ -50,6 +50,10 @@ To build a Python distribution for Linux x64::
     # With profile-guided optimizations (generated code should be faster):
     $ ./build-linux.py --optimized
 
+You can also build another version of Python. e.g.::
+
+    $ ./build-linux.py --python cpython-3.8
+
 To build a Python distribution for Linux x64 using musl libc::
 
     $ ./build-linux.py --musl --libressl
