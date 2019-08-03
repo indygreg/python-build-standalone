@@ -130,10 +130,11 @@ def copy_file_to_container(path, container, container_path, archive_path=None):
     buf = io.BytesIO()
     tf = tarfile.open('irrelevant', 'w', buf)
 
-    tf.add(str(path), archive_path or path.name)
+    dest_path = archive_path or path.name
+    tf.add(str(path), dest_path)
     tf.close()
 
-    log('copying %s to container' % path)
+    log('copying %s to container:%s/%s' % (path, container_path, dest_path))
     container.put_archive(container_path, buf.getvalue())
 
 
