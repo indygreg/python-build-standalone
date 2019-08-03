@@ -30,6 +30,30 @@ def hash_path(p: pathlib.Path):
     return h.hexdigest()
 
 
+def write_if_different(p: pathlib.Path, data: bytes):
+    """Write a file if it is missing or its content is different."""
+    if p.exists():
+        with p.open('rb') as fh:
+            existing = fh.read()
+        write = existing != data
+    else:
+        write = True
+
+    if write:
+        with p.open('wb') as fh:
+            fh.write(data)
+
+
+def write_package_versions(dest_path: pathlib.Path):
+    """Write out versions of packages to files in a directory."""
+    dest_path.mkdir(parents=True, exist_ok=True)
+
+    for k, v in DOWNLOADS.items():
+        p = dest_path / ('VERSION.%s' % k)
+        content = '%s_VERSION := %s\n' % (k.upper(), v['version'])
+        write_if_different(p, content.encode('ascii'))
+
+
 class IntegrityError(Exception):
     """Represents an integrity error when downloading a URL."""
 

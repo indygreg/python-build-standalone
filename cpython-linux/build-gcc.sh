@@ -7,7 +7,7 @@ set -e
 
 cd /build
 
-tar -C /tools -xf /build/binutils-linux64.tar
+tar -C /tools -xf /build/binutils-${BINUTILS_VERSION}-linux64.tar
 export PATH=/tools/host/bin:$PATH
 
 tar -xf gcc-${GCC_VERSION}.tar.xz

@@ -67,7 +67,7 @@ def run():
     subprocess.run(['make'],
                    cwd=str(MAKE_DIR), env=env, check=True)
 
-    basename = 'cpython-linux64'
+    basename = 'cpython-%s-linux64' % DOWNLOADS['cpython-3.7']['version']
     extra = ''
 
     if 'PYBUILD_MUSL' in os.environ:

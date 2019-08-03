@@ -154,6 +154,7 @@ DOWNLOADS = {
         'url': 'https://www.x.org/releases/X11R7.7/src/lib/libX11-1.5.0.tar.gz',
         'size': 3073820,
         'sha256': '2ddc05170baf70dd650ee6108c5882eb657cafaf61a5b5261badb26703122518',
+        'version': '1.5.0',
     },
     'lld': {
         'url': 'http://releases.llvm.org/8.0.0/lld-8.0.0.src.tar.xz',
@@ -252,6 +253,7 @@ DOWNLOADS = {
         'url': 'https://static.rust-lang.org/dist/rust-1.30.1-x86_64-unknown-linux-gnu.tar.gz',
         'size': 236997689,
         'sha256': 'a01a493ed8946fc1c15f63e74fc53299b26ebf705938b4d04a388a746dfdbf9e',
+        'version': '1.30.1',
     },
     'setuptools': {
         'url': 'https://files.pythonhosted.org/packages/1d/64/a18a487b4391a05b9c7f938b94a16d80305bf0369c6b0b9509e86165e1d3/setuptools-41.0.1.zip',
@@ -280,11 +282,13 @@ DOWNLOADS = {
         'url': 'https://prdownloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz',
         'size': 10000896,
         'sha256': 'ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e',
+        'version': '8.6.9',
     },
     'tk': {
         'url': 'https://prdownloads.sourceforge.net/tcl/tk8.6.9.1-src.tar.gz',
         'size': 4364603,
         'sha256': '8fcbcd958a8fd727e279f4cac00971eee2ce271dc741650b1fc33375fb74ebb4',
+        'version': '8.6.9.1',
     },
     'tk-windows-bin': {
         'url': 'https://github.com/python/cpython-bin-deps/archive/86027ce3edda1284ae4bf6c2c580288366af4052.tar.gz',

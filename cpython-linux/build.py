@@ -27,6 +27,7 @@ from pythonbuild.downloads import (
 from pythonbuild.utils import (
     add_licenses_to_extension_entry,
     download_entry,
+    write_package_versions,
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
@@ -180,18 +181,19 @@ def install_tools_archive(container, source: pathlib.Path):
 
 
 def copy_toolchain(container, gcc=False, musl=False):
-    install_tools_archive(container, BUILD / 'binutils-linux64.tar')
+    install_tools_archive(container, archive_path('binutils', 'linux64'))
 
     if gcc:
-        install_tools_archive(container, BUILD / 'gcc-linux64.tar')
+        install_tools_archive(container, archive_path('gcc', 'linux64'))
 
-    clang_linux64 = BUILD / 'clang-linux64.tar'
+    clang_linux64 = archive_path('clang', 'linux64')
+    musl_linux64 = archive_path('musl', 'linux64')
 
     if clang_linux64.exists():
         install_tools_archive(container, clang_linux64)
 
     if musl:
-        install_tools_archive(container, BUILD / 'musl-linux64.tar')
+        install_tools_archive(container, musl_linux64)
 
 
 def copy_rust(container):
@@ -217,6 +219,17 @@ def add_target_env(env, platform):
     env['TARGET'] = 'x86_64-unknown-linux-gnu'
 
 
+def archive_path(package_name: str, platform: str, musl=False):
+    entry = DOWNLOADS[package_name]
+    basename = '%s-%s-%s%s.tar' % (
+        package_name,
+        entry['version'],
+        platform,
+        '-musl' if musl else '')
+
+    return BUILD / basename
+
+
 def simple_build(client, image, entry, platform, musl=False):
     archive = download_entry(entry, BUILD)
 
@@ -239,11 +252,9 @@ def simple_build(client, image, entry, platform, musl=False):
         container_exec(container, '/build/build-%s.sh' % entry,
                        environment=env)
 
-        basename = '%s-%s' % (entry, platform)
-        if musl:
-            basename += '-musl'
-        dest_path = '%s.tar' % basename
-        download_tools_archive(container, BUILD / dest_path, 'deps')
+        download_tools_archive(container,
+                               archive_path(entry, platform, musl=musl),
+                               'deps')
 
 
 def build_binutils(client, image):
@@ -261,7 +272,7 @@ def build_binutils(client, image):
                 'BINUTILS_VERSION': DOWNLOADS['binutils']['version'],
             })
 
-        download_tools_archive(container, BUILD / 'binutils-linux64.tar',
+        download_tools_archive(container, archive_path('binutils', 'linux64'),
                                'host')
 
 
@@ -279,7 +290,8 @@ def build_gcc(client, image):
                   mpfr_archive):
             copy_file_to_container(a, container, '/build')
 
-        copy_file_to_container(BUILD / 'binutils-linux64.tar', container,
+        copy_file_to_container(archive_path('binutils', 'linux64'),
+                               container,
                                '/build')
         copy_file_to_container(SUPPORT / 'build-gcc.sh', container,
                                '/build')
@@ -287,6 +299,7 @@ def build_gcc(client, image):
         container_exec(
             container, '/build/build-gcc.sh',
             environment={
+                'BINUTILS_VERSION': DOWNLOADS['binutils']['version'],
                 'GCC_VERSION': DOWNLOADS['gcc']['version'],
                 'GMP_VERSION': DOWNLOADS['gmp']['version'],
                 'ISL_VERSION': DOWNLOADS['isl']['version'],
@@ -294,7 +307,9 @@ def build_gcc(client, image):
                 'MPFR_VERSION': DOWNLOADS['mpfr']['version'],
             })
 
-        download_tools_archive(container, BUILD / 'gcc-linux64.tar', 'host')
+        download_tools_archive(container,
+                               archive_path('gcc', 'linux64'),
+                               'host')
 
 
 def build_clang(client, image):
@@ -338,7 +353,8 @@ def build_clang(client, image):
         container_exec(container, '/build/%s' % build_sh,
                        environment=env)
 
-        download_tools_archive(container, BUILD / ('clang-%s.tar' % suffix),
+        download_tools_archive(container,
+                               archive_path('clang', suffix),
                                tools_path)
 
 
@@ -358,7 +374,8 @@ def build_musl(client, image):
         container_exec(container, '/build/build-musl.sh',
                        environment=env)
 
-        download_tools_archive(container, BUILD / 'musl-linux64.tar',
+        download_tools_archive(container,
+                               archive_path('musl', 'linux64'),
                                'host')
 
 
@@ -372,7 +389,7 @@ def build_libedit(client, image, platform, musl=False):
         if musl:
             dep_platform += '-musl'
 
-        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % dep_platform))
+        install_tools_archive(container, archive_path('ncurses', platform, musl=musl))
         copy_file_to_container(libedit_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-libedit.sh', container,
                                '/build')
@@ -389,11 +406,9 @@ def build_libedit(client, image, platform, musl=False):
         add_target_env(env, platform)
 
         container_exec(container, '/build/build-libedit.sh', environment=env)
-        basename = 'libedit-%s' % platform
-        if musl:
-            basename += '-musl'
-        dest_path = '%s.tar' % basename
-        download_tools_archive(container, BUILD / dest_path, 'deps')
+        download_tools_archive(container,
+                               archive_path('libedit', platform, musl=musl),
+                               'deps')
 
 
 def build_readline(client, image, platform, musl=False):
@@ -406,7 +421,7 @@ def build_readline(client, image, platform, musl=False):
         if musl:
             dep_platform += '-musl'
 
-        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % dep_platform))
+        install_tools_archive(container, archive_path('ncurses', platform, musl=musl))
         copy_file_to_container(readline_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-readline.sh', container,
                                '/build')
@@ -424,11 +439,10 @@ def build_readline(client, image, platform, musl=False):
 
         container_exec(container, '/build/build-readline.sh',
                        environment=env)
-        basename = 'readline-%s' % platform
-        if musl:
-            basename += '-musl'
-        dest_path = '%s.tar' % basename
-        download_tools_archive(container, BUILD / dest_path, 'deps')
+
+        download_tools_archive(container,
+                               archive_path('readline', platform, musl=musl),
+                               'deps')
 
 
 def build_tcltk(client, image, platform, musl=False):
@@ -452,11 +466,8 @@ def build_tcltk(client, image, platform, musl=False):
         container_exec(container, '/build/build-tcltk.sh',
                        environment=env)
 
-        basename = 'tcltk-%s' % platform
-        if musl:
-            basename += '-musl'
-        dest_path = '%s.tar' % basename
-        download_tools_archive(container, BUILD / dest_path)
+        download_tools_archive(container,
+                               archive_path('tcl', platform, musl=musl))
 
 
 def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=False):
@@ -640,6 +651,8 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
 def build_cpython(client, image, platform, debug=False, optimized=False, musl=False,
                   libressl=False):
     """Build CPython in a Docker image'"""
+    entry = DOWNLOADS['cpython-3.7']
+
     python_archive = download_entry('cpython-3.7', BUILD)
     setuptools_archive = download_entry('setuptools', BUILD)
     pip_archive = download_entry('pip', BUILD)
@@ -663,24 +676,24 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
             dep_platform += '-musl'
 
         # TODO support bdb/gdbm toggle
-        install_tools_archive(container, BUILD / ('bdb-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('bzip2-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('libedit-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('libffi-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('ncurses-%s.tar' % dep_platform))
+        install_tools_archive(container, archive_path('bdb', platform, musl=musl))
+        install_tools_archive(container, archive_path('bzip2', platform, musl=musl))
+        install_tools_archive(container, archive_path('libedit', platform, musl=musl))
+        install_tools_archive(container, archive_path('libffi', platform, musl=musl))
+        install_tools_archive(container, archive_path('ncurses', platform, musl=musl))
 
         if libressl:
-            install_tools_archive(container, BUILD / ('libressl-%s.tar' % dep_platform))
+            install_tools_archive(container, archive_path('libressl', platform, musl=musl))
         else:
-            install_tools_archive(container, BUILD / ('openssl-%s.tar' % dep_platform))
+            install_tools_archive(container, archive_path('openssl', platform, musl=musl))
 
-        install_tools_archive(container, BUILD / ('readline-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('sqlite-%s.tar' % dep_platform))
+        install_tools_archive(container, archive_path('readline', platform, musl=musl))
+        install_tools_archive(container, archive_path('sqlite', platform, musl=musl))
         # tk requires a bunch of X11 stuff.
-        #install_tools_archive(container, BUILD / ('tcltk-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('uuid-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('xz-%s.tar' % dep_platform))
-        install_tools_archive(container, BUILD / ('zlib-%s.tar' % dep_platform))
+        #install_tools_archive(container, archive_path('tcl', platform, musl=musl))
+        install_tools_archive(container, archive_path('uuid', platform, musl=musl))
+        install_tools_archive(container, archive_path('xz', platform, musl=musl))
+        install_tools_archive(container, archive_path('zlib', platform, musl=musl))
         #copy_rust(container)
         copy_file_to_container(python_archive, container, '/build')
         copy_file_to_container(setuptools_archive, container, '/build')
@@ -757,7 +770,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
                                    '/build/out/python',
                                    archive_path='PYTHON.json')
 
-        basename = 'cpython-%s' % platform
+        basename = 'cpython-%s-%s' % (entry['version'], platform)
 
         if musl:
             basename += '-musl'
@@ -816,7 +829,10 @@ def main():
 
     with log_path.open('wb') as log_fh:
         LOG_FH[0] = log_fh
-        if action.startswith('image-'):
+        if action == 'versions':
+            write_package_versions(BUILD / 'versions')
+
+        elif action.startswith('image-'):
             build_docker_image(client, action[6:])
 
         elif action == 'binutils':
