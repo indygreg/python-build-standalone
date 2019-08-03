@@ -53,10 +53,10 @@ DOWNLOADS = {
         'version': '6.0.1',
     },
     'cmake-linux-bin': {
-        'url': 'https://github.com/Kitware/CMake/releases/download/v3.13.0/cmake-3.13.0-Linux-x86_64.tar.gz',
-        'size': 38391207,
-        'sha256': '1c6612f3c6dd62959ceaa96c4b64ba7785132de0b9cbc719eea6fe1365cc8d94',
-        'version': '3.13.0',
+        'url': 'https://github.com/Kitware/CMake/releases/download/v3.15.1/cmake-3.15.1-Linux-x86_64.tar.gz',
+        'size': 38995343,
+        'sha256': 'cdee72c5ef934c4972f1ad4e9c35712589345f3470a3cf15f7be493c170cc965',
+        'version': '3.15.1',
     },
     'cmake-macos-bin': {
         'url': 'https://github.com/Kitware/CMake/releases/download/v3.13.2/cmake-3.13.2-Darwin-x86_64.tar.gz',
