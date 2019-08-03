@@ -205,6 +205,7 @@ def copy_rust(container):
 
 
 def download_tools_archive(container, dest, name):
+    log('copying container files to %s' % dest)
     data, stat = container.get_archive('/build/out/tools/%s' % name)
 
     with open(dest, 'wb') as fh:
