@@ -63,6 +63,10 @@ STATIC_MODULES = {
 
 # Modules we don't (yet) support building.
 UNSUPPORTED_MODULES = {
+    # Our self-contained builds upset _testcapi and trigger a preprocessor
+    # error.
+    b'_testcapi',
+    # We don't yet support tcl/tk.
     b'_tkinter',
 }
 
@@ -138,7 +142,12 @@ def derive_setup_local(static_modules_lines, cpython_source_archive,
         disabled.add(b'xxlimited')
 
     with tarfile.open(str(cpython_source_archive)) as tf:
-        ifh = tf.extractfile('Python-%s/Modules/Setup.dist' % python_version)
+        # Setup.dist removed in Python 3.8.
+        try:
+            ifh = tf.extractfile('Python-%s/Modules/Setup.dist' % python_version)
+        except KeyError:
+            ifh = tf.extractfile('Python-%s/Modules/Setup' % python_version)
+
         source_lines = ifh.readlines()
 
         ifh = tf.extractfile('Python-%s/Modules/config.c.in' % python_version)
