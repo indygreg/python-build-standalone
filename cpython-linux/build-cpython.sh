@@ -212,8 +212,7 @@ cp -av /tools/deps/libedit/lib/*.a /build/out/python/build/lib/
 cp -av Modules/config.c /build/out/python/build/Modules/
 cp -av Modules/config.c.in /build/out/python/build/Modules/
 cp -av Python/frozen.c /build/out/python/build/Python/
-cp -av Modules/Setup.dist /build/out/python/build/Modules/
-cp -av Modules/Setup.local /build/out/python/build/Modules/
+cp -av Modules/Setup* /build/out/python/build/Modules/
 
 mkdir /build/out/python/licenses
 cp /build/LICENSE.*.txt /build/out/python/licenses/
