@@ -45,7 +45,7 @@ PYTHON_DEP_DEPENDS := \
     $(TOOLCHAIN_DEPENDS) \
     $(NULL)
 
-default: $(OUTDIR)/cpython-$(CPYTHON-3.7_VERSION)-$(PLATFORM)$(DEFAULT_EXTRA).tar
+default: $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)$(DEFAULT_EXTRA).tar
 
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
 	$(BUILD) image-$*
@@ -125,11 +125,11 @@ else
 PYTHON_DEPENDS += $(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PLATFORM).tar
 endif
 
-$(OUTDIR)/cpython-$(CPYTHON-3.7_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
+$(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) cpython
 
-$(OUTDIR)/cpython-$(CPYTHON-3.7_VERSION)-$(PLATFORM)-debug.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
+$(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)-debug.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) --debug cpython
 
-$(OUTDIR)/cpython-$(CPYTHON-3.7_VERSION)-$(PLATFORM)-pgo.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
+$(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)-pgo.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) --optimized cpython

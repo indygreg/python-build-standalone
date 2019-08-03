@@ -318,7 +318,9 @@ def build_cpython(optimized=False):
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
 
     setup = derive_setup_local(
-        static_modules_lines, python_archive, disabled=DISABLED_STATIC_MODULES)
+        static_modules_lines, python_archive,
+        DOWNLOADS['cpython-3.7']['version'],
+        disabled=DISABLED_STATIC_MODULES)
 
     config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
     setup_dist_content = setup['setup_dist']

@@ -115,11 +115,10 @@ def parse_setup_line(line: bytes, variant: str):
     }
 
 
-def derive_setup_local(static_modules_lines, cpython_source_archive, disabled=None,
+def derive_setup_local(static_modules_lines, cpython_source_archive,
+                       python_version, disabled=None,
                        musl=False, debug=False):
     """Derive the content of the Modules/Setup.local file."""
-    python_version = DOWNLOADS['cpython-3.7']['version']
-
     # makesetup parses lines with = as extra config options. There appears
     # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
     # around this by producing a Makefile supplement that overrides the build

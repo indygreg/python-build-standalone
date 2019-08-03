@@ -649,11 +649,12 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
 
 
 def build_cpython(client, image, platform, debug=False, optimized=False, musl=False,
-                  libressl=False):
+                  libressl=False, version=None):
     """Build CPython in a Docker image'"""
-    entry = DOWNLOADS['cpython-3.7']
+    entry_name = 'cpython-%s' % version
+    entry = DOWNLOADS[entry_name]
 
-    python_archive = download_entry('cpython-3.7', BUILD)
+    python_archive = download_entry(entry_name, BUILD)
     setuptools_archive = download_entry('setuptools', BUILD)
     pip_archive = download_entry('pip', BUILD)
 
@@ -661,6 +662,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
 
     setup = derive_setup_local(static_modules_lines, python_archive,
+                               python_version=entry['version'],
                                musl=musl, debug=debug)
 
     config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
@@ -726,7 +728,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         env = {
             'CC': 'clang',
             'PIP_VERSION': DOWNLOADS['pip']['version'],
-            'PYTHON_VERSION': DOWNLOADS['cpython-3.7']['version'],
+            'PYTHON_VERSION': entry['version'],
             'SETUPTOOLS_VERSION': DOWNLOADS['setuptools']['version'],
         }
 
@@ -742,7 +744,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
                        environment=env)
 
         fully_qualified_name = 'python%s%sm' % (
-            '3.7', 'd' if debug else ''
+            entry['version'][0:3], 'd' if debug else ''
         )
 
         # Create PYTHON.json file describing this distribution.
@@ -751,14 +753,14 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
             'os': 'linux',
             'arch': 'x86_64',
             'python_flavor': 'cpython',
-            'python_version': DOWNLOADS['cpython-3.7']['version'],
+            'python_version': entry['version'],
             'python_exe': 'install/bin/%s' % fully_qualified_name,
             'python_include': 'install/include/%s' % fully_qualified_name,
-            'python_stdlib': 'install/lib/python3.7',
+            'python_stdlib': 'install/lib/python%s' % entry['version'][0:3],
             'build_info': python_build_info(container, config_c_in,
                                             setup_dist_content, setup_local_content,
                                             libressl=libressl),
-            'licenses': DOWNLOADS['cpython-3.7']['licenses'],
+            'licenses': entry['licenses'],
             'license_path': 'licenses/LICENSE.cpython.txt',
         }
 
@@ -866,7 +868,8 @@ def main():
         elif action == 'cpython':
             build_cpython(client, get_image(client, 'build'), platform=platform,
                           musl=musl, debug=args.debug, optimized=args.optimized,
-                          libressl='PYBUILD_LIBRESSL' in os.environ)
+                          libressl='PYBUILD_LIBRESSL' in os.environ,
+                          version=os.environ['PYBUILD_PYTHON_VERSION'][0:3])
 
         else:
             print('unknown build action: %s' % action)

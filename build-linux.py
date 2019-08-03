@@ -28,6 +28,9 @@ def bootstrap():
     parser.add_argument('--libressl', action='store_true')
     parser.add_argument('--musl', action='store_true')
     parser.add_argument('--optimized', action='store_true')
+    parser.add_argument('--python',
+                        default='cpython-3.7',
+                        help='name of Python to build')
 
     args = parser.parse_args()
 
@@ -51,6 +54,7 @@ def bootstrap():
         os.environ['PYBUILD_MUSL'] = '1'
     if args.optimized:
         os.environ['PYBUILD_OPTIMIZED'] = '1'
+    os.environ['PYBUILD_PYTHON'] = args.python
 
     subprocess.run([str(PYTHON), __file__], check=True)
 
@@ -64,10 +68,13 @@ def run():
     env = dict(os.environ)
     env['PYTHONUNBUFFERED'] = '1'
 
+    entry = DOWNLOADS[os.environ['PYBUILD_PYTHON']]
+    env['PYBUILD_PYTHON_VERSION'] = entry['version']
+
     subprocess.run(['make'],
                    cwd=str(MAKE_DIR), env=env, check=True)
 
-    basename = 'cpython-%s-linux64' % DOWNLOADS['cpython-3.7']['version']
+    basename = 'cpython-%s-linux64' % entry['version']
     extra = ''
 
     if 'PYBUILD_MUSL' in os.environ:
@@ -84,7 +91,7 @@ def run():
 
     source_path = BUILD / basename
     compress_python_archive(source_path, DIST, 'cpython-%s-linux64%s-%s' % (
-        DOWNLOADS['cpython-3.7']['version'], extra,
+        entry['version'], extra,
         now.strftime('%Y%m%dT%H%M')))
 
 
