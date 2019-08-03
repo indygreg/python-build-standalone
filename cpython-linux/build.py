@@ -116,7 +116,8 @@ def get_image(client, name):
     except docker.errors.ImageNotFound:
         if tar_path.exists():
             with tar_path.open('rb') as fh:
-                client.api.import_image_from_stream(fh)
+                data = fh.read()
+            client.images.load(data)
 
             return image_id
 
