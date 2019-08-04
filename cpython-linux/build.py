@@ -7,6 +7,7 @@ import argparse
 import contextlib
 import io
 import json
+import operator
 import os
 import pathlib
 import sys
@@ -173,6 +174,30 @@ def container_exec(container, command, user='build',
                                                   command))
 
 
+# 2019-01-01T00:00:00
+DEFAULT_MTIME = 1546329600
+
+
+def container_get_archive(container, path):
+    """Get a deterministic tar archive from a container."""
+    data, stat = container.get_archive(path)
+    old_data = io.BytesIO()
+    for chunk in data:
+        old_data.write(chunk)
+
+    old_data.seek(0)
+
+    new_data = io.BytesIO()
+
+    with tarfile.open(fileobj=old_data) as itf, tarfile.open(fileobj=new_data, mode='w') as otf:
+        for member in sorted(itf.getmembers(), key=operator.attrgetter('name')):
+            file_data = itf.extractfile(member) if not member.linkname else None
+            member.mtime = DEFAULT_MTIME
+            otf.addfile(member, file_data)
+
+    return new_data.getvalue()
+
+
 def install_tools_archive(container, source: pathlib.Path):
     copy_file_to_container(source, container, '/build')
     container_exec(
@@ -208,11 +233,10 @@ def copy_rust(container):
 
 def download_tools_archive(container, dest, name):
     log('copying container files to %s' % dest)
-    data, stat = container.get_archive('/build/out/tools/%s' % name)
+    data = container_get_archive(container, '/build/out/tools/%s' % name)
 
     with open(dest, 'wb') as fh:
-        for chunk in data:
-            fh.write(chunk)
+        fh.write(data)
 
 
 def add_target_env(env, platform):
@@ -784,11 +808,10 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         basename += '.tar'
 
         dest_path = BUILD / basename
-        data, stat = container.get_archive('/build/out/python')
+        data = container_get_archive(container, '/build/out/python')
 
         with dest_path.open('wb') as fh:
-            for chunk in data:
-                fh.write(chunk)
+            fh.write(data)
 
 
 def main():
