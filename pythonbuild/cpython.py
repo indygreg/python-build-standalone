@@ -66,8 +66,6 @@ UNSUPPORTED_MODULES = {
     # Our self-contained builds upset _testcapi and trigger a preprocessor
     # error.
     b'_testcapi',
-    # We don't yet support tcl/tk.
-    b'_tkinter',
 }
 
 

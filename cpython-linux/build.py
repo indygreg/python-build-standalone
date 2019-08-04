@@ -663,7 +663,8 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
 
     setup = derive_setup_local(static_modules_lines, python_archive,
                                python_version=entry['version'],
-                               musl=musl, debug=debug)
+                               musl=musl, debug=debug,
+                               disabled={b'_tkinter'})
 
     config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
     setup_dist_content = setup['setup_dist']
@@ -691,8 +692,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
 
         install_tools_archive(container, archive_path('readline', platform, musl=musl))
         install_tools_archive(container, archive_path('sqlite', platform, musl=musl))
-        # tk requires a bunch of X11 stuff.
-        #install_tools_archive(container, archive_path('tcl', platform, musl=musl))
+        install_tools_archive(container, archive_path('tcl', platform, musl=musl))
         install_tools_archive(container, archive_path('uuid', platform, musl=musl))
         install_tools_archive(container, archive_path('xz', platform, musl=musl))
         install_tools_archive(container, archive_path('zlib', platform, musl=musl))

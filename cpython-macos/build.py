@@ -38,6 +38,8 @@ MACOSX_DEPLOYMENT_TARGET = '10.9'
 DISABLED_STATIC_MODULES = {
     # We don't support GDBM because it is GPL v3.
     b'_gdbm',
+    # Not yet supported.
+    b'_tkinter',
     # Not available on macOS.
     b'nis',
     # Not available on macOS.
