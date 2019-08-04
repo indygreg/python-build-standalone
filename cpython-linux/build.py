@@ -254,11 +254,15 @@ def archive_path(package_name: str, platform: str, musl=False):
     return BUILD / basename
 
 
-def simple_build(client, image, entry, platform, musl=False):
+def simple_build(client, image, entry, platform, musl=False, extra_archives=None):
     archive = download_entry(entry, BUILD)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
+
+        for a in extra_archives or []:
+            install_tools_archive(container, archive_path(a, platform, musl=musl))
+
         copy_file_to_container(archive, container, '/build')
         copy_file_to_container(SUPPORT / ('build-%s.sh' % entry),
                                container, '/build')
@@ -266,7 +270,7 @@ def simple_build(client, image, entry, platform, musl=False):
         env = {
             'CC': 'clang',
             'TOOLCHAIN': 'clang-linux64',
-            '%s_VERSION' % entry.upper(): DOWNLOADS[entry]['version'],
+            '%s_VERSION' % entry.upper().replace('-', '_'): DOWNLOADS[entry]['version'],
         }
         if musl:
             env['CC'] = 'musl-clang'
@@ -466,31 +470,6 @@ def build_readline(client, image, platform, musl=False):
 
         download_tools_archive(container,
                                archive_path('readline', platform, musl=musl),
-                               'deps')
-
-
-def build_tcltk(client, image, platform, musl=False):
-    tcl_archive = download_entry('tcl', BUILD)
-    tk_archive = download_entry('tk', BUILD)
-
-    with run_container(client, image) as container:
-        copy_toolchain(container, musl=musl)
-
-        copy_file_to_container(tcl_archive, container, '/build')
-        copy_file_to_container(tk_archive, container, '/build')
-        copy_file_to_container(SUPPORT / 'build-tcltk.sh', container,
-                               '/build')
-
-        env = {
-            'CC': 'clang',
-            'TOOLCHAIN': 'clang-%s' % platform,
-        }
-
-        container_exec(container, '/build/build-tcltk.sh',
-                       environment=env)
-
-        download_tools_archive(container,
-                               archive_path('tcl', platform, musl=musl),
                                'deps')
 
 
@@ -717,6 +696,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         install_tools_archive(container, archive_path('readline', platform, musl=musl))
         install_tools_archive(container, archive_path('sqlite', platform, musl=musl))
         install_tools_archive(container, archive_path('tcl', platform, musl=musl))
+        install_tools_archive(container, archive_path('tk', platform, musl=musl))
         install_tools_archive(container, archive_path('uuid', platform, musl=musl))
         install_tools_archive(container, archive_path('xz', platform, musl=musl))
         install_tools_archive(container, archive_path('zlib', platform, musl=musl))
@@ -880,13 +860,60 @@ def main():
             build_readline(client, get_image(client, 'build'), platform=platform,
                            musl=musl)
 
-        elif action in ('bdb', 'bzip2', 'gdbm', 'libffi', 'libressl', 'ncurses', 'openssl', 'sqlite', 'uuid', 'xz', 'zlib'):
+        elif action in ('bdb', 'bzip2', 'gdbm', 'inputproto', 'kbproto', 'libffi',
+                        'libpthread-stubs', 'libressl',
+                        'ncurses', 'openssl', 'sqlite', 'tcl', 'uuid', 'x11-util-macros',
+                        'xextproto', 'xorgproto', 'xproto', 'xtrans', 'xz', 'zlib'):
             simple_build(client, get_image(client, 'build'), action, platform=platform,
                          musl=musl)
 
-        elif action == 'tcltk':
-            build_tcltk(client, get_image(client, 'build'), platform=platform,
-                        musl=musl)
+        elif action == 'libX11':
+            simple_build(client, get_image(client, 'build'), action,
+                         platform=platform,
+                         musl=musl,
+                         extra_archives={
+                             'inputproto',
+                             'kbproto',
+                             'libpthread-stubs',
+                             'libXau',
+                             'libxcb',
+                             'x11-util-macros',
+                             'xextproto',
+                             'xorgproto',
+                             'xproto',
+                             'xtrans',
+                         })
+
+        elif action == 'libXau':
+            simple_build(client, get_image(client, 'build'), action, platform=platform,
+                         musl=musl, extra_archives={'x11-util-macros', 'xproto'})
+
+        elif action == 'xcb-proto':
+            simple_build(client, get_image(client, 'xcb'), action, platform=platform,
+                         musl=musl)
+
+        elif action == 'libxcb':
+            simple_build(client, get_image(client, 'xcb'), action, platform=platform,
+                         musl=musl,
+                         extra_archives={
+                             'libpthread-stubs',
+                             'libXau',
+                             'xcb-proto',
+                             'xproto',
+                         })
+
+        elif action == 'tk':
+            simple_build(client, get_image(client, 'xcb'), action,
+                         platform=platform,
+                         musl=musl,
+                         extra_archives={
+                             'tcl',
+                             'libX11',
+                             'libXau',
+                             'libxcb',
+                             'xcb-proto',
+                             'xorgproto',
+                         })
 
         elif action == 'cpython':
             build_cpython(client, get_image(client, 'build'), platform=platform,

@@ -2,10 +2,10 @@
 RUN apt-get install \
     file \
     libc6-dev \
-    libx11-dev \
     make \
     patch \
     perl \
+    pkg-config \
     tar \
     xz-utils \
     unzip

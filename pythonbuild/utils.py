@@ -50,7 +50,7 @@ def write_package_versions(dest_path: pathlib.Path):
 
     for k, v in DOWNLOADS.items():
         p = dest_path / ('VERSION.%s' % k)
-        content = '%s_VERSION := %s\n' % (k.upper(), v['version'])
+        content = '%s_VERSION := %s\n' % (k.upper().replace('-', '_'), v['version'])
         write_if_different(p, content.encode('ascii'))
 
 

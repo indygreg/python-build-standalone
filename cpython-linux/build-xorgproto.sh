@@ -7,18 +7,16 @@ set -ex
 
 cd /build
 
+pkg-config --version
+
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig
 
-tar -xf tcl8.6.9-src.tar.gz
-pushd tcl8.6.9/unix
-./configure --prefix=/tools/deps --enable-shared=no
-make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
-make -j `nproc` install
-popd
+tar -xf xorgproto-${XORGPROTO_VERSION}.tar.gz
+pushd xorgproto-${XORGPROTO_VERSION}
 
-tar -xf tk8.6.9.1-src.tar.gz
-pushd tk8.6.9/unix
-./configure --prefix=/tools/deps --with-tcl=/tools/deps/lib --enable-shared=no
+CFLAGS="-fPIC" ./configure \
+    --prefix=/tools/deps
+
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

@@ -71,8 +71,48 @@ $(OUTDIR)/bzip2-$(BZIP2_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip
 $(OUTDIR)/gdbm-$(GDBM_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
 	$(BUILD) --platform $* gdbm
 
+$(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-inputproto.sh
+	$(BUILD) --platform $(PLATFORM) inputproto
+
+$(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-kbproto.sh
+	$(BUILD) --platform $(PLATFORM) kbproto
+
 $(OUTDIR)/libffi-$(LIBFFI_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
 	$(BUILD) --platform $* libffi
+
+$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-build.tar
+	$(BUILD) --platform $(PLATFORM) libpthread-stubs
+
+LIBX11_DEPENDS = \
+    $(PYTHON_DEP_DEPENDS) \
+    $(HERE)/build-libX11.sh \
+    $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/xextproto-$(XEXTPROTO_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/xtrans-$(XTRANS_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar \
+    $(NULL)
+
+$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar: $(LIBX11_DEPENDS)
+	$(BUILD) --platform $(PLATFORM) libX11
+
+$(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libXau.sh $(OUTDIR)/x11-util-macros-$(X11_UTIL_MACROS_VERSION)-$(PLATFORM).tar $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar
+	$(BUILD) --platform $(PLATFORM) libXau
+
+LIBXCB_DEPENDS = \
+    $(PYTHON_DEP_DEPENDS) \
+    $(HERE)/build-libxcb.sh \
+    $(OUTDIR)/image-xcb.tar \
+    $(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PLATFORM).tar
+    $(NULL)
+
+$(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PLATFORM).tar: $(LIBXCB_DEPENDS)
+	$(BUILD) --platform $(PLATFORM) libxcb
 
 $(OUTDIR)/ncurses-$(NCURSES_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
 	$(BUILD) --platform $* ncurses
@@ -92,11 +132,32 @@ $(OUTDIR)/readline-$(READLINE_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/nc
 $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-sqlite.sh
 	$(BUILD) --platform $(PLATFORM) sqlite
 
-$(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-tcltk.sh
-	$(BUILD) --platform $(PLATFORM) tcltk
+$(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-tcl.sh
+	$(BUILD) --platform $(PLATFORM) tcl
+
+$(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar: $(HERE)/build-tk.sh $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar
+	$(BUILD) --platform $(PLATFORM) tk
 
 $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-uuid.sh
 	$(BUILD) --platform $(PLATFORM) uuid
+
+$(OUTDIR)/x11-util-macros-$(X11_UTIL_MACROS_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-x11-util-macros.sh
+	$(BUILD) --platform $(PLATFORM) x11-util-macros
+
+$(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xcb-proto.sh
+	$(BUILD) --platform $(PLATFORM) xcb-proto
+
+$(OUTDIR)/xextproto-$(XEXTPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xextproto.sh
+	$(BUILD) --platform $(PLATFORM) xextproto
+
+$(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xorgproto.sh
+	$(BUILD) --platform $(PLATFORM) xorgproto
+
+$(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xproto.sh
+	$(BUILD) --platform $(PLATFORM) xproto
+
+$(OUTDIR)/xtrans-$(XTRANS_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xtrans.sh
+	$(BUILD) --platform $(PLATFORM) xtrans
 
 $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xz.sh
 	$(BUILD) --platform $(PLATFORM) xz
@@ -114,6 +175,7 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
