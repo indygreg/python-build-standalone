@@ -158,12 +158,6 @@ DOWNLOADS = {
         'licenses': ['OpenSSL'],
         'license_file': 'LICENSE.libressl.txt',
     },
-    'libx11': {
-        'url': 'https://www.x.org/releases/X11R7.7/src/lib/libX11-1.5.0.tar.gz',
-        'size': 3073820,
-        'sha256': '2ddc05170baf70dd650ee6108c5882eb657cafaf61a5b5261badb26703122518',
-        'version': '1.5.0',
-    },
     'lld': {
         'url': 'http://releases.llvm.org/8.0.0/lld-8.0.0.src.tar.xz',
         'size': 999864,

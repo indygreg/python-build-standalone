@@ -448,18 +448,17 @@ def build_readline(client, image, platform, musl=False):
 def build_tcltk(client, image, platform, musl=False):
     tcl_archive = download_entry('tcl', BUILD)
     tk_archive = download_entry('tk', BUILD)
-    x11_archive = download_entry('libx11', BUILD)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
 
         copy_file_to_container(tcl_archive, container, '/build')
         copy_file_to_container(tk_archive, container, '/build')
-        copy_file_to_container(x11_archive, container, '/build')
         copy_file_to_container(SUPPORT / 'build-tcltk.sh', container,
                                '/build')
 
         env = {
+            'CC': 'clang',
             'TOOLCHAIN': 'clang-%s' % platform,
         }
 
@@ -467,7 +466,8 @@ def build_tcltk(client, image, platform, musl=False):
                        environment=env)
 
         download_tools_archive(container,
-                               archive_path('tcl', platform, musl=musl))
+                               archive_path('tcl', platform, musl=musl),
+                               'deps')
 
 
 def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=False):
