@@ -736,6 +736,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
             'CC': 'clang',
             'PIP_VERSION': DOWNLOADS['pip']['version'],
             'PYTHON_VERSION': entry['version'],
+            'PYTHON_MAJMIN_VERSION': entry['version'][:3],
             'SETUPTOOLS_VERSION': DOWNLOADS['setuptools']['version'],
         }
 

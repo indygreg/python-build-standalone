@@ -187,6 +187,12 @@ popd
 # Ideally we'd adjust the build system. But meh.
 find /build/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
 
+# Symlink libpython so we don't have 2 copies.
+LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}m.a
+ln -sf \
+    python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-x86_64-linux-gnu/${LIBPYTHON} \
+    /build/out/python/install/lib/${LIBPYTHON}
+
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
 for d in Modules Objects Parser Programs Python; do
