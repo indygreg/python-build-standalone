@@ -28,7 +28,7 @@ _ssl _ssl.c -I/tools/deps/include -lssl -lcrypto
 _testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c
 _testmultiphase _testmultiphase.c
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -I/tools/deps/include -I/usr/include/X11 -L/tools/deps/lib -ltcl8.6 -ltk8.6 -lX11
+_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -I/tools/deps/include/X11 -L/tools/deps/lib -ltcl8.6 -ltk8.6 -lX11 -lxcb -lXau
 _uuid _uuidmodule.c -I/tools/deps/include/uuid -luuid
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 ossaudiodev ossaudiodev.c

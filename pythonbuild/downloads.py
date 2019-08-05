@@ -330,12 +330,18 @@ DOWNLOADS = {
         'size': 10000896,
         'sha256': 'ad0cd2de2c87b9ba8086b43957a0de3eb2eb565c7159d5f53ccbba3feb915f4e',
         'version': '8.6.9',
+        'library_names': ['tcl8.6'],
+        'licenses': ['TCL'],
+        'license_file': 'LICENSE.tcl.txt',
     },
     'tk': {
         'url': 'https://prdownloads.sourceforge.net/tcl/tk8.6.9.1-src.tar.gz',
         'size': 4364603,
         'sha256': '8fcbcd958a8fd727e279f4cac00971eee2ce271dc741650b1fc33375fb74ebb4',
         'version': '8.6.9.1',
+        'library_names': ['tk8.6'],
+        'licenses': ['TCL'],
+        'license_file': 'LICENSE.tcl.txt',
     },
     'tk-windows-bin': {
         'url': 'https://github.com/python/cpython-bin-deps/archive/86027ce3edda1284ae4bf6c2c580288366af4052.tar.gz',

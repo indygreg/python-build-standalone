@@ -19,5 +19,6 @@ CFLAGS="-fPIC" ./configure \
     --x-libraries=/tools/deps/lib \
     --with-tcl=/tools/deps/lib \
     --enable-shared=no
+
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

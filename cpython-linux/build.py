@@ -666,8 +666,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
 
     setup = derive_setup_local(static_modules_lines, python_archive,
                                python_version=entry['version'],
-                               musl=musl, debug=debug,
-                               disabled={b'_tkinter'})
+                               musl=musl, debug=debug)
 
     config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
     setup_dist_content = setup['setup_dist']
@@ -686,6 +685,9 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         install_tools_archive(container, archive_path('bzip2', platform, musl=musl))
         install_tools_archive(container, archive_path('libedit', platform, musl=musl))
         install_tools_archive(container, archive_path('libffi', platform, musl=musl))
+        install_tools_archive(container, archive_path('libX11', platform, musl=musl))
+        install_tools_archive(container, archive_path('libXau', platform, musl=musl))
+        install_tools_archive(container, archive_path('libxcb', platform, musl=musl))
         install_tools_archive(container, archive_path('ncurses', platform, musl=musl))
 
         if libressl:
@@ -698,6 +700,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         install_tools_archive(container, archive_path('tcl', platform, musl=musl))
         install_tools_archive(container, archive_path('tk', platform, musl=musl))
         install_tools_archive(container, archive_path('uuid', platform, musl=musl))
+        install_tools_archive(container, archive_path('xorgproto', platform, musl=musl))
         install_tools_archive(container, archive_path('xz', platform, musl=musl))
         install_tools_archive(container, archive_path('zlib', platform, musl=musl))
         #copy_rust(container)

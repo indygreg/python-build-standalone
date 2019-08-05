@@ -13,6 +13,8 @@ export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig:/tools/deps/lib/pkgconfig
 tar -xf tcl8.6.9-src.tar.gz
 pushd tcl8.6.9/unix
 CFLAGS="-fPIC -I/tools/deps/include" ./configure \
-    --prefix=/tools/deps
+    --prefix=/tools/deps \
+    --enable-shared=no
+
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out
