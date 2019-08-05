@@ -193,6 +193,11 @@ ln -sf \
     python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-x86_64-linux-gnu/${LIBPYTHON} \
     /build/out/python/install/lib/${LIBPYTHON}
 
+# Ditto for Python executable.
+ln -sf \
+    python${PYTHON_MAJMIN_VERSION}m \
+    /build/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
+
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
 for d in Modules Objects Parser Programs Python; do
