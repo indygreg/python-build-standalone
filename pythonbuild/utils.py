@@ -170,7 +170,9 @@ def compress_python_archive(source_path: pathlib.Path,
 
     try:
         with source_path.open('rb') as ifh, temp_path.open('wb') as ofh:
-            cctx = zstandard.ZstdCompressor(level=15)
+            params = zstandard.ZstdCompressionParameters.from_level(
+                22, compression_strategy=zstandard.STRATEGY_BTULTRA2)
+            cctx = zstandard.ZstdCompressor(compression_params=params)
             cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
 
         temp_path.rename(dest_path)
