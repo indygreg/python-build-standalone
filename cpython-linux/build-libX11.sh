@@ -37,8 +37,13 @@ diff --git a/configure b/configure
  rm -f conftest.$ac_ext
 EOF
 
+if [ "${CC}" = "musl-clang" ]; then
+    EXTRA_FLAGS="--disable-shared"
+fi
+
 CFLAGS="-fPIC -I/tools/deps/include" ./configure \
-    --prefix=/tools/deps
+    --prefix=/tools/deps \
+    ${EXTRA_FLAGS}
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out

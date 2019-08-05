@@ -12,8 +12,14 @@ export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig:/tools/deps/lib/pkgconfig
 
 tar -xf libXau-${LIBXAU_VERSION}.tar.gz
 pushd libXau-${LIBXAU_VERSION}
+
+if [ "${CC}" = "musl-clang" ]; then
+    EXTRA_FLAGS="--disable-shared"
+fi
+
 CFLAGS="-fPIC" ./configure \
-    --prefix=/tools/deps
+    --prefix=/tools/deps \
+    ${EXTRA_FLAGS}
 
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out
