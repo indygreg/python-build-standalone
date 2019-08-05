@@ -36,6 +36,7 @@ CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./
     --build=x86_x64-unknown-linux-gnu \
     --host=${TARGET} \
     --prefix=/tools/deps \
+    --with-openssldir=/etc/ssl \
     --disable-shared
 
 make -j `nproc`
