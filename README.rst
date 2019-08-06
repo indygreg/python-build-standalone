@@ -276,7 +276,7 @@ without having to resort to heuristics.
 The file contains a JSON map. This map has the following keys:
 
 version
-   Version number of the file format. Currently ``2``.
+   Version number of the file format. Currently ``3``.
 
 os
    Target operating system for the distribution. e.g. ``linux``, ``macos``,
@@ -318,6 +318,14 @@ license_path
    Path to a text file containing the license for this Python distribution.
 
    (Version 2 or above only.)
+
+tcl_library_path
+   Relative path to location of tcl library files. The path should be a
+   directory tree containing tcl files to support the tkinter extension.
+   This will include a subset of the library files provided by the tcl, tk,
+   and tix packages.
+
+   (Version 3 or above only.)
 
 build_info Data
 ---------------

@@ -799,7 +799,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            'version': '2',
+            'version': '3',
             'os': 'linux',
             'arch': 'x86_64',
             'python_flavor': 'cpython',
@@ -812,6 +812,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
                                             libressl=libressl),
             'licenses': entry['licenses'],
             'license_path': 'licenses/LICENSE.cpython.txt',
+            'tcl_library_path': 'install/lib/tcl',
         }
 
         with tempfile.NamedTemporaryFile('w') as fh:

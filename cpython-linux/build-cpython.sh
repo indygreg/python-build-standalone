@@ -217,6 +217,10 @@ cp -av /tools/deps/libedit/lib/*.a /build/out/python/build/lib/
 # And prune libraries we never reference.
 rm /build/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 
+# Copy tcl/tk/tix resources needed by tkinter.
+mkdir /build/out/python/install/lib/tcl
+cp -av /tools/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ /build/out/python/install/lib/tcl/
+
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
 # a custom one can be produced downstream.
