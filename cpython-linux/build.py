@@ -33,6 +33,7 @@ from pythonbuild.utils import (
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / 'build'
+DOWNLOADS_PATH = BUILD / 'downloads'
 SUPPORT = ROOT / 'cpython-linux'
 
 LOG_PREFIX = [None]
@@ -222,7 +223,7 @@ def copy_toolchain(container, gcc=False, musl=False):
 
 
 def copy_rust(container):
-    rust = download_entry('rust', BUILD)
+    rust = download_entry('rust', DOWNLOADS_PATH)
 
     copy_file_to_container(rust, container, '/build')
     container.exec_run(['/bin/mkdir', 'p', '/tools/rust'])
@@ -255,7 +256,7 @@ def archive_path(package_name: str, platform: str, musl=False):
 
 
 def simple_build(client, image, entry, platform, musl=False, extra_archives=None):
-    archive = download_entry(entry, BUILD)
+    archive = download_entry(entry, DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
@@ -287,7 +288,7 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
 
 def build_binutils(client, image):
     """Build binutils in the Docker image."""
-    archive = download_entry('binutils', BUILD)
+    archive = download_entry('binutils', DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_file_to_container(archive, container, '/build')
@@ -306,11 +307,11 @@ def build_binutils(client, image):
 
 def build_gcc(client, image):
     """Build GCC in the Docker image."""
-    gcc_archive = download_entry('gcc', BUILD)
-    gmp_archive = download_entry('gmp', BUILD)
-    isl_archive = download_entry('isl', BUILD)
-    mpc_archive = download_entry('mpc', BUILD)
-    mpfr_archive = download_entry('mpfr', BUILD)
+    gcc_archive = download_entry('gcc', DOWNLOADS_PATH)
+    gmp_archive = download_entry('gmp', DOWNLOADS_PATH)
+    isl_archive = download_entry('isl', DOWNLOADS_PATH)
+    mpc_archive = download_entry('mpc', DOWNLOADS_PATH)
+    mpfr_archive = download_entry('mpfr', DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         log('copying archives to container...')
@@ -341,14 +342,14 @@ def build_gcc(client, image):
 
 
 def build_clang(client, image):
-    cmake_archive = download_entry('cmake-linux-bin', BUILD)
-    ninja_archive = download_entry('ninja-linux-bin', BUILD)
-    clang_archive = download_entry('clang', BUILD)
-    clang_rt_archive = download_entry('clang-compiler-rt', BUILD)
-    lld_archive = download_entry('lld', BUILD)
-    llvm_archive = download_entry('llvm', BUILD)
-    libcxx_archive = download_entry('libc++', BUILD)
-    libcxxabi_archive = download_entry('libc++abi', BUILD)
+    cmake_archive = download_entry('cmake-linux-bin', DOWNLOADS_PATH)
+    ninja_archive = download_entry('ninja-linux-bin', DOWNLOADS_PATH)
+    clang_archive = download_entry('clang', DOWNLOADS_PATH)
+    clang_rt_archive = download_entry('clang-compiler-rt', DOWNLOADS_PATH)
+    lld_archive = download_entry('lld', DOWNLOADS_PATH)
+    llvm_archive = download_entry('llvm', DOWNLOADS_PATH)
+    libcxx_archive = download_entry('libc++', DOWNLOADS_PATH)
+    libcxxabi_archive = download_entry('libc++abi', DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         log('copying archives to container...')
@@ -387,7 +388,7 @@ def build_clang(client, image):
 
 
 def build_musl(client, image):
-    musl_archive = download_entry('musl', BUILD)
+    musl_archive = download_entry('musl', DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container)
@@ -408,7 +409,7 @@ def build_musl(client, image):
 
 
 def build_libedit(client, image, platform, musl=False):
-    libedit_archive = download_entry('libedit', BUILD)
+    libedit_archive = download_entry('libedit', DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
@@ -440,7 +441,7 @@ def build_libedit(client, image, platform, musl=False):
 
 
 def build_readline(client, image, platform, musl=False):
-    readline_archive = download_entry('readline', BUILD)
+    readline_archive = download_entry('readline', DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
@@ -474,9 +475,9 @@ def build_readline(client, image, platform, musl=False):
 
 
 def build_tix(client, image, platform, musl=False):
-    tcl_archive = download_entry('tcl', BUILD)
-    tk_archive = download_entry('tk', BUILD)
-    tix_archive = download_entry('tix', BUILD)
+    tcl_archive = download_entry('tcl', DOWNLOADS_PATH)
+    tk_archive = download_entry('tk', DOWNLOADS_PATH)
+    tix_archive = download_entry('tix', DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
@@ -697,9 +698,9 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
     entry_name = 'cpython-%s' % version
     entry = DOWNLOADS[entry_name]
 
-    python_archive = download_entry(entry_name, BUILD)
-    setuptools_archive = download_entry('setuptools', BUILD)
-    pip_archive = download_entry('pip', BUILD)
+    python_archive = download_entry(entry_name, DOWNLOADS_PATH)
+    setuptools_archive = download_entry('setuptools', DOWNLOADS_PATH)
+    pip_archive = download_entry('pip', DOWNLOADS_PATH)
 
     with (SUPPORT / 'static-modules').open('rb') as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
@@ -841,6 +842,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
 
 def main():
     BUILD.mkdir(exist_ok=True)
+    DOWNLOADS_PATH.mkdir(exist_ok=True)
 
     try:
         client = docker.from_env()
