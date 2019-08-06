@@ -844,6 +844,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
 def main():
     BUILD.mkdir(exist_ok=True)
     DOWNLOADS_PATH.mkdir(exist_ok=True)
+    (BUILD / 'logs').mkdir(exist_ok=True)
 
     try:
         client = docker.from_env()
@@ -877,7 +878,7 @@ def main():
         musl = True
         platform = platform[:-5]
 
-    log_path = BUILD / ('build.%s.log' % name)
+    log_path = BUILD / 'logs'/ ('build.%s.log' % name)
     LOG_PREFIX[0] = name
 
     with log_path.open('wb') as log_fh:
