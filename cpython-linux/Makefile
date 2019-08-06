@@ -135,6 +135,18 @@ $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE
 $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-tcl.sh
 	$(BUILD) --platform $(PLATFORM) tcl
 
+TIX_DEPENDS = \
+    $(HERE)/build-tix.sh \
+    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar \
+    $(NULL)
+
+$(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar: $(TIX_DEPENDS)
+	$(BUILD) --platform $(PLATFORM) tix
+
 $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar: $(HERE)/build-tk.sh $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar
 	$(BUILD) --platform $(PLATFORM) tk
 
@@ -178,6 +190,7 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar \

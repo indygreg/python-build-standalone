@@ -473,6 +473,46 @@ def build_readline(client, image, platform, musl=False):
                                'deps')
 
 
+def build_tix(client, image, platform, musl=False):
+    tcl_archive = download_entry('tcl', BUILD)
+    tk_archive = download_entry('tk', BUILD)
+    tix_archive = download_entry('tix', BUILD)
+
+    with run_container(client, image) as container:
+        copy_toolchain(container, musl=musl)
+
+        install_tools_archive(container, archive_path('tcl', platform, musl=musl))
+        install_tools_archive(container, archive_path('tk', platform, musl=musl))
+        install_tools_archive(container, archive_path('libX11', platform, musl=musl))
+        install_tools_archive(container, archive_path('xorgproto', platform, musl=musl))
+
+        copy_file_to_container(tcl_archive, container, '/build')
+        copy_file_to_container(tk_archive, container, '/build')
+        copy_file_to_container(tix_archive, container, '/build')
+        copy_file_to_container(SUPPORT / 'build-tix.sh', container,
+                               '/build')
+
+        env = {
+            'CC': 'clang',
+            'TOOLCHAIN': 'clang-linux64',
+            'TCL_VERSION': DOWNLOADS['tcl']['version'],
+            'TIX_VERSION': DOWNLOADS['tix']['version'],
+            'TK_VERSION': DOWNLOADS['tk']['version'],
+        }
+
+        if musl:
+            env['CC'] = 'musl-clang'
+
+        add_target_env(env, platform)
+
+        container_exec(container, '/build/build-tix.sh',
+                       environment=env)
+
+        download_tools_archive(container,
+                               archive_path('tix', platform, musl=musl),
+                               'deps')
+
+
 def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=False):
     """Obtain build metadata for the Python distribution."""
 
@@ -698,6 +738,7 @@ def build_cpython(client, image, platform, debug=False, optimized=False, musl=Fa
         install_tools_archive(container, archive_path('readline', platform, musl=musl))
         install_tools_archive(container, archive_path('sqlite', platform, musl=musl))
         install_tools_archive(container, archive_path('tcl', platform, musl=musl))
+        install_tools_archive(container, archive_path('tix', platform, musl=musl))
         install_tools_archive(container, archive_path('tk', platform, musl=musl))
         install_tools_archive(container, archive_path('uuid', platform, musl=musl))
         install_tools_archive(container, archive_path('xorgproto', platform, musl=musl))
@@ -905,6 +946,10 @@ def main():
                              'xcb-proto',
                              'xproto',
                          })
+
+        elif action == 'tix':
+            build_tix(client, get_image(client, 'build'),
+                      platform=platform, musl=musl)
 
         elif action == 'tk':
             simple_build(client, get_image(client, 'xcb'), action,
