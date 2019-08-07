@@ -11,24 +11,22 @@ import tarfile
 import docker
 import jinja2
 
-from .logging import (
-    log,
-    log_raw,
-)
+from .logging import log, log_raw
 
 
-def build_docker_image(client, source_dir: pathlib.Path,
-                       image_dir: pathlib.Path, name):
-    image_path = image_dir / ('image-%s' % name)
+def build_docker_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
+    image_path = image_dir / ("image-%s" % name)
 
     env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(str(source_dir / 'cpython-unix')))
+        loader=jinja2.FileSystemLoader(str(source_dir / "cpython-unix"))
+    )
 
-    tmpl = env.get_template('%s.Dockerfile' % name)
+    tmpl = env.get_template("%s.Dockerfile" % name)
     data = tmpl.render()
 
-    return ensure_docker_image(client, io.BytesIO(data.encode('utf')),
-                               image_path=image_path)
+    return ensure_docker_image(
+        client, io.BytesIO(data.encode("utf")), image_path=image_path
+    )
 
 
 def ensure_docker_image(client, fh, image_path=None):
@@ -37,33 +35,33 @@ def ensure_docker_image(client, fh, image_path=None):
     image = None
 
     for s in res:
-        if 'stream' in s:
-            for l in s['stream'].strip().splitlines():
+        if "stream" in s:
+            for l in s["stream"].strip().splitlines():
                 log(l)
 
-        if 'aux' in s and 'ID' in s['aux']:
-            image = s['aux']['ID']
+        if "aux" in s and "ID" in s["aux"]:
+            image = s["aux"]["ID"]
 
     if not image:
-        raise Exception('unable to determine built Docker image')
+        raise Exception("unable to determine built Docker image")
 
     if image_path:
-        tar_path = image_path.with_suffix('.tar')
-        with tar_path.open('wb') as fh:
+        tar_path = image_path.with_suffix(".tar")
+        with tar_path.open("wb") as fh:
             for chunk in client.images.get(image).save():
                 fh.write(chunk)
 
-        with image_path.open('w') as fh:
-            fh.write(image + '\n')
+        with image_path.open("w") as fh:
+            fh.write(image + "\n")
 
     return image
 
 
 def get_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
-    image_path = image_dir / ('image-%s' % name)
-    tar_path = image_path.with_suffix('.tar')
+    image_path = image_dir / ("image-%s" % name)
+    tar_path = image_path.with_suffix(".tar")
 
-    with image_path.open('r') as fh:
+    with image_path.open("r") as fh:
         image_id = fh.read().strip()
 
     try:
@@ -71,7 +69,7 @@ def get_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
         return image_id
     except docker.errors.ImageNotFound:
         if tar_path.exists():
-            with tar_path.open('rb') as fh:
+            with tar_path.open("rb") as fh:
                 data = fh.read()
             client.images.load(data)
 
@@ -84,20 +82,21 @@ def get_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
 def copy_file_to_container(path, container, container_path, archive_path=None):
     """Copy a path on the local filesystem to a running container."""
     buf = io.BytesIO()
-    tf = tarfile.open('irrelevant', 'w', buf)
+    tf = tarfile.open("irrelevant", "w", buf)
 
     dest_path = archive_path or path.name
     tf.add(str(path), dest_path)
     tf.close()
 
-    log('copying %s to container:%s/%s' % (path, container_path, dest_path))
+    log("copying %s to container:%s/%s" % (path, container_path, dest_path))
     container.put_archive(container_path, buf.getvalue())
 
 
 @contextlib.contextmanager
 def run_container(client, image):
     container = client.containers.run(
-        image, command=['/bin/sleep', '86400'], detach=True)
+        image, command=["/bin/sleep", "86400"], detach=True
+    )
     try:
         yield container
     finally:
@@ -105,14 +104,14 @@ def run_container(client, image):
         container.remove()
 
 
-def container_exec(container, command, user='build',
-                   environment=None):
+def container_exec(container, command, user="build", environment=None):
     # docker-py's exec_run() won't return the exit code. So we reinvent the
     # wheel.
     create_res = container.client.api.exec_create(
-        container.id, command, user=user, environment=environment)
+        container.id, command, user=user, environment=environment
+    )
 
-    exec_output = container.client.api.exec_start(create_res['Id'], stream=True)
+    exec_output = container.client.api.exec_start(create_res["Id"], stream=True)
 
     for chunk in exec_output:
         for l in chunk.strip().splitlines():
@@ -120,11 +119,10 @@ def container_exec(container, command, user='build',
 
         log_raw(chunk)
 
-    inspect_res = container.client.api.exec_inspect(create_res['Id'])
+    inspect_res = container.client.api.exec_inspect(create_res["Id"])
 
-    if inspect_res['ExitCode'] != 0:
-        raise Exception('exit code %d from %s' % (inspect_res['ExitCode'],
-                                                  command))
+    if inspect_res["ExitCode"] != 0:
+        raise Exception("exit code %d from %s" % (inspect_res["ExitCode"], command))
 
 
 # 2019-01-01T00:00:00
@@ -142,8 +140,10 @@ def container_get_archive(container, path):
 
     new_data = io.BytesIO()
 
-    with tarfile.open(fileobj=old_data) as itf, tarfile.open(fileobj=new_data, mode='w') as otf:
-        for member in sorted(itf.getmembers(), key=operator.attrgetter('name')):
+    with tarfile.open(fileobj=old_data) as itf, tarfile.open(
+        fileobj=new_data, mode="w"
+    ) as otf:
+        for member in sorted(itf.getmembers(), key=operator.attrgetter("name")):
             file_data = itf.extractfile(member) if not member.linkname else None
             member.mtime = DEFAULT_MTIME
             otf.addfile(member, file_data)

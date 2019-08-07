@@ -14,14 +14,8 @@ import tempfile
 
 import docker
 
-from pythonbuild.buildenv import (
-    build_environment,
-)
-from pythonbuild.cpython import (
-    derive_setup_local,
-    parse_config_c,
-    parse_setup_line,
-)
+from pythonbuild.buildenv import build_environment
+from pythonbuild.cpython import derive_setup_local, parse_config_c, parse_setup_line
 from pythonbuild.docker import (
     build_docker_image,
     container_exec,
@@ -30,13 +24,8 @@ from pythonbuild.docker import (
     get_image,
     run_container,
 )
-from pythonbuild.downloads import (
-    DOWNLOADS,
-)
-from pythonbuild.logging import (
-    log,
-    set_logger,
-)
+from pythonbuild.downloads import DOWNLOADS
+from pythonbuild.logging import log, set_logger
 from pythonbuild.utils import (
     add_licenses_to_extension_entry,
     download_entry,
@@ -44,37 +33,39 @@ from pythonbuild.utils import (
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
-BUILD = ROOT / 'build'
-DOWNLOADS_PATH = BUILD / 'downloads'
-SUPPORT = ROOT / 'cpython-unix'
+BUILD = ROOT / "build"
+DOWNLOADS_PATH = BUILD / "downloads"
+SUPPORT = ROOT / "cpython-unix"
 
 REQUIRED_EXTENSIONS = {
-    '_codecs',
-    '_io',
-    '_signal',
-    '_thread',
-    '_tracemalloc',
-    '_weakref',
-    'faulthandler',
-    'posix',
+    "_codecs",
+    "_io",
+    "_signal",
+    "_thread",
+    "_tracemalloc",
+    "_weakref",
+    "faulthandler",
+    "posix",
 }
 
 
 def install_tools_archive(container, source: pathlib.Path):
-    copy_file_to_container(source, container, '/build')
+    copy_file_to_container(source, container, "/build")
     container_exec(
-        container, ['/bin/tar', '-C', '/tools', '-xf', '/build/%s' % source.name],
-        user='root')
+        container,
+        ["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % source.name],
+        user="root",
+    )
 
 
 def copy_toolchain(container, gcc=False, musl=False):
-    install_tools_archive(container, archive_path('binutils', 'linux64'))
+    install_tools_archive(container, archive_path("binutils", "linux64"))
 
     if gcc:
-        install_tools_archive(container, archive_path('gcc', 'linux64'))
+        install_tools_archive(container, archive_path("gcc", "linux64"))
 
-    clang_linux64 = archive_path('clang', 'linux64')
-    musl_linux64 = archive_path('musl', 'linux64')
+    clang_linux64 = archive_path("clang", "linux64")
+    musl_linux64 = archive_path("musl", "linux64")
 
     if clang_linux64.exists():
         install_tools_archive(container, clang_linux64)
@@ -84,34 +75,43 @@ def copy_toolchain(container, gcc=False, musl=False):
 
 
 def copy_rust(container):
-    rust = download_entry('rust', DOWNLOADS_PATH)
+    rust = download_entry("rust", DOWNLOADS_PATH)
 
-    copy_file_to_container(rust, container, '/build')
-    container.exec_run(['/bin/mkdir', 'p', '/tools/rust'])
+    copy_file_to_container(rust, container, "/build")
+    container.exec_run(["/bin/mkdir", "p", "/tools/rust"])
     container.exec_run(
-        ['/bin/tar', '-C', '/tools/rust', '--strip-components', '1',
-         '-xf', '/build/%s' % rust.name])
+        [
+            "/bin/tar",
+            "-C",
+            "/tools/rust",
+            "--strip-components",
+            "1",
+            "-xf",
+            "/build/%s" % rust.name,
+        ]
+    )
 
 
 def download_tools_archive(container, dest, name):
-    log('copying container files to %s' % dest)
-    data = container_get_archive(container, '/build/out/tools/%s' % name)
+    log("copying container files to %s" % dest)
+    data = container_get_archive(container, "/build/out/tools/%s" % name)
 
-    with open(dest, 'wb') as fh:
+    with open(dest, "wb") as fh:
         fh.write(data)
 
 
 def add_target_env(env, platform):
-    env['TARGET'] = 'x86_64-unknown-linux-gnu'
+    env["TARGET"] = "x86_64-unknown-linux-gnu"
 
 
 def archive_path(package_name: str, platform: str, musl=False):
     entry = DOWNLOADS[package_name]
-    basename = '%s-%s-%s%s.tar' % (
+    basename = "%s-%s-%s%s.tar" % (
         package_name,
-        entry['version'],
+        entry["version"],
         platform,
-        '-musl' if musl else '')
+        "-musl" if musl else "",
+    )
 
     return BUILD / basename
 
@@ -125,261 +125,246 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
         for a in extra_archives or []:
             install_tools_archive(container, archive_path(a, platform, musl=musl))
 
-        copy_file_to_container(archive, container, '/build')
-        copy_file_to_container(SUPPORT / ('build-%s.sh' % entry),
-                               container, '/build')
+        copy_file_to_container(archive, container, "/build")
+        copy_file_to_container(SUPPORT / ("build-%s.sh" % entry), container, "/build")
 
         env = {
-            'CC': 'clang',
-            'TOOLCHAIN': 'clang-linux64',
-            '%s_VERSION' % entry.upper().replace('-', '_'): DOWNLOADS[entry]['version'],
+            "CC": "clang",
+            "TOOLCHAIN": "clang-linux64",
+            "%s_VERSION" % entry.upper().replace("-", "_"): DOWNLOADS[entry]["version"],
         }
         if musl:
-            env['CC'] = 'musl-clang'
+            env["CC"] = "musl-clang"
 
         add_target_env(env, platform)
 
-        container_exec(container, '/build/build-%s.sh' % entry,
-                       environment=env)
+        container_exec(container, "/build/build-%s.sh" % entry, environment=env)
 
-        download_tools_archive(container,
-                               archive_path(entry, platform, musl=musl),
-                               'deps')
+        download_tools_archive(
+            container, archive_path(entry, platform, musl=musl), "deps"
+        )
 
 
 def build_binutils(client, image):
     """Build binutils in the Docker image."""
-    archive = download_entry('binutils', DOWNLOADS_PATH)
+    archive = download_entry("binutils", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.copy_file(archive, '/build')
-        build_env.copy_file(SUPPORT / 'build-binutils.sh', '/build')
+        build_env.copy_file(archive, "/build")
+        build_env.copy_file(SUPPORT / "build-binutils.sh", "/build")
 
         build_env.exec(
-            '/build/build-binutils.sh',
-            environment={
-                'BINUTILS_VERSION': DOWNLOADS['binutils']['version'],
-            })
+            "/build/build-binutils.sh",
+            environment={"BINUTILS_VERSION": DOWNLOADS["binutils"]["version"]},
+        )
 
-        build_env.get_tools_archive(archive_path('binutils', 'linux64'), 'host')
+        build_env.get_tools_archive(archive_path("binutils", "linux64"), "host")
 
 
 def build_gcc(client, image):
     """Build GCC in the Docker image."""
-    gcc_archive = download_entry('gcc', DOWNLOADS_PATH)
-    gmp_archive = download_entry('gmp', DOWNLOADS_PATH)
-    isl_archive = download_entry('isl', DOWNLOADS_PATH)
-    mpc_archive = download_entry('mpc', DOWNLOADS_PATH)
-    mpfr_archive = download_entry('mpfr', DOWNLOADS_PATH)
+    gcc_archive = download_entry("gcc", DOWNLOADS_PATH)
+    gmp_archive = download_entry("gmp", DOWNLOADS_PATH)
+    isl_archive = download_entry("isl", DOWNLOADS_PATH)
+    mpc_archive = download_entry("mpc", DOWNLOADS_PATH)
+    mpfr_archive = download_entry("mpfr", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        log('copying archives to container...')
-        for a in (gcc_archive, gmp_archive, isl_archive, mpc_archive,
-                  mpfr_archive):
-            build_env.copy_file(a, '/build')
+        log("copying archives to container...")
+        for a in (gcc_archive, gmp_archive, isl_archive, mpc_archive, mpfr_archive):
+            build_env.copy_file(a, "/build")
 
-        build_env.copy_file(archive_path('binutils', 'linux64'),
-                            '/build')
-        build_env.copy_file(SUPPORT / 'build-gcc.sh',
-                            '/build')
+        build_env.copy_file(archive_path("binutils", "linux64"), "/build")
+        build_env.copy_file(SUPPORT / "build-gcc.sh", "/build")
 
         build_env.exec(
-            '/build/build-gcc.sh',
+            "/build/build-gcc.sh",
             environment={
-                'BINUTILS_VERSION': DOWNLOADS['binutils']['version'],
-                'GCC_VERSION': DOWNLOADS['gcc']['version'],
-                'GMP_VERSION': DOWNLOADS['gmp']['version'],
-                'ISL_VERSION': DOWNLOADS['isl']['version'],
-                'MPC_VERSION': DOWNLOADS['mpc']['version'],
-                'MPFR_VERSION': DOWNLOADS['mpfr']['version'],
-            })
+                "BINUTILS_VERSION": DOWNLOADS["binutils"]["version"],
+                "GCC_VERSION": DOWNLOADS["gcc"]["version"],
+                "GMP_VERSION": DOWNLOADS["gmp"]["version"],
+                "ISL_VERSION": DOWNLOADS["isl"]["version"],
+                "MPC_VERSION": DOWNLOADS["mpc"]["version"],
+                "MPFR_VERSION": DOWNLOADS["mpfr"]["version"],
+            },
+        )
 
-        build_env.get_tools_archive(archive_path('gcc', 'linux64'), 'host')
+        build_env.get_tools_archive(archive_path("gcc", "linux64"), "host")
 
 
 def build_clang(client, image):
-    cmake_archive = download_entry('cmake-linux-bin', DOWNLOADS_PATH)
-    ninja_archive = download_entry('ninja-linux-bin', DOWNLOADS_PATH)
-    clang_archive = download_entry('clang', DOWNLOADS_PATH)
-    clang_rt_archive = download_entry('clang-compiler-rt', DOWNLOADS_PATH)
-    lld_archive = download_entry('lld', DOWNLOADS_PATH)
-    llvm_archive = download_entry('llvm', DOWNLOADS_PATH)
-    libcxx_archive = download_entry('libc++', DOWNLOADS_PATH)
-    libcxxabi_archive = download_entry('libc++abi', DOWNLOADS_PATH)
+    cmake_archive = download_entry("cmake-linux-bin", DOWNLOADS_PATH)
+    ninja_archive = download_entry("ninja-linux-bin", DOWNLOADS_PATH)
+    clang_archive = download_entry("clang", DOWNLOADS_PATH)
+    clang_rt_archive = download_entry("clang-compiler-rt", DOWNLOADS_PATH)
+    lld_archive = download_entry("lld", DOWNLOADS_PATH)
+    llvm_archive = download_entry("llvm", DOWNLOADS_PATH)
+    libcxx_archive = download_entry("libc++", DOWNLOADS_PATH)
+    libcxxabi_archive = download_entry("libc++abi", DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
-        log('copying archives to container...')
-        for a in (cmake_archive, ninja_archive, clang_archive, clang_rt_archive,
-                  lld_archive, llvm_archive, libcxx_archive, libcxxabi_archive):
-            copy_file_to_container(a, container, '/build')
+        log("copying archives to container...")
+        for a in (
+            cmake_archive,
+            ninja_archive,
+            clang_archive,
+            clang_rt_archive,
+            lld_archive,
+            llvm_archive,
+            libcxx_archive,
+            libcxxabi_archive,
+        ):
+            copy_file_to_container(a, container, "/build")
 
-        tools_path = 'clang-linux64'
-        suffix = 'linux64'
-        build_sh = 'build-clang.sh'
+        tools_path = "clang-linux64"
+        suffix = "linux64"
+        build_sh = "build-clang.sh"
         gcc = True
 
         env = {
-            'CLANG_COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt']['version'],
-            'CLANG_VERSION': DOWNLOADS['clang']['version'],
-            'CMAKE_VERSION': DOWNLOADS['cmake-linux-bin']['version'],
-            'COMPILER_RT_VERSION': DOWNLOADS['clang-compiler-rt']['version'],
-            'GCC_VERSION': DOWNLOADS['gcc']['version'],
-            'LIBCXX_VERSION': DOWNLOADS['libc++']['version'],
-            'LIBCXXABI_VERSION': DOWNLOADS['libc++abi']['version'],
-            'LLD_VERSION': DOWNLOADS['lld']['version'],
-            'LLVM_VERSION': DOWNLOADS['llvm']['version'],
+            "CLANG_COMPILER_RT_VERSION": DOWNLOADS["clang-compiler-rt"]["version"],
+            "CLANG_VERSION": DOWNLOADS["clang"]["version"],
+            "CMAKE_VERSION": DOWNLOADS["cmake-linux-bin"]["version"],
+            "COMPILER_RT_VERSION": DOWNLOADS["clang-compiler-rt"]["version"],
+            "GCC_VERSION": DOWNLOADS["gcc"]["version"],
+            "LIBCXX_VERSION": DOWNLOADS["libc++"]["version"],
+            "LIBCXXABI_VERSION": DOWNLOADS["libc++abi"]["version"],
+            "LLD_VERSION": DOWNLOADS["lld"]["version"],
+            "LLVM_VERSION": DOWNLOADS["llvm"]["version"],
         }
 
         copy_toolchain(container, gcc=gcc)
 
-        copy_file_to_container(SUPPORT / build_sh, container,
-                               '/build')
+        copy_file_to_container(SUPPORT / build_sh, container, "/build")
 
-        container_exec(container, '/build/%s' % build_sh,
-                       environment=env)
+        container_exec(container, "/build/%s" % build_sh, environment=env)
 
-        download_tools_archive(container,
-                               archive_path('clang', suffix),
-                               tools_path)
+        download_tools_archive(container, archive_path("clang", suffix), tools_path)
 
 
 def build_musl(client, image):
-    musl_archive = download_entry('musl', DOWNLOADS_PATH)
+    musl_archive = download_entry("musl", DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container)
-        copy_file_to_container(musl_archive, container, '/build')
-        copy_file_to_container(SUPPORT / 'build-musl.sh', container, '/build')
+        copy_file_to_container(musl_archive, container, "/build")
+        copy_file_to_container(SUPPORT / "build-musl.sh", container, "/build")
 
         env = {
-            'MUSL_VERSION': DOWNLOADS['musl']['version'],
-            'TOOLCHAIN': 'clang-linux64',
+            "MUSL_VERSION": DOWNLOADS["musl"]["version"],
+            "TOOLCHAIN": "clang-linux64",
         }
 
-        container_exec(container, '/build/build-musl.sh',
-                       environment=env)
+        container_exec(container, "/build/build-musl.sh", environment=env)
 
-        download_tools_archive(container,
-                               archive_path('musl', 'linux64'),
-                               'host')
+        download_tools_archive(container, archive_path("musl", "linux64"), "host")
 
 
 def build_libedit(client, image, platform, musl=False):
-    libedit_archive = download_entry('libedit', DOWNLOADS_PATH)
+    libedit_archive = download_entry("libedit", DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
 
         dep_platform = platform
         if musl:
-            dep_platform += '-musl'
+            dep_platform += "-musl"
 
-        install_tools_archive(container, archive_path('ncurses', platform, musl=musl))
-        copy_file_to_container(libedit_archive, container, '/build')
-        copy_file_to_container(SUPPORT / 'build-libedit.sh', container,
-                               '/build')
+        install_tools_archive(container, archive_path("ncurses", platform, musl=musl))
+        copy_file_to_container(libedit_archive, container, "/build")
+        copy_file_to_container(SUPPORT / "build-libedit.sh", container, "/build")
 
         env = {
-            'CC': 'clang',
-            'TOOLCHAIN': 'clang-linux64',
-            'LIBEDIT_VERSION': DOWNLOADS['libedit']['version'],
+            "CC": "clang",
+            "TOOLCHAIN": "clang-linux64",
+            "LIBEDIT_VERSION": DOWNLOADS["libedit"]["version"],
         }
 
         if musl:
-            env['CC'] = 'musl-clang'
+            env["CC"] = "musl-clang"
 
         add_target_env(env, platform)
 
-        container_exec(container, '/build/build-libedit.sh', environment=env)
-        download_tools_archive(container,
-                               archive_path('libedit', platform, musl=musl),
-                               'deps')
+        container_exec(container, "/build/build-libedit.sh", environment=env)
+        download_tools_archive(
+            container, archive_path("libedit", platform, musl=musl), "deps"
+        )
 
 
 def build_readline(client, image, platform, musl=False):
-    readline_archive = download_entry('readline', DOWNLOADS_PATH)
+    readline_archive = download_entry("readline", DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
 
         dep_platform = platform
         if musl:
-            dep_platform += '-musl'
+            dep_platform += "-musl"
 
-        install_tools_archive(container, archive_path('ncurses', platform, musl=musl))
-        copy_file_to_container(readline_archive, container, '/build')
-        copy_file_to_container(SUPPORT / 'build-readline.sh', container,
-                               '/build')
+        install_tools_archive(container, archive_path("ncurses", platform, musl=musl))
+        copy_file_to_container(readline_archive, container, "/build")
+        copy_file_to_container(SUPPORT / "build-readline.sh", container, "/build")
 
         env = {
-            'CC': 'clang',
-            'TOOLCHAIN': 'clang-linux64',
-            'READLINE_VERSION': DOWNLOADS['readline']['version'],
+            "CC": "clang",
+            "TOOLCHAIN": "clang-linux64",
+            "READLINE_VERSION": DOWNLOADS["readline"]["version"],
         }
 
         if musl:
-            env['CC'] = 'musl-clang'
+            env["CC"] = "musl-clang"
 
         add_target_env(env, platform)
 
-        container_exec(container, '/build/build-readline.sh',
-                       environment=env)
+        container_exec(container, "/build/build-readline.sh", environment=env)
 
-        download_tools_archive(container,
-                               archive_path('readline', platform, musl=musl),
-                               'deps')
+        download_tools_archive(
+            container, archive_path("readline", platform, musl=musl), "deps"
+        )
 
 
 def build_tix(client, image, platform, musl=False):
-    tcl_archive = download_entry('tcl', DOWNLOADS_PATH)
-    tk_archive = download_entry('tk', DOWNLOADS_PATH)
-    tix_archive = download_entry('tix', DOWNLOADS_PATH)
+    tcl_archive = download_entry("tcl", DOWNLOADS_PATH)
+    tk_archive = download_entry("tk", DOWNLOADS_PATH)
+    tix_archive = download_entry("tix", DOWNLOADS_PATH)
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
 
-        install_tools_archive(container, archive_path('tcl', platform, musl=musl))
-        install_tools_archive(container, archive_path('tk', platform, musl=musl))
-        install_tools_archive(container, archive_path('libX11', platform, musl=musl))
-        install_tools_archive(container, archive_path('xorgproto', platform, musl=musl))
+        install_tools_archive(container, archive_path("tcl", platform, musl=musl))
+        install_tools_archive(container, archive_path("tk", platform, musl=musl))
+        install_tools_archive(container, archive_path("libX11", platform, musl=musl))
+        install_tools_archive(container, archive_path("xorgproto", platform, musl=musl))
 
-        copy_file_to_container(tcl_archive, container, '/build')
-        copy_file_to_container(tk_archive, container, '/build')
-        copy_file_to_container(tix_archive, container, '/build')
-        copy_file_to_container(SUPPORT / 'build-tix.sh', container,
-                               '/build')
+        copy_file_to_container(tcl_archive, container, "/build")
+        copy_file_to_container(tk_archive, container, "/build")
+        copy_file_to_container(tix_archive, container, "/build")
+        copy_file_to_container(SUPPORT / "build-tix.sh", container, "/build")
 
         env = {
-            'CC': 'clang',
-            'TOOLCHAIN': 'clang-linux64',
-            'TCL_VERSION': DOWNLOADS['tcl']['version'],
-            'TIX_VERSION': DOWNLOADS['tix']['version'],
-            'TK_VERSION': DOWNLOADS['tk']['version'],
+            "CC": "clang",
+            "TOOLCHAIN": "clang-linux64",
+            "TCL_VERSION": DOWNLOADS["tcl"]["version"],
+            "TIX_VERSION": DOWNLOADS["tix"]["version"],
+            "TK_VERSION": DOWNLOADS["tk"]["version"],
         }
 
         if musl:
-            env['CC'] = 'musl-clang'
+            env["CC"] = "musl-clang"
 
         add_target_env(env, platform)
 
-        container_exec(container, '/build/build-tix.sh',
-                       environment=env)
+        container_exec(container, "/build/build-tix.sh", environment=env)
 
-        download_tools_archive(container,
-                               archive_path('tix', platform, musl=musl),
-                               'deps')
+        download_tools_archive(
+            container, archive_path("tix", platform, musl=musl), "deps"
+        )
 
 
 def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=False):
     """Obtain build metadata for the Python distribution."""
 
-    bi = {
-        'core': {
-            'objs': [],
-            'links': [],
-        },
-        'extensions': {}
-    }
+    bi = {"core": {"objs": [], "links": []}, "extensions": {}}
 
     # Object files for the core distribution are found by walking the
     # build artifacts.
@@ -387,36 +372,36 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
     modules_objs = set()
 
     res = container.exec_run(
-        ['/usr/bin/find', '/build/out/python/build', '-name', '*.o'],
-        user='build')
+        ["/usr/bin/find", "/build/out/python/build", "-name", "*.o"], user="build"
+    )
 
     for line in res[1].splitlines():
         if not line.strip():
             continue
 
         p = pathlib.Path(os.fsdecode(line))
-        rel_path = p.relative_to('/build/out/python')
+        rel_path = p.relative_to("/build/out/python")
 
-        if rel_path.parts[1] in ('Objects', 'Parser', 'Python'):
+        if rel_path.parts[1] in ("Objects", "Parser", "Python"):
             core_objs.add(rel_path)
 
-        if rel_path.parts[1] == 'Modules':
+        if rel_path.parts[1] == "Modules":
             modules_objs.add(rel_path)
 
     for p in sorted(core_objs):
-        log('adding core object file: %s' % p)
-        bi['core']['objs'].append(str(p))
+        log("adding core object file: %s" % p)
+        bi["core"]["objs"].append(str(p))
 
     libraries = set()
 
     for line in container.exec_run(
-        ['/usr/bin/find', '/build/out/python/build/lib', '-name', '*.a'],
-        user='build')[1].splitlines():
+        ["/usr/bin/find", "/build/out/python/build/lib", "-name", "*.a"], user="build"
+    )[1].splitlines():
 
         if not line.strip():
             continue
 
-        f = line[len('/build/out/python/build/lib/'):].decode('ascii')
+        f = line[len("/build/out/python/build/lib/") :].decode("ascii")
 
         # Strip "lib" prefix and ".a" suffix.
         libname = f[3:-2]
@@ -431,14 +416,14 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
         if not d:
             return
 
-        extension = d['extension']
-        log('processing extension %s (variant %s)' % (extension, d['variant']))
+        extension = d["extension"]
+        log("processing extension %s (variant %s)" % (extension, d["variant"]))
 
         objs = []
 
-        for obj in sorted(d['posix_obj_paths']):
-            obj = pathlib.Path('build') / obj
-            log('adding object file %s for extension %s' % (obj, extension))
+        for obj in sorted(d["posix_obj_paths"]):
+            obj = pathlib.Path("build") / obj
+            log("adding object file %s for extension %s" % (obj, extension))
             objs.append(str(obj))
 
             # Mark object file as used so we don't include it in the core
@@ -449,44 +434,38 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
 
         links = []
 
-        for libname in sorted(d['links']):
-            log('adding library %s for extension %s' % (libname, extension))
+        for libname in sorted(d["links"]):
+            log("adding library %s for extension %s" % (libname, extension))
 
             if libname in libraries:
-                entry = {
-                    'name': libname,
-                    'path_static': 'build/lib/lib%s.a' % libname,
-                }
+                entry = {"name": libname, "path_static": "build/lib/lib%s.a" % libname}
 
                 links.append(entry)
             else:
-                links.append({
-                    'name': libname,
-                    'system': True,
-                })
+                links.append({"name": libname, "system": True})
 
         entry = {
-            'in_core': False,
-            'init_fn': 'PyInit_%s' % extension,
-            'links': links,
-            'objs': objs,
-            'variant': d['variant'],
+            "in_core": False,
+            "init_fn": "PyInit_%s" % extension,
+            "links": links,
+            "objs": objs,
+            "variant": d["variant"],
         }
 
         if libressl:
-            ignore_keys = {'openssl'}
+            ignore_keys = {"openssl"}
         else:
-            ignore_keys = {'libressl'}
+            ignore_keys = {"libressl"}
 
         add_licenses_to_extension_entry(entry, ignore_keys=ignore_keys)
 
-        bi['extensions'].setdefault(extension, []).append(entry)
+        bi["extensions"].setdefault(extension, []).append(entry)
 
     found_start = False
 
     for line in setup_dist.splitlines():
         if not found_start:
-            if line.startswith(b'PYTHONPATH='):
+            if line.startswith(b"PYTHONPATH="):
                 found_start = True
                 continue
 
@@ -495,10 +474,10 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
         process_setup_line(line)
 
     for line in setup_local.splitlines():
-        if line.startswith(b'*static*'):
+        if line.startswith(b"*static*"):
             continue
 
-        if line.startswith(b'*disabled*'):
+        if line.startswith(b"*disabled*"):
             break
 
         process_setup_line(line)
@@ -506,18 +485,18 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
     # Extension variants are denoted by the presence of
     # Modules/VARIANT-<extension>-<variant>.data files that describe the
     # extension. Find those files and process them.
-    data, stat = container.get_archive('/build/out/python/build/Modules')
-    data = io.BytesIO(b''.join(data))
+    data, stat = container.get_archive("/build/out/python/build/Modules")
+    data = io.BytesIO(b"".join(data))
 
     tf = tarfile.open(fileobj=data)
 
     for ti in tf:
         basename = os.path.basename(ti.name)
 
-        if not basename.startswith('VARIANT-') or not basename.endswith('.data'):
+        if not basename.startswith("VARIANT-") or not basename.endswith(".data"):
             continue
 
-        variant = basename[:-5].split('-')[2]
+        variant = basename[:-5].split("-")[2]
         line = tf.extractfile(ti).read().strip()
         process_setup_line(line, variant=variant)
 
@@ -526,194 +505,215 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
     # distribution. Define extensions entries for these so downstream consumers
     # can register their PyInit_ functions.
     for name, init_fn in sorted(config_c_in.items()):
-        log('adding in-core extension %s' % name)
-        bi['extensions'].setdefault(name, []).append({
-            'in_core': True,
-            'init_fn': init_fn,
-            'links': [],
-            'objs': [],
-            'variant': 'default',
-        })
+        log("adding in-core extension %s" % name)
+        bi["extensions"].setdefault(name, []).append(
+            {
+                "in_core": True,
+                "init_fn": init_fn,
+                "links": [],
+                "objs": [],
+                "variant": "default",
+            }
+        )
 
-    for extension, entries in bi['extensions'].items():
+    for extension, entries in bi["extensions"].items():
         for entry in entries:
-            entry['required'] = extension in REQUIRED_EXTENSIONS
+            entry["required"] = extension in REQUIRED_EXTENSIONS
 
     # Any paths left in modules_objs are not part of any extension and are
     # instead part of the core distribution.
     for p in sorted(modules_objs):
-        log('adding core object file %s' % p)
-        bi['core']['objs'].append(str(p))
+        log("adding core object file %s" % p)
+        bi["core"]["objs"].append(str(p))
 
     return bi
 
 
-def build_cpython(client, image, platform, debug=False, optimized=False, musl=False,
-                  libressl=False, version=None):
+def build_cpython(
+    client,
+    image,
+    platform,
+    debug=False,
+    optimized=False,
+    musl=False,
+    libressl=False,
+    version=None,
+):
     """Build CPython in a Docker image'"""
-    entry_name = 'cpython-%s' % version
+    entry_name = "cpython-%s" % version
     entry = DOWNLOADS[entry_name]
 
     python_archive = download_entry(entry_name, DOWNLOADS_PATH)
-    setuptools_archive = download_entry('setuptools', DOWNLOADS_PATH)
-    pip_archive = download_entry('pip', DOWNLOADS_PATH)
+    setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
+    pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
-    with (SUPPORT / 'static-modules').open('rb') as fh:
-        static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b'#')]
+    with (SUPPORT / "static-modules").open("rb") as fh:
+        static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
 
-    setup = derive_setup_local(static_modules_lines, python_archive,
-                               python_version=entry['version'],
-                               musl=musl, debug=debug)
+    setup = derive_setup_local(
+        static_modules_lines,
+        python_archive,
+        python_version=entry["version"],
+        musl=musl,
+        debug=debug,
+    )
 
-    config_c_in = parse_config_c(setup['config_c_in'].decode('utf-8'))
-    setup_dist_content = setup['setup_dist']
-    setup_local_content = setup['setup_local']
-    extra_make_content = setup['make_data']
+    config_c_in = parse_config_c(setup["config_c_in"].decode("utf-8"))
+    setup_dist_content = setup["setup_dist"]
+    setup_local_content = setup["setup_local"]
+    extra_make_content = setup["make_data"]
 
     with run_container(client, image) as container:
         copy_toolchain(container, musl=musl)
 
         dep_platform = platform
         if musl:
-            dep_platform += '-musl'
+            dep_platform += "-musl"
 
         # TODO support bdb/gdbm toggle
-        install_tools_archive(container, archive_path('bdb', platform, musl=musl))
-        install_tools_archive(container, archive_path('bzip2', platform, musl=musl))
-        install_tools_archive(container, archive_path('libedit', platform, musl=musl))
-        install_tools_archive(container, archive_path('libffi', platform, musl=musl))
-        install_tools_archive(container, archive_path('libX11', platform, musl=musl))
-        install_tools_archive(container, archive_path('libXau', platform, musl=musl))
-        install_tools_archive(container, archive_path('libxcb', platform, musl=musl))
-        install_tools_archive(container, archive_path('ncurses', platform, musl=musl))
+        install_tools_archive(container, archive_path("bdb", platform, musl=musl))
+        install_tools_archive(container, archive_path("bzip2", platform, musl=musl))
+        install_tools_archive(container, archive_path("libedit", platform, musl=musl))
+        install_tools_archive(container, archive_path("libffi", platform, musl=musl))
+        install_tools_archive(container, archive_path("libX11", platform, musl=musl))
+        install_tools_archive(container, archive_path("libXau", platform, musl=musl))
+        install_tools_archive(container, archive_path("libxcb", platform, musl=musl))
+        install_tools_archive(container, archive_path("ncurses", platform, musl=musl))
 
         if libressl:
-            install_tools_archive(container, archive_path('libressl', platform, musl=musl))
+            install_tools_archive(
+                container, archive_path("libressl", platform, musl=musl)
+            )
         else:
-            install_tools_archive(container, archive_path('openssl', platform, musl=musl))
+            install_tools_archive(
+                container, archive_path("openssl", platform, musl=musl)
+            )
 
-        install_tools_archive(container, archive_path('readline', platform, musl=musl))
-        install_tools_archive(container, archive_path('sqlite', platform, musl=musl))
-        install_tools_archive(container, archive_path('tcl', platform, musl=musl))
-        install_tools_archive(container, archive_path('tix', platform, musl=musl))
-        install_tools_archive(container, archive_path('tk', platform, musl=musl))
-        install_tools_archive(container, archive_path('uuid', platform, musl=musl))
-        install_tools_archive(container, archive_path('xorgproto', platform, musl=musl))
-        install_tools_archive(container, archive_path('xz', platform, musl=musl))
-        install_tools_archive(container, archive_path('zlib', platform, musl=musl))
-        #copy_rust(container)
-        copy_file_to_container(python_archive, container, '/build')
-        copy_file_to_container(setuptools_archive, container, '/build')
-        copy_file_to_container(pip_archive, container, '/build')
-        copy_file_to_container(SUPPORT / 'build-cpython.sh', container,
-                               '/build')
+        install_tools_archive(container, archive_path("readline", platform, musl=musl))
+        install_tools_archive(container, archive_path("sqlite", platform, musl=musl))
+        install_tools_archive(container, archive_path("tcl", platform, musl=musl))
+        install_tools_archive(container, archive_path("tix", platform, musl=musl))
+        install_tools_archive(container, archive_path("tk", platform, musl=musl))
+        install_tools_archive(container, archive_path("uuid", platform, musl=musl))
+        install_tools_archive(container, archive_path("xorgproto", platform, musl=musl))
+        install_tools_archive(container, archive_path("xz", platform, musl=musl))
+        install_tools_archive(container, archive_path("zlib", platform, musl=musl))
+        # copy_rust(container)
+        copy_file_to_container(python_archive, container, "/build")
+        copy_file_to_container(setuptools_archive, container, "/build")
+        copy_file_to_container(pip_archive, container, "/build")
+        copy_file_to_container(SUPPORT / "build-cpython.sh", container, "/build")
 
         for f in sorted(os.listdir(ROOT)):
-            if f.startswith('LICENSE.') and f.endswith('.txt'):
-                copy_file_to_container(ROOT / f, container, '/build')
+            if f.startswith("LICENSE.") and f.endswith(".txt"):
+                copy_file_to_container(ROOT / f, container, "/build")
 
         # TODO copy latest pip/setuptools.
 
-        with tempfile.NamedTemporaryFile('wb') as fh:
+        with tempfile.NamedTemporaryFile("wb") as fh:
             fh.write(setup_local_content)
             fh.flush()
 
-            copy_file_to_container(fh.name, container,
-                                   '/build',
-                                   archive_path='Setup.local')
+            copy_file_to_container(
+                fh.name, container, "/build", archive_path="Setup.local"
+            )
 
-        with tempfile.NamedTemporaryFile('wb') as fh:
+        with tempfile.NamedTemporaryFile("wb") as fh:
             fh.write(extra_make_content)
             fh.flush()
 
-            copy_file_to_container(fh.name, container,
-                                   '/build',
-                                   archive_path='Makefile.extra')
+            copy_file_to_container(
+                fh.name, container, "/build", archive_path="Makefile.extra"
+            )
 
         env = {
-            'CC': 'clang',
-            'PIP_VERSION': DOWNLOADS['pip']['version'],
-            'PYTHON_VERSION': entry['version'],
-            'PYTHON_MAJMIN_VERSION': entry['version'][:3],
-            'SETUPTOOLS_VERSION': DOWNLOADS['setuptools']['version'],
+            "CC": "clang",
+            "PIP_VERSION": DOWNLOADS["pip"]["version"],
+            "PYTHON_VERSION": entry["version"],
+            "PYTHON_MAJMIN_VERSION": entry["version"][:3],
+            "SETUPTOOLS_VERSION": DOWNLOADS["setuptools"]["version"],
         }
 
         if musl:
-            env['CC'] = 'musl-clang'
+            env["CC"] = "musl-clang"
 
         if debug:
-            env['CPYTHON_DEBUG'] = '1'
+            env["CPYTHON_DEBUG"] = "1"
         if optimized:
-            env['CPYTHON_OPTIMIZED'] = '1'
+            env["CPYTHON_OPTIMIZED"] = "1"
 
-        container_exec(container, '/build/build-cpython.sh',
-                       environment=env)
+        container_exec(container, "/build/build-cpython.sh", environment=env)
 
-        fully_qualified_name = 'python%s%sm' % (
-            entry['version'][0:3], 'd' if debug else ''
+        fully_qualified_name = "python%s%sm" % (
+            entry["version"][0:3],
+            "d" if debug else "",
         )
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            'version': '3',
-            'os': 'linux',
-            'arch': 'x86_64',
-            'python_flavor': 'cpython',
-            'python_version': entry['version'],
-            'python_exe': 'install/bin/%s' % fully_qualified_name,
-            'python_include': 'install/include/%s' % fully_qualified_name,
-            'python_stdlib': 'install/lib/python%s' % entry['version'][0:3],
-            'build_info': python_build_info(container, config_c_in,
-                                            setup_dist_content, setup_local_content,
-                                            libressl=libressl),
-            'licenses': entry['licenses'],
-            'license_path': 'licenses/LICENSE.cpython.txt',
-            'tcl_library_path': 'install/lib/tcl',
+            "version": "3",
+            "os": "linux",
+            "arch": "x86_64",
+            "python_flavor": "cpython",
+            "python_version": entry["version"],
+            "python_exe": "install/bin/%s" % fully_qualified_name,
+            "python_include": "install/include/%s" % fully_qualified_name,
+            "python_stdlib": "install/lib/python%s" % entry["version"][0:3],
+            "build_info": python_build_info(
+                container,
+                config_c_in,
+                setup_dist_content,
+                setup_local_content,
+                libressl=libressl,
+            ),
+            "licenses": entry["licenses"],
+            "license_path": "licenses/LICENSE.cpython.txt",
+            "tcl_library_path": "install/lib/tcl",
         }
 
-        with tempfile.NamedTemporaryFile('w') as fh:
+        with tempfile.NamedTemporaryFile("w") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
             fh.flush()
 
-            copy_file_to_container(fh.name, container,
-                                   '/build/out/python',
-                                   archive_path='PYTHON.json')
+            copy_file_to_container(
+                fh.name, container, "/build/out/python", archive_path="PYTHON.json"
+            )
 
-        basename = 'cpython-%s-%s' % (entry['version'], platform)
+        basename = "cpython-%s-%s" % (entry["version"], platform)
 
         if musl:
-            basename += '-musl'
+            basename += "-musl"
         if debug:
-            basename += '-debug'
+            basename += "-debug"
         if optimized:
-            basename += '-pgo'
+            basename += "-pgo"
 
-        basename += '.tar'
+        basename += ".tar"
 
         dest_path = BUILD / basename
-        data = container_get_archive(container, '/build/out/python')
+        data = container_get_archive(container, "/build/out/python")
 
-        with dest_path.open('wb') as fh:
+        with dest_path.open("wb") as fh:
             fh.write(data)
 
 
 def main():
     BUILD.mkdir(exist_ok=True)
     DOWNLOADS_PATH.mkdir(exist_ok=True)
-    (BUILD / 'logs').mkdir(exist_ok=True)
+    (BUILD / "logs").mkdir(exist_ok=True)
 
     try:
         client = docker.from_env()
         client.ping()
     except Exception as e:
-        print('unable to connect to Docker: %s' % e)
+        print("unable to connect to Docker: %s" % e)
         return 1
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--platform')
-    parser.add_argument('--optimized', action='store_true')
-    parser.add_argument('action')
+    parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--platform")
+    parser.add_argument("--optimized", action="store_true")
+    parser.add_argument("action")
 
     args = parser.parse_args()
 
@@ -721,118 +721,178 @@ def main():
 
     name = action
     if args.platform:
-        name += '-%s' % args.platform
+        name += "-%s" % args.platform
     if args.debug:
-        name += '-debug'
+        name += "-debug"
     if args.optimized:
-        name += '-pgo'
+        name += "-pgo"
 
     platform = args.platform
     musl = False
 
-    if platform and platform.endswith('-musl'):
+    if platform and platform.endswith("-musl"):
         musl = True
         platform = platform[:-5]
 
-    log_path = BUILD / 'logs'/ ('build.%s.log' % name)
+    log_path = BUILD / "logs" / ("build.%s.log" % name)
 
-    with log_path.open('wb') as log_fh:
+    with log_path.open("wb") as log_fh:
         set_logger(name, log_fh)
-        if action == 'versions':
-            write_package_versions(BUILD / 'versions')
+        if action == "versions":
+            write_package_versions(BUILD / "versions")
 
-        elif action.startswith('image-'):
+        elif action.startswith("image-"):
             build_docker_image(client, ROOT, BUILD, action[6:])
 
-        elif action == 'binutils':
-            build_binutils(client, get_image(client, ROOT, BUILD, 'gcc'))
+        elif action == "binutils":
+            build_binutils(client, get_image(client, ROOT, BUILD, "gcc"))
 
-        elif action == 'clang':
-            build_clang(client, get_image(client, ROOT, BUILD, 'clang'))
+        elif action == "clang":
+            build_clang(client, get_image(client, ROOT, BUILD, "clang"))
 
-        elif action == 'gcc':
-            build_gcc(client, get_image(client, ROOT, BUILD, 'gcc'))
+        elif action == "gcc":
+            build_gcc(client, get_image(client, ROOT, BUILD, "gcc"))
 
-        elif action == 'musl':
-            build_musl(client, get_image(client, ROOT, BUILD, 'gcc'))
+        elif action == "musl":
+            build_musl(client, get_image(client, ROOT, BUILD, "gcc"))
 
-        elif action == 'libedit':
-            build_libedit(client, get_image(client, ROOT, BUILD, 'build'), platform=platform,
-                          musl=musl)
+        elif action == "libedit":
+            build_libedit(
+                client,
+                get_image(client, ROOT, BUILD, "build"),
+                platform=platform,
+                musl=musl,
+            )
 
-        elif action == 'readline':
-            build_readline(client, get_image(client, ROOT, BUILD, 'build'), platform=platform,
-                           musl=musl)
+        elif action == "readline":
+            build_readline(
+                client,
+                get_image(client, ROOT, BUILD, "build"),
+                platform=platform,
+                musl=musl,
+            )
 
-        elif action in ('bdb', 'bzip2', 'gdbm', 'inputproto', 'kbproto', 'libffi',
-                        'libpthread-stubs', 'libressl',
-                        'ncurses', 'openssl', 'sqlite', 'tcl', 'uuid', 'x11-util-macros',
-                        'xextproto', 'xorgproto', 'xproto', 'xtrans', 'xz', 'zlib'):
-            simple_build(client, get_image(client, ROOT, BUILD, 'build'), action, platform=platform,
-                         musl=musl)
+        elif action in (
+            "bdb",
+            "bzip2",
+            "gdbm",
+            "inputproto",
+            "kbproto",
+            "libffi",
+            "libpthread-stubs",
+            "libressl",
+            "ncurses",
+            "openssl",
+            "sqlite",
+            "tcl",
+            "uuid",
+            "x11-util-macros",
+            "xextproto",
+            "xorgproto",
+            "xproto",
+            "xtrans",
+            "xz",
+            "zlib",
+        ):
+            simple_build(
+                client,
+                get_image(client, ROOT, BUILD, "build"),
+                action,
+                platform=platform,
+                musl=musl,
+            )
 
-        elif action == 'libX11':
-            simple_build(client, get_image(client, ROOT, BUILD, 'build'), action,
-                         platform=platform,
-                         musl=musl,
-                         extra_archives={
-                             'inputproto',
-                             'kbproto',
-                             'libpthread-stubs',
-                             'libXau',
-                             'libxcb',
-                             'x11-util-macros',
-                             'xextproto',
-                             'xorgproto',
-                             'xproto',
-                             'xtrans',
-                         })
+        elif action == "libX11":
+            simple_build(
+                client,
+                get_image(client, ROOT, BUILD, "build"),
+                action,
+                platform=platform,
+                musl=musl,
+                extra_archives={
+                    "inputproto",
+                    "kbproto",
+                    "libpthread-stubs",
+                    "libXau",
+                    "libxcb",
+                    "x11-util-macros",
+                    "xextproto",
+                    "xorgproto",
+                    "xproto",
+                    "xtrans",
+                },
+            )
 
-        elif action == 'libXau':
-            simple_build(client, get_image(client, ROOT, BUILD, 'build'), action, platform=platform,
-                         musl=musl, extra_archives={'x11-util-macros', 'xproto'})
+        elif action == "libXau":
+            simple_build(
+                client,
+                get_image(client, ROOT, BUILD, "build"),
+                action,
+                platform=platform,
+                musl=musl,
+                extra_archives={"x11-util-macros", "xproto"},
+            )
 
-        elif action == 'xcb-proto':
-            simple_build(client, get_image(client, ROOT, BUILD, 'xcb'), action, platform=platform,
-                         musl=musl)
+        elif action == "xcb-proto":
+            simple_build(
+                client,
+                get_image(client, ROOT, BUILD, "xcb"),
+                action,
+                platform=platform,
+                musl=musl,
+            )
 
-        elif action == 'libxcb':
-            simple_build(client, get_image(client, ROOT, BUILD, 'xcb'), action, platform=platform,
-                         musl=musl,
-                         extra_archives={
-                             'libpthread-stubs',
-                             'libXau',
-                             'xcb-proto',
-                             'xproto',
-                         })
+        elif action == "libxcb":
+            simple_build(
+                client,
+                get_image(client, ROOT, BUILD, "xcb"),
+                action,
+                platform=platform,
+                musl=musl,
+                extra_archives={"libpthread-stubs", "libXau", "xcb-proto", "xproto"},
+            )
 
-        elif action == 'tix':
-            build_tix(client, get_image(client, ROOT, BUILD, 'build'),
-                      platform=platform, musl=musl)
+        elif action == "tix":
+            build_tix(
+                client,
+                get_image(client, ROOT, BUILD, "build"),
+                platform=platform,
+                musl=musl,
+            )
 
-        elif action == 'tk':
-            simple_build(client, get_image(client, ROOT, BUILD, 'xcb'), action,
-                         platform=platform,
-                         musl=musl,
-                         extra_archives={
-                             'tcl',
-                             'libX11',
-                             'libXau',
-                             'libxcb',
-                             'xcb-proto',
-                             'xorgproto',
-                         })
+        elif action == "tk":
+            simple_build(
+                client,
+                get_image(client, ROOT, BUILD, "xcb"),
+                action,
+                platform=platform,
+                musl=musl,
+                extra_archives={
+                    "tcl",
+                    "libX11",
+                    "libXau",
+                    "libxcb",
+                    "xcb-proto",
+                    "xorgproto",
+                },
+            )
 
-        elif action == 'cpython':
-            build_cpython(client, get_image(client, ROOT, BUILD, 'build'), platform=platform,
-                          musl=musl, debug=args.debug, optimized=args.optimized,
-                          libressl='PYBUILD_LIBRESSL' in os.environ,
-                          version=os.environ['PYBUILD_PYTHON_VERSION'][0:3])
+        elif action == "cpython":
+            build_cpython(
+                client,
+                get_image(client, ROOT, BUILD, "build"),
+                platform=platform,
+                musl=musl,
+                debug=args.debug,
+                optimized=args.optimized,
+                libressl="PYBUILD_LIBRESSL" in os.environ,
+                version=os.environ["PYBUILD_PYTHON_VERSION"][0:3],
+            )
 
         else:
-            print('unknown build action: %s' % action)
+            print("unknown build action: %s" % action)
             return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

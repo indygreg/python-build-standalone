@@ -7,14 +7,8 @@ import pathlib
 import shutil
 import tempfile
 
-from .docker import (
-    container_exec,
-    container_get_archive,
-    copy_file_to_container,
-)
-from .logging import (
-    log,
-)
+from .docker import container_exec, container_get_archive, copy_file_to_container
+from .logging import log
 
 
 class ContainerContext(object):
@@ -23,19 +17,16 @@ class ContainerContext(object):
 
     def copy_file(self, source: pathlib.Path, dest_path, dest_name=None):
         dest_name = dest_name or source.name
-        copy_file_to_container(source,
-                               self.container,
-                               dest_path,
-                               dest_name)
+        copy_file_to_container(source, self.container, dest_path, dest_name)
 
     def exec(self, program, environment=None):
         container_exec(self.container, program, environment=environment)
 
     def get_tools_archive(self, dest, name):
-        log('copying container files to %s' % dest)
-        data = container_get_archive(self.container, '/build/out/tools/%s' % name)
+        log("copying container files to %s" % dest)
+        data = container_get_archive(self.container, "/build/out/tools/%s" % name)
 
-        with open(dest, 'wb') as fh:
+        with open(dest, "wb") as fh:
             fh.write(data)
 
 
@@ -44,13 +35,12 @@ class TempdirContext(object):
         self.td = pathlib.Path(td)
 
     def copy_file(self, source: pathlib.Path, dest_path, dest_name=None):
-        dest_path = dest_path.lstrip('/')
+        dest_path = dest_path.lstrip("/")
         dest_dir = self.td / dest_path
         dest_dir.mkdir(exist_ok=True)
 
         dest_name = dest_name or source.name
-        log('copying %s to %s/%s' % (
-            source, dest_dir, dest_name))
+        log("copying %s to %s/%s" % (source, dest_dir, dest_name))
         shutil.copyfile(source, dest_dir / dest_name)
 
 
@@ -58,7 +48,8 @@ class TempdirContext(object):
 def build_environment(client, image):
     if client is not None:
         container = client.containers.run(
-            image, command=['/bin/sleep', '86400'], detach=True)
+            image, command=["/bin/sleep", "86400"], detach=True
+        )
         td = None
         context = ContainerContext(container)
     else:

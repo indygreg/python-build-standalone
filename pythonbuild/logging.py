@@ -13,16 +13,16 @@ def set_logger(prefix, fh):
 
 def log(msg):
     if isinstance(msg, bytes):
-        msg_str = msg.decode('utf-8', 'replace')
+        msg_str = msg.decode("utf-8", "replace")
         msg_bytes = msg
     else:
         msg_str = msg
-        msg_bytes = msg.encode('utf-8', 'replace')
+        msg_bytes = msg.encode("utf-8", "replace")
 
-    print('%s> %s' % (LOG_PREFIX[0], msg_str))
+    print("%s> %s" % (LOG_PREFIX[0], msg_str))
 
     if LOG_FH[0]:
-        LOG_FH[0].write(msg_bytes + b'\n')
+        LOG_FH[0].write(msg_bytes + b"\n")
 
 
 def log_raw(data):

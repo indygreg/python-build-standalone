@@ -12,13 +12,13 @@ import venv
 
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent
-BUILD = ROOT / 'build'
-DIST = ROOT / 'dist'
-VENV = BUILD / 'venv'
-PIP = VENV / 'Scripts' / 'pip.exe'
-PYTHON = VENV / 'Scripts' / 'python.exe'
-REQUIREMENTS = ROOT / 'requirements.win.txt'
-WINDOWS_DIR = ROOT / 'cpython-windows'
+BUILD = ROOT / "build"
+DIST = ROOT / "dist"
+VENV = BUILD / "venv"
+PIP = VENV / "Scripts" / "pip.exe"
+PYTHON = VENV / "Scripts" / "python.exe"
+REQUIREMENTS = ROOT / "requirements.win.txt"
+WINDOWS_DIR = ROOT / "cpython-windows"
 
 
 def bootstrap():
@@ -27,12 +27,11 @@ def bootstrap():
 
     venv.create(VENV, with_pip=True)
 
-    subprocess.run([str(PIP), 'install', '-r', str(REQUIREMENTS)],
-                   check=True)
+    subprocess.run([str(PIP), "install", "-r", str(REQUIREMENTS)], check=True)
 
-    os.environ['PYBUILD_BOOTSTRAPPED'] = '1'
-    os.environ['PATH'] = '%s;%s' % (str(VENV / 'bin'), os.environ['PATH'])
-    os.environ['PYTHONPATH'] = str(ROOT)
+    os.environ["PYBUILD_BOOTSTRAPPED"] = "1"
+    os.environ["PATH"] = "%s;%s" % (str(VENV / "bin"), os.environ["PATH"])
+    os.environ["PYTHONPATH"] = str(ROOT)
     subprocess.run([str(PYTHON), __file__], check=True)
 
 
@@ -43,23 +42,27 @@ def run():
     now = datetime.datetime.utcnow()
 
     env = dict(os.environ)
-    env['PYTHONUNBUFFERED'] = '1'
+    env["PYTHONUNBUFFERED"] = "1"
 
-    arch = 'x86' if os.environ.get('Platform') == 'x86' else 'amd64'
+    arch = "x86" if os.environ.get("Platform") == "x86" else "amd64"
 
-    subprocess.run([str(PYTHON), 'build.py'],
-                   cwd=str(WINDOWS_DIR), env=env, check=True,
-                   bufsize=0)
+    subprocess.run(
+        [str(PYTHON), "build.py"], cwd=str(WINDOWS_DIR), env=env, check=True, bufsize=0
+    )
 
-    source_path = BUILD / ('cpython-windows-%s.tar' % arch)
+    source_path = BUILD / ("cpython-windows-%s.tar" % arch)
 
-    compress_python_archive(source_path, DIST, 'cpython-%s-windows-%s-%s' % (
-        DOWNLOADS['cpython-3.7']['version'], arch, now.strftime('%Y%m%dT%H%M')))
+    compress_python_archive(
+        source_path,
+        DIST,
+        "cpython-%s-windows-%s-%s"
+        % (DOWNLOADS["cpython-3.7"]["version"], arch, now.strftime("%Y%m%dT%H%M")),
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
-        if 'PYBUILD_BOOTSTRAPPED' not in os.environ:
+        if "PYBUILD_BOOTSTRAPPED" not in os.environ:
             bootstrap()
         else:
             run()
