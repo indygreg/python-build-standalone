@@ -34,7 +34,7 @@ from pythonbuild.utils import (
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / 'build'
 DOWNLOADS_PATH = BUILD / 'downloads'
-SUPPORT = ROOT / 'cpython-linux'
+SUPPORT = ROOT / 'cpython-unix'
 
 LOG_PREFIX = [None]
 LOG_FH = [None]
@@ -97,7 +97,7 @@ def build_docker_image(client, name):
     image_path = BUILD / ('image-%s' % name)
 
     env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(str(ROOT / 'cpython-linux')))
+        loader=jinja2.FileSystemLoader(str(ROOT / 'cpython-unix')))
 
     tmpl = env.get_template('%s.Dockerfile' % name)
     data = tmpl.render()

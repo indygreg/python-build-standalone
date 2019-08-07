@@ -1,5 +1,5 @@
 ROOT := $(abspath $(CURDIR)/..)
-HERE := $(ROOT)/cpython-linux
+HERE := $(ROOT)/cpython-unix
 OUTDIR := $(ROOT)/build
 
 BUILD := $(HERE)/build.py

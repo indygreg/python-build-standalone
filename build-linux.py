@@ -19,7 +19,7 @@ VENV = BUILD / 'venv'
 PIP = VENV / 'bin' / 'pip'
 PYTHON = VENV / 'bin' / 'python'
 REQUIREMENTS = ROOT / 'requirements.txt'
-MAKE_DIR = ROOT / 'cpython-linux'
+MAKE_DIR = ROOT / 'cpython-unix'
 
 
 def bootstrap():
