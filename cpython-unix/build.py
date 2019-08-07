@@ -55,8 +55,8 @@ REQUIRED_EXTENSIONS = {
 }
 
 
-def get_image(client, name):
-    image_path = BUILD / ('image-%s' % name)
+def get_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
+    image_path = image_dir / ('image-%s' % name)
     tar_path = image_path.with_suffix('.tar')
 
     with image_path.open('r') as fh:
@@ -74,7 +74,7 @@ def get_image(client, name):
             return image_id
 
         else:
-            return build_docker_image(client, ROOT, BUILD, name)
+            return build_docker_image(client, source_dir, image_dir, name)
 
 
 def copy_file_to_container(path, container, container_path, archive_path=None):
@@ -837,34 +837,34 @@ def main():
             build_docker_image(client, ROOT, BUILD, action[6:])
 
         elif action == 'binutils':
-            build_binutils(client, get_image(client, 'gcc'))
+            build_binutils(client, get_image(client, ROOT, BUILD, 'gcc'))
 
         elif action == 'clang':
-            build_clang(client, get_image(client, 'clang'))
+            build_clang(client, get_image(client, ROOT, BUILD, 'clang'))
 
         elif action == 'gcc':
-            build_gcc(client, get_image(client, 'gcc'))
+            build_gcc(client, get_image(client, ROOT, BUILD, 'gcc'))
 
         elif action == 'musl':
-            build_musl(client, get_image(client, 'gcc'))
+            build_musl(client, get_image(client, ROOT, BUILD, 'gcc'))
 
         elif action == 'libedit':
-            build_libedit(client, get_image(client, 'build'), platform=platform,
+            build_libedit(client, get_image(client, ROOT, BUILD, 'build'), platform=platform,
                           musl=musl)
 
         elif action == 'readline':
-            build_readline(client, get_image(client, 'build'), platform=platform,
+            build_readline(client, get_image(client, ROOT, BUILD, 'build'), platform=platform,
                            musl=musl)
 
         elif action in ('bdb', 'bzip2', 'gdbm', 'inputproto', 'kbproto', 'libffi',
                         'libpthread-stubs', 'libressl',
                         'ncurses', 'openssl', 'sqlite', 'tcl', 'uuid', 'x11-util-macros',
                         'xextproto', 'xorgproto', 'xproto', 'xtrans', 'xz', 'zlib'):
-            simple_build(client, get_image(client, 'build'), action, platform=platform,
+            simple_build(client, get_image(client, ROOT, BUILD, 'build'), action, platform=platform,
                          musl=musl)
 
         elif action == 'libX11':
-            simple_build(client, get_image(client, 'build'), action,
+            simple_build(client, get_image(client, ROOT, BUILD, 'build'), action,
                          platform=platform,
                          musl=musl,
                          extra_archives={
@@ -881,15 +881,15 @@ def main():
                          })
 
         elif action == 'libXau':
-            simple_build(client, get_image(client, 'build'), action, platform=platform,
+            simple_build(client, get_image(client, ROOT, BUILD, 'build'), action, platform=platform,
                          musl=musl, extra_archives={'x11-util-macros', 'xproto'})
 
         elif action == 'xcb-proto':
-            simple_build(client, get_image(client, 'xcb'), action, platform=platform,
+            simple_build(client, get_image(client, ROOT, BUILD, 'xcb'), action, platform=platform,
                          musl=musl)
 
         elif action == 'libxcb':
-            simple_build(client, get_image(client, 'xcb'), action, platform=platform,
+            simple_build(client, get_image(client, ROOT, BUILD, 'xcb'), action, platform=platform,
                          musl=musl,
                          extra_archives={
                              'libpthread-stubs',
@@ -899,11 +899,11 @@ def main():
                          })
 
         elif action == 'tix':
-            build_tix(client, get_image(client, 'build'),
+            build_tix(client, get_image(client, ROOT, BUILD, 'build'),
                       platform=platform, musl=musl)
 
         elif action == 'tk':
-            simple_build(client, get_image(client, 'xcb'), action,
+            simple_build(client, get_image(client, ROOT, BUILD, 'xcb'), action,
                          platform=platform,
                          musl=musl,
                          extra_archives={
@@ -916,7 +916,7 @@ def main():
                          })
 
         elif action == 'cpython':
-            build_cpython(client, get_image(client, 'build'), platform=platform,
+            build_cpython(client, get_image(client, ROOT, BUILD, 'build'), platform=platform,
                           musl=musl, debug=args.debug, optimized=args.optimized,
                           libressl='PYBUILD_LIBRESSL' in os.environ,
                           version=os.environ['PYBUILD_PYTHON_VERSION'][0:3])
