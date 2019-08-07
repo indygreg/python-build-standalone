@@ -11,6 +11,8 @@ COMMON_DEPENDS := \
 
 PLATFORM := linux64
 
+BASE_PLATFORM := $(PLATFORM)
+
 ifdef PYBUILD_MUSL
     PLATFORM := $(PLATFORM)-musl
 endif
@@ -30,9 +32,9 @@ $(shell $(BUILD) versions)
 include $(OUTDIR)/versions/VERSION.*
 
 BASE_TOOLCHAIN_DEPENDS := \
-    $(OUTDIR)/binutils-$(BINUTILS_VERSION)-linux64.tar \
-    $(OUTDIR)/gcc-$(GCC_VERSION)-linux64.tar \
-    $(OUTDIR)/clang-$(CLANG_VERSION)-linux64.tar \
+    $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar \
+    $(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar \
+    $(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar \
     $(NULL)
 
 TOOLCHAIN_DEPENDS := \
@@ -50,13 +52,13 @@ default: $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)$(DEFAULT_EXTRA)
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
 	$(BUILD) image-$*
 
-$(OUTDIR)/binutils-$(BINUTILS_VERSION)-linux64.tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
+$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
 	$(BUILD) binutils
 
-$(OUTDIR)/gcc-$(GCC_VERSION)-linux64.tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-linux64.tar $(HERE)/build-gcc.sh
+$(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar $(HERE)/build-gcc.sh
 	$(BUILD) gcc
 
-$(OUTDIR)/clang-$(CLANG_VERSION)-linux64.tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-linux64.tar $(OUTDIR)/gcc-$(GCC_VERSION)-linux64.tar $(OUTDIR)/image-clang.tar $(HERE)/build-clang.sh
+$(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar $(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar $(OUTDIR)/image-clang.tar $(HERE)/build-clang.sh
 	$(BUILD) clang
 
 $(OUTDIR)/musl-$(MUSL_VERSION)-linux64.tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
