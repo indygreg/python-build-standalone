@@ -172,20 +172,19 @@ def build_gcc(client, image):
     mpc_archive = download_entry('mpc', DOWNLOADS_PATH)
     mpfr_archive = download_entry('mpfr', DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
+    with build_environment(client, image) as build_env:
         log('copying archives to container...')
         for a in (gcc_archive, gmp_archive, isl_archive, mpc_archive,
                   mpfr_archive):
-            copy_file_to_container(a, container, '/build')
+            build_env.copy_file(a, '/build')
 
-        copy_file_to_container(archive_path('binutils', 'linux64'),
-                               container,
-                               '/build')
-        copy_file_to_container(SUPPORT / 'build-gcc.sh', container,
-                               '/build')
+        build_env.copy_file(archive_path('binutils', 'linux64'),
+                            '/build')
+        build_env.copy_file(SUPPORT / 'build-gcc.sh',
+                            '/build')
 
-        container_exec(
-            container, '/build/build-gcc.sh',
+        build_env.exec(
+            '/build/build-gcc.sh',
             environment={
                 'BINUTILS_VERSION': DOWNLOADS['binutils']['version'],
                 'GCC_VERSION': DOWNLOADS['gcc']['version'],
@@ -195,9 +194,7 @@ def build_gcc(client, image):
                 'MPFR_VERSION': DOWNLOADS['mpfr']['version'],
             })
 
-        download_tools_archive(container,
-                               archive_path('gcc', 'linux64'),
-                               'host')
+        build_env.get_tools_archive(archive_path('gcc', 'linux64'), 'host')
 
 
 def build_clang(client, image):
