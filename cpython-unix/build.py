@@ -4,10 +4,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import argparse
-import contextlib
 import io
 import json
-import operator
 import os
 import pathlib
 import sys
@@ -23,13 +21,16 @@ from pythonbuild.cpython import (
 )
 from pythonbuild.docker import (
     build_docker_image,
+    container_exec,
+    container_get_archive,
+    copy_file_to_container,
     get_image,
+    run_container,
 )
 from pythonbuild.downloads import (
     DOWNLOADS,
 )
 from pythonbuild.logging import (
-    log_raw,
     log,
     set_logger,
 )
@@ -54,76 +55,6 @@ REQUIRED_EXTENSIONS = {
     'faulthandler',
     'posix',
 }
-
-
-def copy_file_to_container(path, container, container_path, archive_path=None):
-    """Copy a path on the local filesystem to a running container."""
-    buf = io.BytesIO()
-    tf = tarfile.open('irrelevant', 'w', buf)
-
-    dest_path = archive_path or path.name
-    tf.add(str(path), dest_path)
-    tf.close()
-
-    log('copying %s to container:%s/%s' % (path, container_path, dest_path))
-    container.put_archive(container_path, buf.getvalue())
-
-
-@contextlib.contextmanager
-def run_container(client, image):
-    container = client.containers.run(
-        image, command=['/bin/sleep', '86400'], detach=True)
-    try:
-        yield container
-    finally:
-        container.stop(timeout=0)
-        container.remove()
-
-
-def container_exec(container, command, user='build',
-                   environment=None):
-    # docker-py's exec_run() won't return the exit code. So we reinvent the
-    # wheel.
-    create_res = container.client.api.exec_create(
-        container.id, command, user=user, environment=environment)
-
-    exec_output = container.client.api.exec_start(create_res['Id'], stream=True)
-
-    for chunk in exec_output:
-        for l in chunk.strip().splitlines():
-            log(l)
-
-        log_raw(chunk)
-
-    inspect_res = container.client.api.exec_inspect(create_res['Id'])
-
-    if inspect_res['ExitCode'] != 0:
-        raise Exception('exit code %d from %s' % (inspect_res['ExitCode'],
-                                                  command))
-
-
-# 2019-01-01T00:00:00
-DEFAULT_MTIME = 1546329600
-
-
-def container_get_archive(container, path):
-    """Get a deterministic tar archive from a container."""
-    data, stat = container.get_archive(path)
-    old_data = io.BytesIO()
-    for chunk in data:
-        old_data.write(chunk)
-
-    old_data.seek(0)
-
-    new_data = io.BytesIO()
-
-    with tarfile.open(fileobj=old_data) as itf, tarfile.open(fileobj=new_data, mode='w') as otf:
-        for member in sorted(itf.getmembers(), key=operator.attrgetter('name')):
-            file_data = itf.extractfile(member) if not member.linkname else None
-            member.mtime = DEFAULT_MTIME
-            otf.addfile(member, file_data)
-
-    return new_data.getvalue()
 
 
 def install_tools_archive(container, source: pathlib.Path):
