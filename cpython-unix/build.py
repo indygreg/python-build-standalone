@@ -22,6 +22,9 @@ from pythonbuild.cpython import (
     parse_config_c,
     parse_setup_line,
 )
+from pythonbuild.docker import (
+    ensure_docker_image,
+)
 from pythonbuild.downloads import (
     DOWNLOADS,
 )
@@ -51,34 +54,6 @@ REQUIRED_EXTENSIONS = {
     'faulthandler',
     'posix',
 }
-
-
-def ensure_docker_image(client, fh, image_path=None):
-    res = client.api.build(fileobj=fh, decode=True)
-
-    image = None
-
-    for s in res:
-        if 'stream' in s:
-            for l in s['stream'].strip().splitlines():
-                log(l)
-
-        if 'aux' in s and 'ID' in s['aux']:
-            image = s['aux']['ID']
-
-    if not image:
-        raise Exception('unable to determine built Docker image')
-
-    if image_path:
-        tar_path = image_path.with_suffix('.tar')
-        with tar_path.open('wb') as fh:
-            for chunk in client.images.get(image).save():
-                fh.write(chunk)
-
-        with image_path.open('w') as fh:
-            fh.write(image + '\n')
-
-    return image
 
 
 def build_docker_image(client, name):
