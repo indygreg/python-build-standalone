@@ -22,6 +22,10 @@ from pythonbuild.cpython import (
 from pythonbuild.downloads import (
     DOWNLOADS,
 )
+from pythonbuild.logging import (
+    log,
+    set_logger,
+)
 from pythonbuild.utils import (
     add_licenses_to_extension_entry,
     create_tar_from_directory,
@@ -58,23 +62,6 @@ REQUIRED_EXTENSIONS = {
     'faulthandler',
     'posix',
 }
-
-LOG_PREFIX = [None]
-LOG_FH = [None]
-
-
-def log(msg):
-    if isinstance(msg, bytes):
-        msg_str = msg.decode('utf-8', 'replace')
-        msg_bytes = msg
-    else:
-        msg_str = msg
-        msg_bytes = msg.encode('utf-8', 'replace')
-
-    print('%s> %s' % (LOG_PREFIX[0], msg_str))
-
-    if LOG_FH[0]:
-        LOG_FH[0].write(msg_bytes + b'\n')
 
 
 def exec_and_log(args, cwd, env):
@@ -431,10 +418,9 @@ def main():
     action = args.action
 
     log_path = BUILD / ('build.%s-macos.log' % action)
-    LOG_PREFIX[0] = '%s-macos' % action
 
     with log_path.open('wb') as log_fh:
-        LOG_FH[0] = log_fh
+        set_logger('%s-macos' % action, log_fh)
 
         if action in ('bdb', 'bzip2', 'libedit', 'libffi', 'openssl', 'ncurses', 'sqlite', 'uuid', 'xz', 'zlib'):
             simple_build(action)
