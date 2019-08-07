@@ -14,6 +14,9 @@ import tempfile
 
 import docker
 
+from pythonbuild.buildenv import (
+    build_environment,
+)
 from pythonbuild.cpython import (
     derive_setup_local,
     parse_config_c,
@@ -148,19 +151,17 @@ def build_binutils(client, image):
     """Build binutils in the Docker image."""
     archive = download_entry('binutils', DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
-        copy_file_to_container(archive, container, '/build')
-        copy_file_to_container(SUPPORT / 'build-binutils.sh', container,
-                               '/build')
+    with build_environment(client, image) as build_env:
+        build_env.copy_file(archive, '/build')
+        build_env.copy_file(SUPPORT / 'build-binutils.sh', '/build')
 
-        container_exec(
-            container, '/build/build-binutils.sh',
+        build_env.exec(
+            '/build/build-binutils.sh',
             environment={
                 'BINUTILS_VERSION': DOWNLOADS['binutils']['version'],
             })
 
-        download_tools_archive(container, archive_path('binutils', 'linux64'),
-                               'host')
+        build_env.get_tools_archive(archive_path('binutils', 'linux64'), 'host')
 
 
 def build_gcc(client, image):
