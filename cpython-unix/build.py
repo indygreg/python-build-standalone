@@ -15,7 +15,6 @@ import tarfile
 import tempfile
 
 import docker
-import jinja2
 
 from pythonbuild.cpython import (
     derive_setup_local,
@@ -23,7 +22,7 @@ from pythonbuild.cpython import (
     parse_setup_line,
 )
 from pythonbuild.docker import (
-    ensure_docker_image,
+    build_docker_image,
 )
 from pythonbuild.downloads import (
     DOWNLOADS,
@@ -54,20 +53,6 @@ REQUIRED_EXTENSIONS = {
     'faulthandler',
     'posix',
 }
-
-
-def build_docker_image(client, source_dir: pathlib.Path,
-                       image_dir: pathlib.Path, name):
-    image_path = image_dir / ('image-%s' % name)
-
-    env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(str(source_dir / 'cpython-unix')))
-
-    tmpl = env.get_template('%s.Dockerfile' % name)
-    data = tmpl.render()
-
-    return ensure_docker_image(client, io.BytesIO(data.encode('utf')),
-                               image_path=image_path)
 
 
 def get_image(client, name):
