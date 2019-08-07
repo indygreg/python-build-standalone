@@ -25,6 +25,11 @@ from pythonbuild.cpython import (
 from pythonbuild.downloads import (
     DOWNLOADS,
 )
+from pythonbuild.logging import (
+    log_raw,
+    log,
+    set_logger,
+)
 from pythonbuild.utils import (
     add_licenses_to_extension_entry,
     download_entry,
@@ -36,9 +41,6 @@ BUILD = ROOT / 'build'
 DOWNLOADS_PATH = BUILD / 'downloads'
 SUPPORT = ROOT / 'cpython-unix'
 
-LOG_PREFIX = [None]
-LOG_FH = [None]
-
 REQUIRED_EXTENSIONS = {
     '_codecs',
     '_io',
@@ -49,20 +51,6 @@ REQUIRED_EXTENSIONS = {
     'faulthandler',
     'posix',
 }
-
-
-def log(msg):
-    if isinstance(msg, bytes):
-        msg_str = msg.decode('utf-8', 'replace')
-        msg_bytes = msg
-    else:
-        msg_str = msg
-        msg_bytes = msg.encode('utf-8', 'replace')
-
-    print('%s> %s' % (LOG_PREFIX[0], msg_str))
-
-    if LOG_FH[0]:
-        LOG_FH[0].write(msg_bytes + b'\n')
 
 
 def ensure_docker_image(client, fh, image_path=None):
@@ -165,8 +153,7 @@ def container_exec(container, command, user='build',
         for l in chunk.strip().splitlines():
             log(l)
 
-        if LOG_FH[0]:
-            LOG_FH[0].write(chunk)
+        log_raw(chunk)
 
     inspect_res = container.client.api.exec_inspect(create_res['Id'])
 
@@ -879,10 +866,9 @@ def main():
         platform = platform[:-5]
 
     log_path = BUILD / 'logs'/ ('build.%s.log' % name)
-    LOG_PREFIX[0] = name
 
     with log_path.open('wb') as log_fh:
-        LOG_FH[0] = log_fh
+        set_logger(name, log_fh)
         if action == 'versions':
             write_package_versions(BUILD / 'versions')
 
