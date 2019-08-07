@@ -56,8 +56,8 @@ REQUIRED_EXTENSIONS = {
 }
 
 
-def build_docker_image(client, name):
-    image_path = BUILD / ('image-%s' % name)
+def build_docker_image(client, image_dir: pathlib.Path, name):
+    image_path = image_dir / ('image-%s' % name)
 
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(ROOT / 'cpython-unix')))
@@ -88,7 +88,7 @@ def get_image(client, name):
             return image_id
 
         else:
-            return build_docker_image(client, name)
+            return build_docker_image(client, BUILD, name)
 
 
 def copy_file_to_container(path, container, container_path, archive_path=None):
@@ -848,7 +848,7 @@ def main():
             write_package_versions(BUILD / 'versions')
 
         elif action.startswith('image-'):
-            build_docker_image(client, action[6:])
+            build_docker_image(client, BUILD, action[6:])
 
         elif action == 'binutils':
             build_binutils(client, get_image(client, 'gcc'))
