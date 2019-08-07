@@ -23,6 +23,7 @@ from pythonbuild.cpython import (
 )
 from pythonbuild.docker import (
     build_docker_image,
+    get_image,
 )
 from pythonbuild.downloads import (
     DOWNLOADS,
@@ -53,28 +54,6 @@ REQUIRED_EXTENSIONS = {
     'faulthandler',
     'posix',
 }
-
-
-def get_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
-    image_path = image_dir / ('image-%s' % name)
-    tar_path = image_path.with_suffix('.tar')
-
-    with image_path.open('r') as fh:
-        image_id = fh.read().strip()
-
-    try:
-        client.images.get(image_id)
-        return image_id
-    except docker.errors.ImageNotFound:
-        if tar_path.exists():
-            with tar_path.open('rb') as fh:
-                data = fh.read()
-            client.images.load(data)
-
-            return image_id
-
-        else:
-            return build_docker_image(client, source_dir, image_dir, name)
 
 
 def copy_file_to_container(path, container, container_path, archive_path=None):
