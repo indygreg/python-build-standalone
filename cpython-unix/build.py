@@ -244,19 +244,19 @@ def build_clang(client, image):
 def build_musl(client, image):
     musl_archive = download_entry("musl", DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
-        copy_toolchain(container)
-        copy_file_to_container(musl_archive, container, "/build")
-        copy_file_to_container(SUPPORT / "build-musl.sh", container, "/build")
+    with build_environment(client, image) as build_env:
+        build_env.install_toolchain(BUILD, "linux64", clang=True)
+        build_env.copy_file(musl_archive, "/build")
+        build_env.copy_file(SUPPORT / "build-musl.sh", "/build")
 
         env = {
             "MUSL_VERSION": DOWNLOADS["musl"]["version"],
             "TOOLCHAIN": "clang-linux64",
         }
 
-        container_exec(container, "/build/build-musl.sh", environment=env)
+        build_env.run("/build/build-musl.sh", environment=env)
 
-        download_tools_archive(container, archive_path("musl", "linux64"), "host")
+        build_env.get_tools_archive(archive_path("musl", "linux64"), "host")
 
 
 def build_libedit(client, image, platform, musl=False):
