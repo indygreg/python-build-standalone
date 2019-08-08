@@ -32,7 +32,7 @@ class ContainerContext(object):
         p = build_dir / basename
 
         self.copy_file(p, "/build")
-        self.exec(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name],
+        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name],
                   user="root")
 
     def install_toolchain(self, build_dir, platform, gcc=False, musl=False,
@@ -49,7 +49,7 @@ class ContainerContext(object):
             self.install_artifact_archive(build_dir, "musl", platform)
 
 
-    def exec(self, program, user="build", environment=None):
+    def run(self, program, user="build", environment=None):
         container_exec(self.container, program, user=user, environment=environment)
 
     def get_tools_archive(self, dest, name):

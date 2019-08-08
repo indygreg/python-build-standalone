@@ -236,7 +236,7 @@ def build_clang(client, image):
         build_env.install_toolchain(BUILD, "linux64", gcc=gcc)
 
         build_env.copy_file(SUPPORT / build_sh, "/build")
-        build_env.exec("/build/%s" % build_sh, environment=env)
+        build_env.run("/build/%s" % build_sh, environment=env)
 
         build_env.get_tools_archive(archive_path("clang", suffix), tools_path)
 
