@@ -36,10 +36,10 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
 mkdir /tools/extra
-tar -C /tools/extra --strip-components=1 -xf /build/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz
+tar -C /tools/extra --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz
 
 unzip ninja-linux.zip
 mv ninja /tools/extra/bin/
@@ -48,32 +48,32 @@ export PATH=/tools/extra/bin:/tools/host/bin:$PATH
 
 mkdir llvm
 pushd llvm
-tar --strip-components=1 -xf /build/llvm-${LLVM_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/llvm-${LLVM_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/tools/clang
 pushd llvm/tools/clang
-tar --strip-components=1 -xf /build/cfe-${CLANG_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/cfe-${CLANG_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/tools/lld
 pushd llvm/tools/lld
-tar --strip-components=1 -xf /build/lld-${LLD_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/lld-${LLD_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/projects/compiler-rt
 pushd llvm/projects/compiler-rt
-tar --strip-components=1 -xf /build/compiler-rt-${CLANG_COMPILER_RT_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/compiler-rt-${CLANG_COMPILER_RT_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/projects/libcxx
 pushd llvm/projects/libcxx
-tar --strip-components=1 -xf /build/libcxx-${LIBCXX_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/libcxx-${LIBCXX_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/projects/libcxxabi
 pushd llvm/projects/libcxxabi
-tar --strip-components=1 -xf /build/libcxxabi-${LIBCXXABI_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/libcxxabi-${LIBCXXABI_VERSION}.src.tar.xz
 popd
 
 mkdir llvm-objdir
@@ -170,14 +170,14 @@ cmake \
     -DLLVM_INSTALL_UTILS=ON \
     ../../llvm
 
-LD_LIBRARY_PATH=/tools/clang-stage2/lib DESTDIR=/build/out ninja install
+LD_LIBRARY_PATH=/tools/clang-stage2/lib DESTDIR=${ROOT}/out ninja install
 
-mkdir -p /build/out/tools/clang-linux64/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}
-cp -av /tools/host/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/* /build/out/tools/clang-linux64/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/
-cp -av /tools/host/lib64/* /build/out/tools/clang-linux64/lib/
-mkdir -p /build/out/tools/clang-linux64/lib32/
-cp -av /tools/host/lib32/* /build/out/tools/clang-linux64/lib32/
-cp -av /tools/host/include/* /build/out/tools/clang-linux64/include/
+mkdir -p ${ROOT}/out/tools/clang-linux64/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}
+cp -av /tools/host/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/* ${ROOT}/out/tools/clang-linux64/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/
+cp -av /tools/host/lib64/* ${ROOT}/out/tools/clang-linux64/lib/
+mkdir -p ${ROOT}/out/tools/clang-linux64/lib32/
+cp -av /tools/host/lib32/* ${ROOT}/out/tools/clang-linux64/lib32/
+cp -av /tools/host/include/* ${ROOT}/out/tools/clang-linux64/include/
 
 popd
 
