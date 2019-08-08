@@ -320,18 +320,14 @@ def build_tix(client, image, platform, musl=False):
     tk_archive = download_entry("tk", DOWNLOADS_PATH)
     tix_archive = download_entry("tix", DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
-        copy_toolchain(container, musl=musl)
+    with build_environment(client, image) as build_env:
+        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
 
-        install_tools_archive(container, archive_path("tcl", platform, musl=musl))
-        install_tools_archive(container, archive_path("tk", platform, musl=musl))
-        install_tools_archive(container, archive_path("libX11", platform, musl=musl))
-        install_tools_archive(container, archive_path("xorgproto", platform, musl=musl))
+        for p in ("tcl", "tk", "libX11", "xorgproto"):
+            build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
 
-        copy_file_to_container(tcl_archive, container, "/build")
-        copy_file_to_container(tk_archive, container, "/build")
-        copy_file_to_container(tix_archive, container, "/build")
-        copy_file_to_container(SUPPORT / "build-tix.sh", container, "/build")
+        for p in (tcl_archive, tk_archive, tix_archive, SUPPORT / "build-tix.sh"):
+            build_env.copy_file(p, "/build")
 
         env = {
             "CC": "clang",
@@ -346,11 +342,8 @@ def build_tix(client, image, platform, musl=False):
 
         add_target_env(env, platform)
 
-        container_exec(container, "/build/build-tix.sh", environment=env)
-
-        download_tools_archive(
-            container, archive_path("tix", platform, musl=musl), "deps"
-        )
+        build_env.run("/build/build-tix.sh", environment=env)
+        build_env.get_tools_archive(archive_path("tix", platform, musl=musl), "deps")
 
 
 def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=False):
