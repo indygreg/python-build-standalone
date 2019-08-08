@@ -16,7 +16,6 @@ from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import derive_setup_local, parse_config_c, parse_setup_line
 from pythonbuild.docker import (
     build_docker_image,
-    copy_file_to_container,
     get_image,
 )
 from pythonbuild.downloads import DOWNLOADS
@@ -42,24 +41,6 @@ REQUIRED_EXTENSIONS = {
     "faulthandler",
     "posix",
 }
-
-
-def copy_rust(container):
-    rust = download_entry("rust", DOWNLOADS_PATH)
-
-    copy_file_to_container(rust, container, "/build")
-    container.exec_run(["/bin/mkdir", "p", "/tools/rust"])
-    container.exec_run(
-        [
-            "/bin/tar",
-            "-C",
-            "/tools/rust",
-            "--strip-components",
-            "1",
-            "-xf",
-            "/build/%s" % rust.name,
-        ]
-    )
 
 
 def add_target_env(env, platform):
@@ -543,7 +524,6 @@ def build_cpython(
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
 
-        # copy_rust(container)
         for p in (python_archive, setuptools_archive, pip_archive, SUPPORT / "build-cpython.sh"):
             build_env.copy_file(p, "/build")
 
