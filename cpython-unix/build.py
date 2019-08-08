@@ -260,16 +260,16 @@ def build_musl(client, image):
 def build_libedit(client, image, platform, musl=False):
     libedit_archive = download_entry("libedit", DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
-        copy_toolchain(container, musl=musl)
+    with build_environment(client, image) as build_env:
+        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
 
         dep_platform = platform
         if musl:
             dep_platform += "-musl"
 
-        install_tools_archive(container, archive_path("ncurses", platform, musl=musl))
-        copy_file_to_container(libedit_archive, container, "/build")
-        copy_file_to_container(SUPPORT / "build-libedit.sh", container, "/build")
+        build_env.install_artifact_archive(BUILD, "ncurses", platform, musl=musl)
+        build_env.copy_file(libedit_archive, "/build")
+        build_env.copy_file(SUPPORT / "build-libedit.sh", "/build")
 
         env = {
             "CC": "clang",
@@ -282,10 +282,8 @@ def build_libedit(client, image, platform, musl=False):
 
         add_target_env(env, platform)
 
-        container_exec(container, "/build/build-libedit.sh", environment=env)
-        download_tools_archive(
-            container, archive_path("libedit", platform, musl=musl), "deps"
-        )
+        build_env.run("/build/build-libedit.sh", environment=env)
+        build_env.get_tools_archive(archive_path("libedit", platform, musl=musl), "deps")
 
 
 def build_readline(client, image, platform, musl=False):
