@@ -202,7 +202,7 @@ def build_clang(client, image):
     libcxx_archive = download_entry("libc++", DOWNLOADS_PATH)
     libcxxabi_archive = download_entry("libc++abi", DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
+    with build_environment(client, image) as build_env:
         log("copying archives to container...")
         for a in (
             cmake_archive,
@@ -214,7 +214,7 @@ def build_clang(client, image):
             libcxx_archive,
             libcxxabi_archive,
         ):
-            copy_file_to_container(a, container, "/build")
+            build_env.copy_file(a, "/build")
 
         tools_path = "clang-linux64"
         suffix = "linux64"
@@ -233,13 +233,12 @@ def build_clang(client, image):
             "LLVM_VERSION": DOWNLOADS["llvm"]["version"],
         }
 
-        copy_toolchain(container, gcc=gcc)
+        build_env.install_toolchain(BUILD, "linux64", gcc=gcc)
 
-        copy_file_to_container(SUPPORT / build_sh, container, "/build")
+        build_env.copy_file(SUPPORT / build_sh, "/build")
+        build_env.exec("/build/%s" % build_sh, environment=env)
 
-        container_exec(container, "/build/%s" % build_sh, environment=env)
-
-        download_tools_archive(container, archive_path("clang", suffix), tools_path)
+        build_env.get_tools_archive(archive_path("clang", suffix), tools_path)
 
 
 def build_musl(client, image):

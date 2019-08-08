@@ -8,6 +8,7 @@ import shutil
 import tempfile
 
 from .docker import container_exec, container_get_archive, copy_file_to_container
+from .downloads import DOWNLOADS
 from .logging import log
 
 
@@ -19,8 +20,37 @@ class ContainerContext(object):
         dest_name = dest_name or source.name
         copy_file_to_container(source, self.container, dest_path, dest_name)
 
-    def exec(self, program, environment=None):
-        container_exec(self.container, program, environment=environment)
+    def install_artifact_archive(self, build_dir, package_name, platform, musl=False):
+        entry = DOWNLOADS[package_name]
+        basename = "%s-%s-%s%s.tar" % (
+            package_name,
+            entry["version"],
+            platform,
+            "-musl" if musl else "",
+        )
+
+        p = build_dir / basename
+
+        self.copy_file(p, "/build")
+        self.exec(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name],
+                  user="root")
+
+    def install_toolchain(self, build_dir, platform, gcc=False, musl=False,
+                          clang=False):
+        self.install_artifact_archive(build_dir, "binutils", platform)
+
+        if gcc:
+            self.install_artifact_archive(build_dir, "gcc", platform)
+
+        if clang:
+            self.install_artifact_archive(build_dir, "clang", platform)
+
+        if musl:
+            self.install_artifact_archive(build_dir, "musl", platform)
+
+
+    def exec(self, program, user="build", environment=None):
+        container_exec(self.container, program, user=user, environment=environment)
 
     def get_tools_archive(self, dest, name):
         log("copying container files to %s" % dest)
