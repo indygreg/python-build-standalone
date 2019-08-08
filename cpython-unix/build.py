@@ -289,16 +289,16 @@ def build_libedit(client, image, platform, musl=False):
 def build_readline(client, image, platform, musl=False):
     readline_archive = download_entry("readline", DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
-        copy_toolchain(container, musl=musl)
+    with build_environment(client, image) as build_env:
+        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
 
         dep_platform = platform
         if musl:
             dep_platform += "-musl"
 
-        install_tools_archive(container, archive_path("ncurses", platform, musl=musl))
-        copy_file_to_container(readline_archive, container, "/build")
-        copy_file_to_container(SUPPORT / "build-readline.sh", container, "/build")
+        build_env.install_artifact_archive(BUILD, "ncurses", platform, musl=musl)
+        build_env.copy_file(readline_archive, "/build");
+        build_env.copy_file(SUPPORT / "build-readline.sh", "/build")
 
         env = {
             "CC": "clang",
@@ -311,11 +311,8 @@ def build_readline(client, image, platform, musl=False):
 
         add_target_env(env, platform)
 
-        container_exec(container, "/build/build-readline.sh", environment=env)
-
-        download_tools_archive(
-            container, archive_path("readline", platform, musl=musl), "deps"
-        )
+        build_env.run("/build/build-readline.sh", environment=env)
+        build_env.get_tools_archive(archive_path("readline", platform, musl=musl), "deps")
 
 
 def build_tix(client, image, platform, musl=False):
