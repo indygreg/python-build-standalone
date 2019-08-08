@@ -6,12 +6,15 @@ import gzip
 import hashlib
 import os
 import pathlib
+import subprocess
+import sys
 import tarfile
 import urllib.request
 
 import zstandard
 
 from .downloads import DOWNLOADS
+from .logging import log
 
 
 def hash_path(p: pathlib.Path):
@@ -220,3 +223,23 @@ def add_licenses_to_extension_entry(entry, ignore_keys=None):
     entry["licenses"] = sorted(licenses)
     entry["license_paths"] = sorted(license_paths)
     entry["license_public_domain"] = license_public_domain
+
+
+def exec_and_log(args, cwd, env):
+    p = subprocess.Popen(
+        args,
+        cwd=cwd,
+        env=env,
+        bufsize=1,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    for line in iter(p.stdout.readline, b""):
+        log(line.rstrip())
+
+    p.wait()
+
+    if p.returncode:
+        print("process exited %d" % p.returncode)
+        sys.exit(p.returncode)

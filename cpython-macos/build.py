@@ -9,7 +9,6 @@ import multiprocessing
 import os
 import pathlib
 import shutil
-import subprocess
 import sys
 import tempfile
 import zipfile
@@ -21,6 +20,7 @@ from pythonbuild.utils import (
     add_licenses_to_extension_entry,
     create_tar_from_directory,
     download_entry,
+    exec_and_log,
     extract_tar_to_directory,
 )
 
@@ -53,26 +53,6 @@ REQUIRED_EXTENSIONS = {
     "faulthandler",
     "posix",
 }
-
-
-def exec_and_log(args, cwd, env):
-    p = subprocess.Popen(
-        args,
-        cwd=cwd,
-        env=env,
-        bufsize=1,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-    )
-
-    for line in iter(p.stdout.readline, b""):
-        log(line.rstrip())
-
-    p.wait()
-
-    if p.returncode:
-        print("process exited %d" % p.returncode)
-        sys.exit(p.returncode)
 
 
 def simple_build(entry):
