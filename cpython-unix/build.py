@@ -119,14 +119,14 @@ def archive_path(package_name: str, platform: str, musl=False):
 def simple_build(client, image, entry, platform, musl=False, extra_archives=None):
     archive = download_entry(entry, DOWNLOADS_PATH)
 
-    with run_container(client, image) as container:
-        copy_toolchain(container, musl=musl)
+    with build_environment(client, image) as build_env:
+        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
 
         for a in extra_archives or []:
-            install_tools_archive(container, archive_path(a, platform, musl=musl))
+            build_env.install_artifact_archive(BUILD, a, platform, musl=musl)
 
-        copy_file_to_container(archive, container, "/build")
-        copy_file_to_container(SUPPORT / ("build-%s.sh" % entry), container, "/build")
+        build_env.copy_file(archive, "/build")
+        build_env.copy_file(SUPPORT / ("build-%s.sh" % entry), "/build")
 
         env = {
             "CC": "clang",
@@ -138,11 +138,9 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
 
         add_target_env(env, platform)
 
-        container_exec(container, "/build/build-%s.sh" % entry, environment=env)
+        build_env.run("/build/build-%s.sh" % entry, environment=env)
 
-        download_tools_archive(
-            container, archive_path(entry, platform, musl=musl), "deps"
-        )
+        build_env.get_tools_archive(archive_path(entry, platform, musl=musl), "deps")
 
 
 def build_binutils(client, image):
