@@ -14,10 +14,7 @@ import docker
 
 from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import derive_setup_local, parse_config_c, parse_setup_line
-from pythonbuild.docker import (
-    build_docker_image,
-    get_image,
-)
+from pythonbuild.docker import build_docker_image, get_image
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.logging import log, set_logger
 from pythonbuild.utils import (
@@ -226,7 +223,9 @@ def build_libedit(client, image, platform, musl=False):
         add_target_env(env, platform)
 
         build_env.run("/build/build-libedit.sh", environment=env)
-        build_env.get_tools_archive(archive_path("libedit", platform, musl=musl), "deps")
+        build_env.get_tools_archive(
+            archive_path("libedit", platform, musl=musl), "deps"
+        )
 
 
 def build_readline(client, image, platform, musl=False):
@@ -240,7 +239,7 @@ def build_readline(client, image, platform, musl=False):
             dep_platform += "-musl"
 
         build_env.install_artifact_archive(BUILD, "ncurses", platform, musl=musl)
-        build_env.copy_file(readline_archive, "/build");
+        build_env.copy_file(readline_archive, "/build")
         build_env.copy_file(SUPPORT / "build-readline.sh", "/build")
 
         env = {
@@ -255,7 +254,9 @@ def build_readline(client, image, platform, musl=False):
         add_target_env(env, platform)
 
         build_env.run("/build/build-readline.sh", environment=env)
-        build_env.get_tools_archive(archive_path("readline", platform, musl=musl), "deps")
+        build_env.get_tools_archive(
+            archive_path("readline", platform, musl=musl), "deps"
+        )
 
 
 def build_tix(client, image, platform, musl=False):
@@ -524,7 +525,12 @@ def build_cpython(
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
 
-        for p in (python_archive, setuptools_archive, pip_archive, SUPPORT / "build-cpython.sh"):
+        for p in (
+            python_archive,
+            setuptools_archive,
+            pip_archive,
+            SUPPORT / "build-cpython.sh",
+        ):
             build_env.copy_file(p, "/build")
 
         for f in sorted(os.listdir(ROOT)):
@@ -609,7 +615,7 @@ def build_cpython(
 
         dest_path = BUILD / basename
 
-        with dest_path.open('wb') as fh:
+        with dest_path.open("wb") as fh:
             fh.write(build_env.get_archive("/build/out/python"))
 
 

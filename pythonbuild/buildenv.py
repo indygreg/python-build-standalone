@@ -34,11 +34,11 @@ class ContainerContext(object):
         p = build_dir / basename
 
         self.copy_file(p, "/build")
-        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name],
-                  user="root")
+        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name], user="root")
 
-    def install_toolchain(self, build_dir, platform, gcc=False, musl=False,
-                          clang=False):
+    def install_toolchain(
+        self, build_dir, platform, gcc=False, musl=False, clang=False
+    ):
         self.install_artifact_archive(build_dir, "binutils", platform)
 
         if gcc:
@@ -49,7 +49,6 @@ class ContainerContext(object):
 
         if musl:
             self.install_artifact_archive(build_dir, "musl", platform)
-
 
     def run(self, program, user="build", environment=None):
         container_exec(self.container, program, user=user, environment=environment)
