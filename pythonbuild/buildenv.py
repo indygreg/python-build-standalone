@@ -3,8 +3,10 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import contextlib
+import io
 import pathlib
 import shutil
+import tarfile
 import tempfile
 
 from .docker import container_exec, container_get_archive, copy_file_to_container
@@ -52,12 +54,24 @@ class ContainerContext(object):
     def run(self, program, user="build", environment=None):
         container_exec(self.container, program, user=user, environment=environment)
 
+    def run_capture(self, command, user=None):
+        return self.container.exec_run(command, user=user)
+
     def get_tools_archive(self, dest, name):
         log("copying container files to %s" % dest)
         data = container_get_archive(self.container, "/build/out/tools/%s" % name)
 
         with open(dest, "wb") as fh:
             fh.write(data)
+
+    def get_archive(self, path, as_tar=False):
+        data = container_get_archive(self.container, path)
+        data = io.BytesIO(data)
+
+        if as_tar:
+            return tarfile.open(fileobj=data)
+        else:
+            return data.getvalue()
 
 
 class TempdirContext(object):

@@ -4,12 +4,10 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import argparse
-import io
 import json
 import os
 import pathlib
 import sys
-import tarfile
 import tempfile
 
 import docker
@@ -18,11 +16,8 @@ from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import derive_setup_local, parse_config_c, parse_setup_line
 from pythonbuild.docker import (
     build_docker_image,
-    container_exec,
-    container_get_archive,
     copy_file_to_container,
     get_image,
-    run_container,
 )
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.logging import log, set_logger
@@ -49,31 +44,6 @@ REQUIRED_EXTENSIONS = {
 }
 
 
-def install_tools_archive(container, source: pathlib.Path):
-    copy_file_to_container(source, container, "/build")
-    container_exec(
-        container,
-        ["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % source.name],
-        user="root",
-    )
-
-
-def copy_toolchain(container, gcc=False, musl=False):
-    install_tools_archive(container, archive_path("binutils", "linux64"))
-
-    if gcc:
-        install_tools_archive(container, archive_path("gcc", "linux64"))
-
-    clang_linux64 = archive_path("clang", "linux64")
-    musl_linux64 = archive_path("musl", "linux64")
-
-    if clang_linux64.exists():
-        install_tools_archive(container, clang_linux64)
-
-    if musl:
-        install_tools_archive(container, musl_linux64)
-
-
 def copy_rust(container):
     rust = download_entry("rust", DOWNLOADS_PATH)
 
@@ -90,14 +60,6 @@ def copy_rust(container):
             "/build/%s" % rust.name,
         ]
     )
-
-
-def download_tools_archive(container, dest, name):
-    log("copying container files to %s" % dest)
-    data = container_get_archive(container, "/build/out/tools/%s" % name)
-
-    with open(dest, "wb") as fh:
-        fh.write(data)
 
 
 def add_target_env(env, platform):
@@ -346,7 +308,7 @@ def build_tix(client, image, platform, musl=False):
         build_env.get_tools_archive(archive_path("tix", platform, musl=musl), "deps")
 
 
-def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=False):
+def python_build_info(build_env, config_c_in, setup_dist, setup_local, libressl=False):
     """Obtain build metadata for the Python distribution."""
 
     bi = {"core": {"objs": [], "links": []}, "extensions": {}}
@@ -356,7 +318,7 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
     core_objs = set()
     modules_objs = set()
 
-    res = container.exec_run(
+    res = build_env.run_capture(
         ["/usr/bin/find", "/build/out/python/build", "-name", "*.o"], user="build"
     )
 
@@ -379,7 +341,7 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
 
     libraries = set()
 
-    for line in container.exec_run(
+    for line in build_env.run_capture(
         ["/usr/bin/find", "/build/out/python/build/lib", "-name", "*.a"], user="build"
     )[1].splitlines():
 
@@ -470,10 +432,7 @@ def python_build_info(container, config_c_in, setup_dist, setup_local, libressl=
     # Extension variants are denoted by the presence of
     # Modules/VARIANT-<extension>-<variant>.data files that describe the
     # extension. Find those files and process them.
-    data, stat = container.get_archive("/build/out/python/build/Modules")
-    data = io.BytesIO(b"".join(data))
-
-    tf = tarfile.open(fileobj=data)
+    tf = build_env.get_archive("/build/out/python/build/Modules", as_tar=True)
 
     for ti in tf:
         basename = os.path.basename(ti.name)
@@ -548,50 +507,49 @@ def build_cpython(
     setup_local_content = setup["setup_local"]
     extra_make_content = setup["make_data"]
 
-    with run_container(client, image) as container:
-        copy_toolchain(container, musl=musl)
+    with build_environment(client, image) as build_env:
+        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
 
         dep_platform = platform
         if musl:
             dep_platform += "-musl"
 
         # TODO support bdb/gdbm toggle
-        install_tools_archive(container, archive_path("bdb", platform, musl=musl))
-        install_tools_archive(container, archive_path("bzip2", platform, musl=musl))
-        install_tools_archive(container, archive_path("libedit", platform, musl=musl))
-        install_tools_archive(container, archive_path("libffi", platform, musl=musl))
-        install_tools_archive(container, archive_path("libX11", platform, musl=musl))
-        install_tools_archive(container, archive_path("libXau", platform, musl=musl))
-        install_tools_archive(container, archive_path("libxcb", platform, musl=musl))
-        install_tools_archive(container, archive_path("ncurses", platform, musl=musl))
+        packages = {
+            "bdb",
+            "bzip2",
+            "libedit",
+            "libffi",
+            "libX11",
+            "libXau",
+            "libxcb",
+            "ncurses",
+            "readline",
+            "sqlite",
+            "tcl",
+            "tix",
+            "tk",
+            "uuid",
+            "xorgproto",
+            "xz",
+            "zlib",
+        }
 
         if libressl:
-            install_tools_archive(
-                container, archive_path("libressl", platform, musl=musl)
-            )
+            packages.add("libressl")
         else:
-            install_tools_archive(
-                container, archive_path("openssl", platform, musl=musl)
-            )
+            packages.add("openssl")
 
-        install_tools_archive(container, archive_path("readline", platform, musl=musl))
-        install_tools_archive(container, archive_path("sqlite", platform, musl=musl))
-        install_tools_archive(container, archive_path("tcl", platform, musl=musl))
-        install_tools_archive(container, archive_path("tix", platform, musl=musl))
-        install_tools_archive(container, archive_path("tk", platform, musl=musl))
-        install_tools_archive(container, archive_path("uuid", platform, musl=musl))
-        install_tools_archive(container, archive_path("xorgproto", platform, musl=musl))
-        install_tools_archive(container, archive_path("xz", platform, musl=musl))
-        install_tools_archive(container, archive_path("zlib", platform, musl=musl))
+        for p in sorted(packages):
+            build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
+
         # copy_rust(container)
-        copy_file_to_container(python_archive, container, "/build")
-        copy_file_to_container(setuptools_archive, container, "/build")
-        copy_file_to_container(pip_archive, container, "/build")
-        copy_file_to_container(SUPPORT / "build-cpython.sh", container, "/build")
+        for p in (python_archive, setuptools_archive, pip_archive, SUPPORT / "build-cpython.sh"):
+            build_env.copy_file(p, "/build")
 
         for f in sorted(os.listdir(ROOT)):
             if f.startswith("LICENSE.") and f.endswith(".txt"):
-                copy_file_to_container(ROOT / f, container, "/build")
+                build_env.copy_file(ROOT / f, "/build")
 
         # TODO copy latest pip/setuptools.
 
@@ -599,17 +557,13 @@ def build_cpython(
             fh.write(setup_local_content)
             fh.flush()
 
-            copy_file_to_container(
-                fh.name, container, "/build", archive_path="Setup.local"
-            )
+            build_env.copy_file(fh.name, "/build", dest_name="Setup.local")
 
         with tempfile.NamedTemporaryFile("wb") as fh:
             fh.write(extra_make_content)
             fh.flush()
 
-            copy_file_to_container(
-                fh.name, container, "/build", archive_path="Makefile.extra"
-            )
+            build_env.copy_file(fh.name, "/build", dest_name="Makefile.extra")
 
         env = {
             "CC": "clang",
@@ -627,7 +581,7 @@ def build_cpython(
         if optimized:
             env["CPYTHON_OPTIMIZED"] = "1"
 
-        container_exec(container, "/build/build-cpython.sh", environment=env)
+        build_env.run("/build/build-cpython.sh", environment=env)
 
         fully_qualified_name = "python%s%sm" % (
             entry["version"][0:3],
@@ -645,7 +599,7 @@ def build_cpython(
             "python_include": "install/include/%s" % fully_qualified_name,
             "python_stdlib": "install/lib/python%s" % entry["version"][0:3],
             "build_info": python_build_info(
-                container,
+                build_env,
                 config_c_in,
                 setup_dist_content,
                 setup_local_content,
@@ -660,9 +614,7 @@ def build_cpython(
             json.dump(python_info, fh, sort_keys=True, indent=4)
             fh.flush()
 
-            copy_file_to_container(
-                fh.name, container, "/build/out/python", archive_path="PYTHON.json"
-            )
+            build_env.copy_file(fh.name, "/build/out/python", dest_name="PYTHON.json")
 
         basename = "cpython-%s-%s" % (entry["version"], platform)
 
@@ -676,10 +628,9 @@ def build_cpython(
         basename += ".tar"
 
         dest_path = BUILD / basename
-        data = container_get_archive(container, "/build/out/python")
 
-        with dest_path.open("wb") as fh:
-            fh.write(data)
+        with dest_path.open('wb') as fh:
+            fh.write(build_env.get_archive("/build/out/python"))
 
 
 def main():
