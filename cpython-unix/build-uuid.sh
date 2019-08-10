@@ -5,9 +5,9 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
 tar -xf libuuid-${UUID_VERSION}.tar.gz
 pushd libuuid-${UUID_VERSION}
@@ -16,5 +16,5 @@ CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure \
     --prefix=/tools/deps \
     --disable-shared
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
