@@ -43,14 +43,16 @@ TOOLCHAIN_DEPENDS := \
     $(NULL)
 
 PYTHON_DEP_DEPENDS := \
-    $(OUTDIR)/image-build.tar \
+    $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-build.tar) \
     $(TOOLCHAIN_DEPENDS) \
     $(NULL)
 
 default: $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)$(DEFAULT_EXTRA).tar
 
+ifndef PYBUILD_NO_DOCKER
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
 	$(BUILD) image-$*
+endif
 
 $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
 	$(BUILD) binutils

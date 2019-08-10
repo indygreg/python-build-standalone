@@ -628,8 +628,11 @@ def main():
         client = docker.from_env()
         client.ping()
     except Exception as e:
-        print("unable to connect to Docker: %s" % e)
-        return 1
+        if os.environ.get('PYBUILD_NO_DOCKER'):
+            client = None
+        else:
+            print('unable to connect to Docker: %s' % e)
+            return 1
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true")
