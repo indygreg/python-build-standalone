@@ -5,17 +5,17 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
 tar -xf bzip2-${BZIP2_VERSION}.tar.gz
 
 pushd bzip2-${BZIP2_VERSION}
 
-make -j `nproc` install \
-    AR=/tools/host/bin/${TOOLCHAIN_PREFIX}ar \
+make -j ${NUM_CPUS} install \
+    AR=${TOOLS_PATH}/host/bin/${TOOLCHAIN_PREFIX}ar \
     CC="${CC}" \
     CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" \
     LDFLAGS="${EXTRA_TARGET_LDFLAGS}" \
-    PREFIX=/build/out/tools/deps
+    PREFIX=${ROOT}/out/tools/deps
