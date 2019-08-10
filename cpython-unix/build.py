@@ -112,8 +112,8 @@ def build_binutils(client, image):
         build_env.copy_file(archive)
         build_env.copy_file(SUPPORT / "build-binutils.sh")
 
-        build_env.exec(
-            "/build/build-binutils.sh",
+        build_env.run(
+            "build-binutils.sh",
             environment={"BINUTILS_VERSION": DOWNLOADS["binutils"]["version"]},
         )
 
