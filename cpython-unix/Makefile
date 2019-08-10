@@ -214,9 +214,6 @@ PYTHON_DEPENDS := \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
@@ -224,7 +221,6 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
     $(HERE)/static-modules \
