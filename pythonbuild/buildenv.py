@@ -12,7 +12,7 @@ import tempfile
 from .docker import container_exec, container_get_archive, copy_file_to_container
 from .downloads import DOWNLOADS
 from .logging import log
-from .utils import exec_and_log
+from .utils import create_tar_from_directory, exec_and_log
 
 
 class ContainerContext(object):
@@ -86,7 +86,37 @@ class TempdirContext(object):
 
         dest_name = dest_name or source.name
         log("copying %s to %s/%s" % (source, dest_dir, dest_name))
-        shutil.copyfile(source, dest_dir / dest_name)
+        shutil.copy(source, dest_dir / dest_name)
+
+    def install_toolchain(
+        self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
+    ):
+        if binutils:
+            self.install_artifact_archive(build_dir, "binutils", platform)
+
+        if gcc:
+            self.install_artifact_archive(build_dir, "gcc", platform)
+
+        if clang:
+            self.install_artifact_archive(build_dir, "clang", platform)
+
+        if musl:
+            self.install_artifact_archive(build_dir, "musl", platform)
+
+    def run(self, program, user="build", environment=None):
+        if user != "build":
+            raise Exception('cannot change user in temp directory builds')
+
+        if isinstance(program, str) and program.startswith("/"):
+            program = str(self.td / program[1:])
+
+        exec_and_log(program, cwd=self.td, env=environment)
+
+    def get_tools_archive(self, dest, name):
+        log("copying built files to %s" % dest)
+
+        with dest.open('wb') as fh:
+            create_tar_from_directory(fh, self.td / 'out')
 
 
 @contextlib.contextmanager

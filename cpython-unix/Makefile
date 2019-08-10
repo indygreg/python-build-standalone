@@ -21,6 +21,11 @@ ifeq ($(PLATFORM),linux64)
     NEED_GCC := 1
 endif
 
+ifeq ($(PLATFORM),macos)
+    NEED_BINUTILS :=
+    NEED_GCC :=
+endif
+
 BASE_PLATFORM := $(PLATFORM)
 
 ifdef PYBUILD_MUSL
@@ -74,7 +79,7 @@ CLANG_DEPENDS := \
     $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar) \
     $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar) \
     $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-clang.tar) \
-    $(HERE)/build-clang.sh \
+    $(HERE)/build-clang-$(BASE_PLATFORM).sh \
     $(NULL)
 
 $(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar: $(CLANG_DEPENDS)

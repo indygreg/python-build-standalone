@@ -131,8 +131,13 @@ def build_gcc(client, image):
 
 
 def build_clang(client, image, platform):
-    cmake_archive = download_entry("cmake-linux-bin", DOWNLOADS_PATH)
-    ninja_archive = download_entry("ninja-linux-bin", DOWNLOADS_PATH)
+    if 'linux' in platform:
+        cmake_archive = download_entry("cmake-linux-bin", DOWNLOADS_PATH)
+        ninja_archive = download_entry("ninja-linux-bin", DOWNLOADS_PATH)
+    elif 'macos' in platform:
+        cmake_archive = download_entry("cmake-macos-bin", DOWNLOADS_PATH)
+        ninja_archive = download_entry("ninja-macos-bin", DOWNLOADS_PATH)
+
     clang_archive = download_entry("clang", DOWNLOADS_PATH)
     clang_rt_archive = download_entry("clang-compiler-rt", DOWNLOADS_PATH)
     lld_archive = download_entry("lld", DOWNLOADS_PATH)
@@ -154,10 +159,10 @@ def build_clang(client, image, platform):
         ):
             build_env.copy_file(a, "/build")
 
-        tools_path = "clang-linux64"
-        suffix = "linux64"
-        build_sh = "build-clang.sh"
-        gcc = True
+        tools_path = "clang-%s" % platform
+        build_sh = "build-clang-%s.sh" % platform
+        binutils = 'macos' not in platform
+        gcc = binutils
 
         env = {
             "CLANG_COMPILER_RT_VERSION": DOWNLOADS["clang-compiler-rt"]["version"],

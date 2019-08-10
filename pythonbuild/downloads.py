@@ -59,10 +59,10 @@ DOWNLOADS = {
         "version": "3.15.1",
     },
     "cmake-macos-bin": {
-        "url": "https://github.com/Kitware/CMake/releases/download/v3.13.2/cmake-3.13.2-Darwin-x86_64.tar.gz",
-        "size": 32049991,
-        "sha256": "747659e5adbf422d9202f053a97439bcd61616420600cc89d07cbd94213d382d",
-        "version": "3.13.2",
+        "url": "https://github.com/Kitware/CMake/releases/download/v3.15.1/cmake-3.15.1-Darwin-x86_64.tar.gz",
+        "size": 34423913,
+        "sha256": "99e1161881dc136b77e0a27a6d2abcb2910e5126e173d4fa3bc017ec50f7b88b",
+        "version": "3.15.1",
     },
     "cpython-3.7": {
         "url": "https://www.python.org/ftp/python/3.7.4/Python-3.7.4.tar.xz",
