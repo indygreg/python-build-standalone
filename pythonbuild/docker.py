@@ -58,6 +58,9 @@ def ensure_docker_image(client, fh, image_path=None):
 
 
 def get_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
+    if client is None:
+        return None
+
     image_path = image_dir / ("image-%s" % name)
     tar_path = image_path.with_suffix(".tar")
 
