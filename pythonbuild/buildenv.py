@@ -96,9 +96,14 @@ class TempdirContext(object):
         log("copying %s to %s/%s" % (source, dest_dir, dest_name))
         shutil.copy(source, dest_dir / dest_name)
 
-    def install_artifact_archive(self, build_dir, package_name, platform):
+    def install_artifact_archive(self, build_dir, package_name, platform, musl=False):
         entry = DOWNLOADS[package_name]
-        basename = "%s-%s-%s.tar" % (package_name, entry["version"], platform)
+        basename = "%s-%s-%s%s.tar" % (
+            package_name,
+            entry["version"],
+            platform,
+            "-musl" if musl else "",
+        )
 
         p = build_dir / basename
         dest_path = self.td / "tools"
