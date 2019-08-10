@@ -15,7 +15,7 @@ import venv
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent
 BUILD = ROOT / "build"
 DIST = ROOT / "dist"
-VENV = BUILD / "venv"
+VENV = BUILD / "venv.macos"
 PIP = VENV / "bin" / "pip"
 PYTHON = VENV / "bin" / "python"
 REQUIREMENTS = ROOT / "requirements.txt"
