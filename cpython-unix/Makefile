@@ -9,7 +9,17 @@ COMMON_DEPENDS := \
 #    $(BUILD) \
     $(NULL)
 
-PLATFORM := linux64
+ifndef PYBUILD_UNIX_PLATFORM
+    $(error PYBUILD_UNIX_PLATFORM not defined)
+endif
+
+PLATFORM := $(PYBUILD_UNIX_PLATFORM)
+BASE_PLATFORM := $(PLATFORM)
+
+ifeq ($(PLATFORM),linux64)
+    NEED_BINUTILS := 1
+    NEED_GCC := 1
+endif
 
 BASE_PLATFORM := $(PLATFORM)
 
@@ -32,14 +42,14 @@ $(shell $(BUILD) versions)
 include $(OUTDIR)/versions/VERSION.*
 
 BASE_TOOLCHAIN_DEPENDS := \
-    $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar \
-    $(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar \
+    $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar) \
+    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar) \
     $(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar \
     $(NULL)
 
 TOOLCHAIN_DEPENDS := \
     $(BASE_TOOLCHAIN_DEPENDS) \
-    $(OUTDIR)/musl-$(MUSL_VERSION)-linux64.tar \
+    $(OUTDIR)/musl-$(MUSL_VERSION)-$(BASE_PLATFORM).tar \
     $(NULL)
 
 PYTHON_DEP_DEPENDS := \
@@ -60,8 +70,15 @@ $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/image-gcc
 $(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar $(HERE)/build-gcc.sh
 	$(BUILD) gcc
 
-$(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar $(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar $(OUTDIR)/image-clang.tar $(HERE)/build-clang.sh
-	$(BUILD) clang
+CLANG_DEPENDS := \
+    $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar) \
+    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar) \
+    $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-clang.tar) \
+    $(HERE)/build-clang.sh \
+    $(NULL)
+
+$(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar: $(CLANG_DEPENDS)
+	$(BUILD) clang --platform $(BASE_PLATFORM)
 
 $(OUTDIR)/musl-$(MUSL_VERSION)-linux64.tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
 	$(BUILD) musl
