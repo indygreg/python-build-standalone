@@ -54,6 +54,7 @@ def bootstrap():
     if args.optimized:
         os.environ["PYBUILD_OPTIMIZED"] = "1"
     os.environ["PYBUILD_PYTHON"] = args.python
+    os.environ["PYBUILD_UNIX_PLATFORM"] = "linux64"
 
     subprocess.run([str(PYTHON), __file__], check=True)
 
