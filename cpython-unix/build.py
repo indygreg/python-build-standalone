@@ -44,8 +44,9 @@ REQUIRED_EXTENSIONS = {
 }
 
 
-def add_target_env(env, platform):
+def add_target_env(env, platform, build_env):
     env["NUM_CPUS"] = "%d" % multiprocessing.cpu_count()
+    env["TOOLS_PATH"] = build_env.tools_path
 
     if platform == "linux64":
         env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
@@ -95,7 +96,7 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
         if musl:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, platform)
+        add_target_env(env, platform, build_env)
 
         build_env.run("build-%s.sh" % entry, environment=env)
 
@@ -246,7 +247,7 @@ def build_libedit(client, image, platform, musl=False):
         if musl:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, platform)
+        add_target_env(env, platform, build_env)
 
         build_env.run("/build/build-libedit.sh", environment=env)
         build_env.get_tools_archive(
@@ -279,7 +280,7 @@ def build_readline(client, image, platform, musl=False):
         if musl:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, platform)
+        add_target_env(env, platform, build_env)
 
         build_env.run("/build/build-readline.sh", environment=env)
         build_env.get_tools_archive(
@@ -314,7 +315,7 @@ def build_tix(client, image, platform, musl=False):
         if musl:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, platform)
+        add_target_env(env, platform, build_env)
 
         build_env.run("/build/build-tix.sh", environment=env)
         build_env.get_tools_archive(archive_path("tix", platform, musl=musl), "deps")

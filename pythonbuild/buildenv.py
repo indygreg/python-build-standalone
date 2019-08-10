@@ -19,6 +19,8 @@ class ContainerContext(object):
     def __init__(self, container):
         self.container = container
 
+        self.tools_path = "/tools"
+
     def copy_file(self, source: pathlib.Path, dest_path=None, dest_name=None):
         dest_name = dest_name or source.name
         dest_path = dest_path or "/build"
@@ -79,6 +81,8 @@ class ContainerContext(object):
 class TempdirContext(object):
     def __init__(self, td):
         self.td = pathlib.Path(td)
+
+        self.tools_path = str(self.td / "tools")
 
     def copy_file(self, source: pathlib.Path, dest_path=None, dest_name=None):
         if dest_path:
