@@ -48,10 +48,13 @@ def add_target_env(env, platform):
     env["NUM_CPUS"] = "%d" % multiprocessing.cpu_count()
 
     if platform == "linux64":
-        env["TARGET"] = "x86_64-unknown-linux-gnu"
+        env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
+        env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
 
     if platform == "macos":
         env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET
+        env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
+        env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
 
 
 def archive_path(package_name: str, platform: str, musl=False):

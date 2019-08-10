@@ -14,8 +14,8 @@ tar -xf ncurses-${NCURSES_VERSION}.tar.gz
 pushd ncurses-${NCURSES_VERSION}
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
-    --build=x86_64-unknown-linux-gnu \
-    --host=${TARGET} \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --without-cxx
 make -j `nproc`

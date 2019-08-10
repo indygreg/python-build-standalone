@@ -14,8 +14,8 @@ tar -xf libffi-${LIBFFI_VERSION}.tar.gz
 pushd libffi-${LIBFFI_VERSION}
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
-    --build=x86_64-unknown-linux-gnu \
-    --host=${TARGET} \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --disable-shared
 

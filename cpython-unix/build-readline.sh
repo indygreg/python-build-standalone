@@ -15,8 +15,8 @@ pushd readline-${READLINE_VERSION}
 
 CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LDFLAGS="-L/tools/deps/lib" \
     ./configure \
-        --build=x86_64-unknown-linux-gnu \
-        --host=${TARGET} \
+        --build=${BUILD_TRIPLE} \
+        --host=${TARGET_TRIPLE} \
         --prefix=/tools/deps \
         --disable-shared \
         --with-curses

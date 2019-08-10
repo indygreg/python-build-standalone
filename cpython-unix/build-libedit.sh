@@ -23,8 +23,8 @@ fi
 # Install to /tools/deps/libedit so it doesn't conflict with readline's files.
 CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="-L/tools/deps/lib" \
     ./configure \
-        --build=x86_64-unknown-linux-gnu \
-        --host=${TARGET} \
+        --build=${BUILD_TRIPLE} \
+        --host=${TARGET_TRIPLE} \
         --prefix=/tools/deps/libedit \
         --disable-shared
 

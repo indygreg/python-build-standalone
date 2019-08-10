@@ -33,8 +33,8 @@ index 2c89743..4e7e31f 100644
 EOF
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
-    --build=x86_x64-unknown-linux-gnu \
-    --host=${TARGET} \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --with-openssldir=/etc/ssl \
     --disable-shared
