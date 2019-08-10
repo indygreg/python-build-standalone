@@ -90,7 +90,7 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
 
         env = {
             "CC": "clang",
-            "TOOLCHAIN": "clang-linux64",
+            "TOOLCHAIN": "clang-%s" % platform,
             "%s_VERSION" % entry.upper().replace("-", "_"): DOWNLOADS[entry]["version"],
         }
         if musl:
