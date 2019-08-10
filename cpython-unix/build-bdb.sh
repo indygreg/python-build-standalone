@@ -7,7 +7,7 @@ set -ex
 
 ROOT=`pwd`
 
-export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
 tar -xf db-${BDB_VERSION}.tar.gz
 
