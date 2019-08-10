@@ -97,8 +97,9 @@ class TempdirContext(object):
         basename = "%s-%s-%s.tar" % (package_name, entry["version"], platform)
 
         p = build_dir / basename
-        log("extracting %s to %s" % (p, self.td))
-        extract_tar_to_directory(p, self.td)
+        dest_path = self.td / "tools"
+        log("extracting %s to %s" % (p, dest_path))
+        extract_tar_to_directory(p, dest_path)
 
     def install_toolchain(
         self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
