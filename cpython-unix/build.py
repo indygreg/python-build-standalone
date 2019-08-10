@@ -56,6 +56,7 @@ def add_target_env(env, platform, build_env):
         env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET
         env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
         env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
+        env["PATH"] = "/usr/bin:/bin"
 
 
 def archive_path(package_name: str, platform: str, musl=False):
