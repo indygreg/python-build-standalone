@@ -5,9 +5,9 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
 tar -xf xz-${XZ_VERSION}.tar.gz
 
@@ -23,5 +23,5 @@ CFLAGS="-fPIC" CPPFLAGS="-fPIC" CCASFLAGS="-fPIC" ./configure \
     --disable-lzma-links \
     --disable-scripts
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
