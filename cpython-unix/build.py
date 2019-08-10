@@ -56,11 +56,17 @@ def archive_path(package_name: str, platform: str, musl=False):
     return BUILD / basename
 
 
+def install_binutils(platform):
+    return platform != "macos"
+
+
 def simple_build(client, image, entry, platform, musl=False, extra_archives=None):
     archive = download_entry(entry, DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
+        build_env.install_toolchain(
+            BUILD, platform, binutils=install_binutils(platform), clang=True, musl=musl
+        )
 
         for a in extra_archives or []:
             build_env.install_artifact_archive(BUILD, a, platform, musl=musl)
@@ -161,7 +167,7 @@ def build_clang(client, image, platform):
 
         tools_path = "clang-%s" % platform
         build_sh = "build-clang-%s.sh" % platform
-        binutils = 'macos' not in platform
+        binutils = install_binutils(platform)
         gcc = binutils
 
         env = {
