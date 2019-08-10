@@ -505,7 +505,7 @@ def build_cpython(
     setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
     pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
-    with (SUPPORT / "static-modules").open("rb") as fh:
+    with (SUPPORT / ("static-modules.%s" % platform)).open("rb") as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
 
     setup = derive_setup_local(

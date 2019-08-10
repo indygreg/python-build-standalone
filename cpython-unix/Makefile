@@ -225,7 +225,7 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
-    $(HERE)/static-modules \
+    $(HERE)/static-modules.$(BASE_PLATFORM) \
     $(NULL)
 
 ifdef PYBUILD_LIBRESSL

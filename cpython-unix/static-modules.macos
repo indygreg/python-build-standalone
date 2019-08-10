@@ -1,0 +1,34 @@
+# Setup.dist doesn't have entries for all modules. This file defines
+# what's missing. The content here is reconstructed from logic in
+# setup.py and what was observed to execute in a normal build via setup.py.
+# We should audit this every time we upgrade CPython.
+
+_bz2 _bz2module.c -lbz2
+_crypt _cryptmodule.c
+_curses _cursesmodule.c -lncurses
+_curses_panel _curses_panel.c -lpanel -lncurses
+_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/darwin/dlfcn_simple.c _ctypes/malloc_closure.c _ctypes/stgdict.c _ctypes/cfield.c -DMACOSX -I_ctypes/darwin -lffi -ldl
+_ctypes_test _ctypes/_ctypes_test.c -lm
+_decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/constants.c _decimal/libmpdec/context.c _decimal/libmpdec/convolute.c _decimal/libmpdec/crt.c _decimal/libmpdec/difradix2.c _decimal/libmpdec/fnt.c _decimal/libmpdec/fourstep.c _decimal/libmpdec/io.c _decimal/libmpdec/memory.c _decimal/libmpdec/mpdecimal.c _decimal/libmpdec/numbertheory.c _decimal/libmpdec/sixstep.c _decimal/libmpdec/transpose.c -DUNIVERSAL=1 -IModules/_decimal/libmpdec
+_dbm _dbmmodule.c -DHAVE_BERKDB_H -DDB_DBM_HSEARCH -ldb
+_elementtree _elementtree.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
+_hashlib _hashopenssl.c -lssl -lcrypto
+_json _json.c
+_lsprof _lsprof.c rotatingtree.c
+_lzma _lzmamodule.c -llzma
+# TODO check setup.py logic for semaphore.c and possibly fix missing
+# dependency.
+_multiprocessing _multiprocessing/multiprocessing.c _multiprocessing/semaphore.c
+_opcode _opcode.c
+_queue _queuemodule.c
+_scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
+_sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -lsqlite3
+_ssl _ssl.c -lssl -lcrypto
+_testbuffer _testbuffer.c
+_testimportmultiple _testimportmultiple.c
+_testmultiphase _testmultiphase.c
+_uuid _uuidmodule.c -luuid
+_xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
+pyexpat pyexpat.c expat/xmlparse.c expat/xmlrole.c expat/xmltok.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
+readline readline.c -ledit -lncurses
+xxlimited xxlimited.c -DPy_LIMITED_API=0x03050000
