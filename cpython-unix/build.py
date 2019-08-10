@@ -137,10 +137,10 @@ def build_gcc(client, image):
 
 
 def build_clang(client, image, platform):
-    if 'linux' in platform:
+    if "linux" in platform:
         cmake_archive = download_entry("cmake-linux-bin", DOWNLOADS_PATH)
         ninja_archive = download_entry("ninja-linux-bin", DOWNLOADS_PATH)
-    elif 'macos' in platform:
+    elif "macos" in platform:
         cmake_archive = download_entry("cmake-macos-bin", DOWNLOADS_PATH)
         ninja_archive = download_entry("ninja-macos-bin", DOWNLOADS_PATH)
 
@@ -212,7 +212,9 @@ def build_libedit(client, image, platform, musl=False):
     libedit_archive = download_entry("libedit", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
+        build_env.install_toolchain(
+            BUILD, platform, binutils=True, clang=True, musl=musl
+        )
 
         dep_platform = platform
         if musl:
@@ -243,7 +245,9 @@ def build_readline(client, image, platform, musl=False):
     readline_archive = download_entry("readline", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
+        build_env.install_toolchain(
+            BUILD, platform, binutils=True, clang=True, musl=musl
+        )
 
         dep_platform = platform
         if musl:
@@ -276,7 +280,9 @@ def build_tix(client, image, platform, musl=False):
     tix_archive = download_entry("tix", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
+        build_env.install_toolchain(
+            BUILD, platform, binutils=True, clang=True, musl=musl
+        )
 
         for p in ("tcl", "tk", "libX11", "xorgproto"):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
@@ -501,7 +507,9 @@ def build_cpython(
     extra_make_content = setup["make_data"]
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
+        build_env.install_toolchain(
+            BUILD, platform, binutils=True, clang=True, musl=musl
+        )
 
         dep_platform = platform
         if musl:
@@ -639,10 +647,10 @@ def main():
         client = docker.from_env()
         client.ping()
     except Exception as e:
-        if os.environ.get('PYBUILD_NO_DOCKER'):
+        if os.environ.get("PYBUILD_NO_DOCKER"):
             client = None
         else:
-            print('unable to connect to Docker: %s' % e)
+            print("unable to connect to Docker: %s" % e)
             return 1
 
     parser = argparse.ArgumentParser()
@@ -684,8 +692,9 @@ def main():
             build_binutils(client, get_image(client, ROOT, BUILD, "gcc"))
 
         elif action == "clang":
-            build_clang(client, get_image(client, ROOT, BUILD, "clang"),
-                        platform=platform)
+            build_clang(
+                client, get_image(client, ROOT, BUILD, "clang"), platform=platform
+            )
 
         elif action == "gcc":
             build_gcc(client, get_image(client, ROOT, BUILD, "gcc"))
