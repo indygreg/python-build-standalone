@@ -20,5 +20,5 @@ CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ..
     --enable-dbm \
     --disable-shared
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=${ROOT}/out
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out

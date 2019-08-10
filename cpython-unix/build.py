@@ -5,6 +5,7 @@
 
 import argparse
 import json
+import multiprocessing
 import os
 import pathlib
 import sys
@@ -44,6 +45,8 @@ REQUIRED_EXTENSIONS = {
 
 
 def add_target_env(env, platform):
+    env["NUM_CPUS"] = "%d" % multiprocessing.cpu_count()
+
     if platform == "linux64":
         env["TARGET"] = "x86_64-unknown-linux-gnu"
 
@@ -91,7 +94,7 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
 
         add_target_env(env, platform)
 
-        build_env.run("/build/build-%s.sh" % entry, environment=env)
+        build_env.run("build-%s.sh" % entry, environment=env)
 
         build_env.get_tools_archive(archive_path(entry, platform, musl=musl), "deps")
 
