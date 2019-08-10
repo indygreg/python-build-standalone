@@ -41,7 +41,7 @@ class ContainerContext(object):
         self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
     ):
         if binutils:
-           self.install_artifact_archive(build_dir, "binutils", platform)
+            self.install_artifact_archive(build_dir, "binutils", platform)
 
         if gcc:
             self.install_artifact_archive(build_dir, "gcc", platform)
@@ -105,7 +105,7 @@ class TempdirContext(object):
 
     def run(self, program, user="build", environment=None):
         if user != "build":
-            raise Exception('cannot change user in temp directory builds')
+            raise Exception("cannot change user in temp directory builds")
 
         if isinstance(program, str) and program.startswith("/"):
             program = str(self.td / program[1:])
@@ -115,8 +115,8 @@ class TempdirContext(object):
     def get_tools_archive(self, dest, name):
         log("copying built files to %s" % dest)
 
-        with dest.open('wb') as fh:
-            create_tar_from_directory(fh, self.td / 'out')
+        with dest.open("wb") as fh:
+            create_tar_from_directory(fh, self.td / "out")
 
 
 @contextlib.contextmanager
