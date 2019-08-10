@@ -228,7 +228,7 @@ def build_libedit(client, image, platform, musl=False):
 
     with build_environment(client, image) as build_env:
         build_env.install_toolchain(
-            BUILD, platform, binutils=True, clang=True, musl=musl
+            BUILD, platform, binutils=install_binutils(platform), clang=True, musl=musl
         )
 
         dep_platform = platform
