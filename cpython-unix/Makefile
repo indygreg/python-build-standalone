@@ -97,14 +97,14 @@ $(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar: $(CLANG_DEPENDS)
 $(OUTDIR)/musl-$(MUSL_VERSION)-$(BASE_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
 	$(BUILD) musl --platform $(BASE_PLATFORM)
 
-$(OUTDIR)/bdb-$(BDB_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
-	$(BUILD) --platform $* bdb
+$(OUTDIR)/bdb-$(BDB_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
+	$(BUILD) --platform $(PLATFORM) bdb
 
-$(OUTDIR)/bzip2-$(BZIP2_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip2.sh
-	$(BUILD) --platform $* bzip2
+$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip2.sh
+	$(BUILD) --platform $(PLATFORM) bzip2
 
-$(OUTDIR)/gdbm-$(GDBM_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
-	$(BUILD) --platform $* gdbm
+$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
+	$(BUILD) --platform $(PLATFORM) gdbm
 
 $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-inputproto.sh
 	$(BUILD) --platform $(PLATFORM) inputproto
@@ -112,8 +112,8 @@ $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS
 $(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-kbproto.sh
 	$(BUILD) --platform $(PLATFORM) kbproto
 
-$(OUTDIR)/libffi-$(LIBFFI_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
-	$(BUILD) --platform $* libffi
+$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
+	$(BUILD) --platform $(PLATFORM) libffi
 
 $(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-build.tar
 	$(BUILD) --platform $(PLATFORM) libpthread-stubs
@@ -149,20 +149,20 @@ LIBXCB_DEPENDS = \
 $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PLATFORM).tar: $(LIBXCB_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) libxcb
 
-$(OUTDIR)/ncurses-$(NCURSES_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
-	$(BUILD) --platform $* ncurses
+$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
+	$(BUILD) --platform $(PLATFORM) ncurses
 
-$(OUTDIR)/openssl-$(OPENSSL_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-openssl.sh
-	$(BUILD) --platform $* openssl
+$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-openssl.sh
+	$(BUILD) --platform $(PLATFORM) openssl
 
-$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(NCURSES_VERSION)-%.tar $(HERE)/build-libedit.sh
-	$(BUILD) --platform $* libedit
+$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar $(HERE)/build-libedit.sh
+	$(BUILD) --platform $(PLATFORM) libedit
 
-$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libressl.sh
-	$(BUILD) --platform $* libressl
+$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libressl.sh
+	$(BUILD) --platform $(PLATFORM) libressl
 
-$(OUTDIR)/readline-$(READLINE_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar $(HERE)/build-readline.sh
-	$(BUILD) --platform $* readline
+$(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar $(HERE)/build-readline.sh
+	$(BUILD) --platform $(PLATFORM) readline
 
 $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-sqlite.sh
 	$(BUILD) --platform $(PLATFORM) sqlite
