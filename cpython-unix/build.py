@@ -99,7 +99,7 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
 
         add_target_env(env, platform, build_env)
 
-        build_env.run("build-%s.sh" % entry, environment=env)
+        build_env.run("/build-%s.sh" % entry, environment=env)
 
         build_env.get_tools_archive(archive_path(entry, platform, musl=musl), "deps")
 
