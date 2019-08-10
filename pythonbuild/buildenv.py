@@ -141,7 +141,7 @@ class TempdirContext(object):
         log("copying built files to %s" % dest)
 
         with dest.open("wb") as fh:
-            create_tar_from_directory(fh, self.td / "out")
+            create_tar_from_directory(fh, self.td / "out" / "tools")
 
 
 @contextlib.contextmanager
