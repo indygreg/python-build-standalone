@@ -5,19 +5,19 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/clang-linux64/bin:/tools/host/bin:/tools/deps/bin:$PATH
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:${TOOLS_PATH}/deps/bin:$PATH
 
 # configure somehow has problems locating llvm-profdata even though it is in
 # PATH. The macro it is using allows us to specify its path via an
 # environment variable.
-export LLVM_PROFDATA=/tools/clang-linux64/bin/llvm-profdata
+export LLVM_PROFDATA=${TOOLS_PATH}/${TOOLCHAIN}/bin/llvm-profdata
 
 # We force linking of external static libraries by removing the shared
 # libraries. This is hacky. But we're building in a temporary container
 # and it gets the job done.
-find /tools/deps -name '*.so*' -exec rm {} \;
+find ${TOOLS_PATH}/deps -name '*.so*' -exec rm {} \;
 
 tar -xf Python-${PYTHON_VERSION}.tar.xz
 unzip setuptools-${SETUPTOOLS_VERSION}.zip
@@ -102,9 +102,9 @@ sed -i s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
-CFLAGS="-fPIC -I/tools/deps/include -I/tools/deps/include/ncurses"
+CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncurses"
 CPPFLAGS=$CFLAGS
-LDFLAGS="-L/tools/deps/lib"
+LDFLAGS="-L${TOOLS_PATH}/deps/lib"
 
 if [ "${CC}" = "musl-clang" ]; then
     CFLAGS="${CFLAGS} -static"
@@ -112,7 +112,7 @@ if [ "${CC}" = "musl-clang" ]; then
     LDFLAGS="${LDFLAGS} -static"
 fi
 
-CONFIGURE_FLAGS="--prefix=/install --with-openssl=/tools/deps --without-ensurepip"
+CONFIGURE_FLAGS="--prefix=/install --with-openssl=${TOOLS_PATH}/deps --without-ensurepip"
 
 if [ -n "${CPYTHON_DEBUG}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-pydebug"
@@ -132,12 +132,12 @@ CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
 cat ../Makefile.extra >> Makefile
 
 make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out/python
+make -j `nproc` install DESTDIR=${ROOT}/out/python
 
 # Install pip so we can patch it to work with non-dynamic executables
 # and work around https://github.com/pypa/pip/issues/6543. But pip's bundled
 # setuptools has the same bug! So we need to install a patched version.
-pushd /build/setuptools-${SETUPTOOLS_VERSION}
+pushd ${ROOT}/setuptools-${SETUPTOOLS_VERSION}
 patch -p1 <<EOF
 diff --git a/setuptools/glibc.py b/setuptools/glibc.py
 index a134591c..c9c3f378 100644
@@ -157,10 +157,10 @@ index a134591c..c9c3f378 100644
      except AttributeError:
 EOF
 
-/build/out/python/install/bin/python3 setup.py install
+${ROOT}/out/python/install/bin/python3 setup.py install
 popd
 
-pushd /build/pip-${PIP_VERSION}
+pushd ${ROOT}/pip-${PIP_VERSION}
 patch -p1 <<EOF
 diff --git a/src/pip/_internal/utils/glibc.py b/src/pip/_internal/utils/glibc.py
 --- a/src/pip/_internal/utils/glibc.py
@@ -180,46 +180,46 @@ diff --git a/src/pip/_internal/utils/glibc.py b/src/pip/_internal/utils/glibc.py
 
 EOF
 
-/build/out/python/install/bin/python3 setup.py install
+${ROOT}/out/python/install/bin/python3 setup.py install
 popd
 
 # Downstream consumers don't require bytecode files. So remove them.
 # Ideally we'd adjust the build system. But meh.
-find /build/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
+find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
 
 # Symlink libpython so we don't have 2 copies.
 LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}m.a
 ln -sf \
     python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-x86_64-linux-gnu/${LIBPYTHON} \
-    /build/out/python/install/lib/${LIBPYTHON}
+    ${ROOT}/out/python/install/lib/${LIBPYTHON}
 
 # Ditto for Python executable.
 ln -sf \
     python${PYTHON_MAJMIN_VERSION}m \
-    /build/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
+    ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
 
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
 for d in Modules Objects Parser Programs Python; do
-    mkdir -p /build/out/python/build/$d
-    cp -av $d/*.o /build/out/python/build/$d/
+    mkdir -p ${ROOT}/out/python/build/$d
+    cp -av $d/*.o ${ROOT}/out/python/build/$d/
 done
 
 # Also copy extension variant metadata files.
-cp -av Modules/VARIANT-*.data /build/out/python/build/Modules/
+cp -av Modules/VARIANT-*.data ${ROOT}/out/python/build/Modules/
 
 # The object files need to be linked against library dependencies. So copy
 # library files as well.
-mkdir /build/out/python/build/lib
-cp -av /tools/deps/lib/*.a /build/out/python/build/lib/
-cp -av /tools/deps/libedit/lib/*.a /build/out/python/build/lib/
+mkdir ${ROOT}/out/python/build/lib
+cp -av ${ROOT}/deps/lib/*.a ${ROOT}/out/python/build/lib/
+cp -av ${ROOT}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
 
 # And prune libraries we never reference.
-rm /build/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
+rm ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 
 # Copy tcl/tk/tix resources needed by tkinter.
-mkdir /build/out/python/install/lib/tcl
-cp -av /tools/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ /build/out/python/install/lib/tcl/
+mkdir ${ROOT}/out/python/install/lib/tcl
+cp -av ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ ${ROOT}/out/python/install/lib/tcl/
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
@@ -227,10 +227,10 @@ cp -av /tools/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ /build/out/pyth
 # frozen.c is something similar for frozen modules.
 # Setup.dist/Setup.local are useful to parse for active modules and library
 # dependencies.
-cp -av Modules/config.c /build/out/python/build/Modules/
-cp -av Modules/config.c.in /build/out/python/build/Modules/
-cp -av Python/frozen.c /build/out/python/build/Python/
-cp -av Modules/Setup* /build/out/python/build/Modules/
+cp -av Modules/config.c ${ROOT}/out/python/build/Modules/
+cp -av Modules/config.c.in ${ROOT}/out/python/build/Modules/
+cp -av Python/frozen.c ${ROOT}/out/python/build/Python/
+cp -av Modules/Setup* ${ROOT}/out/python/build/Modules/
 
-mkdir /build/out/python/licenses
-cp /build/LICENSE.*.txt /build/out/python/licenses/
+mkdir ${ROOT}/out/python/licenses
+cp ${ROOT}/LICENSE.*.txt ${ROOT}/out/python/licenses/

@@ -601,6 +601,8 @@ def build_cpython(
         if optimized:
             env["CPYTHON_OPTIMIZED"] = "1"
 
+        add_target_env(env, platform, build_env)
+
         build_env.run("build-cpython.sh", environment=env)
 
         fully_qualified_name = "python%s%sm" % (
