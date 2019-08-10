@@ -28,6 +28,9 @@ BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
 
+MACOSX_DEPLOYMENT_TARGET = "10.9"
+
+
 REQUIRED_EXTENSIONS = {
     "_codecs",
     "_io",
@@ -41,7 +44,11 @@ REQUIRED_EXTENSIONS = {
 
 
 def add_target_env(env, platform):
-    env["TARGET"] = "x86_64-unknown-linux-gnu"
+    if platform == "linux64":
+        env["TARGET"] = "x86_64-unknown-linux-gnu"
+
+    if platform == "macos":
+        env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET
 
 
 def archive_path(package_name: str, platform: str, musl=False):
