@@ -99,7 +99,7 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
 
         add_target_env(env, platform, build_env)
 
-        build_env.run("/build-%s.sh" % entry, environment=env)
+        build_env.run("build-%s.sh" % entry, environment=env)
 
         build_env.get_tools_archive(archive_path(entry, platform, musl=musl), "deps")
 
@@ -200,7 +200,7 @@ def build_clang(client, image, platform):
         build_env.install_toolchain(BUILD, platform, binutils=binutils, gcc=gcc)
 
         build_env.copy_file(SUPPORT / build_sh)
-        build_env.run("/build/%s" % build_sh, environment=env)
+        build_env.run(build_sh, environment=env)
 
         build_env.get_tools_archive(archive_path("clang", platform), tools_path)
 
@@ -218,7 +218,7 @@ def build_musl(client, image):
             "TOOLCHAIN": "clang-linux64",
         }
 
-        build_env.run("/build/build-musl.sh", environment=env)
+        build_env.run("build-musl.sh", environment=env)
 
         build_env.get_tools_archive(archive_path("musl", "linux64"), "host")
 
@@ -250,7 +250,7 @@ def build_libedit(client, image, platform, musl=False):
 
         add_target_env(env, platform, build_env)
 
-        build_env.run("/build/build-libedit.sh", environment=env)
+        build_env.run("build-libedit.sh", environment=env)
         build_env.get_tools_archive(
             archive_path("libedit", platform, musl=musl), "deps"
         )
@@ -283,7 +283,7 @@ def build_readline(client, image, platform, musl=False):
 
         add_target_env(env, platform, build_env)
 
-        build_env.run("/build/build-readline.sh", environment=env)
+        build_env.run("build-readline.sh", environment=env)
         build_env.get_tools_archive(
             archive_path("readline", platform, musl=musl), "deps"
         )
@@ -318,7 +318,7 @@ def build_tix(client, image, platform, musl=False):
 
         add_target_env(env, platform, build_env)
 
-        build_env.run("/build/build-tix.sh", environment=env)
+        build_env.run("build-tix.sh", environment=env)
         build_env.get_tools_archive(archive_path("tix", platform, musl=musl), "deps")
 
 
@@ -601,7 +601,7 @@ def build_cpython(
         if optimized:
             env["CPYTHON_OPTIMIZED"] = "1"
 
-        build_env.run("/build/build-cpython.sh", environment=env)
+        build_env.run("build-cpython.sh", environment=env)
 
         fully_qualified_name = "python%s%sm" % (
             entry["version"][0:3],

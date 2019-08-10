@@ -56,6 +56,9 @@ class ContainerContext(object):
             self.install_artifact_archive(build_dir, "musl", platform)
 
     def run(self, program, user="build", environment=None):
+        if isinstance(program, str) and not program.startswith("/"):
+            program = "/build/%s" % program
+
         container_exec(self.container, program, user=user, environment=environment)
 
     def run_capture(self, command, user=None):
@@ -129,8 +132,8 @@ class TempdirContext(object):
         if user != "build":
             raise Exception("cannot change user in temp directory builds")
 
-        if isinstance(program, str) and program.startswith("/"):
-            program = str(self.td / program[1:])
+        if isinstance(program, str) and not program.startswith("/"):
+            program = str(self.td / program)
 
         exec_and_log(program, cwd=self.td, env=environment)
 

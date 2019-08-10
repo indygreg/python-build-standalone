@@ -5,15 +5,15 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
 tar -xf libedit-${LIBEDIT_VERSION}.tar.gz
 
 pushd libedit-${LIBEDIT_VERSION}
 
-cflags="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include -I/tools/deps/include/ncurses"
+cflags="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncurses"
 
 # musl doesn't define __STDC_ISO_10646__, so work around that.
 if [ "${CC}" = "musl-clang" ]; then
@@ -21,17 +21,19 @@ if [ "${CC}" = "musl-clang" ]; then
 fi
 
 # Install to /tools/deps/libedit so it doesn't conflict with readline's files.
-CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="-L/tools/deps/lib" \
+CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="-L${TOOLS_PATH}/deps/lib" \
     ./configure \
         --build=${BUILD_TRIPLE} \
         --host=${TARGET_TRIPLE} \
         --prefix=/tools/deps/libedit \
         --disable-shared
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
 
 # Alias readline/{history.h, readline.h} for readline compatibility.
-mkdir /build/out/tools/deps/libedit/include/readline
-ln -s ../editline/readline.h /build/out/tools/deps/libedit/include/readline/readline.h
-ln -s ../editline/readline.h /build/out/tools/deps/libedit/include/readline/history.h
+if [ -e ${ROOT}/out/tools/deps/libedit/include ]; then
+    mkdir ${ROOT}/out/tools/deps/libedit/include/readline
+    ln -s ../editline/readline.h ${ROOT}/out/tools/deps/libedit/include/readline/readline.h
+    ln -s ../editline/readline.h ${ROOT}/out/tools/deps/libedit/include/readline/history.h
+fi
