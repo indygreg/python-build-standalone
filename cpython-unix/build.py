@@ -60,7 +60,7 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
     archive = download_entry(entry, DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
+        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
 
         for a in extra_archives or []:
             build_env.install_artifact_archive(BUILD, a, platform, musl=musl)
@@ -130,7 +130,7 @@ def build_gcc(client, image):
         build_env.get_tools_archive(archive_path("gcc", "linux64"), "host")
 
 
-def build_clang(client, image):
+def build_clang(client, image, platform):
     cmake_archive = download_entry("cmake-linux-bin", DOWNLOADS_PATH)
     ninja_archive = download_entry("ninja-linux-bin", DOWNLOADS_PATH)
     clang_archive = download_entry("clang", DOWNLOADS_PATH)
@@ -171,19 +171,19 @@ def build_clang(client, image):
             "LLVM_VERSION": DOWNLOADS["llvm"]["version"],
         }
 
-        build_env.install_toolchain(BUILD, "linux64", gcc=gcc)
+        build_env.install_toolchain(BUILD, platform, binutils=binutils, gcc=gcc)
 
         build_env.copy_file(SUPPORT / build_sh, "/build")
         build_env.run("/build/%s" % build_sh, environment=env)
 
-        build_env.get_tools_archive(archive_path("clang", suffix), tools_path)
+        build_env.get_tools_archive(archive_path("clang", platform), tools_path)
 
 
 def build_musl(client, image):
     musl_archive = download_entry("musl", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, "linux64", clang=True)
+        build_env.install_toolchain(BUILD, "linux64", binutils=True, clang=True)
         build_env.copy_file(musl_archive, "/build")
         build_env.copy_file(SUPPORT / "build-musl.sh", "/build")
 
@@ -201,7 +201,7 @@ def build_libedit(client, image, platform, musl=False):
     libedit_archive = download_entry("libedit", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
+        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
 
         dep_platform = platform
         if musl:
@@ -232,7 +232,7 @@ def build_readline(client, image, platform, musl=False):
     readline_archive = download_entry("readline", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
+        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
 
         dep_platform = platform
         if musl:
@@ -265,7 +265,7 @@ def build_tix(client, image, platform, musl=False):
     tix_archive = download_entry("tix", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
+        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
 
         for p in ("tcl", "tk", "libX11", "xorgproto"):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
@@ -490,7 +490,7 @@ def build_cpython(
     extra_make_content = setup["make_data"]
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, platform, clang=True, musl=musl)
+        build_env.install_toolchain(BUILD, platform, binutils=True, clang=True, musl=musl)
 
         dep_platform = platform
         if musl:
@@ -670,7 +670,8 @@ def main():
             build_binutils(client, get_image(client, ROOT, BUILD, "gcc"))
 
         elif action == "clang":
-            build_clang(client, get_image(client, ROOT, BUILD, "clang"))
+            build_clang(client, get_image(client, ROOT, BUILD, "clang"),
+                        platform=platform)
 
         elif action == "gcc":
             build_gcc(client, get_image(client, ROOT, BUILD, "gcc"))

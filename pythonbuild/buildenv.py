@@ -12,6 +12,7 @@ import tempfile
 from .docker import container_exec, container_get_archive, copy_file_to_container
 from .downloads import DOWNLOADS
 from .logging import log
+from .utils import exec_and_log
 
 
 class ContainerContext(object):
@@ -37,9 +38,10 @@ class ContainerContext(object):
         self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name], user="root")
 
     def install_toolchain(
-        self, build_dir, platform, gcc=False, musl=False, clang=False
+        self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
     ):
-        self.install_artifact_archive(build_dir, "binutils", platform)
+        if binutils:
+           self.install_artifact_archive(build_dir, "binutils", platform)
 
         if gcc:
             self.install_artifact_archive(build_dir, "gcc", platform)
