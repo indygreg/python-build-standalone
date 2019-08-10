@@ -20,12 +20,14 @@ ifeq ($(PLATFORM),linux64)
     NEED_BINUTILS := 1
     NEED_GCC := 1
     NEED_MUSL :=
+    NEED_GDBM := 1
 endif
 
 ifeq ($(PLATFORM),macos)
     NEED_BINUTILS :=
     NEED_GCC :=
     NEED_MUSL :=
+    NEED_GDBM :=
 endif
 
 BASE_PLATFORM := $(PLATFORM)
@@ -209,7 +211,7 @@ $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/bui
 PYTHON_DEPENDS := \
     $(OUTDIR)/bdb-$(BDB_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PLATFORM).tar \
+    $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar \
