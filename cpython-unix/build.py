@@ -536,17 +536,9 @@ def build_cpython(
             "bzip2",
             "libedit",
             "libffi",
-            "libX11",
-            "libXau",
-            "libxcb",
             "ncurses",
-            "readline",
             "sqlite",
-            "tcl",
-            "tix",
-            "tk",
             "uuid",
-            "xorgproto",
             "xz",
             "zlib",
         }
@@ -555,6 +547,14 @@ def build_cpython(
             packages.add("libressl")
         else:
             packages.add("openssl")
+
+        readline = platform != "macos"
+        if readline:
+            packages.add("readline")
+
+        tix = platform == "linux64"
+        if tix:
+            packages |= {"libX11", "libXau", "libxcb", "tcl", "tix", "tk", "xorgproto"}
 
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
