@@ -7,43 +7,43 @@ set -ex
 
 ROOT=`pwd`
 
-tar --strip-components=1 -xf ${ROOT}/build/cmake-${CMAKE_VERSION}-Darwin-x86_64.tar.gz
+tar --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-Darwin-x86_64.tar.gz
 
 mkdir ninja
 pushd ninja
-unzip ${ROOT}/build/ninja-mac.zip
+unzip ${ROOT}/ninja-mac.zip
 popd
 
 export PATH=${ROOT}/CMake.app/Contents/bin:${ROOT}/ninja/:${PATH}
 
 mkdir llvm
 pushd llvm
-tar --strip-components=1 -xf ${ROOT}/build/llvm-${LLVM_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/llvm-${LLVM_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/tools/clang
 pushd llvm/tools/clang
-tar --strip-components=1 -xf ${ROOT}/build/cfe-${CLANG_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/cfe-${CLANG_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/tools/lld
 pushd llvm/tools/lld
-tar --strip-components=1 -xf ${ROOT}/build/lld-${LLD_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/lld-${LLD_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/projects/compiler-rt
 pushd llvm/projects/compiler-rt
-tar --strip-components=1 -xf ${ROOT}/build/compiler-rt-${CLANG_COMPILER_RT_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/compiler-rt-${CLANG_COMPILER_RT_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/projects/libcxx
 pushd llvm/projects/libcxx
-tar --strip-components=1 -xf ${ROOT}/build/libcxx-${LIBCXX_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/libcxx-${LIBCXX_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/projects/libcxxabi
 pushd llvm/projects/libcxxabi
-tar --strip-components=1 -xf ${ROOT}/build/libcxxabi-${LIBCXXABI_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/libcxxabi-${LIBCXXABI_VERSION}.src.tar.xz
 popd
 
 mkdir llvm-objdir
