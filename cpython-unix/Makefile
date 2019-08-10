@@ -79,10 +79,10 @@ $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
 endif
 
 $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
-	$(BUILD) binutils
+	$(BUILD) binutils --platform $(BASE_PLATFORM)
 
 $(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar $(HERE)/build-gcc.sh
-	$(BUILD) gcc
+	$(BUILD) gcc --platform $(BASE_PLATFORM)
 
 CLANG_DEPENDS := \
     $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar) \
@@ -94,8 +94,8 @@ CLANG_DEPENDS := \
 $(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar: $(CLANG_DEPENDS)
 	$(BUILD) clang --platform $(BASE_PLATFORM)
 
-$(OUTDIR)/musl-$(MUSL_VERSION)-linux64.tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
-	$(BUILD) musl
+$(OUTDIR)/musl-$(MUSL_VERSION)-$(BASE_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
+	$(BUILD) musl --platform $(BASE_PLATFORM)
 
 $(OUTDIR)/bdb-$(BDB_VERSION)-%.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
 	$(BUILD) --platform $* bdb
