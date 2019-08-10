@@ -136,8 +136,8 @@ def build_gcc(client, image):
         build_env.copy_file(archive_path("binutils", "linux64"))
         build_env.copy_file(SUPPORT / "build-gcc.sh")
 
-        build_env.exec(
-            "/build/build-gcc.sh",
+        build_env.run(
+            "build-gcc.sh",
             environment={
                 "BINUTILS_VERSION": DOWNLOADS["binutils"]["version"],
                 "GCC_VERSION": DOWNLOADS["gcc"]["version"],
