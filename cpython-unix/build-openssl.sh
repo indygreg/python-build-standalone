@@ -5,9 +5,9 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
 tar -xf openssl-${OPENSSL_VERSION}.tar.gz
 
@@ -25,5 +25,5 @@ fi
 
 /usr/bin/perl ./Configure --prefix=/tools/deps linux-x86_64 no-shared ${EXTRA_FLAGS}
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
