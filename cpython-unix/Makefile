@@ -21,6 +21,7 @@ ifeq ($(PLATFORM),linux64)
     NEED_GCC := 1
     NEED_MUSL :=
     NEED_GDBM := 1
+    NEED_READLINE := 1
 endif
 
 ifeq ($(PLATFORM),macos)
@@ -28,6 +29,7 @@ ifeq ($(PLATFORM),macos)
     NEED_GCC :=
     NEED_MUSL :=
     NEED_GDBM :=
+    NEED_READLINE :=
 endif
 
 BASE_PLATFORM := $(PLATFORM)
@@ -215,7 +217,7 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar \
+    $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar \
