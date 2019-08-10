@@ -23,7 +23,13 @@ if [ "${CC}" = "musl-clang" ]; then
     EXTRA_FLAGS="${EXTRA_FLAGS} no-async -DOPENSSL_NO_ASYNC -D__STDC_NO_ATOMICS__=1 no-engine -DOPENSSL_NO_SECURE_MEMORY"
 fi
 
-/usr/bin/perl ./Configure --prefix=/tools/deps linux-x86_64 no-shared ${EXTRA_FLAGS}
+if [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin18.7.0" ]; then
+  OPENSSL_TARGET=darwin64-x86_64-cc
+else
+  OPENSSL_TARGET=linux-x86_64
+fi
+
+/usr/bin/perl ./Configure --prefix=/tools/deps ${OPENSSL_TARGET} no-shared ${EXTRA_FLAGS}
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
