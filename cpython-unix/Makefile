@@ -22,6 +22,7 @@ ifeq ($(PLATFORM),linux64)
     NEED_MUSL :=
     NEED_GDBM := 1
     NEED_READLINE := 1
+    NEED_TIX := 1
 endif
 
 ifeq ($(PLATFORM),macos)
@@ -30,6 +31,7 @@ ifeq ($(PLATFORM),macos)
     NEED_MUSL :=
     NEED_GDBM :=
     NEED_READLINE :=
+    NEED_TIX :=
 endif
 
 BASE_PLATFORM := $(PLATFORM)
@@ -219,7 +221,7 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar \
     $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar \
+    $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
