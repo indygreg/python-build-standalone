@@ -19,8 +19,9 @@ class ContainerContext(object):
     def __init__(self, container):
         self.container = container
 
-    def copy_file(self, source: pathlib.Path, dest_path, dest_name=None):
+    def copy_file(self, source: pathlib.Path, dest_path=None, dest_name=None):
         dest_name = dest_name or source.name
+        dest_path = dest_path or "/build"
         copy_file_to_container(source, self.container, dest_path, dest_name)
 
     def install_artifact_archive(self, build_dir, package_name, platform, musl=False):
@@ -34,7 +35,7 @@ class ContainerContext(object):
 
         p = build_dir / basename
 
-        self.copy_file(p, "/build")
+        self.copy_file(p)
         self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name], user="root")
 
     def install_toolchain(
@@ -79,9 +80,12 @@ class TempdirContext(object):
     def __init__(self, td):
         self.td = pathlib.Path(td)
 
-    def copy_file(self, source: pathlib.Path, dest_path, dest_name=None):
-        dest_path = dest_path.lstrip("/")
-        dest_dir = self.td / dest_path
+    def copy_file(self, source: pathlib.Path, dest_path=None, dest_name=None):
+        if dest_path:
+            dest_dir = self.td / dest_path.lstrip("/")
+        else:
+            dest_dir = self.td
+
         dest_dir.mkdir(exist_ok=True)
 
         dest_name = dest_name or source.name

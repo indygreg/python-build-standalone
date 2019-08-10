@@ -81,8 +81,8 @@ def simple_build(client, image, entry, platform, musl=False, extra_archives=None
         for a in extra_archives or []:
             build_env.install_artifact_archive(BUILD, a, platform, musl=musl)
 
-        build_env.copy_file(archive, "/build")
-        build_env.copy_file(SUPPORT / ("build-%s.sh" % entry), "/build")
+        build_env.copy_file(archive)
+        build_env.copy_file(SUPPORT / ("build-%s.sh" % entry))
 
         env = {
             "CC": "clang",
@@ -104,8 +104,8 @@ def build_binutils(client, image):
     archive = download_entry("binutils", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.copy_file(archive, "/build")
-        build_env.copy_file(SUPPORT / "build-binutils.sh", "/build")
+        build_env.copy_file(archive)
+        build_env.copy_file(SUPPORT / "build-binutils.sh")
 
         build_env.exec(
             "/build/build-binutils.sh",
@@ -126,10 +126,10 @@ def build_gcc(client, image):
     with build_environment(client, image) as build_env:
         log("copying archives to container...")
         for a in (gcc_archive, gmp_archive, isl_archive, mpc_archive, mpfr_archive):
-            build_env.copy_file(a, "/build")
+            build_env.copy_file(a)
 
-        build_env.copy_file(archive_path("binutils", "linux64"), "/build")
-        build_env.copy_file(SUPPORT / "build-gcc.sh", "/build")
+        build_env.copy_file(archive_path("binutils", "linux64"))
+        build_env.copy_file(SUPPORT / "build-gcc.sh")
 
         build_env.exec(
             "/build/build-gcc.sh",
@@ -173,7 +173,7 @@ def build_clang(client, image, platform):
             libcxx_archive,
             libcxxabi_archive,
         ):
-            build_env.copy_file(a, "/build")
+            build_env.copy_file(a)
 
         tools_path = "clang-%s" % platform
         build_sh = "build-clang-%s.sh" % platform
@@ -194,7 +194,7 @@ def build_clang(client, image, platform):
 
         build_env.install_toolchain(BUILD, platform, binutils=binutils, gcc=gcc)
 
-        build_env.copy_file(SUPPORT / build_sh, "/build")
+        build_env.copy_file(SUPPORT / build_sh)
         build_env.run("/build/%s" % build_sh, environment=env)
 
         build_env.get_tools_archive(archive_path("clang", platform), tools_path)
@@ -205,8 +205,8 @@ def build_musl(client, image):
 
     with build_environment(client, image) as build_env:
         build_env.install_toolchain(BUILD, "linux64", binutils=True, clang=True)
-        build_env.copy_file(musl_archive, "/build")
-        build_env.copy_file(SUPPORT / "build-musl.sh", "/build")
+        build_env.copy_file(musl_archive)
+        build_env.copy_file(SUPPORT / "build-musl.sh")
 
         env = {
             "MUSL_VERSION": DOWNLOADS["musl"]["version"],
@@ -231,8 +231,8 @@ def build_libedit(client, image, platform, musl=False):
             dep_platform += "-musl"
 
         build_env.install_artifact_archive(BUILD, "ncurses", platform, musl=musl)
-        build_env.copy_file(libedit_archive, "/build")
-        build_env.copy_file(SUPPORT / "build-libedit.sh", "/build")
+        build_env.copy_file(libedit_archive)
+        build_env.copy_file(SUPPORT / "build-libedit.sh")
 
         env = {
             "CC": "clang",
@@ -264,8 +264,8 @@ def build_readline(client, image, platform, musl=False):
             dep_platform += "-musl"
 
         build_env.install_artifact_archive(BUILD, "ncurses", platform, musl=musl)
-        build_env.copy_file(readline_archive, "/build")
-        build_env.copy_file(SUPPORT / "build-readline.sh", "/build")
+        build_env.copy_file(readline_archive)
+        build_env.copy_file(SUPPORT / "build-readline.sh")
 
         env = {
             "CC": "clang",
@@ -298,7 +298,7 @@ def build_tix(client, image, platform, musl=False):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
 
         for p in (tcl_archive, tk_archive, tix_archive, SUPPORT / "build-tix.sh"):
-            build_env.copy_file(p, "/build")
+            build_env.copy_file(p)
 
         env = {
             "CC": "clang",
@@ -560,11 +560,11 @@ def build_cpython(
             pip_archive,
             SUPPORT / "build-cpython.sh",
         ):
-            build_env.copy_file(p, "/build")
+            build_env.copy_file(p)
 
         for f in sorted(os.listdir(ROOT)):
             if f.startswith("LICENSE.") and f.endswith(".txt"):
-                build_env.copy_file(ROOT / f, "/build")
+                build_env.copy_file(ROOT / f)
 
         # TODO copy latest pip/setuptools.
 
@@ -572,13 +572,13 @@ def build_cpython(
             fh.write(setup_local_content)
             fh.flush()
 
-            build_env.copy_file(fh.name, "/build", dest_name="Setup.local")
+            build_env.copy_file(fh.name, dest_name="Setup.local")
 
         with tempfile.NamedTemporaryFile("wb") as fh:
             fh.write(extra_make_content)
             fh.flush()
 
-            build_env.copy_file(fh.name, "/build", dest_name="Makefile.extra")
+            build_env.copy_file(fh.name, dest_name="Makefile.extra")
 
         env = {
             "CC": "clang",
