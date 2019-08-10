@@ -19,17 +19,20 @@ BASE_PLATFORM := $(PLATFORM)
 ifeq ($(PLATFORM),linux64)
     NEED_BINUTILS := 1
     NEED_GCC := 1
+    NEED_MUSL :=
 endif
 
 ifeq ($(PLATFORM),macos)
     NEED_BINUTILS :=
     NEED_GCC :=
+    NEED_MUSL :=
 endif
 
 BASE_PLATFORM := $(PLATFORM)
 
 ifdef PYBUILD_MUSL
     PLATFORM := $(PLATFORM)-musl
+    NEED_MUSL := 1
 endif
 
 ifdef PYBUILD_DEBUG
@@ -54,7 +57,7 @@ BASE_TOOLCHAIN_DEPENDS := \
 
 TOOLCHAIN_DEPENDS := \
     $(BASE_TOOLCHAIN_DEPENDS) \
-    $(OUTDIR)/musl-$(MUSL_VERSION)-$(BASE_PLATFORM).tar \
+    $(if $(NEED_MUSL),$(OUTDIR)/musl-$(MUSL_VERSION)-$(BASE_PLATFORM).tar) \
     $(NULL)
 
 PYTHON_DEP_DEPENDS := \
