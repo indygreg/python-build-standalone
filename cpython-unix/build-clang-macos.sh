@@ -55,7 +55,7 @@ pushd stage1
 cmake \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/clang-macos \
+    -DCMAKE_INSTALL_PREFIX=/tools/clang-macos \
     -DCMAKE_C_COMPILER=/usr/bin/clang \
     -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
     -DCMAKE_ASM_COMPILER=/usr/bin/clang \
