@@ -12,7 +12,7 @@ import tempfile
 from .docker import container_exec, container_get_archive, copy_file_to_container
 from .downloads import DOWNLOADS
 from .logging import log
-from .utils import create_tar_from_directory, exec_and_log
+from .utils import create_tar_from_directory, exec_and_log, extract_tar_to_directory
 
 
 class ContainerContext(object):
@@ -87,6 +87,13 @@ class TempdirContext(object):
         dest_name = dest_name or source.name
         log("copying %s to %s/%s" % (source, dest_dir, dest_name))
         shutil.copy(source, dest_dir / dest_name)
+
+    def install_artifact_archive(self, build_dir, package_name, platform):
+        entry = DOWNLOADS[package_name]
+        basename = "%s-%s-%s.tar" % (package_name, entry["version"], platform)
+
+        p = build_dir / basename
+        extract_tar_to_directory(p, self.td)
 
     def install_toolchain(
         self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
