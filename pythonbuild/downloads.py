@@ -29,10 +29,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.bzip2.txt",
     },
     "clang": {
-        "url": "http://releases.llvm.org/8.0.0/cfe-8.0.0.src.tar.xz",
-        "size": 12868468,
-        "sha256": "084c115aab0084e63b23eee8c233abb6739c399e29966eaeccfc6e088e0b736b",
-        "version": "8.0.0",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/cfe-8.0.1.src.tar.xz",
+        "size": 12810056,
+        "sha256": "70effd69f7a8ab249f66b0a68aba8b08af52aa2ab710dfb8a0fba102685b1646",
+        "version": "8.0.1",
     },
     "clang-6": {
         "url": "http://releases.llvm.org/6.0.1/cfe-6.0.1.src.tar.xz",
@@ -41,10 +41,10 @@ DOWNLOADS = {
         "version": "6.0.1",
     },
     "clang-compiler-rt": {
-        "url": "http://releases.llvm.org/8.0.0/compiler-rt-8.0.0.src.tar.xz",
-        "size": 1903020,
-        "sha256": "b435c7474f459e71b2831f1a4e3f1d21203cb9c0172e94e9d9b69f50354f21b1",
-        "version": "8.0.0",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/compiler-rt-8.0.1.src.tar.xz",
+        "size": 1954204,
+        "sha256": "11828fb4823387d820c6715b25f6b2405e60837d12a7469e7a8882911c721837",
+        "version": "8.0.1",
     },
     "clang-compiler-rt-6": {
         "url": "http://releases.llvm.org/6.0.1/compiler-rt-6.0.1.src.tar.xz",
@@ -120,10 +120,10 @@ DOWNLOADS = {
         "version": "1.0.7",
     },
     "libc++": {
-        "url": "http://releases.llvm.org/8.0.0/libcxx-8.0.0.src.tar.xz",
-        "size": 1752308,
-        "sha256": "c2902675e7c84324fb2c1e45489220f250ede016cc3117186785d9dc291f9de2",
-        "version": "8.0.0",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
+        "size": 1739524,
+        "sha256": "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78",
+        "version": "8.0.1",
     },
     "libc++-6": {
         "url": "http://releases.llvm.org/6.0.1/libcxx-6.0.1.src.tar.xz",
@@ -132,10 +132,10 @@ DOWNLOADS = {
         "version": "6.0.1",
     },
     "libc++abi": {
-        "url": "http://releases.llvm.org/8.0.0/libcxxabi-8.0.0.src.tar.xz",
-        "size": 539040,
-        "sha256": "c2d6de9629f7c072ac20ada776374e9e3168142f20a46cdb9d6df973922b07cd",
-        "version": "8.0.0",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxxabi-8.0.1.src.tar.xz",
+        "size": 538356,
+        "sha256": "b75bf3c8dc506e7d950d877eefc8b6120a4651aaa110f5805308861f2cfaf6ef",
+        "version": "8.0.1",
     },
     "libc++abi-6": {
         "url": "http://releases.llvm.org/6.0.1/libcxxabi-6.0.1.src.tar.xz",
@@ -204,10 +204,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.libxcb.txt",
     },
     "lld": {
-        "url": "http://releases.llvm.org/8.0.0/lld-8.0.0.src.tar.xz",
-        "size": 999864,
-        "sha256": "9caec8ec922e32ffa130f0fb08e4c5a242d7e68ce757631e425e9eba2e1a6e37",
-        "version": "8.0.0",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/lld-8.0.1.src.tar.xz",
+        "size": 996440,
+        "sha256": "9fba1e94249bd7913e8a6c3aadcb308b76c8c3d83c5ce36c99c3f34d73873d88",
+        "version": "8.0.1",
     },
     "lld-6": {
         "url": "http://releases.llvm.org/6.0.1/lld-6.0.1.src.tar.xz",
@@ -216,10 +216,10 @@ DOWNLOADS = {
         "version": "6.0.1",
     },
     "llvm": {
-        "url": "http://releases.llvm.org/8.0.0/llvm-8.0.0.src.tar.xz",
-        "size": 30503732,
-        "sha256": "8872be1b12c61450cacc82b3d153eab02be2546ef34fa3580ed14137bb26224c",
-        "version": "8.0.0",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/llvm-8.0.1.src.tar.xz",
+        "size": 30477608,
+        "sha256": "44787a6d02f7140f145e2250d56c9f849334e11f9ae379827510ed72f12b75e7",
+        "version": "8.0.1",
     },
     "llvm-6": {
         "url": "http://releases.llvm.org/6.0.1/llvm-6.0.1.src.tar.xz",
