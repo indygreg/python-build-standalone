@@ -219,9 +219,7 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar \
     $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
