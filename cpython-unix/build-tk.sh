@@ -13,12 +13,22 @@ export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib
 tar -xf tk${TK_VERSION}-src.tar.gz
 pushd tk8.6.9/unix
 
-CFLAGS="-fPIC" ./configure \
+CFLAGS="-fPIC"
+LDFLAGS=""
+
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include"
+    LDFLAGS="-L${TOOLS_PATH}/deps/lib"
+    EXTRA_CONFIGURE_FLAGS="--enable-aqua=yes --without-x"
+else
+    EXTRA_CONFIGURE_FLAGS="--x-includes=${TOOLS_PATH}/deps/include --x-libraries=${TOOLS_PATH}/deps/lib"
+fi
+
+CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ./configure \
     --prefix=/tools/deps \
-    --x-includes=${TOOLS_PATH}/deps/include \
-    --x-libraries=${TOOLS_PATH}/deps/lib \
     --with-tcl=${TOOLS_PATH}/deps/lib \
-    --enable-shared=no
+    --enable-shared=no \
+    ${EXTRA_CONFIGURE_FLAGS}
 
 # For some reason musl isn't link libXau and libxcb. So we hack the Makefile
 # to do what we want.
