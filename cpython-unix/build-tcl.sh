@@ -39,3 +39,4 @@ CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include" ./configure \
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
+make -j ${NUM_CPUS} install-private-headers DESTDIR=${ROOT}/out
