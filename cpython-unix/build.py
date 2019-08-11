@@ -423,7 +423,7 @@ def python_build_info(
     # Extension variants are denoted by the presence of
     # Modules/VARIANT-<extension>-<variant>.data files that describe the
     # extension. Find those files and process them.
-    tf = build_env.get_archive("/build/out/python/build/Modules", as_tar=True)
+    tf = build_env.get_output_archive("python/build/Modules", as_tar=True)
 
     for ti in tf:
         basename = os.path.basename(ti.name)
@@ -639,7 +639,7 @@ def build_cpython(
         dest_path = BUILD / basename
 
         with dest_path.open("wb") as fh:
-            fh.write(build_env.get_archive("/build/out/python"))
+            fh.write(build_env.get_output_archive("python"))
 
 
 def main():
