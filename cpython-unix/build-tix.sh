@@ -21,15 +21,23 @@ cd cpython-source-deps-tix-${TIX_VERSION}
 # Yes, really.
 chmod +x configure
 
+CFLAGS="-fPIC -DUSE_INTERP_RESULT"
+
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include"
+    EXTRA_CONFIGURE_FLAGS="--without-x"
+else
+    EXTRA_CONFIGURE_FLAGS="--x-includes=/tools/deps/include --x-libraries=/tools/deps/lib"
+fi
+
 # -DUSE_INTERP_RESULT is to allow tix to use deprecated fields or something
 # like that.
-CFLAGS="-fPIC -DUSE_INTERP_RESULT" ./configure \
+CFLAGS="${CFLAGS}" ./configure \
     --prefix=/tools/deps \
-    --x-includes=/tools/deps/include \
-    --x-libraries=/tools/deps/lib \
     --with-tcl=${TOOLS_PATH}/deps/lib \
     --with-tk=${TOOLS_PATH}/deps/lib \
-    --enable-shared=no
+    --enable-shared=no \
+    ${EXTRA_CONFIGURE_FLAGS}
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
