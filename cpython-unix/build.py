@@ -323,16 +323,8 @@ def python_build_info(
     core_objs = set()
     modules_objs = set()
 
-    res = build_env.run_capture(
-        ["/usr/bin/find", "/build/out/python/build", "-name", "*.o"], user="build"
-    )
-
-    for line in res[1].splitlines():
-        if not line.strip():
-            continue
-
-        p = pathlib.Path(os.fsdecode(line))
-        rel_path = p.relative_to("/build/out/python")
+    for f in build_env.find_output_files("python/build", "*.o"):
+        rel_path = pathlib.Path(f)
 
         if rel_path.parts[1] in ("Objects", "Parser", "Python"):
             core_objs.add(rel_path)
@@ -346,14 +338,8 @@ def python_build_info(
 
     libraries = set()
 
-    for line in build_env.run_capture(
-        ["/usr/bin/find", "/build/out/python/build/lib", "-name", "*.a"], user="build"
-    )[1].splitlines():
-
-        if not line.strip():
-            continue
-
-        f = line[len("/build/out/python/build/lib/") :].decode("ascii")
+    for f in build_env.find_output_files("python/build/lib", "*.a"):
+        f = f[len("python/build/lib/") :]
 
         # Strip "lib" prefix and ".a" suffix.
         libname = f[3:-2]

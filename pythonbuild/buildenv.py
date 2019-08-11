@@ -3,7 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import contextlib
+import fnmatch
 import io
+import os
 import pathlib
 import shutil
 import tarfile
@@ -61,9 +63,6 @@ class ContainerContext(object):
 
         container_exec(self.container, program, user=user, environment=environment)
 
-    def run_capture(self, command, user=None):
-        return self.container.exec_run(command, user=user)
-
     def get_tools_archive(self, dest, name):
         log("copying container files to %s" % dest)
         data = container_get_archive(self.container, "/build/out/tools/%s" % name)
@@ -79,6 +78,15 @@ class ContainerContext(object):
             return tarfile.open(fileobj=data)
         else:
             return data.getvalue()
+
+    def find_output_files(self, base_path, pattern):
+        command = ["/usr/bin/find", "/build/out/%s" % base_path, "-name", pattern]
+
+        for line in self.container.exec_run(command, user="build")[1].splitlines():
+            if not line.strip():
+                continue
+
+            yield line[len("/build/out/%s/" % base_path) :].decode("ascii")
 
 
 class TempdirContext(object):
@@ -142,6 +150,17 @@ class TempdirContext(object):
 
         with dest.open("wb") as fh:
             create_tar_from_directory(fh, self.td / "out" / "tools")
+
+    def find_output_files(self, base_path, pattern):
+        base = str(self.td / "out" / base_path)
+
+        for root, dirs, files in os.walk(base):
+            dirs.sort()
+
+            for f in sorted(files):
+                if fnmatch.fnmatch(f, pattern):
+                    full = os.path.join(root, f)
+                    yield full[len(base) + 1 :]
 
 
 @contextlib.contextmanager
