@@ -651,7 +651,7 @@ def build_cpython(
         dest_path = BUILD / basename
 
         with dest_path.open("wb") as fh:
-            fh.write(build_env.get_output_archive())
+            fh.write(build_env.get_output_archive("python"))
 
 
 def main():

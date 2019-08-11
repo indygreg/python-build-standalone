@@ -155,13 +155,11 @@ class TempdirContext(object):
         with dest.open("wb") as fh:
             create_tar_from_directory(fh, self.td / "out" / "tools")
 
-    def get_output_archive(self, path=None, as_tar=False):
-        p = self.td / "out"
-        if path:
-            p = p / path
+    def get_output_archive(self, path, as_tar=False):
+        p = self.td / "out" / path
 
         data = io.BytesIO()
-        create_tar_from_directory(data, p)
+        create_tar_from_directory(data, p, path_prefix=p.parts[-1])
 
         data.seek(0)
 

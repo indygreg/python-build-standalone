@@ -147,7 +147,7 @@ def download_entry(key: str, dest_path: pathlib.Path, local_name=None) -> pathli
     return local_path
 
 
-def create_tar_from_directory(fh, base_path: pathlib.Path):
+def create_tar_from_directory(fh, base_path: pathlib.Path, path_prefix=None):
     with tarfile.open(name="", mode="w", fileobj=fh, dereference=True) as tf:
         for root, dirs, files in os.walk(base_path):
             dirs.sort()
@@ -155,6 +155,8 @@ def create_tar_from_directory(fh, base_path: pathlib.Path):
             for f in sorted(files):
                 full = base_path / root / f
                 rel = full.relative_to(base_path)
+                if path_prefix:
+                    rel = pathlib.Path(path_prefix) / rel
                 tf.add(full, rel)
 
 
