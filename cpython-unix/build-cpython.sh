@@ -194,9 +194,16 @@ popd
 find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
 
 # Symlink libpython so we don't have 2 copies.
+
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+  PYTHON_ARCH="darwin"
+else
+  PYTHON_ARCH="x86_64-linux-gnu"
+fi
+
 LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}m.a
 ln -sf \
-    python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-x86_64-linux-gnu/${LIBPYTHON} \
+    python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-${PYTHON_ARCH}/${LIBPYTHON} \
     ${ROOT}/out/python/install/lib/${LIBPYTHON}
 
 # Ditto for Python executable.
