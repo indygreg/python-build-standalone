@@ -212,20 +212,24 @@ for d in Modules Objects Parser Programs Python; do
 done
 
 # Also copy extension variant metadata files.
-cp -av Modules/VARIANT-*.data ${ROOT}/out/python/build/Modules/
+if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+    cp -av Modules/VARIANT-*.data ${ROOT}/out/python/build/Modules/
+fi
 
 # The object files need to be linked against library dependencies. So copy
 # library files as well.
 mkdir ${ROOT}/out/python/build/lib
-cp -av ${ROOT}/deps/lib/*.a ${ROOT}/out/python/build/lib/
-cp -av ${ROOT}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
+cp -av ${TOOLS_PATH}/deps/lib/*.a ${ROOT}/out/python/build/lib/
+cp -av ${TOOLS_PATH}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
 
 # And prune libraries we never reference.
-rm ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
+rm -f ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 
 # Copy tcl/tk/tix resources needed by tkinter.
-mkdir ${ROOT}/out/python/install/lib/tcl
-cp -av ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ ${ROOT}/out/python/install/lib/tcl/
+if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+    mkdir ${ROOT}/out/python/install/lib/tcl
+    cp -av ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ ${ROOT}/out/python/install/lib/tcl/
+fi
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
