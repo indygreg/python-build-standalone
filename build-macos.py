@@ -19,12 +19,15 @@ VENV = BUILD / "venv.macos"
 PIP = VENV / "bin" / "pip"
 PYTHON = VENV / "bin" / "python"
 REQUIREMENTS = ROOT / "requirements.txt"
-MAKE_DIR = ROOT / "cpython-macos"
+MAKE_DIR = ROOT / "cpython-unix"
 
 
 def bootstrap():
     parser = argparse.ArgumentParser()
     parser.add_argument("--optimized", action="store_true")
+    parser.add_argument(
+        "--python", default="cpython-3.7", help="name of Python to build"
+    )
 
     args = parser.parse_args()
 
@@ -42,6 +45,8 @@ def bootstrap():
     if args.optimized:
         os.environ["PYBUILD_OPTIMIZED"] = "1"
 
+    os.environ["PYBUILD_PYTHON"] = args.python
+
     subprocess.run([str(PYTHON), __file__], check=True)
 
 
@@ -54,9 +59,15 @@ def run():
     env = dict(os.environ)
     env["PYTHONUNBUFFERED"] = "1"
 
+    entry = DOWNLOADS[os.environ["PYBUILD_PYTHON"]]
+    env["PYBUILD_PYTHON_VERSION"] = entry["version"]
+
+    env["PYBUILD_NO_DOCKER"] = "1"
+    env["PYBUILD_UNIX_PLATFORM"] = "macos"
+
     subprocess.run(["make"], cwd=str(MAKE_DIR), env=env, check=True)
 
-    basename = "cpython-macos"
+    basename = "cpython-%s-macos" % entry["version"]
     extra = ""
 
     if "PYBUILD_OPTIMIZED" in os.environ:
@@ -71,7 +82,7 @@ def run():
         source_path,
         DIST,
         "cpython-%s-macos%s-%s"
-        % (DOWNLOADS["cpython-3.7"]["version"], extra, now.strftime("%Y%m%dT%H%M")),
+        % (entry["version"], extra, now.strftime("%Y%m%dT%H%M")),
     )
 
 
