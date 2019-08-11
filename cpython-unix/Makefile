@@ -190,7 +190,12 @@ TIX_DEPENDS = \
 $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar: $(TIX_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) tix
 
-$(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar: $(HERE)/build-tk.sh $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar
+TK_DEPENDS = \
+    $(HERE)/build-tk.sh $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar
+    $(NULL)
+
+$(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar: $(TK_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) tk
 
 $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-uuid.sh
