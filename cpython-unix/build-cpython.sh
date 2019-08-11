@@ -137,8 +137,8 @@ CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
 # Supplement produced Makefile with our modifications.
 cat ../Makefile.extra >> Makefile
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=${ROOT}/out/python
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
 # Install pip so we can patch it to work with non-dynamic executables
 # and work around https://github.com/pypa/pip/issues/6543. But pip's bundled
