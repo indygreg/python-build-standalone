@@ -1,0 +1,8 @@
+_codecs
+_io
+_signal
+_thread
+_tracemalloc
+_weakref
+faulthandler
+posix

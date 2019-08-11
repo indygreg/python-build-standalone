@@ -32,18 +32,6 @@ SUPPORT = ROOT / "cpython-unix"
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 
-REQUIRED_EXTENSIONS = {
-    "_codecs",
-    "_io",
-    "_signal",
-    "_thread",
-    "_tracemalloc",
-    "_weakref",
-    "faulthandler",
-    "posix",
-}
-
-
 def add_target_env(env, platform, build_env):
     env["PYBUILD_PLATFORM"] = platform
     env["NUM_CPUS"] = "%d" % multiprocessing.cpu_count()
@@ -323,7 +311,9 @@ def build_tix(client, image, platform, musl=False):
         build_env.get_tools_archive(archive_path("tix", platform, musl=musl), "deps")
 
 
-def python_build_info(build_env, config_c_in, setup_dist, setup_local, libressl=False):
+def python_build_info(
+    build_env, platform, config_c_in, setup_dist, setup_local, libressl=False
+):
     """Obtain build metadata for the Python distribution."""
 
     bi = {"core": {"objs": [], "links": []}, "extensions": {}}
@@ -475,9 +465,12 @@ def python_build_info(build_env, config_c_in, setup_dist, setup_local, libressl=
             }
         )
 
+    with (SUPPORT / ("required-extensions.%s" % platform)).open("r") as fh:
+        required_extensions = {l.strip() for l in fh if l.strip()}
+
     for extension, entries in bi["extensions"].items():
         for entry in entries:
-            entry["required"] = extension in REQUIRED_EXTENSIONS
+            entry["required"] = extension in required_extensions
 
     # Any paths left in modules_objs are not part of any extension and are
     # instead part of the core distribution.
@@ -629,6 +622,7 @@ def build_cpython(
             "python_stdlib": "install/lib/python%s" % entry["version"][0:3],
             "build_info": python_build_info(
                 build_env,
+                platform,
                 config_c_in,
                 setup_dist_content,
                 setup_local_content,
