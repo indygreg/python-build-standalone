@@ -41,6 +41,14 @@ ifdef PYBUILD_MUSL
     NEED_MUSL := 1
 endif
 
+ifdef PYBUILD_LIBRESSL
+    NEED_LIBRESSL := 1
+    NEED_OPENSSL :=
+else
+    NEED_OPENSSL := 1
+    NEED_LIBRESSL :=
+endif
+
 ifdef PYBUILD_DEBUG
 	DEFAULT_EXTRA := -debug
 else
@@ -218,7 +226,9 @@ PYTHON_DEPENDS := \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PLATFORM).tar \
+    $(if $(NEED_LIBRESSL),$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar \
+    $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PLATFORM).tar) \
     $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
     $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar) \
@@ -227,12 +237,6 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
     $(HERE)/static-modules.$(BASE_PLATFORM) \
     $(NULL)
-
-ifdef PYBUILD_LIBRESSL
-PYTHON_DEPENDS += $(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PLATFORM).tar
-else
-PYTHON_DEPENDS += $(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PLATFORM).tar
-endif
 
 $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) cpython
