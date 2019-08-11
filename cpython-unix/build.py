@@ -285,10 +285,14 @@ def build_tix(client, image, platform, musl=False):
 
     with build_environment(client, image) as build_env:
         build_env.install_toolchain(
-            BUILD, platform, binutils=True, clang=True, musl=musl
+            BUILD, platform, binutils=install_binutils(platform), clang=True, musl=musl
         )
 
-        for p in ("tcl", "tk", "libX11", "xorgproto"):
+        depends = {"tcl", "tk"}
+        if platform != "macos":
+            depends |= {"libX11", "xorgproto"}
+
+        for p in sorted(depends):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)
 
         for p in (tcl_archive, tk_archive, tix_archive, SUPPORT / "build-tix.sh"):
