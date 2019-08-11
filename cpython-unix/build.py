@@ -623,7 +623,12 @@ def build_cpython(
             json.dump(python_info, fh, sort_keys=True, indent=4)
             fh.flush()
 
-            build_env.copy_file(fh.name, "/build/out/python", dest_name="PYTHON.json")
+            if image:
+                dest_path = "/build/out/python"
+            else:
+                dest_path = "out/python"
+
+            build_env.copy_file(fh.name, dest_path, dest_name="PYTHON.json")
 
         basename = "cpython-%s-%s" % (entry["version"], platform)
 

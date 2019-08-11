@@ -97,7 +97,7 @@ class TempdirContext(object):
 
     def copy_file(self, source: pathlib.Path, dest_path=None, dest_name=None):
         if dest_path:
-            dest_dir = self.td / dest_path.lstrip("/")
+            dest_dir = self.td / dest_path
         else:
             dest_dir = self.td
 
