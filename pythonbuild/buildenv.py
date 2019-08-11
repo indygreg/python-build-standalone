@@ -70,8 +70,12 @@ class ContainerContext(object):
         with open(dest, "wb") as fh:
             fh.write(data)
 
-    def get_output_archive(self, path, as_tar=False):
-        data = container_get_archive(self.container, "/build/out/%s" % path)
+    def get_output_archive(self, path=None, as_tar=False):
+        p = "/build/out"
+        if path:
+            p += "/%s" % path
+
+        data = container_get_archive(self.container, p)
         data = io.BytesIO(data)
 
         if as_tar:
@@ -151,9 +155,13 @@ class TempdirContext(object):
         with dest.open("wb") as fh:
             create_tar_from_directory(fh, self.td / "out" / "tools")
 
-    def get_output_archive(self, path, as_tar=False):
+    def get_output_archive(self, path=None, as_tar=False):
+        p = self.td / "out"
+        if path:
+            p = p / path
+
         data = io.BytesIO()
-        create_tar_from_directory(data, self.td / "out" / path)
+        create_tar_from_directory(data, p)
 
         data.seek(0)
 
