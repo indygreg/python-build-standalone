@@ -5,19 +5,19 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/deps/bin:/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig:/tools/deps/lib/pkgconfig
+export PATH=${TOOLS_PATH}/deps/bin:${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
+export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib/pkgconfig
 
 tar -xf tk${TK_VERSION}-src.tar.gz
 pushd tk8.6.9/unix
 
 CFLAGS="-fPIC" ./configure \
     --prefix=/tools/deps \
-    --x-includes=/tools/deps/include \
-    --x-libraries=/tools/deps/lib \
-    --with-tcl=/tools/deps/lib \
+    --x-includes=${TOOLS_PATH}/deps/include \
+    --x-libraries=${TOOLS_PATH}/deps/lib \
+    --with-tcl=${TOOLS_PATH}/deps/lib \
     --enable-shared=no
 
 # For some reason musl isn't link libXau and libxcb. So we hack the Makefile
@@ -32,7 +32,7 @@ if [ "${CC}" = "musl-clang" ]; then
     sed -i 's/install-binaries: $(TK_STUB_LIB_FILE) $(TK_LIB_FILE) ${WISH_EXE}/install-binaries: $(TK_STUB_LIB_FILE) $(TK_LIB_FILE)/' Makefile
 fi
 
-make -j `nproc`
+make -j ${NUM_CPUS}
 touch wish
-make -j `nproc` install DESTDIR=/build/out
-rm /build/out/tools/deps/bin/wish*
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
+rm ${ROOT}/out/tools/deps/bin/wish*
