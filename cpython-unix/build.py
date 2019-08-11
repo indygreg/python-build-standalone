@@ -521,22 +521,17 @@ def build_cpython(
             dep_platform += "-musl"
 
         # TODO support bdb/gdbm toggle
-        packages = {
-            "bdb",
-            "bzip2",
-            "libedit",
-            "libffi",
-            "ncurses",
-            "sqlite",
-            "uuid",
-            "xz",
-            "zlib",
-        }
+        packages = {"bdb", "bzip2", "libedit", "libffi", "sqlite", "uuid", "xz", "zlib"}
 
         if libressl:
             packages.add("libressl")
         else:
             packages.add("openssl")
+
+        # We use the system ncurses on macOS for now.
+        ncurses = platform != "macos"
+        if ncurses:
+            packages.add("ncurses")
 
         readline = platform != "macos"
         if readline:
