@@ -596,10 +596,17 @@ def build_cpython(
             "d" if debug else "",
         )
 
+        if platform == "linux64":
+            os_name = "linux"
+        elif platform == "macos":
+            os_name = "macos"
+        else:
+            raise ValueError("unhandled platform: %s" % platform)
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
             "version": "3",
-            "os": "linux",
+            "os": os_name,
             "arch": "x86_64",
             "python_flavor": "cpython",
             "python_version": entry["version"],
