@@ -45,4 +45,5 @@ fi
 make -j ${NUM_CPUS}
 touch wish
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
+make -j ${NUM_CPUS} install-private-headers DESTDIR=${ROOT}/out
 rm ${ROOT}/out/tools/deps/bin/wish*
