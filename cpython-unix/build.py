@@ -823,20 +823,23 @@ def main():
             )
 
         elif action == "tk":
+            extra_archives = {"tcl"}
+            if platform != "macos":
+                extra_archives |= {
+                    "libX11",
+                    "libXau",
+                    "libxcb",
+                    "xcb-proto",
+                    "xorgproto",
+                }
+
             simple_build(
                 client,
                 get_image(client, ROOT, BUILD, "xcb"),
                 action,
                 platform=platform,
                 musl=musl,
-                extra_archives={
-                    "tcl",
-                    "libX11",
-                    "libXau",
-                    "libxcb",
-                    "xcb-proto",
-                    "xorgproto",
-                },
+                extra_archives=extra_archives,
             )
 
         elif action == "cpython":
