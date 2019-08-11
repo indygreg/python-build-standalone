@@ -230,7 +230,7 @@ def build_libedit(client, image, platform, musl=False):
 
         env = {
             "CC": "clang",
-            "TOOLCHAIN": "clang-linux64",
+            "TOOLCHAIN": "clang-%s" % platform,
             "LIBEDIT_VERSION": DOWNLOADS["libedit"]["version"],
         }
 
@@ -263,7 +263,7 @@ def build_readline(client, image, platform, musl=False):
 
         env = {
             "CC": "clang",
-            "TOOLCHAIN": "clang-linux64",
+            "TOOLCHAIN": "clang-%s" % platform,
             "READLINE_VERSION": DOWNLOADS["readline"]["version"],
         }
 
@@ -296,7 +296,7 @@ def build_tix(client, image, platform, musl=False):
 
         env = {
             "CC": "clang",
-            "TOOLCHAIN": "clang-linux64",
+            "TOOLCHAIN": "clang-%s" % platform,
             "TCL_VERSION": DOWNLOADS["tcl"]["version"],
             "TIX_VERSION": DOWNLOADS["tix"]["version"],
             "TK_VERSION": DOWNLOADS["tk"]["version"],
@@ -577,6 +577,7 @@ def build_cpython(
             "PYTHON_VERSION": entry["version"],
             "PYTHON_MAJMIN_VERSION": entry["version"][:3],
             "SETUPTOOLS_VERSION": DOWNLOADS["setuptools"]["version"],
+            "TOOLCHAIN": "clang-%s" % platform,
         }
 
         if musl:
