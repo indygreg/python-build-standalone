@@ -5,10 +5,10 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig:/tools/deps/lib/pkgconfig
+export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
+export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib/pkgconfig
 
 tar -xf tcl8.6.9-src.tar.gz
 pushd tcl8.6.9
@@ -33,9 +33,9 @@ rm -rf pkgs/sqlite* pkgs/tdbc*
 
 pushd unix
 
-CFLAGS="-fPIC -I/tools/deps/include" ./configure \
+CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include" ./configure \
     --prefix=/tools/deps \
     --enable-shared=no
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
