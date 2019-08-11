@@ -21,6 +21,7 @@ ifeq ($(PLATFORM),linux64)
     NEED_GCC := 1
     NEED_MUSL :=
     NEED_GDBM := 1
+    NEED_X11 := 1
     NEED_READLINE := 1
     NEED_TIX := 1
 endif
@@ -30,6 +31,7 @@ ifeq ($(PLATFORM),macos)
     NEED_GCC :=
     NEED_MUSL :=
     NEED_GDBM :=
+    NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX :=
 endif
@@ -183,7 +185,7 @@ TIX_DEPENDS = \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar \
+    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar) \
     $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar \
     $(NULL)
 
@@ -191,8 +193,9 @@ $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar: $(TIX_DEPENDS)
 	$(BUILD) --platform $(PLATFORM) tix
 
 TK_DEPENDS = \
-    $(HERE)/build-tk.sh $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar
+    $(HERE)/build-tk.sh \
+    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
+    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar) \
     $(NULL)
 
 $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar: $(TK_DEPENDS)
