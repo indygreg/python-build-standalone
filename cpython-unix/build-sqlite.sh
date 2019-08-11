@@ -9,8 +9,8 @@ ROOT=`pwd`
 
 export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
-tar -xf sqlite-autoconf-3280000.tar.gz
-pushd sqlite-autoconf-3280000
+tar -xf sqlite-autoconf-${SQLITE_VERSION}.tar.gz
+pushd sqlite-autoconf-${SQLITE_VERSION}
 
 CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure \
     --prefix /tools/deps \
