@@ -98,7 +98,8 @@ EOF
 # ``#ifdef __APPLE__`` instead of a more specific feature flag. All
 # occurrences of __APPLE__ in that file are related to libedit. So we
 # just replace the content.
-sed -i s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c
+sed s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c > tmp
+mv tmp Modules/readline-libedit.c
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
