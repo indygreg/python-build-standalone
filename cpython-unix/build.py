@@ -45,6 +45,7 @@ REQUIRED_EXTENSIONS = {
 
 
 def add_target_env(env, platform, build_env):
+    env["PYBUILD_PLATFORM"] = platform
     env["NUM_CPUS"] = "%d" % multiprocessing.cpu_count()
     env["TOOLS_PATH"] = build_env.tools_path
 

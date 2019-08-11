@@ -23,7 +23,7 @@ if [ "${CC}" = "musl-clang" ]; then
     EXTRA_FLAGS="${EXTRA_FLAGS} no-async -DOPENSSL_NO_ASYNC -D__STDC_NO_ATOMICS__=1 no-engine -DOPENSSL_NO_SECURE_MEMORY"
 fi
 
-if [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin18.7.0" ]; then
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
   OPENSSL_TARGET=darwin64-x86_64-cc
 else
   OPENSSL_TARGET=linux-x86_64
