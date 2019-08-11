@@ -316,6 +316,8 @@ def python_build_info(
 ):
     """Obtain build metadata for the Python distribution."""
 
+    log("resolving Python distribution build info")
+
     bi = {"core": {"objs": [], "links": []}, "extensions": {}}
 
     # Object files for the core distribution are found by walking the
@@ -324,7 +326,7 @@ def python_build_info(
     modules_objs = set()
 
     for f in build_env.find_output_files("python/build", "*.o"):
-        rel_path = pathlib.Path(f)
+        rel_path = pathlib.Path("build") / f
 
         if rel_path.parts[1] in ("Objects", "Parser", "Python"):
             core_objs.add(rel_path)
@@ -339,8 +341,6 @@ def python_build_info(
     libraries = set()
 
     for f in build_env.find_output_files("python/build/lib", "*.a"):
-        f = f[len("python/build/lib/") :]
-
         # Strip "lib" prefix and ".a" suffix.
         libname = f[3:-2]
 
