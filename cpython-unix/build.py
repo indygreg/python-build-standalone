@@ -372,6 +372,10 @@ def python_build_info(
 
         links = []
 
+        for framework in sorted(d["frameworks"]):
+            log("adding framework %s for extension %s" % (framework, extension))
+            links.append({"name": framework, "framework": True})
+
         for libname in sorted(d["links"]):
             log("adding library %s for extension %s" % (libname, extension))
 
