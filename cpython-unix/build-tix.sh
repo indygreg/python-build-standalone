@@ -5,10 +5,10 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
-export PATH=/tools/deps/bin:/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
-export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig:/tools/deps/lib/pkgconfig
+export PATH=${TOOLS_PATH}/deps/bin:${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
+export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib/pkgconfig
 
 # We need the tcl/tk source extracted because tix looks for private symbols.
 tar -xf tcl${TCL_VERSION}-src.tar.gz
@@ -27,9 +27,9 @@ CFLAGS="-fPIC -DUSE_INTERP_RESULT" ./configure \
     --prefix=/tools/deps \
     --x-includes=/tools/deps/include \
     --x-libraries=/tools/deps/lib \
-    --with-tcl=/tools/deps/lib \
-    --with-tk=/tools/deps/lib \
+    --with-tcl=${TOOLS_PATH}/deps/lib \
+    --with-tk=${TOOLS_PATH}/deps/lib \
     --enable-shared=no
 
-make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
