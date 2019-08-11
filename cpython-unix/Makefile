@@ -183,10 +183,8 @@ $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/buil
 TIX_DEPENDS = \
     $(HERE)/build-tix.sh \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
     $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar) \
-    $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar \
     $(NULL)
 
 $(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar: $(TIX_DEPENDS)
