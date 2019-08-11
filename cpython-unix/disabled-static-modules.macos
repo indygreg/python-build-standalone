@@ -1,0 +1,10 @@
+# We don't support GDBM because it is GPL v3.
+_gdbm
+# Not yet supported.
+_tkinter
+# Not available on macOS.
+nis
+# Not available on macOS.
+ossaudiodev
+# Not available on macOS.
+spwd

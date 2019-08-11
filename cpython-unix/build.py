@@ -509,12 +509,18 @@ def build_cpython(
     with (SUPPORT / ("static-modules.%s" % platform)).open("rb") as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
 
+    with (SUPPORT / ("disabled-static-modules.%s" % platform)).open("rb") as fh:
+        disabled_static_modules = {
+            l.strip() for l in fh if l.strip() and not l.strip().startswith(b"#")
+        }
+
     setup = derive_setup_local(
         static_modules_lines,
         python_archive,
         python_version=entry["version"],
         musl=musl,
         debug=debug,
+        disabled=disabled_static_modules,
     )
 
     config_c_in = parse_config_c(setup["config_c_in"].decode("utf-8"))
