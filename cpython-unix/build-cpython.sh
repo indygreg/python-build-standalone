@@ -107,6 +107,8 @@ CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncurses"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/lib/libffi-3.2.1/include -I${TOOLS_PATH}/deps/include/uuid"
+    # Prevent using symbols not supported by current macOS SDK target.
+    CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"
 fi
 
 CPPFLAGS=$CFLAGS
@@ -133,6 +135,13 @@ fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
     ./configure ${CONFIGURE_FLAGS}
+
+# configure checks for the presence of functions and blindly uses them,
+# even if they aren't available in the target macOS SDK. Work around that.
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    sed -i "" "s/#define HAVE_UTIMENSAT 1//g" pyconfig.h
+    sed -i "" "s/#define HAVE_FUTIMENS 1//g" pyconfig.h
+fi
 
 # Supplement produced Makefile with our modifications.
 cat ../Makefile.extra >> Makefile
