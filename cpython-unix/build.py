@@ -525,7 +525,19 @@ def build_cpython(
             dep_platform += "-musl"
 
         # TODO support bdb/gdbm toggle
-        packages = {"bdb", "bzip2", "libedit", "libffi", "sqlite", "uuid", "xz", "zlib"}
+        packages = {
+            "bdb",
+            "bzip2",
+            "libedit",
+            "libffi",
+            "sqlite",
+            "tcl",
+            "tix",
+            "tk",
+            "uuid",
+            "xz",
+            "zlib",
+        }
 
         if libressl:
             packages.add("libressl")
@@ -541,9 +553,8 @@ def build_cpython(
         if readline:
             packages.add("readline")
 
-        tix = platform == "linux64"
-        if tix:
-            packages |= {"libX11", "libXau", "libxcb", "tcl", "tix", "tk", "xorgproto"}
+        if platform == "linux64":
+            packages |= {"libX11", "libXau", "libxcb", "xorgproto"}
 
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)

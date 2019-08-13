@@ -242,10 +242,8 @@ cp -av ${TOOLS_PATH}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
 rm -f ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 
 # Copy tcl/tk/tix resources needed by tkinter.
-if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
-    mkdir ${ROOT}/out/python/install/lib/tcl
-    cp -av ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ ${ROOT}/out/python/install/lib/tcl/
-fi
+mkdir ${ROOT}/out/python/install/lib/tcl
+cp -av ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}/ ${ROOT}/out/python/install/lib/tcl/
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so

@@ -27,6 +27,7 @@ _ssl _ssl.c -lssl -lcrypto
 _testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c
 _testmultiphase _testmultiphase.c
+_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreServices -framework CoreGraphics -framework IOKit -ltcl8.6 -ltk8.6
 _uuid _uuidmodule.c -luuid
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 pyexpat pyexpat.c expat/xmlparse.c expat/xmlrole.c expat/xmltok.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
