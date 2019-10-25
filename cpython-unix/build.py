@@ -571,8 +571,6 @@ def build_cpython(
             if f.startswith("LICENSE.") and f.endswith(".txt"):
                 build_env.copy_file(ROOT / f)
 
-        # TODO copy latest pip/setuptools.
-
         with tempfile.NamedTemporaryFile("wb") as fh:
             # In case default file masks cause wonkiness.
             os.chmod(fh.name, 0o644)
