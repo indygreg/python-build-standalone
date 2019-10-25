@@ -41,3 +41,6 @@ CFLAGS="${CFLAGS}" ./configure \
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
+
+# For some reason libtk*.a have weird permissions. Fix that.
+chmod 644 ${ROOT}/out/tools/deps/lib/Tix*/libTix*.a

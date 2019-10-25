@@ -46,4 +46,8 @@ make -j ${NUM_CPUS}
 touch wish
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
 make -j ${NUM_CPUS} install-private-headers DESTDIR=${ROOT}/out
+
+# For some reason libtk*.a have weird permissions. Fix that.
+chmod 644 /${ROOT}/out/tools/deps/lib/libtk*.a
+
 rm ${ROOT}/out/tools/deps/bin/wish*
