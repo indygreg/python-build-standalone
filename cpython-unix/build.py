@@ -574,12 +574,16 @@ def build_cpython(
         # TODO copy latest pip/setuptools.
 
         with tempfile.NamedTemporaryFile("wb") as fh:
+            # In case default file masks cause wonkiness.
+            os.chmod(fh.name, 0o644)
+
             fh.write(setup_local_content)
             fh.flush()
 
             build_env.copy_file(fh.name, dest_name="Setup.local")
 
         with tempfile.NamedTemporaryFile("wb") as fh:
+            os.chmod(fh.name, 0o644)
             fh.write(extra_make_content)
             fh.flush()
 
