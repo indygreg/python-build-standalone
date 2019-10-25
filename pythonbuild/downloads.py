@@ -282,10 +282,10 @@ DOWNLOADS = {
         "version": "2.11.06",
     },
     "pip": {
-        "url": "https://files.pythonhosted.org/packages/8b/8a/1b2aadd922db1afe6bc107b03de41d6d37a28a5923383e60695fba24ae81/pip-19.2.1.tar.gz",
-        "size": 1376932,
-        "sha256": "258d702483dd749400aec59c23d638a5b2249ae28a0f478b6cab12ad45681a80",
-        "version": "19.2.1",
+        "url": "https://files.pythonhosted.org/packages/ce/ea/9b445176a65ae4ba22dce1d93e4b5fe182f953df71a145f557cffaffc1bf/pip-19.3.1.tar.gz",
+        "size": 1393609,
+        "sha256": "21207d76c1031e517668898a6b46a9fb1501c7a4710ef5dfd6a40ad9e6757ea7",
+        "version": "19.3.1",
     },
     "readline": {
         "url": "ftp://ftp.gnu.org/gnu/readline/readline-6.3.tar.gz",
@@ -303,10 +303,10 @@ DOWNLOADS = {
         "version": "1.30.1",
     },
     "setuptools": {
-        "url": "https://files.pythonhosted.org/packages/1d/64/a18a487b4391a05b9c7f938b94a16d80305bf0369c6b0b9509e86165e1d3/setuptools-41.0.1.zip",
-        "size": 849016,
-        "sha256": "a222d126f5471598053c9a77f4b5d4f26eaa1f150ad6e01dcf1a42e185d05613",
-        "version": "41.0.1",
+        "url": "https://files.pythonhosted.org/packages/f4/d5/a6c19dcbcbc267aca376558797f036d9bcdff344c9f785fe7d0fe9a5f2a7/setuptools-41.4.0.zip",
+        "size": 855608,
+        "sha256": "7eae782ccf36b790c21bde7d86a4f303a441cd77036b25c559a602cf5186ce4d",
+        "version": "41.4.0",
     },
     "sqlite": {
         "url": "https://www.sqlite.org/2019/sqlite-autoconf-3300100.tar.gz",
