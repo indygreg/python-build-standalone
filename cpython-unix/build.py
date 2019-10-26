@@ -8,6 +8,7 @@ import json
 import multiprocessing
 import os
 import pathlib
+import subprocess
 import sys
 import tempfile
 
@@ -46,6 +47,23 @@ def add_target_env(env, platform, build_env):
         env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
         env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
         env["PATH"] = "/usr/bin:/bin"
+
+        # macOS SDK has historically been in /usr courtesy of an
+        # installer provided by Xcode. But with Catalina, the files
+        # are now typically in
+        # /Applications/Xcode.app/Contents/Developer/Platforms/.
+        # The proper way to resolve this path is with xcrun, which
+        # will give us the headers that Xcode is configured to use.
+        res = subprocess.run(
+            ["xcrun", "--show-sdk-path"],
+            check=True,
+            capture_output=True,
+            encoding="utf-8",
+        )
+
+        sdk_path = res.stdout.strip()
+        env["MACOS_SDK_PATH"] = sdk_path
+        env["CPATH"] = "%s/usr/include" % sdk_path
 
 
 def archive_path(package_name: str, platform: str, musl=False):
