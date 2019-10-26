@@ -549,9 +549,6 @@ def build_cpython(
             "libedit",
             "libffi",
             "sqlite",
-            "tcl",
-            "tix",
-            "tk",
             "uuid",
             "xz",
             "zlib",
@@ -573,6 +570,10 @@ def build_cpython(
 
         if platform == "linux64":
             packages |= {"libX11", "libXau", "libxcb", "xorgproto"}
+
+        tix = platform != "macos"
+        if tix:
+            packages |= {"tcl", "tix", "tk"}
 
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, platform, musl=musl)

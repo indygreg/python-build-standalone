@@ -84,11 +84,12 @@ macOS
 The XCode command line tools must be installed. A Python 3 interpreter
 is required to execute the build. ``/usr/bin/clang`` must exist.
 
-macOS SDK headers must be installed in ``/usr/include`` in order to work
-with the Clang toolchain that is built. If ``/usr/include`` does not
-exist, try running the installer. e.g.::
-
-    open /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg
+macOS SDK headers must be installed. Try running ``xcode-select --install``
+to install them if you see errors about e.g. ``stdio.h`` not being found.
+Verify they are installed by running ``xcrun --show-sdk-path``. It
+should print something like
+``/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk``
+on modern versions of macOS.
 
 Windows
 -------

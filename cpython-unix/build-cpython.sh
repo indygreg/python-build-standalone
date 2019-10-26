@@ -107,6 +107,10 @@ CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncurses"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/lib/libffi-3.2.1/include -I${TOOLS_PATH}/deps/include/uuid"
+
+    CFLAGS="${CFLAGS} -I${MACOS_SDK_PATH}/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers"
+    CFLAGS="${CFLAGS} -F${MACOS_SDK_PATH}/System/Library/Frameworks"
+
     # Prevent using symbols not supported by current macOS SDK target.
     CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"
 fi
@@ -242,10 +246,12 @@ cp -av ${TOOLS_PATH}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
 rm -f ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 
 # Copy tcl/tk/tix resources needed by tkinter.
-mkdir ${ROOT}/out/python/install/lib/tcl
-for source in ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}; do
-  cp -av $source ${ROOT}/out/python/install/lib/tcl/
-done
+if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+  mkdir ${ROOT}/out/python/install/lib/tcl
+  for source in ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}; do
+    cp -av $source ${ROOT}/out/python/install/lib/tcl/
+  done
+fi
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
