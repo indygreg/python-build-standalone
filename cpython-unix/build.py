@@ -695,13 +695,13 @@ def main():
     DOWNLOADS_PATH.mkdir(exist_ok=True)
     (BUILD / "logs").mkdir(exist_ok=True)
 
-    try:
-        client = docker.from_env()
-        client.ping()
-    except Exception as e:
-        if os.environ.get("PYBUILD_NO_DOCKER"):
-            client = None
-        else:
+    if os.environ.get("PYBUILD_NO_DOCKER"):
+        client = None
+    else:
+        try:
+            client = docker.from_env()
+            client.ping()
+        except Exception as e:
             print("unable to connect to Docker: %s" % e)
             return 1
 
