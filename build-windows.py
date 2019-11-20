@@ -14,7 +14,7 @@ import venv
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent
 BUILD = ROOT / "build"
 DIST = ROOT / "dist"
-VENV = BUILD / "venv"
+VENV = BUILD / "venv.windows"
 PIP = VENV / "Scripts" / "pip.exe"
 PYTHON = VENV / "Scripts" / "python.exe"
 REQUIREMENTS = ROOT / "requirements.win.txt"
