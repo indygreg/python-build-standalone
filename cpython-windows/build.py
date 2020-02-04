@@ -138,9 +138,9 @@ def find_msbuild():
     p = subprocess.check_output(
         [
             str(vswhere),
-            # Visual Studio 2017.
+            # Visual Studio 2019.
             "-version",
-            "[15,16)",
+            "[16,17)",
             "-property",
             "installationPath",
             "-products",
@@ -151,7 +151,7 @@ def find_msbuild():
     # Strictly speaking the output may not be UTF-8.
     p = pathlib.Path(p.strip().decode("utf-8"))
 
-    p = p / "MSBuild" / "15.0" / "Bin" / "MSBuild.exe"
+    p = p / "MSBuild" / "Current" / "Bin" / "MSBuild.exe"
 
     if not p.exists():
         print("%s does not exist" % p)
