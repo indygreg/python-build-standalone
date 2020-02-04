@@ -3,6 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import argparse
 import concurrent.futures
 import json
 import os
@@ -1292,7 +1293,7 @@ def collect_python_build_artifacts(
     return res
 
 
-def build_cpython(arch: str, pgo=False):
+def build_cpython(arch: str, pgo=False, build_mode="static"):
     msbuild = find_msbuild()
     log("found MSBuild at %s" % msbuild)
 
@@ -1525,6 +1526,16 @@ def fetch_strawberry_perl() -> pathlib.Path:
 def main():
     BUILD.mkdir(exist_ok=True)
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--build-mode",
+        choices={"static"},
+        default="static",
+        help="How to compile Python",
+    )
+
+    args = parser.parse_args()
+
     log_path = BUILD / "build.log"
 
     with log_path.open("wb") as log_fh:
@@ -1540,7 +1551,7 @@ def main():
             build_openssl(perl_path, arch)
 
         LOG_PREFIX[0] = "cpython"
-        build_cpython(arch)
+        build_cpython(arch, build_mode=args.build_mode)
 
 
 if __name__ == "__main__":

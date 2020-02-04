@@ -32,7 +32,9 @@ def bootstrap():
     os.environ["PYBUILD_BOOTSTRAPPED"] = "1"
     os.environ["PATH"] = "%s;%s" % (str(VENV / "bin"), os.environ["PATH"])
     os.environ["PYTHONPATH"] = str(ROOT)
-    subprocess.run([str(PYTHON), __file__], check=True)
+    args = [str(PYTHON), __file__]
+    args.extend(sys.argv[1:])
+    subprocess.run(args, check=True)
 
 
 def run():
@@ -46,9 +48,10 @@ def run():
 
     arch = "x86" if os.environ.get("Platform") == "x86" else "amd64"
 
-    subprocess.run(
-        [str(PYTHON), "build.py"], cwd=str(WINDOWS_DIR), env=env, check=True, bufsize=0
-    )
+    args = [str(PYTHON), "build.py"]
+    args.extend(sys.argv[1:])
+
+    subprocess.run(args, cwd=str(WINDOWS_DIR), env=env, check=True, bufsize=0)
 
     source_path = BUILD / ("cpython-windows-%s.tar" % arch)
 
