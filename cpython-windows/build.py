@@ -5,6 +5,7 @@
 
 import argparse
 import concurrent.futures
+import datetime
 import json
 import os
 import pathlib
@@ -21,10 +22,12 @@ from pythonbuild.utils import (
     create_tar_from_directory,
     download_entry,
     extract_tar_to_directory,
+    compress_python_archive,
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / "build"
+DIST = ROOT / "dist"
 SUPPORT = ROOT / "cpython-windows"
 
 LOG_PREFIX = [None]
@@ -1513,6 +1516,8 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
         with dest_path.open("wb") as fh:
             create_tar_from_directory(fh, td / "out")
 
+        return dest_path
+
 
 def fetch_strawberry_perl() -> pathlib.Path:
     strawberryperl_zip = download_entry("strawberryperl", BUILD)
@@ -1536,6 +1541,8 @@ def main():
 
     args = parser.parse_args()
 
+    now = datetime.datetime.utcnow()
+
     log_path = BUILD / "build.log"
 
     with log_path.open("wb") as log_fh:
@@ -1551,7 +1558,14 @@ def main():
             build_openssl(perl_path, arch)
 
         LOG_PREFIX[0] = "cpython"
-        build_cpython(arch, build_mode=args.build_mode)
+        tar_path = build_cpython(arch, build_mode=args.build_mode)
+
+        compress_python_archive(
+            tar_path,
+            DIST,
+            "cpython-%s-windows-%s-%s"
+            % (DOWNLOADS["cpython-3.7"]["version"], arch, now.strftime("%Y%m%dT%H%M")),
+        )
 
 
 if __name__ == "__main__":

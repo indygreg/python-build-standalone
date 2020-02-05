@@ -3,7 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import datetime
 import os
 import pathlib
 import subprocess
@@ -38,29 +37,13 @@ def bootstrap():
 
 
 def run():
-    from pythonbuild.downloads import DOWNLOADS
-    from pythonbuild.utils import compress_python_archive
-
-    now = datetime.datetime.utcnow()
-
     env = dict(os.environ)
     env["PYTHONUNBUFFERED"] = "1"
-
-    arch = "x86" if os.environ.get("Platform") == "x86" else "amd64"
 
     args = [str(PYTHON), "build.py"]
     args.extend(sys.argv[1:])
 
     subprocess.run(args, cwd=str(WINDOWS_DIR), env=env, check=True, bufsize=0)
-
-    source_path = BUILD / ("cpython-windows-%s.tar" % arch)
-
-    compress_python_archive(
-        source_path,
-        DIST,
-        "cpython-%s-windows-%s-%s"
-        % (DOWNLOADS["cpython-3.7"]["version"], arch, now.strftime("%Y%m%dT%H%M")),
-    )
 
 
 if __name__ == "__main__":
