@@ -7,6 +7,7 @@ import argparse
 import concurrent.futures
 import datetime
 import json
+import multiprocessing
 import os
 import pathlib
 import re
@@ -802,11 +803,12 @@ def hack_project_files(
     # Disable whole program optimization because it interferes with the format
     # of object files and makes it so we can't easily consume their symbols.
     # TODO this /might/ be OK once we figure out symbol exporting issues.
-    static_replace_in_file(
-        pyproject_props,
-        b"<WholeProgramOptimization>true</WholeProgramOptimization>",
-        b"<WholeProgramOptimization>false</WholeProgramOptimization>",
-    )
+    if static:
+        static_replace_in_file(
+            pyproject_props,
+            b"<WholeProgramOptimization>true</WholeProgramOptimization>",
+            b"<WholeProgramOptimization>false</WholeProgramOptimization>",
+        )
 
     # Make libpython a static library.
     if static:
@@ -1294,7 +1296,12 @@ def collect_python_build_artifacts(
     for obj in process_project("pythoncore", core_dir):
         res["core"]["objs"].append("build/core/%s" % obj)
 
-    for ext in ("lib", "pdb", "exp"):
+    if static:
+        exts = ("lib",)
+    else:
+        exts = ("lib", "pdb", "exp")
+
+    for ext in exts:
         source = outputs_path / ("python37.%s" % ext)
         dest = core_dir / ("python37.%s" % ext)
         log("copying %s" % source)
@@ -1431,6 +1438,9 @@ def collect_python_build_artifacts(
 
 
 def build_cpython(arch: str, pgo=False, build_mode="static"):
+    if pgo and build_mode == "static":
+        raise Exception("PGO not supported for static build mode")
+
     static = build_mode == "static"
 
     msbuild = find_msbuild()
@@ -1529,10 +1539,27 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
                 platform=build_platform,
             )
 
+            # build-windows.py sets some environment variables which cause the
+            # test harness to pick up the wrong `test` module. We unset these
+            # so things work as expected.
+            env = dict(os.environ)
+            paths = [
+                p for p in env["PATH"].split(";") if p != str(BUILD / "venv" / "bin")
+            ]
+            env["PATH"] = ";".join(paths)
+            del env["PYTHONPATH"]
+
             exec_and_log(
-                [str(cpython_source_path / "python.bat"), "-m", "test", "--pgo"],
+                [
+                    str(cpython_source_path / "python.bat"),
+                    "-m",
+                    "test",
+                    "--pgo",
+                    "-j",
+                    "%d" % (multiprocessing.cpu_count() / 2 - 1),
+                ],
                 str(pcbuild_path),
-                os.environ,
+                env,
                 exit_on_error=False,
             )
 
@@ -1675,7 +1702,16 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
         with (out_dir / "python" / "PYTHON.json").open("w", encoding="utf8") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
-        dest_path = BUILD / ("cpython-windows-%s-%s.tar" % (arch, build_mode))
+        basename = "cpython-%s-windows-%s-%s" % (
+            DOWNLOADS["cpython-3.7"]["version"],
+            arch,
+            build_mode,
+        )
+        if pgo:
+            basename += "-pgo"
+        basename += ".tar"
+
+        dest_path = BUILD / basename
 
         with dest_path.open("wb") as fh:
             create_tar_from_directory(fh, td / "out")
@@ -1702,6 +1738,9 @@ def main():
         default="static",
         help="How to compile Python",
     )
+    parser.add_argument(
+        "--pgo", action="store_true", help="Enable profile-guided optimization"
+    )
 
     args = parser.parse_args()
 
@@ -1722,18 +1761,10 @@ def main():
             build_openssl(perl_path, arch)
 
         LOG_PREFIX[0] = "cpython"
-        tar_path = build_cpython(arch, build_mode=args.build_mode)
+        tar_path = build_cpython(arch, build_mode=args.build_mode, pgo=args.pgo)
 
         compress_python_archive(
-            tar_path,
-            DIST,
-            "cpython-%s-windows-%s-%s-%s"
-            % (
-                DOWNLOADS["cpython-3.7"]["version"],
-                arch,
-                args.build_mode,
-                now.strftime("%Y%m%dT%H%M"),
-            ),
+            tar_path, DIST, "%s-%s" % (tar_path.stem, now.strftime("%Y%m%dT%H%M")),
         )
 
 
