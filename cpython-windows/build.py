@@ -45,7 +45,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     "_ctypes": {},
     "_decimal": {},
     "_elementtree": {},
-    "_hashlib": {},
+    "_hashlib": {"shared_depends_amd64": ["libcrypto-1_1-x64"]},
     "_lzma": {
         "ignore_additional_depends": {"$(OutDir)liblzma$(PyDebugExt).lib"},
         "static_depends": ["liblzma"],
@@ -54,10 +54,13 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     "_overlapped": {},
     "_multiprocessing": {},
     "_socket": {},
-    "_sqlite3": {"static_depends": ["sqlite3"]},
+    "_sqlite3": {"shared_depends": ["sqlite3"], "static_depends": ["sqlite3"]},
     # See the one-off calls to copy_link_to_lib() and elsewhere to hack up
     # project files.
-    "_ssl": {"static_depends_no_project": ["libcrypto_static", "libssl_static"]},
+    "_ssl": {
+        "shared_depends_amd64": ["libcrypto-1_1-x64", "libssl-1_1-x64"],
+        "static_depends_no_project": ["libcrypto_static", "libssl_static"],
+    },
     "_queue": {},
     "pyexpat": {},
     "select": {},
@@ -126,7 +129,7 @@ def exec_and_log(args, cwd, env, exit_on_error=True):
         sys.exit(p.returncode)
 
 
-def find_msbuild():
+def find_vswhere():
     vswhere = (
         pathlib.Path(os.environ["ProgramFiles(x86)"])
         / "Microsoft Visual Studio"
@@ -137,6 +140,12 @@ def find_msbuild():
     if not vswhere.exists():
         print("%s does not exist" % vswhere)
         sys.exit(1)
+
+    return vswhere
+
+
+def find_msbuild():
+    vswhere = find_vswhere()
 
     p = subprocess.check_output(
         [
@@ -161,6 +170,41 @@ def find_msbuild():
         sys.exit(1)
 
     return p
+
+
+def find_vctools_path():
+    vswhere = find_vswhere()
+
+    p = subprocess.check_output(
+        [
+            str(vswhere),
+            "-latest",
+            "-products",
+            "*",
+            "-requires",
+            "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+            "-property",
+            "installationPath",
+        ]
+    )
+
+    # Strictly speaking the output may not be UTF-8.
+    p = pathlib.Path(p.strip().decode("utf-8"))
+
+    version_path = (
+        p / "VC" / "Auxiliary" / "Build" / "Microsoft.VCToolsVersion.default.txt"
+    )
+
+    with version_path.open("r", encoding="utf-8") as fh:
+        tools_version = fh.read().strip()
+
+    tools_path = p / "VC" / "Tools" / "MSVC" / tools_version / "bin" / "Hostx64" / "x64"
+
+    if not tools_path.exists():
+        print("%s does not exist" % tools_path)
+        sys.exit(1)
+
+    return tools_path
 
 
 def static_replace_in_file(p: pathlib.Path, search, replace):
@@ -558,7 +602,7 @@ OPENSSL_PROPS_REMOVE_RULES = b"""
 """
 
 
-def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str):
+def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: bool):
     # TODO can we pass props into msbuild.exe?
 
     # Our dependencies are in different directories from what CPython's
@@ -624,30 +668,49 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str):
     # OpenSSL build. This requires some hacking of various files.
     openssl_props = pcbuild_path / "openssl.props"
 
-    # We don't need the install rules to copy the libcrypto and libssl DLLs.
-    static_replace_in_file(
-        openssl_props, OPENSSL_PROPS_REMOVE_RULES.strip().replace(b"\n", b"\r\n"), b""
-    )
+    if static:
+        # We don't need the install rules to copy the libcrypto and libssl DLLs.
+        static_replace_in_file(
+            openssl_props,
+            OPENSSL_PROPS_REMOVE_RULES.strip().replace(b"\n", b"\r\n"),
+            b"",
+        )
 
-    # We need to copy linking settings for dynamic libraries to static libraries.
-    copy_link_to_lib(pcbuild_path / "openssl.props")
+        # We need to copy linking settings for dynamic libraries to static libraries.
+        copy_link_to_lib(pcbuild_path / "openssl.props")
 
-    # We should look against the static library variants.
-    static_replace_in_file(
-        openssl_props,
-        b"libcrypto.lib;libssl.lib;",
-        b"libcrypto_static.lib;libssl_static.lib;",
-    )
+        # We should look against the static library variants.
+        static_replace_in_file(
+            openssl_props,
+            b"libcrypto.lib;libssl.lib;",
+            b"libcrypto_static.lib;libssl_static.lib;",
+        )
+    else:
+        if arch == "amd64":
+            suffix = b"x64"
+        elif arch == "x86":
+            suffix = b"x86"
+        else:
+            raise Exception("unhandled architecture: %s" % arch)
+
+        static_replace_in_file(
+            openssl_props,
+            b"<_DLLSuffix>-1_1</_DLLSuffix>",
+            b"<_DLLSuffix>-1_1-%s</_DLLSuffix>" % suffix,
+        )
 
 
 def hack_project_files(
-    td: pathlib.Path, cpython_source_path: pathlib.Path, build_directory: str
+    td: pathlib.Path,
+    cpython_source_path: pathlib.Path,
+    build_directory: str,
+    static: bool,
 ):
     """Hacks Visual Studio project files to work with our build."""
 
     pcbuild_path = cpython_source_path / "PCbuild"
 
-    hack_props(td, pcbuild_path, build_directory)
+    hack_props(td, pcbuild_path, build_directory, static=static)
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
@@ -709,28 +772,32 @@ def hack_project_files(
         br'<ClCompile Include="$(opensslIncludeDir)\openssl\applink.c">',
     )
 
-    for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
-        init_fn = entry.get("init", "PyInit_%s" % extension)
+    if static:
+        for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
+            init_fn = entry.get("init", "PyInit_%s" % extension)
 
-        add_to_config_c(cpython_source_path, extension, init_fn)
-        convert_to_static_library(cpython_source_path, extension, entry)
+            add_to_config_c(cpython_source_path, extension, init_fn)
+            convert_to_static_library(cpython_source_path, extension, entry)
 
     # pythoncore.vcxproj produces libpython. Typically pythonXY.dll. We change
     # it to produce a static library.
     pythoncore_proj = pcbuild_path / "pythoncore.vcxproj"
+    pyproject_props = pcbuild_path / "pyproject.props"
 
     # Need to replace Py_ENABLE_SHARED with Py_NO_ENABLE_SHARED so symbol
     # visibility is proper.
 
     # Replacing it in the global properties file has the most bang for our buck.
-    pyproject_props = pcbuild_path / "pyproject.props"
-    static_replace_in_file(
-        pyproject_props,
-        b"<PreprocessorDefinitions>WIN32;",
-        b"<PreprocessorDefinitions>Py_NO_ENABLE_SHARED;WIN32;",
-    )
+    if static:
+        static_replace_in_file(
+            pyproject_props,
+            b"<PreprocessorDefinitions>WIN32;",
+            b"<PreprocessorDefinitions>Py_NO_ENABLE_SHARED;WIN32;",
+        )
 
-    static_replace_in_file(pythoncore_proj, b"Py_ENABLE_SHARED", b"Py_NO_ENABLE_SHARED")
+        static_replace_in_file(
+            pythoncore_proj, b"Py_ENABLE_SHARED", b"Py_NO_ENABLE_SHARED"
+        )
 
     # Disable whole program optimization because it interferes with the format
     # of object files and makes it so we can't easily consume their symbols.
@@ -742,13 +809,14 @@ def hack_project_files(
     )
 
     # Make libpython a static library.
-    static_replace_in_file(
-        pythoncore_proj,
-        b"<ConfigurationType>DynamicLibrary</ConfigurationType>",
-        b"<ConfigurationType>StaticLibrary</ConfigurationType>",
-    )
+    if static:
+        static_replace_in_file(
+            pythoncore_proj,
+            b"<ConfigurationType>DynamicLibrary</ConfigurationType>",
+            b"<ConfigurationType>StaticLibrary</ConfigurationType>",
+        )
 
-    copy_link_to_lib(pythoncore_proj)
+        copy_link_to_lib(pythoncore_proj)
 
     # We don't need to produce pythonw.exe, python_uwp.exe, venvlauncher.exe,
     # and their *w variants. Or the python3.dll, pyshellext, or pylauncher.
@@ -777,9 +845,10 @@ def hack_project_files(
         b'<Projects2 Include="venvlauncher.vcxproj;venvwlauncher.vcxproj" />',
         b"",
     )
-    static_replace_in_file(
-        pcbuild_proj, b'<Projects Include="python3dll.vcxproj" />', b""
-    )
+    if static:
+        static_replace_in_file(
+            pcbuild_proj, b'<Projects Include="python3dll.vcxproj" />', b""
+        )
     static_replace_in_file(
         pcbuild_proj,
         b'<Projects Include="pylauncher.vcxproj;pywlauncher.vcxproj" />',
@@ -867,7 +936,7 @@ else:
 """
 
 
-def hack_source_files(source_path: pathlib.Path):
+def hack_source_files(source_path: pathlib.Path, static: bool):
     """Apply source modifications to make things work."""
 
     # The PyAPI_FUNC, PyAPI_DATA, and PyMODINIT_FUNC macros define symbol
@@ -883,15 +952,17 @@ def hack_source_files(source_path: pathlib.Path):
     # may not be needed. However, by exporting the symbols we allow downstream
     # consumers of the object files to produce a binary that can be
     # dynamically linked. This is a useful property to have.
-    pyport_h = source_path / "Include" / "pyport.h"
-    static_replace_in_file(pyport_h, PYPORT_EXPORT_SEARCH, PYPORT_EXPORT_REPLACE)
+    if static:
+        pyport_h = source_path / "Include" / "pyport.h"
+        static_replace_in_file(pyport_h, PYPORT_EXPORT_SEARCH, PYPORT_EXPORT_REPLACE)
 
     # Modules/_winapi.c and Modules/overlapped.c both define an
     # ``OverlappedType`` symbol. We rename one to make the symbol conflict
     # go away.
     # TODO send this patch upstream.
-    overlapped_c = source_path / "Modules" / "overlapped.c"
-    static_replace_in_file(overlapped_c, b"OverlappedType", b"OOverlappedType")
+    if static:
+        overlapped_c = source_path / "Modules" / "overlapped.c"
+        static_replace_in_file(overlapped_c, b"OverlappedType", b"OOverlappedType")
 
     # Modules/ctypes/callbacks.c has lines like the following:
     # #ifndef Py_NO_ENABLE_SHARED
@@ -900,12 +971,13 @@ def hack_source_files(source_path: pathlib.Path):
     # also check against Py_BUILD_CORE_BUILTIN because Py_BUILD_CORE_BUILTIN
     # with Py_ENABLE_SHARED is theoretically a valid configuration.
     # TODO send this patch upstream.
-    callbacks_c = source_path / "Modules" / "_ctypes" / "callbacks.c"
-    static_replace_in_file(
-        callbacks_c,
-        b"#ifndef Py_NO_ENABLE_SHARED\nBOOL WINAPI DllMain(",
-        b"#if !defined(Py_NO_ENABLE_SHARED) && !defined(Py_BUILD_CORE_BUILTIN)\nBOOL WINAPI DllMain(",
-    )
+    if static:
+        callbacks_c = source_path / "Modules" / "_ctypes" / "callbacks.c"
+        static_replace_in_file(
+            callbacks_c,
+            b"#ifndef Py_NO_ENABLE_SHARED\nBOOL WINAPI DllMain(",
+            b"#if !defined(Py_NO_ENABLE_SHARED) && !defined(Py_BUILD_CORE_BUILTIN)\nBOOL WINAPI DllMain(",
+        )
 
     # Lib/ctypes/__init__.py needs to populate the Python API version. On
     # Windows, it assumes a ``pythonXY`` is available. On Cygwin, a
@@ -945,19 +1017,23 @@ def hack_source_files(source_path: pathlib.Path):
     # "good enough."
     #
     # TODO improve the logic upstream
-    ctypes_init = source_path / "Lib" / "ctypes" / "__init__.py"
-    static_replace_in_file(
-        ctypes_init, CTYPES_INIT_REPLACE.strip(), b"pythonapi = PyDLL(_sys.executable)"
-    )
+    if static:
+        ctypes_init = source_path / "Lib" / "ctypes" / "__init__.py"
+        static_replace_in_file(
+            ctypes_init,
+            CTYPES_INIT_REPLACE.strip(),
+            b"pythonapi = PyDLL(_sys.executable)",
+        )
 
     # Producing statically linked binaries invalidates assumptions in the
     # layout tool. Update the tool accordingly.
     layout_main = source_path / "PC" / "layout" / "main.py"
 
     # We no longer have a pythonXX.dll file.
-    static_replace_in_file(
-        layout_main, b"    yield from in_build(PYTHON_DLL_NAME)\n", b""
-    )
+    if static:
+        static_replace_in_file(
+            layout_main, b"    yield from in_build(PYTHON_DLL_NAME)\n", b""
+        )
 
     # We don't produce a pythonw.exe.
     static_replace_in_file(
@@ -1044,6 +1120,7 @@ def build_openssl_for_arch(
         source_root,
         env,
     )
+
     exec_and_log(["nmake"], source_root, env)
 
     # We don't care about accessory files, docs, etc. So just run `install_sw`
@@ -1066,7 +1143,7 @@ def build_openssl(perl_path: pathlib.Path, arch: str):
     openssl_archive = download_entry("openssl", BUILD)
     nasm_archive = download_entry("nasm-windows-bin", BUILD)
 
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory(prefix="openssl-build-") as td:
         td = pathlib.Path(td)
 
         root_32 = td / "x86"
@@ -1103,7 +1180,11 @@ RE_ADDITIONAL_DEPENDENCIES = re.compile(
 
 
 def collect_python_build_artifacts(
-    pcbuild_path: pathlib.Path, out_dir: pathlib.Path, arch: str, config: str
+    pcbuild_path: pathlib.Path,
+    out_dir: pathlib.Path,
+    arch: str,
+    config: str,
+    static: bool,
 ):
     """Collect build artifacts from Python.
 
@@ -1123,7 +1204,7 @@ def collect_python_build_artifacts(
 
     # Things we want to collect:
     # 1. object files that contribute to libpython
-    # 2. static libraries for dependencies
+    # 2. libraries for dependencies
     # 3. pdb files for static libraries
 
     # The build throws everything in the same directory hierarchy, so we can't
@@ -1138,6 +1219,8 @@ def collect_python_build_artifacts(
     }
 
     other_projects = {"pythoncore"}
+    if not static:
+        other_projects.add("python3dll")
 
     # Projects providing dependencies.
     depends_projects = set()
@@ -1147,7 +1230,14 @@ def collect_python_build_artifacts(
 
     for extension, entry in CONVERT_TO_BUILTIN_EXTENSIONS.items():
         extension_projects.add(extension)
-        depends_projects |= set(entry.get("static_depends", []))
+        if static:
+            depends_projects |= set(entry.get("static_depends", []))
+
+    if not static:
+        depends_projects |= {
+            "liblzma",
+            "sqlite3",
+        }
 
     dirs = {p for p in os.listdir(intermediates_path)}
 
@@ -1204,6 +1294,17 @@ def collect_python_build_artifacts(
     for obj in process_project("pythoncore", core_dir):
         res["core"]["objs"].append("build/core/%s" % obj)
 
+    for ext in ("lib", "pdb", "exp"):
+        source = outputs_path / ("python37.%s" % ext)
+        dest = core_dir / ("python37.%s" % ext)
+        log("copying %s" % source)
+        shutil.copyfile(source, dest)
+
+    if static:
+        res["core"]["static_lib"] = "build/core/python37.lib"
+    else:
+        res["core"]["shared_lib"] = "install/python37.dll"
+
     # We hack up pythoncore.vcxproj and the list in it when this function
     # runs isn't totally accurate. We hardcode the list from the CPython
     # distribution.
@@ -1233,6 +1334,7 @@ def collect_python_build_artifacts(
             "in_core": False,
             "objs": [],
             "init_fn": "PyInit_%s" % ext,
+            "shared_lib": None,
             "static_lib": None,
             "links": [
                 {"name": n[:-4], "system": True} for n in sorted(additional_depends)
@@ -1243,17 +1345,35 @@ def collect_python_build_artifacts(
         for obj in process_project(ext, dest_dir):
             entry["objs"].append("build/extensions/%s/%s" % (ext, obj))
 
-        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get("static_depends", []):
-            entry["links"].append(
-                {"name": lib, "path_static": "build/lib/%s.lib" % lib}
-            )
+        if static:
+            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
+                "static_depends", []
+            ):
+                entry["links"].append(
+                    {"name": lib, "path_static": "build/lib/%s.lib" % lib}
+                )
+        else:
+            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
+                "shared_depends", []
+            ):
+                entry["links"].append(
+                    {"name": lib, "path_dynamic": "install/DLLs/%s.dll" % lib}
+                )
 
-        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
-            "static_depends_no_project", []
-        ):
-            entry["links"].append(
-                {"name": lib, "path_static": "build/lib/%s.lib" % lib}
-            )
+            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
+                "shared_depends_%s" % arch, []
+            ):
+                entry["links"].append(
+                    {"name": lib, "path_dynamic": "install/DLLs/%s.dll" % lib}
+                )
+
+        if static:
+            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
+                "static_depends_no_project", []
+            ):
+                entry["links"].append(
+                    {"name": lib, "path_static": "build/lib/%s.lib" % lib}
+                )
 
         if ext in EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY:
             download_entry = DOWNLOADS[EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY[ext]]
@@ -1270,25 +1390,39 @@ def collect_python_build_artifacts(
         # Copy the extension static library.
         ext_static = outputs_path / ("%s.lib" % ext)
         dest = dest_dir / ("%s.lib" % ext)
-        res["extensions"][ext][0]["static_lib"] = "build/extensions/%s/%s.lib" % (
-            ext,
-            ext,
-        )
         log("copying static extension %s" % ext_static)
         shutil.copyfile(ext_static, dest)
+
+        if static:
+            res["extensions"][ext][0]["static_lib"] = "build/extensions/%s/%s.lib" % (
+                ext,
+                ext,
+            )
+        else:
+            res["extensions"][ext][0]["shared_lib"] = "install/DLLs/%s.pyd" % ext
 
     lib_dir = out_dir / "build" / "lib"
     lib_dir.mkdir()
 
-    # Copy static libraries for dependencies into the lib directory.
+    # Copy libraries for dependencies into the lib directory.
     for depend in sorted(depends_projects):
-        source = outputs_path / ("%s.lib" % depend)
-        dest = lib_dir / ("%s.lib" % depend)
+        static_source = outputs_path / ("%s.lib" % depend)
+        static_dest = lib_dir / ("%s.lib" % depend)
 
-        log("copying static library %s" % source)
-        shutil.copyfile(source, dest)
+        log("copying link library %s" % static_source)
+        shutil.copyfile(static_source, static_dest)
+
+        shared_source = outputs_path / ("%s.dll" % depend)
+        if shared_source.exists():
+            shared_dest = lib_dir / ("%s.dll" % depend)
+            log("copying shared library %s" % shared_source)
+            shutil.copyfile(shared_source, shared_dest)
 
         pdb_path = intermediates_path / depend / ("%s.pdb" % depend)
+        if not pdb_path.exists():
+            log("%s does not exist; trying alternate path" % pdb_path)
+            pdb_path = outputs_path / ("%s.pdb" % depend)
+
         dest = lib_dir / ("%s.pdb" % depend)
         log("copying pdb %s" % pdb_path)
         shutil.copyfile(pdb_path, dest)
@@ -1297,6 +1431,8 @@ def collect_python_build_artifacts(
 
 
 def build_cpython(arch: str, pgo=False, build_mode="static"):
+    static = build_mode == "static"
+
     msbuild = find_msbuild()
     log("found MSBuild at %s" % msbuild)
 
@@ -1330,10 +1466,10 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
     else:
         raise ValueError("unhandled arch: %s" % arch)
 
-    with tempfile.TemporaryDirectory() as td:
+    with tempfile.TemporaryDirectory(prefix="python-build-") as td:
         td = pathlib.Path(td)
 
-        with concurrent.futures.ThreadPoolExecutor(7) as e:
+        with concurrent.futures.ThreadPoolExecutor(8) as e:
             for a in (
                 python_archive,
                 bzip2_archive,
@@ -1349,6 +1485,22 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
 
         with zipfile.ZipFile(setuptools_archive) as zf:
             zf.extractall(td)
+
+        # We need all the OpenSSL library files in the same directory to appease
+        # install rules.
+        if not static:
+            openssl_root = td / "openssl" / arch
+            openssl_bin_path = openssl_root / "bin"
+            openssl_lib_path = openssl_root / "lib"
+
+            for f in sorted(os.listdir(openssl_bin_path)):
+                if not f.startswith("lib"):
+                    continue
+
+                source = openssl_bin_path / f
+                dest = openssl_lib_path / f
+                log("copying %s to %s" % (source, dest))
+                shutil.copyfile(source, dest)
 
         cpython_source_path = td / ("Python-%s" % python_version)
         pcbuild_path = cpython_source_path / "PCBuild"
@@ -1366,8 +1518,8 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
 
         builtin_extensions = parse_config_c(config_c)
 
-        hack_project_files(td, cpython_source_path, build_directory)
-        hack_source_files(cpython_source_path)
+        hack_project_files(td, cpython_source_path, build_directory, static=static)
+        hack_source_files(cpython_source_path, static=static)
 
         if pgo:
             run_msbuild(
@@ -1420,25 +1572,27 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
         layout_tmp = td / "layouttmp"
         layout_tmp.mkdir()
 
+        args = [
+            str(cpython_source_path / "python.bat"),
+            str(cpython_source_path / "PC" / "layout"),
+            "-vv",
+            "--source",
+            str(cpython_source_path),
+            "--build",
+            str(pcbuild_path / build_directory),
+            "--copy",
+            str(install_dir),
+            "--temp",
+            str(layout_tmp),
+            "--include-dev",
+            "--include-distutils",
+        ]
+
+        if static:
+            args.append("--flat-dlls")
+
         exec_and_log(
-            [
-                str(cpython_source_path / "python.bat"),
-                str(cpython_source_path / "PC" / "layout"),
-                "-vv",
-                "--source",
-                str(cpython_source_path),
-                "--build",
-                str(pcbuild_path / build_directory),
-                "--copy",
-                str(install_dir),
-                "--temp",
-                str(layout_tmp),
-                "--flat-dlls",
-                "--include-dev",
-                "--include-distutils",
-            ],
-            pcbuild_path,
-            os.environ,
+            args, pcbuild_path, os.environ,
         )
 
         # Install setuptools and pip.
@@ -1456,7 +1610,11 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
 
         # Now copy the build artifacts into the output directory.
         build_info = collect_python_build_artifacts(
-            pcbuild_path, out_dir / "python", build_directory, artifact_config
+            pcbuild_path,
+            out_dir / "python",
+            build_directory,
+            artifact_config,
+            static=static,
         )
 
         for ext, init_fn in sorted(builtin_extensions.items()):
@@ -1470,6 +1628,7 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
                     "objs": [],
                     "init_fn": init_fn,
                     "links": [],
+                    "shared_lib": None,
                     "static_lib": None,
                     "variant": "default",
                 }
@@ -1481,7 +1640,11 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
 
         # Copy OpenSSL libraries as a one-off.
         for lib in ("crypto", "ssl"):
-            name = "lib%s_static.lib" % lib
+            if static:
+                name = "lib%s_static.lib" % lib
+            else:
+                name = "lib%s.lib" % lib
+
             source = td / "openssl" / build_directory / "lib" / name
             dest = out_dir / "python" / "build" / "lib" / name
             log("copying %s to %s" % (source, dest))
@@ -1503,6 +1666,7 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
             "python_exe": "install/python.exe",
             "python_include": "install/include",
             "python_stdlib": "install/Lib",
+            "link_mode": "static" if static else "shared",
             "build_info": build_info,
             "licenses": DOWNLOADS["cpython-3.7"]["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
@@ -1511,7 +1675,7 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
         with (out_dir / "python" / "PYTHON.json").open("w", encoding="utf8") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
-        dest_path = BUILD / ("cpython-windows-%s.tar" % arch)
+        dest_path = BUILD / ("cpython-windows-%s-%s.tar" % (arch, build_mode))
 
         with dest_path.open("wb") as fh:
             create_tar_from_directory(fh, td / "out")
@@ -1534,7 +1698,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--build-mode",
-        choices={"static"},
+        choices={"static", "shared"},
         default="static",
         help="How to compile Python",
     )
@@ -1563,8 +1727,13 @@ def main():
         compress_python_archive(
             tar_path,
             DIST,
-            "cpython-%s-windows-%s-%s"
-            % (DOWNLOADS["cpython-3.7"]["version"], arch, now.strftime("%Y%m%dT%H%M")),
+            "cpython-%s-windows-%s-%s-%s"
+            % (
+                DOWNLOADS["cpython-3.7"]["version"],
+                arch,
+                args.build_mode,
+                now.strftime("%Y%m%dT%H%M"),
+            ),
         )
 
 

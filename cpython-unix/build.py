@@ -649,6 +649,7 @@ def build_cpython(
             "python_exe": "install/bin/%s" % fully_qualified_name,
             "python_include": "install/include/%s" % fully_qualified_name,
             "python_stdlib": "install/lib/python%s" % entry["version"][0:3],
+            "link_mode": "static",
             "build_info": python_build_info(
                 build_env,
                 platform,

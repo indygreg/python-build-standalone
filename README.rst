@@ -277,7 +277,7 @@ without having to resort to heuristics.
 The file contains a JSON map. This map has the following keys:
 
 version
-   Version number of the file format. Currently ``3``.
+   Version number of the file format. Currently ``4``.
 
 os
    Target operating system for the distribution. e.g. ``linux``, ``macos``,
@@ -303,6 +303,18 @@ python_include
 python_stdlib
    Relative path to Python's standard library (where ``.py`` and resource
    files are located).
+
+link_mode
+   How `libpython` is linked. Values can be one of the following:
+
+   `static`
+      Statically linked.
+
+   `shared`
+      Dynamically linked. (A `libpythonXY` shared library will be part
+      of the distribution.)
+
+   (Version 4 or above only.)
 
 build_info
    A map describing build configuration and artifacts for this distribution.
@@ -340,7 +352,7 @@ custom set of built-in extension modules.
 This map has the following keys:
 
 core
-   A map describing the core Python distribution (essentially libpython).
+   A map describing the core Python distribution (essentially `libpython`).
 
    objs
       An array of paths to object files constituting the Python core distribution.
@@ -350,6 +362,14 @@ core
 
    links
       An array of linking requirement maps. (See below for data format.)
+
+   shared_lib
+      Path to a shared library representing `libpython`. May not be defined.
+      (Version 4 or above only.)
+
+   static_lib
+      Path to a static library representing `libpython`. May not be defined.
+      (Version 4 or above only.)
 
 extensions
    A map of extension names to an array of maps describing candidate extensions.
@@ -424,6 +444,10 @@ extensions
    required
       Boolean indicating if this extension is required to initialize the Python
       interpreter.
+
+   shared_lib
+      The path to a shared library defining this extension module. May not
+      be defined. (Version 4 or above only.)
 
    static_lib
       The path to a static library defining this extension module. May not
