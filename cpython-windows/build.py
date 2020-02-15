@@ -1562,7 +1562,7 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
                     "test",
                     "--pgo",
                     "-j",
-                    "%d" % (multiprocessing.cpu_count() / 2 - 1),
+                    "%d" % max(1, multiprocessing.cpu_count() / 2 - 1),
                     # test_regrtest hangs for some reason. It is the test for the
                     # test harness itself and isn't exercising useful code. Skip it.
                     "--exclude",
