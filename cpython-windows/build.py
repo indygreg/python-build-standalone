@@ -46,7 +46,10 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     "_ctypes": {},
     "_decimal": {},
     "_elementtree": {},
-    "_hashlib": {"shared_depends_amd64": ["libcrypto-1_1-x64"]},
+    "_hashlib": {
+        "shared_depends_amd64": ["libcrypto-1_1-x64"],
+        "shared_depends_win32": ["libcrypto-1_1"],
+    },
     "_lzma": {
         "ignore_additional_depends": {"$(OutDir)liblzma$(PyDebugExt).lib"},
         "static_depends": ["liblzma"],
@@ -60,6 +63,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     # project files.
     "_ssl": {
         "shared_depends_amd64": ["libcrypto-1_1-x64", "libssl-1_1-x64"],
+        "shared_depends_win32": ["libcrypto-1_1", "libssl-1_1"],
         "static_depends_no_project": ["libcrypto_static", "libssl_static"],
     },
     "_queue": {},
@@ -689,16 +693,17 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: 
     else:
         if arch == "amd64":
             suffix = b"x64"
-        elif arch == "x86":
-            suffix = b"x86"
+        elif arch == "win32":
+            suffix = None
         else:
             raise Exception("unhandled architecture: %s" % arch)
 
-        static_replace_in_file(
-            openssl_props,
-            b"<_DLLSuffix>-1_1</_DLLSuffix>",
-            b"<_DLLSuffix>-1_1-%s</_DLLSuffix>" % suffix,
-        )
+        if suffix:
+            static_replace_in_file(
+                openssl_props,
+                b"<_DLLSuffix>-1_1</_DLLSuffix>",
+                b"<_DLLSuffix>-1_1-%s</_DLLSuffix>" % suffix,
+            )
 
 
 def hack_project_files(
@@ -1499,7 +1504,8 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
         # We need all the OpenSSL library files in the same directory to appease
         # install rules.
         if not static:
-            openssl_root = td / "openssl" / arch
+            openssl_arch = {"amd64": "amd64", "x86": "win32"}[arch]
+            openssl_root = td / "openssl" / openssl_arch
             openssl_bin_path = openssl_root / "bin"
             openssl_lib_path = openssl_root / "lib"
 
