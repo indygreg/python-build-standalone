@@ -1560,6 +1560,9 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
                     str(cpython_source_path / "python.bat"),
                     "-m",
                     "test",
+                    # --pgo simply disables some tests, quiets output, and ignores the
+                    # exit code. We could disable it if we wanted more verbose test
+                    # output...
                     "--pgo",
                     "-j",
                     "%d" % max(1, multiprocessing.cpu_count() / 2 - 1),
