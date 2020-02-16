@@ -304,6 +304,10 @@ python_stdlib
    Relative path to Python's standard library (where ``.py`` and resource
    files are located).
 
+python_stdlib_test_packages
+   Array of strings of Python packages that define tests. (Version 4 or above
+   only.)
+
 link_mode
    How `libpython` is linked. Values can be one of the following:
 

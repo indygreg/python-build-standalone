@@ -66,6 +66,22 @@ UNSUPPORTED_MODULES = {
     b"_testcapi"
 }
 
+# Packages that define tests.
+STDLIB_TEST_PACKAGES = {
+    "bsddb.test",
+    "ctypes.test",
+    "distutils.tests",
+    "email.test",
+    "idlelib.idle_test",
+    "json.tests",
+    "lib-tk.test",
+    "lib2to3.tests",
+    "sqlite3.test",
+    "test",
+    "tkinter.test",
+    "unittest.test",
+}
+
 
 def parse_setup_line(line: bytes, variant: str):
     """Parse a line in a ``Setup.*`` file."""

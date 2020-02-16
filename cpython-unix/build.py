@@ -15,7 +15,12 @@ import tempfile
 import docker
 
 from pythonbuild.buildenv import build_environment
-from pythonbuild.cpython import derive_setup_local, parse_config_c, parse_setup_line
+from pythonbuild.cpython import (
+    derive_setup_local,
+    parse_config_c,
+    parse_setup_line,
+    STDLIB_TEST_PACKAGES,
+)
 from pythonbuild.docker import build_docker_image, get_image
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.logging import log, set_logger
@@ -649,6 +654,7 @@ def build_cpython(
             "python_exe": "install/bin/%s" % fully_qualified_name,
             "python_include": "install/include/%s" % fully_qualified_name,
             "python_stdlib": "install/lib/python%s" % entry["version"][0:3],
+            "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "link_mode": "static",
             "build_info": python_build_info(
                 build_env,

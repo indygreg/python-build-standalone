@@ -7,7 +7,6 @@ import argparse
 import concurrent.futures
 import datetime
 import json
-import multiprocessing
 import os
 import pathlib
 import re
@@ -18,7 +17,7 @@ import tempfile
 import zipfile
 
 from pythonbuild.downloads import DOWNLOADS
-from pythonbuild.cpython import parse_config_c
+from pythonbuild.cpython import parse_config_c, STDLIB_TEST_PACKAGES
 from pythonbuild.utils import (
     create_tar_from_directory,
     download_entry,
@@ -1749,6 +1748,7 @@ def build_cpython(arch: str, profile):
             "python_exe": "install/python.exe",
             "python_include": "install/include",
             "python_stdlib": "install/Lib",
+            "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "link_mode": "static" if static else "shared",
             "build_info": build_info,
             "licenses": DOWNLOADS["cpython-3.7"]["licenses"],
