@@ -67,6 +67,12 @@ To build a Python distribution for Windows x64::
    # From a Visual Studio 2017 x64 native tools command prompt:
    $ py.exe build-windows.py
 
+It is also possible to build a more traditional dynamically linked
+distribution, optionally with PGO optimizations::
+
+   $ py.exe build-windows.py --profile shared
+   $ py.exe build-windows.py --profile shared-pgo
+
 Requirements
 ============
 
