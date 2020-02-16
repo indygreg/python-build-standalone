@@ -158,11 +158,11 @@ make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 # setuptools has the same bug! So we need to install a patched version.
 pushd ${ROOT}/setuptools-${SETUPTOOLS_VERSION}
 patch -p1 <<EOF
-diff --git a/setuptools/glibc.py b/setuptools/glibc.py
-index a134591c..c9c3f378 100644
---- a/setuptools/glibc.py
-+++ b/setuptools/glibc.py
-@@ -14,7 +14,10 @@ def glibc_version_string():
+diff --git a/setuptools/_vendor/packaging/tags.py b/setuptools/_vendor/packaging/tags.py
+index ec9942f0..1b306ca7 100644
+--- a/setuptools/_vendor/packaging/tags.py
++++ b/setuptools/_vendor/packaging/tags.py
+@@ -283,7 +283,10 @@ def _glibc_version_string():
      # manpage says, "If filename is NULL, then the returned handle is for the
      # main program". This way we can let the linker do the work to figure out
      # which libc our process is actually using.
