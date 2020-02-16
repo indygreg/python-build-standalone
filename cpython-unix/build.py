@@ -646,7 +646,7 @@ def build_cpython(
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            "version": "3",
+            "version": "4",
             "os": os_name,
             "arch": "x86_64",
             "python_flavor": "cpython",
