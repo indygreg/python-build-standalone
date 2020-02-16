@@ -66,6 +66,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         "shared_depends_win32": ["libcrypto-1_1", "libssl-1_1"],
         "static_depends_no_project": ["libcrypto_static", "libssl_static"],
     },
+    "_tkinter": {"ignore_static": True, "shared_depends": ["tcl86t", "tk86t"],},
     "_queue": {},
     "pyexpat": {},
     "select": {},
@@ -85,14 +86,15 @@ REQUIRED_EXTENSIONS = {
 
 # Used to annotate licenses.
 EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY = {
-    "_bz2": "bzip2",
-    "_ctypes": "libffi",
-    "_hashlib": "openssl",
-    "_lzma": "xz",
-    "_sqlite3": "sqlite",
-    "_ssl": "openssl",
-    "_uuid": "uuid",
-    "zlib": "zlib",
+    "_bz2": ["bzip2"],
+    "_ctypes": ["libffi"],
+    "_hashlib": ["openssl"],
+    "_lzma": ["xz"],
+    "_sqlite3": ["sqlite"],
+    "_ssl": ["openssl"],
+    "_tkinter": ["tcl", "tk", "tix"],
+    "_uuid": ["uuid"],
+    "zlib": ["zlib"],
 }
 
 
@@ -780,6 +782,10 @@ def hack_project_files(
 
     if static:
         for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
+            if entry.get("ignore_static"):
+                log("ignoring extension %s in static builds" % extension)
+                continue
+
             init_fn = entry.get("init", "PyInit_%s" % extension)
 
             add_to_config_c(cpython_source_path, extension, init_fn)
@@ -1051,7 +1057,11 @@ def hack_source_files(source_path: pathlib.Path, static: bool):
 
 
 def run_msbuild(
-    msbuild: pathlib.Path, pcbuild_path: pathlib.Path, configuration: str, platform: str
+    msbuild: pathlib.Path,
+    pcbuild_path: pathlib.Path,
+    configuration: str,
+    platform: str,
+    static: bool,
 ):
     python_version = DOWNLOADS["cpython-3.7"]["version"]
 
@@ -1066,8 +1076,8 @@ def run_msbuild(
         "/verbosity:normal",
         "/property:IncludeExternals=true",
         "/property:IncludeSSL=true",
-        # TODO support Tkinter
-        "/property:IncludeTkinter=false",
+        # TODO support tkinter in static builds.
+        "/property:IncludeTkinter=%s" % ("false" if static else "true"),
         # TODO compile test extensions so we can get PGO benefits of tested code.
         "/property:IncludeTests=false",
         "/property:OverrideVersion=%s" % python_version,
@@ -1236,6 +1246,9 @@ def collect_python_build_artifacts(
     extension_projects = set()
 
     for extension, entry in CONVERT_TO_BUILTIN_EXTENSIONS.items():
+        if static and entry.get("ignore_static"):
+            continue
+
         extension_projects.add(extension)
         if static:
             depends_projects |= set(entry.get("static_depends", []))
@@ -1388,14 +1401,23 @@ def collect_python_build_artifacts(
                 )
 
         if ext in EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY:
-            download_entry = DOWNLOADS[EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY[ext]]
+            licenses = set()
+            license_paths = set()
+            license_public_domain = False
 
-            # This will raise if no license metadata defined. This is
-            # intentional because EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY is
-            # manually curated and we want to fail fast.
-            entry["licenses"] = download_entry["licenses"]
-            entry["license_paths"] = ["licenses/%s" % download_entry["license_file"]]
-            entry["license_public_domain"] = download_entry.get("license_public_domain")
+            for name in EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY[ext]:
+                download_entry = DOWNLOADS[name]
+
+                # This will raise if no license metadata defined. This is
+                # intentional because EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY is
+                # manually curated and we want to fail fast.
+                licenses |= set(download_entry["licenses"])
+                license_paths.add("licenses/%s" % download_entry["license_file"])
+                license_public_domain = download_entry.get("license_public_domain")
+
+            entry["licenses"] = list(sorted(licenses))
+            entry["license_paths"] = list(sorted(license_paths))
+            entry["license_public_domain"] = license_public_domain
 
         res["extensions"][ext] = [entry]
 
@@ -1543,6 +1565,7 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
                 pcbuild_path,
                 configuration="PGInstrument",
                 platform=build_platform,
+                static=static,
             )
 
             # build-windows.py sets some environment variables which cause the
@@ -1600,13 +1623,21 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
                 )
 
             run_msbuild(
-                msbuild, pcbuild_path, configuration="PGUpdate", platform=build_platform
+                msbuild,
+                pcbuild_path,
+                configuration="PGUpdate",
+                platform=build_platform,
+                static=static,
             )
             artifact_config = "PGUpdate"
 
         else:
             run_msbuild(
-                msbuild, pcbuild_path, configuration="Release", platform=build_platform
+                msbuild,
+                pcbuild_path,
+                configuration="Release",
+                platform=build_platform,
+                static=static,
             )
             artifact_config = "Release"
 
@@ -1639,6 +1670,10 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
 
         if static:
             args.append("--flat-dlls")
+        else:
+            args.extend(
+                ["--include-idle", "--include-tcltk",]
+            )
 
         exec_and_log(
             args, pcbuild_path, os.environ,
@@ -1720,6 +1755,9 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
             "licenses": DOWNLOADS["cpython-3.7"]["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
         }
+
+        if not static:
+            python_info["tcl_library_path"] = "install/tcl"
 
         with (out_dir / "python" / "PYTHON.json").open("w", encoding="utf8") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
