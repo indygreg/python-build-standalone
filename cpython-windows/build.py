@@ -1555,40 +1555,49 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
             env["PATH"] = ";".join(paths)
             del env["PYTHONPATH"]
 
-            exec_and_log(
-                [
-                    str(cpython_source_path / "python.bat"),
-                    "-m",
-                    "test",
-                    # --pgo simply disables some tests, quiets output, and ignores the
-                    # exit code. We could disable it if we wanted more verbose test
-                    # output...
-                    "--pgo",
-                    "-j",
-                    "%d" % max(1, multiprocessing.cpu_count() / 2 - 1),
-                    # test_regrtest hangs for some reason. It is the test for the
-                    # test harness itself and isn't exercising useful code. Skip it.
-                    "--exclude",
-                    "test_regrtest",
-                ],
-                str(pcbuild_path),
-                env,
-                exit_on_error=False,
+            env["PYTHONHOME"] = str(cpython_source_path)
+
+            # For some reason, .pgc files aren't being created if we invoke the
+            # test harness normally (all tests) or with -j to perform parallel
+            # test execution. We work around this by invoking the test harness
+            # separately for each test.
+            instrumented_python = (
+                pcbuild_path / build_directory / "instrumented" / "python.exe"
             )
 
-            exec_and_log(
-                [
-                    str(msbuild),
-                    str(pcbuild_path / "pythoncore.vcxproj"),
-                    "/target:KillPython",
-                    "/verbosity:normal",
-                    "/property:Configuration=PGInstrument",
-                    "/property:Platform=%s" % build_platform,
-                    "/property:KillPython=true",
-                ],
-                pcbuild_path,
-                os.environ,
-            )
+            tests = subprocess.run(
+                [str(instrumented_python), "-m", "test", "--list-tests"],
+                cwd=cpython_source_path,
+                env=env,
+                check=False,
+                stdout=subprocess.PIPE,
+            ).stdout
+
+            tests = [l.strip() for l in tests.decode("utf-8").splitlines() if l.strip()]
+
+            for test in sorted(tests):
+                # test_regrtest hangs for some reason. It is the test for the
+                # test harness itself and isn't exercising useful code. Skip it.
+                #
+                # test_ssl also seems to hang.
+                if test in ("test_regrtest", "test_ssl"):
+                    continue
+
+                exec_and_log(
+                    [
+                        str(instrumented_python),
+                        "-m",
+                        "test",
+                        # --pgo simply disables some tests, quiets output, and ignores the
+                        # exit code. We could disable it if we wanted more verbose test
+                        # output...
+                        "--pgo",
+                        test,
+                    ],
+                    str(pcbuild_path),
+                    env,
+                    exit_on_error=False,
+                )
 
             run_msbuild(
                 msbuild, pcbuild_path, configuration="PGUpdate", platform=build_platform
