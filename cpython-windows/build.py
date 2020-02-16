@@ -1098,7 +1098,12 @@ def run_msbuild(
 
 
 def build_openssl_for_arch(
-    perl_path, arch: str, openssl_archive, nasm_archive, build_root: pathlib.Path
+    perl_path,
+    arch: str,
+    openssl_archive,
+    nasm_archive,
+    build_root: pathlib.Path,
+    profile: str,
 ):
     openssl_version = DOWNLOADS["openssl"]["version"]
     nasm_version = DOWNLOADS["nasm-windows-bin"]["version"]
@@ -1115,6 +1120,16 @@ def build_openssl_for_arch(
     env["PATH"] = "%s;%s;%s" % (perl_path.parent, nasm_path, env["PATH"])
 
     source_root = build_root / ("openssl-%s" % openssl_version)
+
+    # uplink.c tries to find the OPENSSL_Applink function exported from the current
+    # executable. However, it is exported from _ssl[_d].pyd in shared builds. So
+    # update its sounce to look for it from there.
+    if "shared" in profile:
+        static_replace_in_file(
+            source_root / "ms" / "uplink.c",
+            b"((h = GetModuleHandle(NULL)) == NULL)",
+            b'((h = GetModuleHandleA("_ssl.pyd")) == NULL) if ((h = GetModuleHandleA("_ssl_d.pyd")) == NULL) if ((h = GetModuleHandle(NULL)) == NULL)',
+        )
 
     if arch == "x86":
         configure = "VC-WIN32"
@@ -1164,7 +1179,7 @@ def build_openssl_for_arch(
         shutil.copyfile(source, dest)
 
 
-def build_openssl(perl_path: pathlib.Path, arch: str):
+def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
     """Build OpenSSL from sources using the Perl executable specified."""
 
     # First ensure the dependencies are in place.
@@ -1180,12 +1195,12 @@ def build_openssl(perl_path: pathlib.Path, arch: str):
         if arch == "x86":
             root_32.mkdir()
             build_openssl_for_arch(
-                perl_path, "x86", openssl_archive, nasm_archive, root_32
+                perl_path, "x86", openssl_archive, nasm_archive, root_32, profile
             )
         elif arch == "amd64":
             root_64.mkdir()
             build_openssl_for_arch(
-                perl_path, "amd64", openssl_archive, nasm_archive, root_64
+                perl_path, "amd64", openssl_archive, nasm_archive, root_64, profile
             )
         else:
             raise ValueError("unhandled arch: %s" % arch)
@@ -1197,7 +1212,7 @@ def build_openssl(perl_path: pathlib.Path, arch: str):
         else:
             shutil.copytree(root_64 / "install" / "64", install / "openssl" / "amd64")
 
-        dest_archive = BUILD / ("openssl-windows-%s.tar" % arch)
+        dest_archive = BUILD / ("openssl-windows-%s-%s.tar" % (arch, profile))
         with dest_archive.open("wb") as fh:
             create_tar_from_directory(fh, install)
 
@@ -1596,9 +1611,7 @@ def build_cpython(arch: str, profile):
             for test in sorted(tests):
                 # test_regrtest hangs for some reason. It is the test for the
                 # test harness itself and isn't exercising useful code. Skip it.
-                #
-                # test_ssl also seems to hang.
-                if test in ("test_regrtest", "test_ssl"):
+                if test == "test_regrtest":
                     continue
 
                 exec_and_log(
@@ -1804,11 +1817,11 @@ def main():
         arch = "x86" if os.environ.get("Platform") == "x86" else "amd64"
 
         # TODO need better dependency checking.
-        openssl_out = BUILD / ("openssl-windows-%s.tar" % arch)
+        openssl_out = BUILD / ("openssl-windows-%s-%s.tar" % (arch, args.profile))
         if not openssl_out.exists():
             perl_path = fetch_strawberry_perl() / "perl" / "bin" / "perl.exe"
             LOG_PREFIX[0] = "openssl"
-            build_openssl(perl_path, arch)
+            build_openssl(perl_path, arch, profile=args.profile)
 
         LOG_PREFIX[0] = "cpython"
         tar_path = build_cpython(arch, profile=args.profile)
