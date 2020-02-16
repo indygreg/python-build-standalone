@@ -143,8 +143,11 @@ builds C extensions in a specific manner. The undesirable behavior of
 ``setup.py`` is bypassed and the Python C extensions are compiled just
 the way we want.
 
-Linux Runtime Requirements
-==========================
+Runtime Requirements
+====================
+
+Linux
+-----
 
 The produced Linux binaries have minimal references to shared
 libraries and thus can be executed on most Linux systems.
@@ -161,6 +164,17 @@ The following shared libraries are referenced:
 * libm.so.6
 * libc.so.6
 * ld-linux-x86-64.so.2
+
+If built with MUSL, no shared library dependencies exist and the binaries
+should *just work* on practically any Linux system.
+
+Windows
+-------
+
+Windows binaries have a dependency on the Microsoft Visual C++ Redistributable,
+likely from MSVC 2015 (``vcruntime140.dll``). This dependency is not
+provided in the distribution and will need to be provided by downstream
+distributors.
 
 Licensing
 =========
