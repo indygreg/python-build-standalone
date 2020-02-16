@@ -1055,6 +1055,18 @@ def hack_source_files(source_path: pathlib.Path, static: bool):
         b"",
     )
 
+    # We don't produce venvlauncher executables.
+    static_replace_in_file(
+        layout_main,
+        b'yield from in_build("venvlauncher.exe", "Lib/venv/scripts/nt/", "python")',
+        b"pass",
+    )
+    static_replace_in_file(
+        layout_main,
+        b'yield from in_build("venvwlauncher.exe", "Lib/venv/scripts/nt/", "pythonw")',
+        b"pass",
+    )
+
 
 def run_msbuild(
     msbuild: pathlib.Path,
@@ -1666,6 +1678,8 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
             str(layout_tmp),
             "--include-dev",
             "--include-distutils",
+            "--include-tests",
+            "--include-venv",
         ]
 
         if static:
