@@ -1234,7 +1234,6 @@ def collect_python_build_artifacts(
     # Things we want to collect:
     # 1. object files that contribute to libpython
     # 2. libraries for dependencies
-    # 3. pdb files for static libraries
 
     # The build throws everything in the same directory hierarchy, so we can't
     # easily filter by path to identify e.g. core versus extensions. We rely on
@@ -1298,10 +1297,6 @@ def collect_python_build_artifacts(
                 shutil.copyfile(p, dest)
                 yield f
 
-            elif p.suffix == ".pdb":
-                log("copying pdb file: %s to %s" % (p, dest_dir))
-                shutil.copyfile(p, dest)
-
     def find_additional_dependencies(project: pathlib.Path):
         vcproj = pcbuild_path / ("%s.vcxproj" % project)
 
@@ -1329,7 +1324,7 @@ def collect_python_build_artifacts(
     if static:
         exts = ("lib",)
     else:
-        exts = ("lib", "pdb", "exp")
+        exts = ("lib", "exp")
 
     for ext in exts:
         source = outputs_path / ("python37.%s" % ext)
@@ -1463,15 +1458,6 @@ def collect_python_build_artifacts(
             shared_dest = lib_dir / ("%s.dll" % depend)
             log("copying shared library %s" % shared_source)
             shutil.copyfile(shared_source, shared_dest)
-
-        pdb_path = intermediates_path / depend / ("%s.pdb" % depend)
-        if not pdb_path.exists():
-            log("%s does not exist; trying alternate path" % pdb_path)
-            pdb_path = outputs_path / ("%s.pdb" % depend)
-
-        dest = lib_dir / ("%s.pdb" % depend)
-        log("copying pdb %s" % pdb_path)
-        shutil.copyfile(pdb_path, dest)
 
     return res
 
@@ -1678,6 +1664,7 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
             str(layout_tmp),
             "--include-dev",
             "--include-distutils",
+            "--include-symbols",
             "--include-tests",
             "--include-venv",
         ]
