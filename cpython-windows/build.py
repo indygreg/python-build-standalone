@@ -1462,11 +1462,9 @@ def collect_python_build_artifacts(
     return res
 
 
-def build_cpython(arch: str, pgo=False, build_mode="static"):
-    if pgo and build_mode == "static":
-        raise Exception("PGO not supported for static build mode")
-
-    static = build_mode == "static"
+def build_cpython(arch: str, profile):
+    static = profile == "static"
+    pgo = "-pgo" in profile
 
     msbuild = find_msbuild()
     log("found MSBuild at %s" % msbuild)
@@ -1763,16 +1761,10 @@ def build_cpython(arch: str, pgo=False, build_mode="static"):
         with (out_dir / "python" / "PYTHON.json").open("w", encoding="utf8") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
-        basename = "cpython-%s-windows-%s-%s" % (
-            DOWNLOADS["cpython-3.7"]["version"],
-            arch,
-            build_mode,
+        dest_path = BUILD / (
+            "cpython-%s-windows-%s-%s.tar"
+            % (DOWNLOADS["cpython-3.7"]["version"], arch, profile,)
         )
-        if pgo:
-            basename += "-pgo"
-        basename += ".tar"
-
-        dest_path = BUILD / basename
 
         with dest_path.open("wb") as fh:
             create_tar_from_directory(fh, td / "out")
@@ -1794,13 +1786,10 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--build-mode",
-        choices={"static", "shared"},
+        "--profile",
+        choices={"static", "shared", "shared-pgo"},
         default="static",
         help="How to compile Python",
-    )
-    parser.add_argument(
-        "--pgo", action="store_true", help="Enable profile-guided optimization"
     )
 
     args = parser.parse_args()
@@ -1822,7 +1811,7 @@ def main():
             build_openssl(perl_path, arch)
 
         LOG_PREFIX[0] = "cpython"
-        tar_path = build_cpython(arch, build_mode=args.build_mode, pgo=args.pgo)
+        tar_path = build_cpython(arch, profile=args.profile)
 
         compress_python_archive(
             tar_path, DIST, "%s-%s" % (tar_path.stem, now.strftime("%Y%m%dT%H%M")),
