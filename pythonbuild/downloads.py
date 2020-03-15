@@ -81,10 +81,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.cpython.txt",
     },
     "gcc": {
-        "url": "https://ftp.gnu.org/gnu/gcc/gcc-9.2.0/gcc-9.2.0.tar.xz",
-        "size": 70607648,
-        "sha256": "ea6ef08f121239da5695f76c9b33637a118dcf63e24164422231917fa61fb206",
-        "version": "9.2.0",
+        "url": "https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.xz",
+        "size": 70533868,
+        "sha256": "71e197867611f6054aa1119b13a0c0abac12834765fe2d81f35ac57f84f742d1",
+        "version": "9.3.0",
     },
     "gdbm": {
         "url": "ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.18.1.tar.gz",
