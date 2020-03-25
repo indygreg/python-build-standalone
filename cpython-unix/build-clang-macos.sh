@@ -23,7 +23,7 @@ popd
 
 mkdir llvm/tools/clang
 pushd llvm/tools/clang
-tar --strip-components=1 -xf ${ROOT}/cfe-${CLANG_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/clang-${CLANG_VERSION}.src.tar.xz
 popd
 
 mkdir llvm/tools/lld
