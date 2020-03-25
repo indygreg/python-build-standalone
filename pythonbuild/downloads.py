@@ -34,23 +34,11 @@ DOWNLOADS = {
         "sha256": "70effd69f7a8ab249f66b0a68aba8b08af52aa2ab710dfb8a0fba102685b1646",
         "version": "8.0.1",
     },
-    "clang-6": {
-        "url": "http://releases.llvm.org/6.0.1/cfe-6.0.1.src.tar.xz",
-        "size": 11905772,
-        "sha256": "7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667",
-        "version": "6.0.1",
-    },
     "clang-compiler-rt": {
         "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/compiler-rt-8.0.1.src.tar.xz",
         "size": 1954204,
         "sha256": "11828fb4823387d820c6715b25f6b2405e60837d12a7469e7a8882911c721837",
         "version": "8.0.1",
-    },
-    "clang-compiler-rt-6": {
-        "url": "http://releases.llvm.org/6.0.1/compiler-rt-6.0.1.src.tar.xz",
-        "size": 1686820,
-        "sha256": "f4cd1e15e7d5cb708f9931d4844524e4904867240c306b06a4287b22ac1c99b9",
-        "version": "6.0.1",
     },
     "cmake-linux-bin": {
         "url": "https://github.com/Kitware/CMake/releases/download/v3.15.1/cmake-3.15.1-Linux-x86_64.tar.gz",
@@ -125,23 +113,11 @@ DOWNLOADS = {
         "sha256": "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78",
         "version": "8.0.1",
     },
-    "libc++-6": {
-        "url": "http://releases.llvm.org/6.0.1/libcxx-6.0.1.src.tar.xz",
-        "size": 1552328,
-        "sha256": "7654fbc810a03860e6f01a54c2297a0b9efb04c0b9aa0409251d9bdb3726fc67",
-        "version": "6.0.1",
-    },
     "libc++abi": {
         "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxxabi-8.0.1.src.tar.xz",
         "size": 538356,
         "sha256": "b75bf3c8dc506e7d950d877eefc8b6120a4651aaa110f5805308861f2cfaf6ef",
         "version": "8.0.1",
-    },
-    "libc++abi-6": {
-        "url": "http://releases.llvm.org/6.0.1/libcxxabi-6.0.1.src.tar.xz",
-        "size": 528356,
-        "sha256": "209f2ec244a8945c891f722e9eda7c54a5a7048401abd62c62199f3064db385f",
-        "version": "6.0.1",
     },
     "libedit": {
         "url": "https://www.thrysoee.dk/editline/libedit-20181209-3.1.tar.gz",
@@ -209,23 +185,11 @@ DOWNLOADS = {
         "sha256": "9fba1e94249bd7913e8a6c3aadcb308b76c8c3d83c5ce36c99c3f34d73873d88",
         "version": "8.0.1",
     },
-    "lld-6": {
-        "url": "http://releases.llvm.org/6.0.1/lld-6.0.1.src.tar.xz",
-        "size": 787804,
-        "sha256": "e706745806921cea5c45700e13ebe16d834b5e3c0b7ad83bf6da1f28b0634e11",
-        "version": "6.0.1",
-    },
     "llvm": {
         "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/llvm-8.0.1.src.tar.xz",
         "size": 30477608,
         "sha256": "44787a6d02f7140f145e2250d56c9f849334e11f9ae379827510ed72f12b75e7",
         "version": "8.0.1",
-    },
-    "llvm-6": {
-        "url": "http://releases.llvm.org/6.0.1/llvm-6.0.1.src.tar.xz",
-        "size": 25306628,
-        "sha256": "b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2",
-        "version": "6.0.1",
     },
     "mpc": {
         "url": "http://www.multiprecision.org/downloads/mpc-1.0.3.tar.gz",
