@@ -10,5 +10,6 @@ RUN apt-get install \
       libtool \
       make \
       tar \
+      texinfo \
       xz-utils \
       unzip
