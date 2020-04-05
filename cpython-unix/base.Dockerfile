@@ -18,7 +18,7 @@ CMD ["/bin/bash", "--login"]
 WORKDIR '/build'
 
 RUN for s in debian_wheezy debian_wheezy-updates debian_wheezy-backports debian-security_wheezy/updates; do \
-      echo "deb http://snapshot.debian.org/archive/${s%_*}/20181129T234109Z/ ${s#*_} main"; \
+      echo "deb http://snapshot.debian.org/archive/${s%_*}/20190321T212815Z/ ${s#*_} main"; \
     done > /etc/apt/sources.list && \
     ( echo 'quiet "true";'; \
       echo 'APT::Get::Assume-Yes "true";'; \
