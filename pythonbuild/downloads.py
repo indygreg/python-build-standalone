@@ -83,6 +83,7 @@ DOWNLOADS = {
         "licenses": ["GPL-3.0-or-later"],
         "license_file": "LICENSE.gdbm.txt",
     },
+    # gmp 6.2 does not build on wheezy.
     "gmp": {
         "url": "https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz",
         "size": 1946336,
