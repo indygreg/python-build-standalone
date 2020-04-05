@@ -11,7 +11,7 @@ export PATH=${TOOLS_PATH}/deps/bin:${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/
 export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib/pkgconfig
 
 tar -xf tk${TK_VERSION}-src.tar.gz
-pushd tk8.6.9/unix
+pushd tk${TK_VERSION}/unix
 
 CFLAGS="-fPIC"
 LDFLAGS=""
