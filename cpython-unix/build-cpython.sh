@@ -264,7 +264,7 @@ rm -f ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 # Copy tcl/tk/tix resources needed by tkinter.
 if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
   mkdir ${ROOT}/out/python/install/lib/tcl
-  for source in ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.4,Tix8.4.3,tk8.6}; do
+  for source in ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.5,Tix8.4.3,tk8.6}; do
     cp -av $source ${ROOT}/out/python/install/lib/tcl/
   done
 fi

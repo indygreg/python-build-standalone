@@ -10,8 +10,8 @@ ROOT=`pwd`
 export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib/pkgconfig
 
-tar -xf tcl8.6.9-src.tar.gz
-pushd tcl8.6.9
+tar -xf tcl${TCL_VERSION}-src.tar.gz
+pushd tcl${TCL_VERSION}
 
 patch -p1 << 'EOF'
 diff --git a/unix/Makefile.in b/unix/Makefile.in
