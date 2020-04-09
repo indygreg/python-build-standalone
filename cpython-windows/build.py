@@ -1500,7 +1500,10 @@ def build_cpython(arch: str, profile):
     setuptools_archive = download_entry("setuptools", BUILD)
     pip_archive = download_entry("pip", BUILD)
 
-    openssl_bin_archive = BUILD / ("openssl-windows-%s.tar" % arch)
+    if static:
+        openssl_bin_archive = BUILD / ("openssl-windows-%s-static.tar" % arch)
+    else:
+        openssl_bin_archive = BUILD / ("openssl-windows-%s-shared.tar" % arch)
 
     if arch == "amd64":
         build_platform = "x64"
@@ -1517,6 +1520,7 @@ def build_cpython(arch: str, profile):
         td = pathlib.Path(td)
 
         with concurrent.futures.ThreadPoolExecutor(8) as e:
+            fs = []
             for a in (
                 python_archive,
                 bzip2_archive,
@@ -1528,7 +1532,10 @@ def build_cpython(arch: str, profile):
                 zlib_archive,
             ):
                 log("extracting %s to %s" % (a, td))
-                e.submit(extract_tar_to_directory, a, td)
+                fs.append(e.submit(extract_tar_to_directory, a, td))
+
+            for f in fs:
+                f.result()
 
         with zipfile.ZipFile(setuptools_archive) as zf:
             zf.extractall(td)
