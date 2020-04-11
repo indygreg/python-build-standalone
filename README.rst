@@ -343,7 +343,7 @@ python_flavor
    (Deprecated in version 5 in favor of PEP 425 tags.)
 
 python_version
-   Version of Python being distribution. e.g. ``3.7.2``.
+   Version of Python distribution. e.g. ``3.8.2``.
 
 python_exe
    Relative path to main Python interpreter executable.
