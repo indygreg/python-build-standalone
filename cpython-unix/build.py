@@ -339,7 +339,7 @@ def build_tix(client, image, platform, musl=False):
 
 
 def python_build_info(
-    build_env, platform, config_c_in, setup_dist, setup_local, libressl=False
+    build_env, version, platform, config_c_in, setup_dist, setup_local, libressl=False
 ):
     """Obtain build metadata for the Python distribution."""
 
@@ -482,7 +482,9 @@ def python_build_info(
             }
         )
 
-    with (SUPPORT / ("required-extensions.%s" % platform)).open("r") as fh:
+    with (SUPPORT / ("required-extensions.%s.%s" % (version, platform))).open(
+        "r"
+    ) as fh:
         required_extensions = {l.strip() for l in fh if l.strip()}
 
     for extension, entries in bi["extensions"].items():
@@ -516,10 +518,12 @@ def build_cpython(
     setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
     pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
-    with (SUPPORT / ("static-modules.%s" % platform)).open("rb") as fh:
+    with (SUPPORT / ("static-modules.%s.%s" % (version, platform))).open("rb") as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
 
-    with (SUPPORT / ("disabled-static-modules.%s" % platform)).open("rb") as fh:
+    with (SUPPORT / ("disabled-static-modules.%s.%s" % (version, platform))).open(
+        "rb"
+    ) as fh:
         disabled_static_modules = {
             l.strip() for l in fh if l.strip() and not l.strip().startswith(b"#")
         }
@@ -658,6 +662,7 @@ def build_cpython(
             "link_mode": "static",
             "build_info": python_build_info(
                 build_env,
+                version,
                 platform,
                 config_c_in,
                 setup_dist_content,

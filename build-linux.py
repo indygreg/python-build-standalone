@@ -70,6 +70,7 @@ def run():
 
     entry = DOWNLOADS[os.environ["PYBUILD_PYTHON"]]
     env["PYBUILD_PYTHON_VERSION"] = entry["version"]
+    env["PYBUILD_PYTHON_MAJOR_VERSION"] = ".".join(entry["version"].split(".")[0:2])
 
     subprocess.run(["make"], cwd=str(MAKE_DIR), env=env, check=True)
 

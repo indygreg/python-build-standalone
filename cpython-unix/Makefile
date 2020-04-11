@@ -241,9 +241,9 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
-    $(HERE)/disabled-static-modules.$(BASE_PLATFORM) \
-    $(HERE)/required-extensions.$(BASE_PLATFORM) \
-    $(HERE)/static-modules.$(BASE_PLATFORM) \
+    $(HERE)/disabled-static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(BASE_PLATFORM) \
+    $(HERE)/required-extensions.$(PYBUILD_PYTHON_MAJOR_VERSION).$(BASE_PLATFORM) \
+    $(HERE)/static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(BASE_PLATFORM) \
     $(NULL)
 
 $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
