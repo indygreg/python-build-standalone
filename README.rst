@@ -514,6 +514,11 @@ crt_features
    ``static``
       Binaries link the CRT statically.
 
+   ``vcruntime:N``
+      Binaries link against the Microsoft Visual C++ Redistributable Runtime,
+      version ``N``. ``N`` is a string like ``140``, which denotes the
+      version component in a ``vcruntimeXYZ.dll`` file.
+
    (Version 5 or above only.)
 
 build_info

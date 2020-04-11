@@ -1778,6 +1778,9 @@ def build_cpython(arch: str, profile):
         # __declspec(dllexport), even for static distributions.
         python_symbol_visibility = "dllexport"
 
+        # We currently always link vcruntime140.dll.
+        crt_features = ["vcruntime:140"]
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
             "version": "5",
@@ -1791,6 +1794,7 @@ def build_cpython(arch: str, profile):
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "extension_module_loading": extension_module_loading,
             "link_mode": "static" if static else "shared",
+            "crt_features": crt_features,
             "build_info": build_info,
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
