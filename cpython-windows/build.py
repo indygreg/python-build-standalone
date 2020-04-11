@@ -1508,11 +1508,9 @@ def build_cpython(arch: str, profile):
     if arch == "amd64":
         build_platform = "x64"
         build_directory = "amd64"
-        json_arch = "x86_64"
     elif arch == "x86":
         build_platform = "win32"
         build_directory = "win32"
-        json_arch = "x86"
     else:
         raise ValueError("unhandled arch: %s" % arch)
 
@@ -1758,11 +1756,17 @@ def build_cpython(arch: str, profile):
             if f.startswith("LICENSE.") and f.endswith(".txt"):
                 shutil.copyfile(ROOT / f, licenses_dir / f)
 
+        if arch == "x86":
+            target_triple = "i686-pc-windows-msvc"
+        elif arch == "amd64":
+            target_triple = "x86_64-pc-windows-msvc"
+        else:
+            raise Exception("unhandled arch: %s" % arch)
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            "version": "2",
-            "os": "windows",
-            "arch": json_arch,
+            "version": "5",
+            "target_triple": target_triple,
             "python_flavor": "cpython",
             "python_version": python_version,
             "python_exe": "install/python.exe",
