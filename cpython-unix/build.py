@@ -360,7 +360,10 @@ def python_build_info(
         else:
             object_file_format = "elf"
     elif platform == "macos":
-        raise NotImplementedError()
+        if optimized:
+            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["llvm"]["version"]
+        else:
+            object_file_format = "mach-o"
     else:
         raise Exception("unsupported platform: %s" % platform)
 

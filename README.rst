@@ -700,6 +700,9 @@ object_file_format
    ``coff``
        Standard object file format for Windows.
 
+   ``mach-o``
+       Standard object file format for macOS.
+
    (Version 5 or newer only.)
 
 Each entry in a ``links`` array is a map with the following keys:
