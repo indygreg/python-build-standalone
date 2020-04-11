@@ -222,23 +222,26 @@ popd
 # Ideally we'd adjust the build system. But meh.
 find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
 
-# Symlink libpython so we don't have 2 copies.
+# Symlink libpython so we don't have 2 copies. We only need to do
+# this on Python 3.7, as 3.8 dropped the m ABI suffix from binary names.
 
-if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-  PYTHON_ARCH="darwin"
-else
-  PYTHON_ARCH="x86_64-linux-gnu"
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
+    if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+        PYTHON_ARCH="darwin"
+    else
+        PYTHON_ARCH="x86_64-linux-gnu"
+    fi
+
+    LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}m.a
+    ln -sf \
+        python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-${PYTHON_ARCH}/${LIBPYTHON} \
+        ${ROOT}/out/python/install/lib/${LIBPYTHON}
+
+    # Ditto for Python executable.
+    ln -sf \
+        python${PYTHON_MAJMIN_VERSION}m \
+        ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
 fi
-
-LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}m.a
-ln -sf \
-    python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-${PYTHON_ARCH}/${LIBPYTHON} \
-    ${ROOT}/out/python/install/lib/${LIBPYTHON}
-
-# Ditto for Python executable.
-ln -sf \
-    python${PYTHON_MAJMIN_VERSION}m \
-    ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
 
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
