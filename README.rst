@@ -488,6 +488,24 @@ core
       Path to a static library representing `libpython`. May not be defined.
       (Version 4 or above only.)
 
+   inittab_object
+      Path to object file defining ``_PyImport_Inittab``, which defines
+      built-in extension modules.
+
+      (Version 5 or above only.)
+
+   inittab_source
+      Path to source code file that defines ``_PyImport_Inittab``. On
+      CPython, this will point to a ``config.c`` file.
+
+      (Version 5 or above only.)
+
+   inittab_cflags
+      Array of strings constituting compiler flags to use when compiling
+      ``inittab_source``.
+
+      (Version 5 or above only.)
+
 extensions
    A map of extension names to an array of maps describing candidate extensions.
 
