@@ -704,8 +704,6 @@ def build_cpython(
             "python_tag": entry["python_tag"],
             "python_version": entry["version"],
             "python_exe": "install/bin/%s" % fully_qualified_name,
-            "python_include": "install/include/%s" % fully_qualified_name,
-            "python_stdlib": "install/lib/python%s" % entry["version"][0:3],
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "python_symbol_visibility": python_symbol_visibility,
             "extension_module_loading": extension_module_loading,

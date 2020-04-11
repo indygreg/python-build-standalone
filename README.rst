@@ -376,6 +376,17 @@ python_implementation_version
 python_version
    Version of Python distribution. e.g. ``3.8.2``.
 
+python_paths
+   Mapping of ``sysconfig`` path names to paths in the distribution.
+
+   Keys are values like ``stdlib`` and ``include``. Values are relative
+   paths within the distribution.
+
+   See https://docs.python.org/3/library/sysconfig.html#installation-paths
+   for the meaning of keys.
+
+   (Version 5 or above only.)
+
 python_exe
    Relative path to main Python interpreter executable.
 
@@ -383,9 +394,13 @@ python_include
    Relative path to include path for Python headers. If this path is on
    the compiler's include path, ``#include <Python.h>`` should work.
 
+   (Deprecated in version 5 in favor of ``python_paths``.)
+
 python_stdlib
    Relative path to Python's standard library (where ``.py`` and resource
    files are located).
+
+   (Deprecated in version 5 in favor of ``python_paths``.)
 
 python_stdlib_test_packages
    Array of strings of Python packages that define tests. (Version 4 or above

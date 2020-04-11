@@ -5,7 +5,7 @@
 
 set -ex
 
-ROOT=`pwd`
+export ROOT=`pwd`
 
 export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:${TOOLS_PATH}/deps/bin:$PATH
 
@@ -225,7 +225,9 @@ import distutils.util
 import importlib.machinery
 import importlib.util
 import json
+import os
 import sys
+import sysconfig
 
 metadata = {
     "python_abi_tag": sys.abiflags,
@@ -242,7 +244,13 @@ metadata = {
         "source": importlib.machinery.SOURCE_SUFFIXES,
     },
     "bytecode_magic_number": codecs.encode(importlib.util.MAGIC_NUMBER, "hex").decode("ascii"),
+    "python_paths": {},
 }
+
+root = os.environ["ROOT"]
+for name, path in sysconfig.get_paths().items():
+    rel = os.path.relpath(path, os.path.join(root, "out", "python"))
+    metadata["python_paths"][name] = rel
 
 with open(sys.argv[1], "w") as fh:
     json.dump(metadata, fh, sort_keys=True, indent=4)
