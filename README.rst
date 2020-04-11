@@ -612,6 +612,21 @@ extensions
       this value to choose an appropriate extension variant when there are
       multiple options.
 
+object_file_format
+   Denotes the data format for object files. Can be one of the following
+   values.
+
+   ``elf``
+       Standard object file format for Linux.
+
+   ``llvm-bitcode:N``
+       Files are LLVM bitcode produced with LLVM version ``N``. e.g.
+       ``llvm-bitcode:10.0.0``.
+
+       This variant is typically seen for builds using LTO.
+
+   (Version 5 or newer only.)
+
 Each entry in a ``links`` array is a map with the following keys:
 
 name
