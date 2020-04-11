@@ -297,7 +297,7 @@ without having to resort to heuristics.
 The file contains a JSON map. This map has the following keys:
 
 version
-   Version number of the file format. Currently ``4``.
+   Version number of the file format. Currently ``5``.
 
 os
    Target operating system for the distribution. e.g. ``linux``, ``macos``,
@@ -306,6 +306,21 @@ os
 arch
    Target architecture for the distribution. e.g. ``x86`` (32-bit) or
    ``x86_64`` (64-bit).
+
+python_tag
+   The PEP 425 *Python Tag* value. e.g. ``cp38``.
+
+   (Version 5 or above only.)
+
+python_abi_tag
+   The PEP 425 *ABI Tag* value. e.g. ``cp37m``.
+
+   (Version 5 or above only.)
+
+python_platform_tag
+   The PEP 425 *Platform Tag* value. e.g. ``linux_x86_64``.
+
+   (Version 5 or above only.)
 
 python_flavor
    Type of Python distribution. e.g. ``cpython``.
