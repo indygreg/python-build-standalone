@@ -376,6 +376,11 @@ python_implementation_version
 python_version
    Version of Python distribution. e.g. ``3.8.2``.
 
+python_major_minor_version
+   ``X.Y`` version string consisting of Python major and minor version.
+
+   (Version 5 or above only.)
+
 python_paths
    Mapping of ``sysconfig`` path names to paths in the distribution.
 
