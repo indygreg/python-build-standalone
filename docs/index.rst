@@ -27,6 +27,7 @@ any system for the targeted architecture.
 
    building.rst
    running.rst
+   quirks.rst
    technotes.rst
    distributions.rst
    status.rst
