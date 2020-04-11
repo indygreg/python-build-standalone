@@ -1767,6 +1767,13 @@ def build_cpython(arch: str, profile):
         else:
             raise Exception("unhandled arch: %s" % arch)
 
+        extension_module_loading = ["builtin"]
+
+        # Static builds do not support loading extension modules, since Python
+        # symbols are not exported.
+        if not static:
+            extension_module_loading.append("shared-library")
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
             "version": "5",
@@ -1777,6 +1784,7 @@ def build_cpython(arch: str, profile):
             "python_include": "install/include",
             "python_stdlib": "install/Lib",
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
+            "extension_module_loading": extension_module_loading,
             "link_mode": "static" if static else "shared",
             "build_info": build_info,
             "licenses": entry["licenses"],
