@@ -374,7 +374,7 @@ python_suffixes
       Suffixes for debug bytecode modules. Corresponds to
       ``importlib.machinery.DEBUG_BYTECODE_SUFFIXES``. e.g. ``[".pyc"]``.
 
-   ``extension_suffixes``
+   ``extension``
       Suffixes for extension modules. Corresponds to
       ``importlib.machinery.EXTENSION_SUFFIXES``. e.g.
       ``[".cpython-38-x86_64-linux-gnu.so", ".abi3.so", ".so"]``.

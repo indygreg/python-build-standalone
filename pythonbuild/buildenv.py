@@ -70,6 +70,16 @@ class ContainerContext(object):
         with open(dest, "wb") as fh:
             fh.write(data)
 
+    def get_file(self, path):
+        log("retrieving container file %s" % path)
+        data = io.BytesIO(container_get_archive(self.container, "/build/%s" % path))
+
+        with tarfile.open(fileobj=data) as tf:
+            for ti in tf:
+                return tf.extractfile(ti).read()
+
+        raise Exception("file not found")
+
     def get_output_archive(self, path=None, as_tar=False):
         p = "/build/out"
         if path:

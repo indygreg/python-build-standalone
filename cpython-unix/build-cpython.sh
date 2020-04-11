@@ -218,6 +218,32 @@ EOF
 ${ROOT}/out/python/install/bin/python3 setup.py install
 popd
 
+# Emit metadata to be used in PYTHON.json.
+cat > ${ROOT}/generate_metadata.py << EOF
+import distutils.util
+import importlib.machinery
+import json
+import sys
+
+metadata = {
+    "python_abi_tag": sys.abiflags,
+    "python_platform_tag": distutils.util.get_platform(),
+    "python_suffixes": {
+        "bytecode": importlib.machinery.BYTECODE_SUFFIXES,
+        "debug_bytecode": importlib.machinery.DEBUG_BYTECODE_SUFFIXES,
+        "extension": importlib.machinery.EXTENSION_SUFFIXES,
+        "optimized_bytecode": importlib.machinery.OPTIMIZED_BYTECODE_SUFFIXES,
+        "source": importlib.machinery.SOURCE_SUFFIXES,
+    },
+}
+
+with open(sys.argv[1], "w") as fh:
+    json.dump(metadata, fh, sort_keys=True, indent=4)
+EOF
+
+${ROOT}/out/python/install/bin/python3 ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
+cat ${ROOT}/metadata.json
+
 # Downstream consumers don't require bytecode files. So remove them.
 # Ideally we'd adjust the build system. But meh.
 find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
