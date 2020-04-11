@@ -647,8 +647,11 @@ def build_cpython(
             else:
                 target_triple = "x86_64-unknown-linux-gnu"
 
+            platform_tag = "linux_x86_64"
+
         elif platform == "macos":
             target_triple = "x86_64-apple-darwin"
+            raise Exception("not yet implemented")
         else:
             raise ValueError("unhandled platform: %s" % platform)
 
@@ -658,6 +661,7 @@ def build_cpython(
             "target_triple": target_triple,
             "python_tag": entry["python_tag"],
             "python_abi_tag": entry["python_abi_tag"],
+            "python_platform_tag": platform_tag,
             "python_version": entry["version"],
             "python_exe": "install/bin/%s" % fully_qualified_name,
             "python_include": "install/include/%s" % fully_qualified_name,
