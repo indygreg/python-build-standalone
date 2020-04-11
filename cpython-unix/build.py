@@ -642,13 +642,24 @@ def build_cpython(
         )
 
         extension_module_loading = ["builtin"]
+        crt_features = []
 
         if platform == "linux64":
             if musl:
                 target_triple = "x86_64-unknown-linux-musl"
+                crt_features.append("static")
             else:
                 target_triple = "x86_64-unknown-linux-gnu"
                 extension_module_loading.append("shared_library")
+                crt_features.append("glibc-dynamic")
+
+                glibc_max_version = build_env.get_file("glibc_version.txt").strip()
+                if not glibc_max_version:
+                    raise Exception("failed to retrieve glibc max symbol version")
+
+                crt_features.append(
+                    "glibc-max-symbol-version:%s" % glibc_max_version.decode("ascii")
+                )
 
             python_symbol_visibility = "global_default"
 
@@ -674,6 +685,7 @@ def build_cpython(
             "python_symbol_visibility": python_symbol_visibility,
             "extension_module_loading": extension_module_loading,
             "link_mode": "static",
+            "crt_features": crt_features,
             "build_info": python_build_info(
                 build_env,
                 version,

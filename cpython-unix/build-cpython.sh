@@ -241,8 +241,15 @@ with open(sys.argv[1], "w") as fh:
     json.dump(metadata, fh, sort_keys=True, indent=4)
 EOF
 
+PYTHON_EXE=$(realpath ${ROOT}/out/python/install/bin/python3)
+
 ${ROOT}/out/python/install/bin/python3 ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
 cat ${ROOT}/metadata.json
+
+if [ "${CC}" != "musl-clang" ]; then
+    objdump -T ${PYTHON_EXE} | grep GLIBC_ | awk '{print $5}' | awk -F_ '{print $2}' | sort -V | tail -n 1 > ${ROOT}/glibc_version.txt
+    cat ${ROOT}/glibc_version.txt
+fi
 
 # Downstream consumers don't require bytecode files. So remove them.
 # Ideally we'd adjust the build system. But meh.

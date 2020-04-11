@@ -450,6 +450,9 @@ crt_features
       binaries support and indirectly advertises the oldest Linux
       distributions binaries can run on.
 
+   ``static``
+      Binaries link the CRT statically.
+
    (Version 5 or above only.)
 
 build_info
