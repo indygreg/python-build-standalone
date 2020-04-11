@@ -299,14 +299,6 @@ The file contains a JSON map. This map has the following keys:
 version
    Version number of the file format. Currently ``5``.
 
-os
-   Target operating system for the distribution. e.g. ``linux``, ``macos``,
-   or ``windows``.
-
-arch
-   Target architecture for the distribution. e.g. ``x86`` (32-bit) or
-   ``x86_64`` (64-bit).
-
 target_triple
    A target triple defining the platform and architecture of the machine
    that binaries target. We use Rust's set of defined targets for values.
@@ -317,6 +309,18 @@ target_triple
    and ``x86_64-apple-darwin``.
 
    (Version 5 or above only.)
+
+os
+   Target operating system for the distribution. e.g. ``linux``, ``macos``,
+   or ``windows``.
+
+   (Deprecated in version 5 in favor of ``target_triple``.)
+
+arch
+   Target architecture for the distribution. e.g. ``x86`` (32-bit) or
+   ``x86_64`` (64-bit).
+
+   (Deprecated in version 5 in favor of ``target_triple``.)
 
 python_tag
    The PEP 425 *Python Tag* value. e.g. ``cp38``.
@@ -335,6 +339,8 @@ python_platform_tag
 
 python_flavor
    Type of Python distribution. e.g. ``cpython``.
+
+   (Deprecated in version 5 in favor of PEP 425 tags.)
 
 python_version
    Version of Python being distribution. e.g. ``3.7.2``.
