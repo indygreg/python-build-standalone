@@ -411,6 +411,28 @@ python_symbol_visibility
 
    (Version 5 or above only.)
 
+extension_module_loading
+   Defines support for loading Python extension modules.
+
+   The value is an array of strings denoting support for various
+   loading mechanisms.
+
+   Note that downstream consumers reconstructing a new binary from
+   object files or a static library can alter support depending on
+   how that binary is linked.
+
+   The special values are as follows.
+
+   ``builtin``
+       Supports loading of *builtin* extension modules compiled into
+       the binary. (This should always be present.)
+
+   ``shared_library``
+       Supports loading of extension modules defined as shared
+       libraries. e.g. from ``.so`` or ``.pyd`` files.
+
+   (Version 5 or above only.)
+
 build_info
    A map describing build configuration and artifacts for this distribution.
 
