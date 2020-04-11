@@ -1073,9 +1073,8 @@ def run_msbuild(
     configuration: str,
     platform: str,
     static: bool,
+    python_version: str,
 ):
-    python_version = DOWNLOADS["cpython-3.7"]["version"]
-
     args = [
         str(msbuild),
         str(pcbuild_path / "pcbuild.proj"),
@@ -1581,6 +1580,7 @@ def build_cpython(arch: str, profile):
                 configuration="PGInstrument",
                 platform=build_platform,
                 static=static,
+                python_version=python_version,
             )
 
             # build-windows.py sets some environment variables which cause the
@@ -1641,6 +1641,7 @@ def build_cpython(arch: str, profile):
                 configuration="PGUpdate",
                 platform=build_platform,
                 static=static,
+                python_version=python_version,
             )
             artifact_config = "PGUpdate"
 
@@ -1651,6 +1652,7 @@ def build_cpython(arch: str, profile):
                 configuration="Release",
                 platform=build_platform,
                 static=static,
+                python_version=python_version,
             )
             artifact_config = "Release"
 
