@@ -402,6 +402,15 @@ link_mode
 
    (Version 4 or above only.)
 
+python_symbol_visibility
+   Defines how Python symbols are defined in binaries.
+
+   ``global_default``
+      (UNIX only.) Symbols are defined as *global* and have *default*
+      binding, making them visible outside their defining component.
+
+   (Version 5 or above only.)
+
 build_info
    A map describing build configuration and artifacts for this distribution.
 
