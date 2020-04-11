@@ -697,6 +697,9 @@ object_file_format
 
        This variant is typically seen for builds using LTO.
 
+   ``coff``
+       Standard object file format for Windows.
+
    (Version 5 or newer only.)
 
 Each entry in a ``links`` array is a map with the following keys:

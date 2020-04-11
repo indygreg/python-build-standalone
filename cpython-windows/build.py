@@ -1300,6 +1300,8 @@ def collect_python_build_artifacts(
 
     res = {"core": {"objs": []}, "extensions": {}}
 
+    res["object_file_format"] = "coff"
+
     def process_project(project: pathlib.Path, dest_dir: pathlib.Path):
         for f in sorted(os.listdir(intermediates_path / project)):
             p = intermediates_path / project / f
