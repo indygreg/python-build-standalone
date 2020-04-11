@@ -360,6 +360,36 @@ python_stdlib_test_packages
    Array of strings of Python packages that define tests. (Version 4 or above
    only.)
 
+python_suffixes
+   A map defining file suffixes for various Python file types. Each entry
+   in the map is an array of strings.
+
+   The map has the following keys.
+
+   ``bytecode``
+      Suffixes for bytecode modules. Corresponds to
+      ``importlib.machinery.BYTECODE_SUFFIXES``. e.g. ``[".pyc"]``.
+
+   ``debug_bytecode``
+      Suffixes for debug bytecode modules. Corresponds to
+      ``importlib.machinery.DEBUG_BYTECODE_SUFFIXES``. e.g. ``[".pyc"]``.
+
+   ``extension_suffixes``
+      Suffixes for extension modules. Corresponds to
+      ``importlib.machinery.EXTENSION_SUFFIXES``. e.g.
+      ``[".cpython-38-x86_64-linux-gnu.so", ".abi3.so", ".so"]``.
+
+   ``optimized_bytecode``
+      Suffixes for optimized bytecode modules. Corresponds to
+      ``importlib.machinery.OPTIMIZED_BYTECODE_SUFFIXES``. e.g.
+      ``[".pyc"]``.
+
+   ``source``
+      Suffixes for source modules. Corresponds to
+      ``importlib.machinery.SOURCE_SUFFIXES``. e.g. ``[".py"]``.
+
+   (Version 5 or above only.)
+
 link_mode
    How `libpython` is linked. Values can be one of the following:
 
