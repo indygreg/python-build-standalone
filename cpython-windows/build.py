@@ -1771,7 +1771,7 @@ def build_cpython(arch: str, profile):
         python_info = {
             "version": "5",
             "target_triple": target_triple,
-            "python_flavor": "cpython",
+            "python_tag": entry["python_tag"],
             "python_version": python_version,
             "python_exe": "install/python.exe",
             "python_include": "install/include",
