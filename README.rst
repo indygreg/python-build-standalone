@@ -307,6 +307,17 @@ arch
    Target architecture for the distribution. e.g. ``x86`` (32-bit) or
    ``x86_64`` (64-bit).
 
+target_triple
+   A target triple defining the platform and architecture of the machine
+   that binaries target. We use Rust's set of defined targets for values.
+   Run ``rustup target list`` to see potential values.
+
+   Example values are ``x86_64-unknown-linux-gnu``,
+   ``x86_64-unknown-linux-musl``, ``x86_64-pc-windows-msvc``,
+   and ``x86_64-apple-darwin``.
+
+   (Version 5 or above only.)
+
 python_tag
    The PEP 425 *Python Tag* value. e.g. ``cp38``.
 
