@@ -433,6 +433,25 @@ extension_module_loading
 
    (Version 5 or above only.)
 
+crt_features
+   Describes C Runtime features/requirements for binaries.
+
+   The value is an array of strings denoting various properties.
+
+   The special string values are as follows.
+
+   ``glibc-dynamic``
+      Binaries link dynamically against glibc.
+
+   ``glibc-max-symbol-version:N``
+      Denotes the max symbol version seen in glibc versioned symbols.
+
+      This effectively advertises the oldest version of glibc that
+      binaries support and indirectly advertises the oldest Linux
+      distributions binaries can run on.
+
+   (Version 5 or above only.)
+
 build_info
    A map describing build configuration and artifacts for this distribution.
 
