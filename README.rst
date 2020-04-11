@@ -465,7 +465,7 @@ link_mode
 python_symbol_visibility
    Defines how Python symbols are defined in binaries.
 
-   ``global_default``
+   ``global-default``
       (UNIX only.) Symbols are defined as *global* and have *default*
       binding, making them visible outside their defining component.
 

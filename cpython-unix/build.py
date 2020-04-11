@@ -689,13 +689,11 @@ def build_cpython(
                     "glibc-max-symbol-version:%s" % glibc_max_version.decode("ascii")
                 )
 
-            python_symbol_visibility = "global_default"
+            python_symbol_visibility = "global-default"
 
         elif platform == "macos":
             target_triple = "x86_64-apple-darwin"
-
-            # TODO define
-            python_symbol_visibility = None
+            python_symbol_visibility = "global-default"
             extension_module_loading.append("shared-library")
         else:
             raise ValueError("unhandled platform: %s" % platform)
