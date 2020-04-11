@@ -650,7 +650,7 @@ def build_cpython(
                 crt_features.append("static")
             else:
                 target_triple = "x86_64-unknown-linux-gnu"
-                extension_module_loading.append("shared_library")
+                extension_module_loading.append("shared-library")
                 crt_features.append("glibc-dynamic")
 
                 glibc_max_version = build_env.get_file("glibc_version.txt").strip()
@@ -668,7 +668,7 @@ def build_cpython(
 
             # TODO define
             python_symbol_visibility = None
-            extension_module_loading.append("shared_library")
+            extension_module_loading.append("shared-library")
         else:
             raise ValueError("unhandled platform: %s" % platform)
 

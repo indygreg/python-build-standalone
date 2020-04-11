@@ -427,7 +427,7 @@ extension_module_loading
        Supports loading of *builtin* extension modules compiled into
        the binary. (This should always be present.)
 
-   ``shared_library``
+   ``shared-library``
        Supports loading of extension modules defined as shared
        libraries. e.g. from ``.so`` or ``.pyd`` files.
 
