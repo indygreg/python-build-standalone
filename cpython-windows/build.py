@@ -1494,7 +1494,9 @@ def build_cpython(arch: str, profile):
     zlib_archive = download_entry("zlib", BUILD)
 
     python_archive = download_entry("cpython-3.7", BUILD)
-    python_version = DOWNLOADS["cpython-3.7"]["version"]
+    entry = DOWNLOADS["cpython-3.7"]
+
+    python_version = entry["version"]
 
     setuptools_archive = download_entry("setuptools", BUILD)
     pip_archive = download_entry("pip", BUILD)
@@ -1737,8 +1739,8 @@ def build_cpython(arch: str, profile):
             ]
 
         for extension, entries in build_info["extensions"].items():
-            for entry in entries:
-                entry["required"] = extension in REQUIRED_EXTENSIONS
+            for record in entries:
+                record["required"] = extension in REQUIRED_EXTENSIONS
 
         # Copy OpenSSL libraries as a one-off.
         for lib in ("crypto", "ssl"):
@@ -1777,7 +1779,7 @@ def build_cpython(arch: str, profile):
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "link_mode": "static" if static else "shared",
             "build_info": build_info,
-            "licenses": DOWNLOADS["cpython-3.7"]["licenses"],
+            "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
         }
 
@@ -1788,8 +1790,7 @@ def build_cpython(arch: str, profile):
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
         dest_path = BUILD / (
-            "cpython-%s-windows-%s-%s.tar"
-            % (DOWNLOADS["cpython-3.7"]["version"], arch, profile,)
+            "cpython-%s-windows-%s-%s.tar" % (entry["version"], arch, profile,)
         )
 
         with dest_path.open("wb") as fh:
