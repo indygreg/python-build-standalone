@@ -221,7 +221,6 @@ popd
 # Emit metadata to be used in PYTHON.json.
 cat > ${ROOT}/generate_metadata.py << EOF
 import codecs
-import distutils.util
 import importlib.machinery
 import importlib.util
 import json
@@ -235,7 +234,7 @@ metadata = {
     "python_implementation_hex_version": sys.implementation.hexversion,
     "python_implementation_name": sys.implementation.name,
     "python_implementation_version": [str(x) for x in sys.implementation.version],
-    "python_platform_tag": distutils.util.get_platform(),
+    "python_platform_tag": sysconfig.get_platform(),
     "python_suffixes": {
         "bytecode": importlib.machinery.BYTECODE_SUFFIXES,
         "debug_bytecode": importlib.machinery.DEBUG_BYTECODE_SUFFIXES,
