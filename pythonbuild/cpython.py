@@ -35,6 +35,7 @@ STATIC_MODULES = {
     b"_sha512",
     b"_sha3",
     b"_socket",
+    b"_statistics",
     b"_struct",
     b"_testcapi",
     b"_weakref",
