@@ -229,6 +229,10 @@ import sys
 
 metadata = {
     "python_abi_tag": sys.abiflags,
+    "python_implementation_cache_tag": sys.implementation.cache_tag,
+    "python_implementation_hex_version": sys.implementation.hexversion,
+    "python_implementation_name": sys.implementation.name,
+    "python_implementation_version": [str(x) for x in sys.implementation.version],
     "python_platform_tag": distutils.util.get_platform(),
     "python_suffixes": {
         "bytecode": importlib.machinery.BYTECODE_SUFFIXES,

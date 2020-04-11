@@ -342,6 +342,37 @@ python_flavor
 
    (Deprecated in version 5 in favor of PEP 425 tags.)
 
+python_implementation_cache_tag
+   Tag used by import machinery to derive filenames for bytecode files.
+
+   This is the value exposed by ``sys.implementation.cache_tag``
+
+   (Version 5 or above only.)
+
+python_implementation_hex_version
+   Hexidecimal expression of implementation version.
+
+   This is the value exposed by ``sys.implementation.hexversion``.
+
+   (Version 5 or above only.)
+
+python_implementation_name
+   Name of Python implementation.
+
+   This is the value exposed by ``sys.implementation.name``.
+
+   (Version 5 or above only.)
+
+python_implementation_version
+   Array of version components of Python implementation.
+
+   This is the value exposed by ``sys.implementation.version``.
+
+   Unlike ``sys.implementation.version``, all elements are strings,
+   not a mix of numbers and strings.
+
+   (Version 5 or above only.)
+
 python_version
    Version of Python distribution. e.g. ``3.8.2``.
 
