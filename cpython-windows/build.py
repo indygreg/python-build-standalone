@@ -1336,6 +1336,16 @@ def collect_python_build_artifacts(
     for obj in process_project("pythoncore", core_dir):
         res["core"]["objs"].append("build/core/%s" % obj)
 
+    # Copy config.c into output directory, next to its object file.
+    shutil.copyfile(
+        pcbuild_path / ".." / "PC", "config.c", out_dir / "build" / "core" / "config.c"
+    )
+
+    assert "build/core/config.obj" in res["core"]["objs"]
+    res["inittab_object"] = "build/core/config.obj"
+    res["inittab_source"] = "build/core/config.c"
+    res["inittab_cflags"] = ["-DNDEBUG", "-DPy_BUILD_CORE"]
+
     if static:
         exts = ("lib",)
     else:
