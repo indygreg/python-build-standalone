@@ -647,8 +647,13 @@ def build_cpython(
             else:
                 target_triple = "x86_64-unknown-linux-gnu"
 
+            python_symbol_visibility = "global_default"
+
         elif platform == "macos":
             target_triple = "x86_64-apple-darwin"
+
+            # TODO define
+            python_symbol_visibility = None
         else:
             raise ValueError("unhandled platform: %s" % platform)
 
@@ -662,6 +667,7 @@ def build_cpython(
             "python_include": "install/include/%s" % fully_qualified_name,
             "python_stdlib": "install/lib/python%s" % entry["version"][0:3],
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
+            "python_symbol_visibility": python_symbol_visibility,
             "link_mode": "static",
             "build_info": python_build_info(
                 build_env,
