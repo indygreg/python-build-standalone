@@ -339,13 +339,32 @@ def build_tix(client, image, platform, musl=False):
 
 
 def python_build_info(
-    build_env, version, platform, config_c_in, setup_dist, setup_local, libressl=False
+    build_env,
+    version,
+    platform,
+    optimized,
+    config_c_in,
+    setup_dist,
+    setup_local,
+    libressl=False,
 ):
     """Obtain build metadata for the Python distribution."""
 
     log("resolving Python distribution build info")
 
     bi = {"core": {"objs": [], "links": []}, "extensions": {}}
+
+    if platform == "linux64":
+        if optimized:
+            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["llvm"]["version"]
+        else:
+            object_file_format = "elf"
+    elif platform == "macos":
+        raise NotImplementedError()
+    else:
+        raise Exception("unsupported platform: %s" % platform)
+
+    bi["object_file_format"] = object_file_format
 
     # Object files for the core distribution are found by walking the
     # build artifacts.
@@ -696,6 +715,7 @@ def build_cpython(
                 build_env,
                 version,
                 platform,
+                optimized,
                 config_c_in,
                 setup_dist_content,
                 setup_local_content,
