@@ -59,6 +59,8 @@ DOWNLOADS = {
         "version": "3.7.7",
         "licenses": ["Python-2.0", "CNRI-Python"],
         "license_file": "LICENSE.cpython.txt",
+        "python_tag": "cp37",
+        "python_abi_tag": "cp37m",
     },
     "cpython-3.8": {
         "url": "https://www.python.org/ftp/python/3.8.2/Python-3.8.2.tar.xz",
@@ -67,6 +69,8 @@ DOWNLOADS = {
         "version": "3.8.2",
         "licenses": ["Python-2.0", "CNRI-Python"],
         "license_file": "LICENSE.cpython.txt",
+        "python_tag": "cp38",
+        "python_abi_tag": "cp38",
     },
     "gcc": {
         "url": "https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.xz",

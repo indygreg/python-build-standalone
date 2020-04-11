@@ -656,7 +656,8 @@ def build_cpython(
         python_info = {
             "version": "5",
             "target_triple": target_triple,
-            "python_flavor": "cpython",
+            "python_tag": entry["python_tag"],
+            "python_abi_tag": entry["python_abi_tag"],
             "python_version": entry["version"],
             "python_exe": "install/bin/%s" % fully_qualified_name,
             "python_include": "install/include/%s" % fully_qualified_name,
