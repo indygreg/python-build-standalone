@@ -165,6 +165,13 @@ class TempdirContext(object):
         with dest.open("wb") as fh:
             create_tar_from_directory(fh, self.td / "out" / "tools")
 
+    def get_file(self, path):
+        log("retrieving file %s" % path)
+
+        p = self.td / path
+        with p.open("rb") as fh:
+            return fh.read()
+
     def get_output_archive(self, path, as_tar=False):
         p = self.td / "out" / path
 
