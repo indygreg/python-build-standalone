@@ -220,8 +220,10 @@ popd
 
 # Emit metadata to be used in PYTHON.json.
 cat > ${ROOT}/generate_metadata.py << EOF
+import codecs
 import distutils.util
 import importlib.machinery
+import importlib.util
 import json
 import sys
 
@@ -235,6 +237,7 @@ metadata = {
         "optimized_bytecode": importlib.machinery.OPTIMIZED_BYTECODE_SUFFIXES,
         "source": importlib.machinery.SOURCE_SUFFIXES,
     },
+    "bytecode_magic_number": codecs.encode(importlib.util.MAGIC_NUMBER, "hex").decode("ascii"),
 }
 
 with open(sys.argv[1], "w") as fh:

@@ -390,6 +390,12 @@ python_suffixes
 
    (Version 5 or above only.)
 
+bytecode_magic_number
+   Magic number to use for bytecode files, expressed as a hexidecimal
+   string.
+
+   (Version 5 or above only.)
+
 link_mode
    How `libpython` is linked. Values can be one of the following:
 
