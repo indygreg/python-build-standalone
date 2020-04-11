@@ -1774,12 +1774,17 @@ def build_cpython(arch: str, profile):
         if not static:
             extension_module_loading.append("shared-library")
 
+        # Patches to CPython above (search for __declspec) always force
+        # __declspec(dllexport), even for static distributions.
+        python_symbol_visibility = "dllexport"
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
             "version": "5",
             "target_triple": target_triple,
             "python_tag": entry["python_tag"],
             "python_version": python_version,
+            "python_symbol_visibility": python_symbol_visibility,
             "python_exe": "install/python.exe",
             "python_include": "install/include",
             "python_stdlib": "install/Lib",

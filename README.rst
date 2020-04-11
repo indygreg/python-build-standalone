@@ -466,6 +466,10 @@ python_symbol_visibility
       (UNIX only.) Symbols are defined as *global* and have *default*
       binding, making them visible outside their defining component.
 
+   ``dllexport``
+      (Windows only.) Symbols are exported via ``__declspec(dllexport)``,
+      making them visible to external libraries.
+
    (Version 5 or above only.)
 
 extension_module_loading
