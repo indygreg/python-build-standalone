@@ -703,7 +703,6 @@ def build_cpython(
             "target_triple": target_triple,
             "python_tag": entry["python_tag"],
             "python_version": entry["version"],
-            "python_exe": "install/bin/%s" % fully_qualified_name,
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "python_symbol_visibility": python_symbol_visibility,
             "extension_module_loading": extension_module_loading,

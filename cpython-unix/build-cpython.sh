@@ -245,6 +245,7 @@ metadata = {
     },
     "bytecode_magic_number": codecs.encode(importlib.util.MAGIC_NUMBER, "hex").decode("ascii"),
     "python_paths": {},
+    "python_exe": "install/bin/python%s%s" % (sysconfig.get_python_version(), sys.abiflags),
 }
 
 root = os.environ["ROOT"]
