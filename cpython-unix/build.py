@@ -695,6 +695,7 @@ def build_cpython(
             target_triple = "x86_64-apple-darwin"
             python_symbol_visibility = "global-default"
             extension_module_loading.append("shared-library")
+            crt_features.append("libSystem")
         else:
             raise ValueError("unhandled platform: %s" % platform)
 

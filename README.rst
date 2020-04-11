@@ -522,6 +522,10 @@ crt_features
       version ``N``. ``N`` is a string like ``140``, which denotes the
       version component in a ``vcruntimeXYZ.dll`` file.
 
+   ``libSystem``
+      Binaries link against ``libSystem.B.dylib``, which is the mega
+      library backing a lot of systems-level functionality in macOS.
+
    (Version 5 or above only.)
 
 build_info
