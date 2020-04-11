@@ -54,3 +54,30 @@ If running macOS::
 e.g.::
 
    $ TERMINFO_DIRS=/etc/terminfo:/lib/terminfo:/usr/share/terminfo install/bin/python3.7
+
+``_tkinter.TclError: Can't find a usable init.tcl``
+===================================================
+
+You may see the aforementioned error when running Python
+code like ``import tkinter; tkinter.Tk()``.
+
+What's happening here is that tk code can't locate a tcl file
+needed to initialize it.
+
+Python's ``tkinter`` module is a bit funky in that it doesn't
+try very hard to find this support code on all platform. It
+has code for locating the files from a relative directory
+on Windows. But nothing on other platforms. Instead, Python assumes
+that the defaults paths compiled into tcl/tk are proper.
+
+Since python-build-standalone builds its own tcl/tk packages
+and the build configuration is likely different from your
+machine, the search paths for tcl resources compiled into
+the python-build-standalone binaries likely point to nowhere
+on your machine.
+
+You can work around this problem by setting the ``TCL_LIBRARY``
+environment variable to the location of the missing tcl resources.
+e.g.::
+
+   $ TCL_LIBRARY=`pwd`/install/lib/tcl/tcl8.6 install/bin/python3
