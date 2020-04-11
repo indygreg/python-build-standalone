@@ -1788,9 +1788,6 @@ def build_cpython(arch: str, profile):
             "python_tag": entry["python_tag"],
             "python_version": python_version,
             "python_symbol_visibility": python_symbol_visibility,
-            "python_exe": "install/python.exe",
-            "python_include": "install/include",
-            "python_stdlib": "install/Lib",
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "extension_module_loading": extension_module_loading,
             "link_mode": "static" if static else "shared",
@@ -1799,6 +1796,26 @@ def build_cpython(arch: str, profile):
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
         }
+
+        # Collect information from running Python script.
+        python_exe = out_dir / "python" / "install" / "python.exe"
+        metadata_path = td / "metadata.json"
+        env = dict(os.environ)
+        env["ROOT"] = str(out_dir / "python")
+        subprocess.run(
+            [
+                str(python_exe),
+                str(SUPPORT / "generate_metadata.py"),
+                str(metadata_path),
+            ],
+            env=env,
+            check=True,
+        )
+
+        with metadata_path.open("rb") as fh:
+            metadata = json.load(fh)
+
+        python_info.update(metadata)
 
         if not static:
             python_info["tcl_library_path"] = "install/tcl"

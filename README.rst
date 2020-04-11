@@ -330,6 +330,9 @@ python_tag
 python_abi_tag
    The PEP 425 *ABI Tag* value. e.g. ``cp37m``.
 
+   This may be null if the distribution's platform doesn't expose the concept
+   of an ABI tag.
+
    (Version 5 or above only.)
 
 python_platform_tag
