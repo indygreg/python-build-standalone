@@ -15,7 +15,9 @@ that absolute path.
 
 To work around this issue, you can mass rewrite the shebangs to
 point the directory where the distribution is extracted/installed
-to.
+to. Here is a sample shell one-liner to get you started::
+
+   $ find install/bin/ -type f -exec sed -i '1 s/^#!.*python.*/#!.\/python3/' {} \;
 
 Alternatively, you can sometimes execute ``python3 -m <module>``
 to get equivalent functionality to what the installed script would
