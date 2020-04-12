@@ -62,11 +62,7 @@ STATIC_MODULES = {
 }
 
 # Modules we don't (yet) support building.
-UNSUPPORTED_MODULES = {
-    # Our self-contained builds upset _testcapi and trigger a preprocessor
-    # error.
-    b"_testcapi"
-}
+UNSUPPORTED_MODULES = set([])
 
 # Packages that define tests.
 STDLIB_TEST_PACKAGES = {
