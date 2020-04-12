@@ -4,6 +4,14 @@
 Building
 ========
 
+Linux
+=====
+
+The host system must be 64-bit. A Python 3.5+ interpreter must be
+available. The execution environment must have access to a Docker
+daemon (all build operations are performed in Docker containers for
+isolation from the host system).
+
 To build a Python distribution for Linux x64::
 
     $ ./build-linux.py
@@ -18,9 +26,31 @@ To build a Python distribution for Linux x64 using musl libc::
 
     $ ./build-linux.py --musl --libressl
 
+macOS
+=====
+
+The XCode command line tools must be installed. A Python 3 interpreter
+is required to execute the build. ``/usr/bin/clang`` must exist.
+
+macOS SDK headers must be installed. Try running ``xcode-select --install``
+to install them if you see errors about e.g. ``stdio.h`` not being found.
+Verify they are installed by running ``xcrun --show-sdk-path``. It
+should print something like
+``/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk``
+on modern versions of macOS.
+
 To build a Python distribution for macOS::
 
     $ ./build-macos.py
+
+macOS uses the same build code as Linux, just without Docker.
+So similar build configuration options are available.
+
+Windows
+=======
+
+Visual Studio 2017 (or later) is required. A compatible Windows SDK is required
+(10.0.17763.0 as per CPython 3.7.2).
 
 To build a Python distribution for Windows x64::
 
@@ -33,32 +63,5 @@ distribution, optionally with PGO optimizations::
    $ py.exe build-windows.py --profile shared
    $ py.exe build-windows.py --profile shared-pgo
 
-Requirements
-============
-
-Linux
------
-
-The host system must be 64-bit. A Python 3.5+ interpreter must be
-available. The execution environment must have access to a Docker
-daemon (all build operations are performed in Docker containers for
-isolation from the host system).
-
-macOS
------
-
-The XCode command line tools must be installed. A Python 3 interpreter
-is required to execute the build. ``/usr/bin/clang`` must exist.
-
-macOS SDK headers must be installed. Try running ``xcode-select --install``
-to install them if you see errors about e.g. ``stdio.h`` not being found.
-Verify they are installed by running ``xcrun --show-sdk-path``. It
-should print something like
-``/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk``
-on modern versions of macOS.
-
-Windows
--------
-
-Visual Studio 2017 (or later) is required. A compatible Windows SDK is required
-(10.0.17763.0 as per CPython 3.7.2).
+To build a 32-bit x86 binary, simply use an ``x86 Native Tools
+Command Prompt`` instead of ``x64``.
