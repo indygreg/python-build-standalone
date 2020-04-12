@@ -23,48 +23,7 @@ This repository contains ``test-distribution.py`` script that can be
 used to run the Python test harness from a distribution archive.
 
 Here, we track the various known failures when running
-``test-distribution.py /path/to/distribution.tar.zst -u all,-audio``.
-
-``test_ctypes``
----------------
-
-Known Failing on: Linux
-
-This fails with a bunch of
-``AttributeError: module '_ctypes_test' has no attribute '__file__'``.
-This is because ``_ctypes_test`` is compiled as a built-in extension
-module, not a standalone extension module.
-
-The test seems to attempt to use ``ctypes`` against this test extension
-shared library. So we should probably not compile it as a built-in,
-as it prevents tests from working.
-
-``test_imp``
-------------
-
-Known Failing on: Linux
-
-This fails in ``test_issue24748_load_module_skips_sys_modules_check``
-with a wonky traceback in the importer.
-
-The failure seems to relate to assumptions that ``_testmultiphase``
-is a standalone extension module. It is a built-in, which breaks
-assumptions.
-
-We should change how this extension is compiled.
-
-``test_importlib``
-------------------
-
-Known Failing on: Linux
-
-This fails due to
-``AttributeError: module '_testcapi' has no attribute '__file__'``.
-
-This is assuming ``_testcapi`` is a standalone extension module.
-But it is a built-in.
-
-We should change how this extension is compiled.
+``test-distribution.py /path/to/distribution.tar.zst -u all``.
 
 ``test_subprocess``
 -------------------
@@ -122,6 +81,38 @@ This seems like a minor issue and might be a bug in the test itself.
 
 Test Skips
 ==========
+
+Linux
+-----
+
+The following tests are skipped on Linux:
+
+test_asdl_parser
+   test irrelevant for an installed Python
+test_clinic
+   install/lib/Tools/clinic' path does not exist
+test_dbm_gnu
+   No module named '_gdbm'
+test_devpoll
+   test works only on Solaris OS family
+test_gdb
+   test_gdb only works on source builds at the moment.
+test_kqueue
+   test works only on BSD
+test_msilib
+   No module named 'msilib'
+test_ossaudiodev
+   [Errno 2] No such file or directory: '/dev/dsp'
+test_startfile
+   object <module 'os' from '.../install/lib/python3.7/os.py'> has no attribute 'startfile'
+test_winconsoleio
+   test only relevant on win32
+test_winreg
+   No module named 'winreg'
+test_winsound
+   No module named 'winsound'
+test_zipfile64
+   test requires loads of disk-space bytes and a long time to run
 
 macOS
 -----
