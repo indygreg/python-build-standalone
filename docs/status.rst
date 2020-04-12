@@ -42,7 +42,7 @@ as it prevents tests from working.
 ``test_imp``
 ------------
 
-Known Failing on: Linux, macOS
+Known Failing on: Linux
 
 This fails in ``test_issue24748_load_module_skips_sys_modules_check``
 with a wonky traceback in the importer.
@@ -56,7 +56,7 @@ We should change how this extension is compiled.
 ``test_importlib``
 ------------------
 
-Known Failing on: Linux, macOS
+Known Failing on: Linux
 
 This fails due to
 ``AttributeError: module '_testcapi' has no attribute '__file__'``.

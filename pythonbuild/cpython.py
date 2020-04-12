@@ -39,7 +39,6 @@ STATIC_MODULES = {
     b"_struct",
     b"_testinternalcapi",
     b"_weakref",
-    b"_xxtestfuzz",
     b"array",
     b"audioop",
     b"binascii",
@@ -56,7 +55,6 @@ STATIC_MODULES = {
     b"syslog",
     b"termios",
     b"unicodedata",
-    b"xxlimited",
     b"zlib",
 }
 
