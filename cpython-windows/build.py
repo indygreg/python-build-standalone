@@ -861,9 +861,18 @@ def hack_project_files(
     # Ditto for freeze_importlib, which isn't needed since we don't modify
     # the frozen importlib baked into the source distribution (
     # Python/importlib.h and Python/importlib_external.h).
-    static_replace_in_file(
-        pcbuild_proj, b'<Projects2 Include="_freeze_importlib.vcxproj" />', b""
-    )
+    try:
+        # Python 3.8.
+        static_replace_in_file(
+            pcbuild_proj,
+            b"""<Projects2 Condition="$(Platform) != 'ARM' and $(Platform) != 'ARM64'" Include="_freeze_importlib.vcxproj" />""",
+            b"",
+        )
+    except NoSearchStringError:
+        # Python 3.7.
+        static_replace_in_file(
+            pcbuild_proj, b'<Projects2 Include="_freeze_importlib.vcxproj" />', b""
+        )
 
 
 PYPORT_EXPORT_SEARCH = b"""
