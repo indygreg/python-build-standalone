@@ -4,6 +4,40 @@
 Running Distributions
 =====================
 
+Extracting Distributions
+========================
+
+Distributions are defined as zstandard-compressed tarballs.
+
+Modern versions of ``tar`` support zstandard and you can extract
+like any normal archive::
+
+   $ tar -axvf path/to/distribution.tar.zstd
+
+(The ``-a`` argument tells tar to guess the compression format by
+the file extension.)
+
+If you do not have ``tar``, you can install and use the ``zstd``
+tool (typically available via a ``zstd`` or ``zstandard`` system
+package)::
+
+   $ zstd -d path/to/distribution.tar.zstd
+   $ tar -xvf path/to/distribution.tar
+
+If you want to extract the distribution with Python, use the
+``zstandard`` Python package:
+
+.. code-block:: python
+
+   import tar
+   import zstandard
+
+   with open("path/to/distribution.tar.zstd", "rb") as ifh:
+       dctx = zstandard.ZstdDecompressor()
+       with dctx.stream_reader(ifh) as reader:
+           with tarfile.open(mode="r|", fileobj=reader) as tf:
+               tf.extractall("path/to/output/directory")
+
 Runtime Requirements
 ====================
 
