@@ -37,6 +37,8 @@ STATIC_MODULES = {
     b"_socket",
     b"_statistics",
     b"_struct",
+    # Despite being a test module, this needs to be built as a
+    # built-in in order to facilitate testing.
     b"_testinternalcapi",
     b"_weakref",
     b"array",
