@@ -37,7 +37,6 @@ STATIC_MODULES = {
     b"_socket",
     b"_statistics",
     b"_struct",
-    b"_testcapi",
     b"_testinternalcapi",
     b"_weakref",
     b"_xxtestfuzz",

@@ -53,11 +53,6 @@ assumptions.
 
 We should change how this extension is compiled.
 
-``test_import``
----------------
-
-Known Failing on: Linux, macOS
-
 ``test_importlib``
 ------------------
 
