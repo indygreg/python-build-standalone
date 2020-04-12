@@ -1466,7 +1466,7 @@ def collect_python_build_artifacts(
     return res
 
 
-def build_cpython(arch: str, profile):
+def build_cpython(python_entry_name: str, arch: str, profile):
     static = profile == "static"
     pgo = "-pgo" in profile
 
@@ -1484,8 +1484,8 @@ def build_cpython(arch: str, profile):
     xz_archive = download_entry("xz", BUILD)
     zlib_archive = download_entry("zlib", BUILD)
 
-    python_archive = download_entry("cpython-3.7", BUILD)
-    entry = DOWNLOADS["cpython-3.7"]
+    python_archive = download_entry(python_entry_name, BUILD)
+    entry = DOWNLOADS[python_entry_name]
 
     python_version = entry["version"]
 
@@ -1877,7 +1877,7 @@ def main():
             build_openssl(perl_path, arch, profile=args.profile)
 
         LOG_PREFIX[0] = "cpython"
-        tar_path = build_cpython(arch, profile=args.profile)
+        tar_path = build_cpython("cpython-3.7", arch, profile=args.profile)
 
         compress_python_archive(
             tar_path, DIST, "%s-%s" % (tar_path.stem, now.strftime("%Y%m%dT%H%M")),
