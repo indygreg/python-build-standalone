@@ -144,14 +144,6 @@ This fails in the following manner::
 
 This seems like a minor issue and might be a bug in the test itself.
 
-``test_venv``
--------------
-
-Known failing on: Windows
-
-This appears to be failing due to missing ``venvlauncher.exe``, which we don't
-currently build. (But we could.)
-
 ``test_winconsoleio``
 ---------------------
 

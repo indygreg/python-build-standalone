@@ -830,7 +830,7 @@ def hack_project_files(
 
         copy_link_to_lib(pythoncore_proj)
 
-    # We don't need to produce pythonw.exe, python_uwp.exe, venvlauncher.exe,
+    # We don't need to produce pythonw.exe and python_uwp.exe
     # and their *w variants. Or the python3.dll, pyshellext, or pylauncher.
     # Cut them from the build to save time and so their presence doesn't
     # interfere with packaging up the build artifacts.
@@ -845,16 +845,6 @@ def hack_project_files(
     static_replace_in_file(
         pcbuild_proj,
         b'<Projects2 Include="python_uwp.vcxproj;pythonw_uwp.vcxproj" Condition="$(IncludeUwp)" />',
-        b"",
-    )
-    static_replace_in_file(
-        pcbuild_proj,
-        b'<Projects Include="venvlauncher.vcxproj;venvwlauncher.vcxproj" />',
-        b"",
-    )
-    static_replace_in_file(
-        pcbuild_proj,
-        b'<Projects2 Include="venvlauncher.vcxproj;venvwlauncher.vcxproj" />',
         b"",
     )
     if static:
@@ -1054,18 +1044,6 @@ def hack_source_files(source_path: pathlib.Path, static: bool):
         b"",
     )
 
-    # We don't produce venvlauncher executables.
-    static_replace_in_file(
-        layout_main,
-        b'yield from in_build("venvlauncher.exe", "Lib/venv/scripts/nt/", "python")',
-        b"pass",
-    )
-    static_replace_in_file(
-        layout_main,
-        b'yield from in_build("venvwlauncher.exe", "Lib/venv/scripts/nt/", "pythonw")',
-        b"pass",
-    )
-
 
 def run_msbuild(
     msbuild: pathlib.Path,
@@ -1257,6 +1235,9 @@ def collect_python_build_artifacts(
     ignore_projects = {
         # We don't care about build artifacts for the python executable.
         "python",
+        # Don't care about venvlauncher executable.
+        "venvlauncher",
+        "venvwlauncher",
         # Test extensions.
         "_ctypes_test",
         "_testbuffer",
