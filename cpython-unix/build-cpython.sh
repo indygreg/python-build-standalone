@@ -273,6 +273,7 @@ find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm 
 
 # Ensure lib-dynload exists, or Python complains on startup.
 mkdir -p ${ROOT}/out/python/install/lib/python${PYTHON_MAJMIN_VERSION}/lib-dynload
+touch ${ROOT}/out/python/install/lib/python${PYTHON_MAJMIN_VERSION}/lib-dynload/.empty
 
 # Symlink libpython so we don't have 2 copies. We only need to do
 # this on Python 3.7, as 3.8 dropped the m ABI suffix from binary names.
