@@ -1856,6 +1856,12 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--python",
+        choices={"cpython-3.7", "cpython-3.8"},
+        default="cpython-3.7",
+        help="Python distribution to build",
+    )
+    parser.add_argument(
         "--profile",
         choices={"static", "shared", "shared-pgo"},
         default="static",
@@ -1881,7 +1887,7 @@ def main():
             build_openssl(perl_path, arch, profile=args.profile)
 
         LOG_PREFIX[0] = "cpython"
-        tar_path = build_cpython("cpython-3.7", arch, profile=args.profile)
+        tar_path = build_cpython(args.python, arch, profile=args.profile)
 
         compress_python_archive(
             tar_path, DIST, "%s-%s" % (tar_path.stem, now.strftime("%Y%m%dT%H%M")),
