@@ -13,7 +13,7 @@ tar -xf db-${BDB_VERSION}.tar.gz
 
 pushd db-${BDB_VERSION}/build_unix
 
-CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ../dist/configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ../dist/configure \
     --build=${BUILD_TRIPLE} \
     --target=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
