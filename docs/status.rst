@@ -15,3 +15,112 @@ Planned and features include:
 * Support for BSDs
 * Support for iOS and/or Android
 * Support for Python distributions that aren't CPython
+
+Test Failures
+=============
+
+This repository contains ``test-distribution.py`` script that can be
+used to run the Python test harness from a distribution archive.
+
+Here, we track the various known failures when running
+``test-distribution.py /path/to/distribution.tar.zst -u all,-audio``.
+
+``test_ctypes``
+---------------
+
+Known Failing on: Linux
+
+This fails with a bunch of
+``AttributeError: module '_ctypes_test' has no attribute '__file__'``.
+This is because ``_ctypes_test`` is compiled as a built-in extension
+module, not a standalone extension module.
+
+The test seems to attempt to use ``ctypes`` against this test extension
+shared library. So we should probably not compile it as a built-in,
+as it prevents tests from working.
+
+``test_imp``
+------------
+
+Known Failing on: Linux
+
+This fails in ``test_issue24748_load_module_skips_sys_modules_check``
+with a wonky traceback in the importer.
+
+The failure seems to relate to assumptions that ``_testmultiphase``
+is a standalone extension module. It is a built-in, which breaks
+assumptions.
+
+We should change how this extension is compiled.
+
+``test_import``
+---------------
+
+Known Failing on: Linux
+
+``test_importlib``
+------------------
+
+Known Failing on: Linux
+
+This fails due to
+``AttributeError: module '_testcapi' has no attribute '__file__'``.
+
+This is assuming ``_testcapi`` is a standalone extension module.
+But it is a built-in.
+
+We should change how this extension is compiled.
+
+``test_subprocess``
+-------------------
+
+Known Failing on: Linux
+
+This fails in the following manner::
+
+    test_executable_without_cwd (test.test_subprocess.ProcessTestCaseNoPoll) ... Could not find platform independent libraries <prefix>
+    Could not find platform dependent libraries <exec_prefix>
+    Consider setting $PYTHONHOME to <prefix>[:<exec_prefix>]
+    Fatal Python error: initfsencoding: Unable to get the locale encoding
+    ModuleNotFoundError: No module named 'encodings'
+
+    Current thread 0x00007fd77c231740 (most recent call first):
+    FAIL
+
+    ======================================================================
+    FAIL: test_executable_without_cwd (test.test_subprocess.ProcessTestCaseNoPoll)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "/tmp/tmp8hef0kr4/python/install/lib/python3.7/test/test_subprocess.py", line 436, in test_executable_without_cwd
+        executable=sys.executable)
+      File "/tmp/tmp8hef0kr4/python/install/lib/python3.7/test/test_subprocess.py", line 355, in _assert_cwd
+        self.assertEqual(47, p.returncode)
+    AssertionError: 47 != -6
+
+We're unsure what is going on here. The error from ``initfsencoding``
+is what happens when the first ``import`` during ``Py_Initialize()``
+fails. So it appears the test somehow can't locate the Python
+standard library.
+
+``test_tk``
+-----------
+
+Known Failing on: Linux
+
+This fails in the following manner::
+
+    ======================================================================
+    FAIL: test_from (tkinter.test.test_tkinter.test_widgets.ScaleTest)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "/tmp/tmpoqqjd5gi/python/install/lib/python3.7/tkinter/test/test_tkinter/test_widgets.py", line 867, in test_from
+        self.checkFloatParam(widget, 'from', 100, 14.9, 15.1, conv=float_round)
+      File "/tmp/tmpoqqjd5gi/python/install/lib/python3.7/tkinter/test/widget_tests.py", line 106, in checkFloatParam
+        self.checkParam(widget, name, value, conv=conv, **kwargs)
+      File "/tmp/tmpoqqjd5gi/python/install/lib/python3.7/tkinter/test/widget_tests.py", line 63, in checkParam
+        self.assertEqual2(widget[name], expected, eq=eq)
+      File "/tmp/tmpoqqjd5gi/python/install/lib/python3.7/tkinter/test/widget_tests.py", line 47, in assertEqual2
+        self.assertEqual(actual, expected, msg)
+    AssertionError: 14.9 != 15.0
+
+This seems like a minor issue and might be a bug in the test itself.
