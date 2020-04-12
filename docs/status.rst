@@ -28,7 +28,7 @@ Here, we track the various known failures when running
 ``test_ctypes``
 ---------------
 
-Known Failing on: Linux, macOS
+Known Failing on: Linux
 
 This fails with a bunch of
 ``AttributeError: module '_ctypes_test' has no attribute '__file__'``.
