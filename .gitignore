@@ -3,3 +3,4 @@ build/
 docs/_build/
 dist/
 venv/
+__pycache__/
