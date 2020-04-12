@@ -1190,6 +1190,7 @@ RE_ADDITIONAL_DEPENDENCIES = re.compile(
 def collect_python_build_artifacts(
     pcbuild_path: pathlib.Path,
     out_dir: pathlib.Path,
+    python_majmin: str,
     arch: str,
     config: str,
     static: bool,
@@ -1200,7 +1201,9 @@ def collect_python_build_artifacts(
     the files.
     """
     outputs_path = pcbuild_path / arch
-    intermediates_path = pcbuild_path / "obj" / ("37%s_%s" % (arch, config))
+    intermediates_path = (
+        pcbuild_path / "obj" / ("%s%s_%s" % (python_majmin, arch, config))
+    )
 
     if not outputs_path.exists():
         log("%s does not exist" % outputs_path)
@@ -1331,15 +1334,15 @@ def collect_python_build_artifacts(
         exts = ("lib", "exp")
 
     for ext in exts:
-        source = outputs_path / ("python37.%s" % ext)
-        dest = core_dir / ("python37.%s" % ext)
+        source = outputs_path / ("python%s.%s" % (python_majmin, ext))
+        dest = core_dir / ("python%s.%s" % (python_majmin, ext))
         log("copying %s" % source)
         shutil.copyfile(source, dest)
 
     if static:
-        res["core"]["static_lib"] = "build/core/python37.lib"
+        res["core"]["static_lib"] = "build/core/python%s.lib" % python_majmin
     else:
-        res["core"]["shared_lib"] = "install/python37.dll"
+        res["core"]["shared_lib"] = "install/python%s.dll" % python_majmin
 
     # We hack up pythoncore.vcxproj and the list in it when this function
     # runs isn't totally accurate. We hardcode the list from the CPython
@@ -1707,6 +1710,7 @@ def build_cpython(python_entry_name: str, arch: str, profile):
         build_info = collect_python_build_artifacts(
             pcbuild_path,
             out_dir / "python",
+            "".join(entry["version"].split(".")[0:2]),
             build_directory,
             artifact_config,
             static=static,
