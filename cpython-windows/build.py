@@ -1766,6 +1766,11 @@ def build_cpython(arch: str, profile):
             log("copying %s to %s" % (source, dest))
             shutil.copyfile(source, dest)
 
+        shutil.copyfile(
+            cpython_source_path / "Tools" / "scripts" / "run_tests.py",
+            out_dir / "python" / "build" / "run_tests.py",
+        )
+
         licenses_dir = out_dir / "python" / "licenses"
         licenses_dir.mkdir()
         for f in sorted(os.listdir(ROOT)):
@@ -1807,6 +1812,7 @@ def build_cpython(arch: str, profile):
             "build_info": build_info,
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
+            "run_tests": "build/run_tests.py",
         }
 
         # Collect information from running Python script.
