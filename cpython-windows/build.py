@@ -1088,8 +1088,8 @@ def run_msbuild(
         "/property:IncludeSSL=true",
         # TODO support tkinter in static builds.
         "/property:IncludeTkinter=%s" % ("false" if static else "true"),
-        # TODO compile test extensions so we can get PGO benefits of tested code.
-        "/property:IncludeTests=false",
+        # TODO support test extensions in static builds.
+        "/property:IncludeTests=%s" % ("false" if static else "true"),
         "/property:OverrideVersion=%s" % python_version,
     ]
 
@@ -1256,7 +1256,16 @@ def collect_python_build_artifacts(
     # Projects that aren't relevant to us.
     ignore_projects = {
         # We don't care about build artifacts for the python executable.
-        "python"
+        "python",
+        # Test extensions.
+        "_ctypes_test",
+        "_testbuffer",
+        "_testcapi",
+        "_testconsole",
+        "_testembed",
+        "_testimportmultiple",
+        "_testmultiphase",
+        "xxlimited",
     }
 
     other_projects = {"pythoncore"}
