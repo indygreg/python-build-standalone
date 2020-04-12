@@ -28,7 +28,7 @@ Here, we track the various known failures when running
 ``test_ctypes``
 ---------------
 
-Known Failing on: Linux
+Known Failing on: Linux, macOS
 
 This fails with a bunch of
 ``AttributeError: module '_ctypes_test' has no attribute '__file__'``.
@@ -42,7 +42,7 @@ as it prevents tests from working.
 ``test_imp``
 ------------
 
-Known Failing on: Linux
+Known Failing on: Linux, macOS
 
 This fails in ``test_issue24748_load_module_skips_sys_modules_check``
 with a wonky traceback in the importer.
@@ -56,12 +56,12 @@ We should change how this extension is compiled.
 ``test_import``
 ---------------
 
-Known Failing on: Linux
+Known Failing on: Linux, macOS
 
 ``test_importlib``
 ------------------
 
-Known Failing on: Linux
+Known Failing on: Linux, macOS
 
 This fails due to
 ``AttributeError: module '_testcapi' has no attribute '__file__'``.
@@ -124,3 +124,50 @@ This fails in the following manner::
     AssertionError: 14.9 != 15.0
 
 This seems like a minor issue and might be a bug in the test itself.
+
+Test Skips
+==========
+
+macOS
+-----
+
+The following tests are skipped on macOS:
+
+test_asdl_parser
+   test irrelevant for an installed Python
+test_clinic
+   python/install/lib/Tools/clinic' path does not exist
+test_dbm_gnu
+   No module named '_gdbm'
+test_devpoll
+   test works only on Solaris OS family
+test_epoll
+   test works only on Linux 2.6
+test_gdb
+   Couldn't find gdb on the path
+test_msilib
+   No module named 'msilib'
+test_multiprocessing_fork
+   test may crash on macOS (bpo-33725)
+test_nis
+   No module named 'nis'
+test_ossaudiodev
+   No module named 'ossaudiodev'
+test_spwd
+   No module named 'spwd'
+test_startfile
+   object <module 'os' from '.../install/lib/python3.7/os.py'> has no attribute 'startfile'
+test_tix
+   cannot run without OS X gui process
+test_tk
+   cannot run without OS X gui process
+test_ttk_guionly
+   cannot run without OS X gui process
+test_winconsoleio
+   test only relevant on win32
+test_winreg
+   No module named 'winreg'
+test_winsound
+   No module named 'winsound'
+test_zipfile64
+   test requires loads of disk-space bytes and a long time to run
