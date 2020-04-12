@@ -25,6 +25,50 @@ used to run the Python test harness from a distribution archive.
 Here, we track the various known failures when running
 ``test-distribution.py /path/to/distribution.tar.zst -u all``.
 
+``test__locale``
+----------------
+
+Known failing on: Windows
+
+This test fails as follows::
+
+    ======================================================================
+    ERROR: test_float_parsing (test.test__locale._LocaleTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmpjx7a33kd\python\install\lib\test\test__locale.py", line 184, in test_float_parsing
+        if localeconv()['decimal_point'] != '.':
+    UnicodeDecodeError: 'locale' codec can't decode byte 0xa0 in position 0: decoding error
+
+    ======================================================================
+    ERROR: test_lc_numeric_localeconv (test.test__locale._LocaleTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmpjx7a33kd\python\install\lib\test\test__locale.py", line 130, in test_lc_numeric_localeconv
+        formatting = localeconv()
+    UnicodeDecodeError: 'locale' codec can't decode byte 0xa0 in position 0: decoding error
+
+    ----------------------------------------------------------------------
+
+``test_locale``
+---------------
+
+Known failing on: Windows
+
+This test fails on Windows::
+
+    ======================================================================
+    ERROR: test_getsetlocale_issue1813 (test.test_locale.TestMiscellaneous)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test_locale.py", line 567, in test_getsetlocale_issue1813
+        locale.setlocale(locale.LC_CTYPE, loc)
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\locale.py", line 608, in setlocale
+        return _setlocale(category, locale)
+    locale.Error: unsupported locale setting
+
+    ----------------------------------------------------------------------
+
 ``test_ssl``
 ------------
 
@@ -99,6 +143,84 @@ This fails in the following manner::
     AssertionError: 14.9 != 15.0
 
 This seems like a minor issue and might be a bug in the test itself.
+
+``test_venv``
+-------------
+
+Known failing on: Windows
+
+This appears to be failing due to missing ``venvlauncher.exe``, which we don't
+currently build. (But we could.)
+
+``test_winconsoleio``
+---------------------
+
+This fails as follows::
+
+    ======================================================================
+    ERROR: test_ctrl_z (test.test_winconsoleio.WindowsConsoleIOTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test_winconsoleio.py", line 190, in test_ctrl_z
+        a, b = stdin.read(1), stdin.readall()
+    OSError: [WinError 87] The parameter is incorrect
+
+    ======================================================================
+    ERROR: test_input (test.test_winconsoleio.WindowsConsoleIOTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test_winconsoleio.py", line 144, in test_input
+        self.assertStdinRoundTrip('abc123')
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test_winconsoleio.py", line 137, in assertStdinRoundTrip
+        actual = input()
+    OSError: [WinError 87] The parameter is incorrect
+
+    ======================================================================
+    FAIL: test_partial_reads (test.test_winconsoleio.WindowsConsoleIOTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test_winconsoleio.py", line 166, in test_partial_reads
+        self.assertEqual(actual, expected, 'stdin.read({})'.format(read_count))
+    AssertionError: b'\r\n' != b'\xcf\xbc\xd1\x9e\xd0\xa2\xce\xbb\xd0\xa4\xd0\x99\r\n' : stdin.read(1)
+
+    ======================================================================
+    FAIL: test_partial_surrogate_reads (test.test_winconsoleio.WindowsConsoleIOTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test_winconsoleio.py", line 183, in test_partial_surrogate_reads
+        self.assertEqual(actual, expected, 'stdin.read({})'.format(read_count))
+    AssertionError: b'\xc3\x84\r\n' != b'\xf4\x81\xbf\xbf\xf4\x81\x80\x81\r\n' : stdin.read(1)
+
+    ----------------------------------------------------------------------
+
+    Ran 10 tests in 0.006s
+
+    FAILED (failures=2, errors=2)
+    test test_winconsoleio failed
+    0:00:00 Re-running test__locale in verbose mode
+    test_float_parsing (test.test__locale._LocaleTests) ... ERROR
+    test_lc_numeric_basic (test.test__locale._LocaleTests) ... skipped 'nl_langinfo is not available'
+    test_lc_numeric_localeconv (test.test__locale._LocaleTests) ... ERROR
+    test_lc_numeric_nl_langinfo (test.test__locale._LocaleTests) ... skipped 'nl_langinfo is not available'
+
+    ======================================================================
+    ERROR: test_float_parsing (test.test__locale._LocaleTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test__locale.py", line 184, in test_float_parsing
+        if localeconv()['decimal_point'] != '.':
+    UnicodeDecodeError: 'locale' codec can't decode byte 0xa0 in position 0: decoding error
+
+    ======================================================================
+    ERROR: test_lc_numeric_localeconv (test.test__locale._LocaleTests)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "C:\Users\gps\AppData\Local\Temp\tmp8m94v2m5\python\install\lib\test\test__locale.py", line 130, in test_lc_numeric_localeconv
+        formatting = localeconv()
+    UnicodeDecodeError: 'locale' codec can't decode byte 0xa0 in position 0: decoding error
+
+    ----------------------------------------------------------------------
+
 
 Test Skips
 ==========
