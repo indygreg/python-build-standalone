@@ -1338,7 +1338,7 @@ def collect_python_build_artifacts(
 
     # Copy config.c into output directory, next to its object file.
     shutil.copyfile(
-        pcbuild_path / ".." / "PC", "config.c", out_dir / "build" / "core" / "config.c"
+        pcbuild_path / ".." / "PC" / "config.c", out_dir / "build" / "core" / "config.c"
     )
 
     assert "build/core/config.obj" in res["core"]["objs"]
