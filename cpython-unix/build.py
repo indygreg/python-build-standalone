@@ -710,6 +710,7 @@ def build_cpython(
             "extension_module_loading": extension_module_loading,
             "link_mode": "static",
             "crt_features": crt_features,
+            "run_tests": "build/run_tests.py",
             "build_info": python_build_info(
                 build_env,
                 version,

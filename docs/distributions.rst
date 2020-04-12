@@ -263,6 +263,12 @@ crt_features
 
    (Version 5 or above only.)
 
+run_tests
+   The path to a Python script to run the test harness for this
+   distribution.
+
+   (Version 5 or above only.)
+
 build_info
    A map describing build configuration and artifacts for this distribution.
 
