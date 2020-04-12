@@ -291,7 +291,23 @@ tcl_library_path
    This will include a subset of the library files provided by the tcl, tk,
    and tix packages.
 
+   This points to the root directory containing tcl resources. Actual
+   tcl resources are in sub-directories underneath, as identified by
+   ``tcl_library_paths``.
+
    (Version 3 or above only.)
+
+tcl_library_paths
+   Array of relative paths holding tcl library files relative to
+   ``tcl_library_path``.
+
+   Because ``tcl_library_path`` can be shared with other resources
+   (e.g. on UNIX the path is typically ``install/lib``, which holds
+   system libraries as well), distributions may advertise the list
+   of directories under ``tcl_library_path`` actually containing
+   tcl resources.
+
+   (Version 5 or above only.)
 
 build_info Data
 ---------------

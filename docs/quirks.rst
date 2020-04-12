@@ -80,4 +80,4 @@ You can work around this problem by setting the ``TCL_LIBRARY``
 environment variable to the location of the missing tcl resources.
 e.g.::
 
-   $ TCL_LIBRARY=`pwd`/install/lib/tcl/tcl8.6 install/bin/python3
+   $ TCL_LIBRARY=`pwd`/install/lib/tcl8.6 install/bin/python3
