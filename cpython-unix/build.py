@@ -724,7 +724,13 @@ def build_cpython(
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
             "tcl_library_path": "install/lib",
-            "tcl_library_paths": ["tcl8.6", "thread2", "Tix8.4.3", "tk8.6",],
+            "tcl_library_paths": [
+                "tcl8",
+                "tcl8.6",
+                "thread2.8.5",
+                "Tix8.4.3",
+                "tk8.6",
+            ],
         }
 
         # Add metadata derived from built distribution.
