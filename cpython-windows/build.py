@@ -1837,6 +1837,14 @@ def build_cpython(arch: str, profile):
 
         if not static:
             python_info["tcl_library_path"] = "install/tcl"
+            python_info["tcl_library_paths"] = [
+                "dde1.4",
+                "reg1.3",
+                "tcl8.6",
+                "tk8.6",
+                "tcl8",
+                "tix8.4.3",
+            ]
 
         with (out_dir / "python" / "PYTHON.json").open("w", encoding="utf8") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)
