@@ -723,15 +723,18 @@ def build_cpython(
             ),
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
-            "tcl_library_path": "install/lib",
-            "tcl_library_paths": [
+        }
+
+        # We do not ship tcl libraries on macOS.
+        if platform != "macos":
+            python_info["tcl_library_path"] = "install/lib"
+            python_info["tcl_library_paths"] = [
                 "tcl8",
                 "tcl8.6",
                 "thread2.8.5",
                 "Tix8.4.3",
                 "tk8.6",
-            ],
-        }
+            ]
 
         # Add metadata derived from built distribution.
         extra_metadata = build_env.get_file("metadata.json")
