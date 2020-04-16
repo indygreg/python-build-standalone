@@ -52,16 +52,27 @@ Windows
 Visual Studio 2017 (or later) is required. A compatible Windows SDK is required
 (10.0.17763.0 as per CPython 3.7.2).
 
+If building CPython 3.8+, there are the following additional requirements:
+
+* A ``git.exe`` on ``PATH`` (to clone ``libffi`` from source).
+* An installation of Cywgin with the ``autoconf``, ``automake``, ``libtool``,
+  and ``make`` packages installed. (``libffi`` build dependency.)
+
 To build a Python distribution for Windows x64::
 
-   # From a Visual Studio 2017 x64 native tools command prompt:
-   $ py.exe build-windows.py
+   # From a Visual Studio 2017/2019 x64 native tools command prompt:
+   $ py.exe build-windows.py --profile static
 
 It is also possible to build a more traditional dynamically linked
 distribution, optionally with PGO optimizations::
 
    $ py.exe build-windows.py --profile shared
    $ py.exe build-windows.py --profile shared-pgo
+
+If building CPython 3.8+, you will need to specify the path to a
+``sh.exe`` installed from cygwin. e.g.
+
+   $ py.exe build-windows.py --python cpython-3.8 --sh c:\cygwin\bin\sh.exe --profile shared
 
 To build a 32-bit x86 binary, simply use an ``x86 Native Tools
 Command Prompt`` instead of ``x64``.

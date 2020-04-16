@@ -150,7 +150,7 @@ def find_vswhere():
     return vswhere
 
 
-def find_msbuild():
+def find_vs_path(path):
     vswhere = find_vswhere()
 
     p = subprocess.check_output(
@@ -169,13 +169,22 @@ def find_msbuild():
     # Strictly speaking the output may not be UTF-8.
     p = pathlib.Path(p.strip().decode("utf-8"))
 
-    p = p / "MSBuild" / "Current" / "Bin" / "MSBuild.exe"
+    p = p / path
 
     if not p.exists():
         print("%s does not exist" % p)
         sys.exit(1)
 
     return p
+
+
+def find_msbuild():
+    return find_vs_path(pathlib.Path("MSBuild") / "Current" / "Bin" / "MSBuild.exe")
+
+
+def find_vcvarsall_path():
+    """Find path to vcvarsall.bat"""
+    return find_vs_path(pathlib.Path("VC") / "Auxiliary" / "Build" / "vcvarsall.bat")
 
 
 def find_vctools_path():
@@ -1071,6 +1080,9 @@ def run_msbuild(
         "/property:OverrideVersion=%s" % python_version,
     ]
 
+    if not python_version.startswith("3.7"):
+        args.append("/property:IncludeCTypes=true")
+
     exec_and_log(args, str(pcbuild_path), os.environ)
 
 
@@ -1194,6 +1206,50 @@ def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
             create_tar_from_directory(fh, install)
 
 
+def build_libffi(
+    build_dir: pathlib.Path, arch: str, prepare_ffi: pathlib.Path, sh_exe: pathlib.Path
+):
+    ffi_source_path = build_dir / "libffi"
+
+    # As of April 15, 2020, the libffi source release on GitHub doesn't
+    # have patches that we need to build. https://bugs.python.org/issue40293
+    # tracks getting a proper release. Until then, git clone the repo.
+    subprocess.run(
+        [
+            "git.exe",
+            "clone",
+            "--single-branch",
+            "--branch",
+            "libffi",
+            "https://github.com/python/cpython-source-deps.git",
+            str(ffi_source_path),
+        ],
+        check=True,
+    )
+
+    subprocess.run(
+        ["git.exe", "checkout", "ed22026f39b37f892ded95d7b30e77dfb5126334"],
+        cwd=ffi_source_path,
+        check=True,
+    )
+
+    # We build libffi by running the build script that CPython ships.
+    env = dict(os.environ)
+    env["LIBFFI_SOURCE"] = str(ffi_source_path)
+    env["VCVARSALL"] = str(find_vcvarsall_path())
+    env["SH"] = str(sh_exe)
+
+    args = [str(prepare_ffi), "-pdb"]
+    if arch == "x86":
+        args.append("-x86")
+    else:
+        args.append("-x64")
+
+    # Running the build script from Python will install the files into the
+    # appropriate directory.
+    subprocess.run(args, env=env, check=True)
+
+
 RE_ADDITIONAL_DEPENDENCIES = re.compile(
     "<AdditionalDependencies>([^<]+)</AdditionalDependencies>"
 )
@@ -1249,6 +1305,7 @@ def collect_python_build_artifacts(
         "_testconsole",
         "_testembed",
         "_testimportmultiple",
+        "_testinternalcapi",
         "_testmultiphase",
         "xxlimited",
     }
@@ -1481,7 +1538,7 @@ def collect_python_build_artifacts(
     return res
 
 
-def build_cpython(python_entry_name: str, arch: str, profile):
+def build_cpython(python_entry_name: str, arch: str, sh_exe, profile):
     static = profile == "static"
     pgo = "-pgo" in profile
 
@@ -1544,6 +1601,16 @@ def build_cpython(python_entry_name: str, arch: str, profile):
 
         with zipfile.ZipFile(setuptools_archive) as zf:
             zf.extractall(td)
+
+        cpython_source_path = td / ("Python-%s" % python_version)
+        pcbuild_path = cpython_source_path / "PCBuild"
+
+        prepare_libffi = pcbuild_path / "prepare_libffi.bat"
+
+        if prepare_libffi.exists():
+            assert sh_exe
+
+            build_libffi(td, arch, prepare_libffi, sh_exe)
 
         # We need all the OpenSSL library files in the same directory to appease
         # install rules.
@@ -1879,8 +1946,13 @@ def main():
         default="static",
         help="How to compile Python",
     )
+    parser.add_argument("--sh", help="Path to sh.exe in a cygwin or mingw installation")
 
     args = parser.parse_args()
+
+    if args.python == "cpython-3.8" and not args.sh:
+        print("--sh required when building Python 3.8+")
+        return 1
 
     now = datetime.datetime.utcnow()
 
@@ -1899,7 +1971,9 @@ def main():
             build_openssl(perl_path, arch, profile=args.profile)
 
         LOG_PREFIX[0] = "cpython"
-        tar_path = build_cpython(args.python, arch, profile=args.profile)
+        tar_path = build_cpython(
+            args.python, arch, sh_exe=pathlib.Path(args.sh), profile=args.profile
+        )
 
         compress_python_archive(
             tar_path, DIST, "%s-%s" % (tar_path.stem, now.strftime("%Y%m%dT%H%M")),
