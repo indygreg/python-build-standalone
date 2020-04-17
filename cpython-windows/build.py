@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+import multiprocessing
 
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.cpython import parse_config_c, STDLIB_TEST_PACKAGES
@@ -22,6 +23,7 @@ from pythonbuild.utils import (
     create_tar_from_directory,
     download_entry,
     extract_tar_to_directory,
+    extract_zip_to_directory,
     compress_python_archive,
 )
 
@@ -1093,20 +1095,26 @@ def build_openssl_for_arch(
     nasm_archive,
     build_root: pathlib.Path,
     profile: str,
+    *,
+    jom_archive,
 ):
     openssl_version = DOWNLOADS["openssl"]["version"]
     nasm_version = DOWNLOADS["nasm-windows-bin"]["version"]
-
+    jom_version = DOWNLOADS["jom-windows-bin"]["version"]
+    
     log("extracting %s to %s" % (openssl_archive, build_root))
     extract_tar_to_directory(openssl_archive, build_root)
     log("extracting %s to %s" % (nasm_archive, build_root))
     extract_tar_to_directory(nasm_archive, build_root)
+    log("extracting %s to %s" % (jom_archive, build_root))
+    extract_zip_to_directory(jom_archive, build_root / "jom")
 
     nasm_path = build_root / ("cpython-bin-deps-nasm-%s" % nasm_version)
-
+    jom_path = build_root / "jom"
+    
     env = dict(os.environ)
     # Add Perl and nasm paths to front of PATH.
-    env["PATH"] = "%s;%s;%s" % (perl_path.parent, nasm_path, env["PATH"])
+    env["PATH"] = "%s;%s;%s;%s" % (perl_path.parent, nasm_path, jom_path, env["PATH"])
 
     source_root = build_root / ("openssl-%s" % openssl_version)
 
@@ -1150,10 +1158,14 @@ def build_openssl_for_arch(
             "--prefix=/%s" % prefix,
         ],
         source_root,
-        env,
+        {
+            **env,
+            'CFLAGS': env.get('CFLAGS', '') + ' /FS',
+        },
     )
 
-    exec_and_log(["nmake"], source_root, env)
+    #exec_and_log(["nmake"], source_root, env)
+    exec_and_log([str(jom_path / "jom"), "/J", str(multiprocessing.cpu_count())], source_root, env)
 
     # We don't care about accessory files, docs, etc. So just run `install_sw`
     # target to get the main files.
@@ -1174,6 +1186,7 @@ def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
     # First ensure the dependencies are in place.
     openssl_archive = download_entry("openssl", BUILD)
     nasm_archive = download_entry("nasm-windows-bin", BUILD)
+    jom_archive = download_entry("jom-windows-bin", BUILD)
 
     with tempfile.TemporaryDirectory(prefix="openssl-build-") as td:
         td = pathlib.Path(td)
@@ -1184,12 +1197,12 @@ def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
         if arch == "x86":
             root_32.mkdir()
             build_openssl_for_arch(
-                perl_path, "x86", openssl_archive, nasm_archive, root_32, profile
+                perl_path, "x86", openssl_archive, nasm_archive, root_32, profile, jom_archive = jom_archive,
             )
         elif arch == "amd64":
             root_64.mkdir()
             build_openssl_for_arch(
-                perl_path, "amd64", openssl_archive, nasm_archive, root_64, profile
+                perl_path, "amd64", openssl_archive, nasm_archive, root_64, profile, jom_archive = jom_archive,
             )
         else:
             raise ValueError("unhandled arch: %s" % arch)
