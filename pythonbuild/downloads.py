@@ -104,6 +104,12 @@ DOWNLOADS = {
         "sha256": "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b",
         "version": "0.18",
     },
+    "jom-windows-bin": {
+        "url": "http://download.qt.io/official_releases/jom/jom_1_1_3.zip",
+        "size": 1213852,
+        "sha256": "128fdd846fe24f8594eed37d1d8929a0ea78df563537c0c1b1861a635013fff8",
+        "version": "1.1.3",
+    },
     "kbproto": {
         "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/kbproto-1.0.7.tar.gz",
         "size": 325858,
