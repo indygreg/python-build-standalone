@@ -1184,7 +1184,9 @@ def build_openssl_for_arch(
         shutil.copyfile(source, dest)
 
 
-def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
+def build_openssl(
+    perl_path: pathlib.Path, arch: str, profile: str, dest_archive: pathlib.Path
+):
     """Build OpenSSL from sources using the Perl executable specified."""
 
     # First ensure the dependencies are in place.
@@ -1230,7 +1232,6 @@ def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
         else:
             shutil.copytree(root_64 / "install" / "64", install / "openssl" / "amd64")
 
-        dest_archive = BUILD / ("openssl-windows-%s-%s.tar" % (arch, profile))
         with dest_archive.open("wb") as fh:
             create_tar_from_directory(fh, install)
 
@@ -1596,7 +1597,9 @@ def collect_python_build_artifacts(
     return res
 
 
-def build_cpython(python_entry_name: str, arch: str, profile, libffi_archive=None):
+def build_cpython(
+    python_entry_name: str, arch: str, profile, openssl_archive, libffi_archive=None
+):
     static = profile == "static"
     pgo = "-pgo" in profile
 
@@ -1622,11 +1625,6 @@ def build_cpython(python_entry_name: str, arch: str, profile, libffi_archive=Non
     setuptools_archive = download_entry("setuptools", BUILD)
     pip_archive = download_entry("pip", BUILD)
 
-    if static:
-        openssl_bin_archive = BUILD / ("openssl-windows-%s-static.tar" % arch)
-    else:
-        openssl_bin_archive = BUILD / ("openssl-windows-%s-shared.tar" % arch)
-
     if arch == "amd64":
         build_platform = "x64"
         build_directory = "amd64"
@@ -1644,7 +1642,7 @@ def build_cpython(python_entry_name: str, arch: str, profile, libffi_archive=Non
             for a in (
                 python_archive,
                 bzip2_archive,
-                openssl_bin_archive,
+                openssl_archive,
                 pip_archive,
                 sqlite_archive,
                 tk_bin_archive,
@@ -2018,17 +2016,26 @@ def main():
     with log_path.open("wb") as log_fh:
         LOG_FH[0] = log_fh
 
-        arch = "x86" if os.environ.get("Platform") == "x86" else "amd64"
+        if os.environ.get("Platform") == "x86":
+            target_triple = "i686-pc-windows-msvc"
+            arch = "x86"
+        else:
+            target_triple = "x86_64-pc-windows-msvc"
+            arch = "amd64"
 
         # TODO need better dependency checking.
-        openssl_out = BUILD / ("openssl-windows-%s-%s.tar" % (arch, args.profile))
-        if not openssl_out.exists():
+        openssl_archive = BUILD / ("openssl-%s-%s.tar" % (target_triple, args.profile))
+        if not openssl_archive.exists():
             perl_path = fetch_strawberry_perl() / "perl" / "bin" / "perl.exe"
             LOG_PREFIX[0] = "openssl"
-            build_openssl(perl_path, arch, profile=args.profile)
+            build_openssl(
+                perl_path, arch, profile=args.profile, dest_archive=openssl_archive
+            )
 
         if "3.7" not in args.python:
-            libffi_archive = BUILD / ("libffi-windows-%s-%s.tar" % (arch, args.profile))
+            libffi_archive = BUILD / (
+                "libffi-%s-%s.tar" % (target_triple, args.profile)
+            )
             if not libffi_archive.exists():
                 build_libffi(args.python, arch, pathlib.Path(args.sh), libffi_archive)
         else:
@@ -2036,7 +2043,11 @@ def main():
 
         LOG_PREFIX[0] = "cpython"
         tar_path = build_cpython(
-            args.python, arch, profile=args.profile, libffi_archive=libffi_archive
+            args.python,
+            arch,
+            profile=args.profile,
+            openssl_archive=openssl_archive,
+            libffi_archive=libffi_archive,
         )
 
         compress_python_archive(
