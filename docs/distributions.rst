@@ -188,13 +188,13 @@ python_suffixes
 
    (Version 5 or above only.)
 
-bytecode_magic_number
+python_bytecode_magic_number
    Magic number to use for bytecode files, expressed as a hexidecimal
    string.
 
    (Version 5 or above only.)
 
-link_mode
+libpython_link_mode
    How `libpython` is linked. Values can be one of the following:
 
    `static`
@@ -204,7 +204,12 @@ link_mode
       Dynamically linked. (A `libpythonXY` shared library will be part
       of the distribution.)
 
-   (Version 4 or above only.)
+   (Version 5 or above only.)
+
+link_mode
+   Alias of ``libpython_link_mode``.
+
+   (Version 4 or above only. Deprecated in version 5.)
 
 python_symbol_visibility
    Defines how Python symbols are defined in binaries.
@@ -219,7 +224,7 @@ python_symbol_visibility
 
    (Version 5 or above only.)
 
-extension_module_loading
+python_extension_module_loading
    Defines support for loading Python extension modules.
 
    The value is an array of strings denoting support for various

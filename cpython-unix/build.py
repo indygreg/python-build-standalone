@@ -729,8 +729,8 @@ def build_cpython(
             "python_version": entry["version"],
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "python_symbol_visibility": python_symbol_visibility,
-            "extension_module_loading": extension_module_loading,
-            "link_mode": "static",
+            "python_extension_module_loading": extension_module_loading,
+            "libpython_link_mode": "static",
             "crt_features": crt_features,
             "run_tests": "build/run_tests.py",
             "build_info": python_build_info(

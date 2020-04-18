@@ -243,7 +243,7 @@ metadata = {
         "optimized_bytecode": importlib.machinery.OPTIMIZED_BYTECODE_SUFFIXES,
         "source": importlib.machinery.SOURCE_SUFFIXES,
     },
-    "bytecode_magic_number": codecs.encode(importlib.util.MAGIC_NUMBER, "hex").decode("ascii"),
+    "python_bytecode_magic_number": codecs.encode(importlib.util.MAGIC_NUMBER, "hex").decode("ascii"),
     "python_paths": {},
     "python_exe": "install/bin/python%s%s" % (sysconfig.get_python_version(), sys.abiflags),
     "python_major_minor_version": sysconfig.get_python_version(),
