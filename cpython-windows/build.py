@@ -1598,7 +1598,12 @@ def collect_python_build_artifacts(
 
 
 def build_cpython(
-    python_entry_name: str, arch: str, profile, openssl_archive, libffi_archive=None
+    python_entry_name: str,
+    target_triple: str,
+    arch: str,
+    profile,
+    openssl_archive,
+    libffi_archive=None,
 ):
     static = profile == "static"
     pgo = "-pgo" in profile
@@ -1967,7 +1972,7 @@ def build_cpython(
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
         dest_path = BUILD / (
-            "cpython-%s-windows-%s-%s.tar" % (entry["version"], arch, profile,)
+            "cpython-%s-%s-%s.tar" % (entry["version"], target_triple, profile,)
         )
 
         with dest_path.open("wb") as fh:
@@ -2044,6 +2049,7 @@ def main():
         LOG_PREFIX[0] = "cpython"
         tar_path = build_cpython(
             args.python,
+            target_triple,
             arch,
             profile=args.profile,
             openssl_archive=openssl_archive,
