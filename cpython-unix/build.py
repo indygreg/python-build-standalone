@@ -703,6 +703,7 @@ def build_cpython(
         python_info = {
             "version": "5",
             "target_triple": target_triple,
+            "debug": debug,
             "python_tag": entry["python_tag"],
             "python_version": entry["version"],
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),

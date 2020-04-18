@@ -45,6 +45,13 @@ target_triple
 
    (Version 5 or above only.)
 
+debug
+   Boolean indicating if this is a debug build.
+
+   Debug builds have no optimizations.
+
+   (Version 5 or above only.)
+
 os
    Target operating system for the distribution. e.g. ``linux``, ``macos``,
    or ``windows``.

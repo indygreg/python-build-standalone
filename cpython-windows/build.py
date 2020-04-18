@@ -1890,6 +1890,7 @@ def build_cpython(python_entry_name: str, arch: str, sh_exe, profile):
         python_info = {
             "version": "5",
             "target_triple": target_triple,
+            "debug": False,
             "python_tag": entry["python_tag"],
             "python_version": python_version,
             "python_symbol_visibility": python_symbol_visibility,
