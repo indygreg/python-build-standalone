@@ -165,6 +165,7 @@ def extract_tar_to_directory(source: pathlib.Path, dest: pathlib.Path):
     with tarfile.open(source, "r") as tf:
         tf.extractall(dest)
 
+
 def extract_zip_to_directory(source: pathlib.Path, dest: pathlib.Path):
     with zipfile.ZipFile(source, "r") as zf:
         zf.extractall(dest)

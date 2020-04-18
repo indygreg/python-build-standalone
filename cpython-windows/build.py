@@ -1101,7 +1101,7 @@ def build_openssl_for_arch(
     openssl_version = DOWNLOADS["openssl"]["version"]
     nasm_version = DOWNLOADS["nasm-windows-bin"]["version"]
     jom_version = DOWNLOADS["jom-windows-bin"]["version"]
-    
+
     log("extracting %s to %s" % (openssl_archive, build_root))
     extract_tar_to_directory(openssl_archive, build_root)
     log("extracting %s to %s" % (nasm_archive, build_root))
@@ -1111,7 +1111,7 @@ def build_openssl_for_arch(
 
     nasm_path = build_root / ("cpython-bin-deps-nasm-%s" % nasm_version)
     jom_path = build_root / "jom"
-    
+
     env = dict(os.environ)
     # Add Perl and nasm paths to front of PATH.
     env["PATH"] = "%s;%s;%s;%s" % (perl_path.parent, nasm_path, jom_path, env["PATH"])
@@ -1158,14 +1158,15 @@ def build_openssl_for_arch(
             "--prefix=/%s" % prefix,
         ],
         source_root,
-        {
-            **env,
-            'CFLAGS': env.get('CFLAGS', '') + ' /FS',
-        },
+        {**env, "CFLAGS": env.get("CFLAGS", "") + " /FS",},
     )
 
-    #exec_and_log(["nmake"], source_root, env)
-    exec_and_log([str(jom_path / "jom"), "/J", str(multiprocessing.cpu_count())], source_root, env)
+    # exec_and_log(["nmake"], source_root, env)
+    exec_and_log(
+        [str(jom_path / "jom"), "/J", str(multiprocessing.cpu_count())],
+        source_root,
+        env,
+    )
 
     # We don't care about accessory files, docs, etc. So just run `install_sw`
     # target to get the main files.
@@ -1197,12 +1198,24 @@ def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
         if arch == "x86":
             root_32.mkdir()
             build_openssl_for_arch(
-                perl_path, "x86", openssl_archive, nasm_archive, root_32, profile, jom_archive = jom_archive,
+                perl_path,
+                "x86",
+                openssl_archive,
+                nasm_archive,
+                root_32,
+                profile,
+                jom_archive=jom_archive,
             )
         elif arch == "amd64":
             root_64.mkdir()
             build_openssl_for_arch(
-                perl_path, "amd64", openssl_archive, nasm_archive, root_64, profile, jom_archive = jom_archive,
+                perl_path,
+                "amd64",
+                openssl_archive,
+                nasm_archive,
+                root_64,
+                profile,
+                jom_archive=jom_archive,
             )
         else:
             raise ValueError("unhandled arch: %s" % arch)
@@ -1985,7 +1998,7 @@ def main():
 
         LOG_PREFIX[0] = "cpython"
         tar_path = build_cpython(
-            args.python, arch, sh_exe=pathlib.Path(args.sh), profile=args.profile
+            args.python, arch, sh_exe=pathlib.Path(args.sh), profile=args.profile,
         )
 
         compress_python_archive(
