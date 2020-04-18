@@ -1998,7 +1998,10 @@ def main():
 
         LOG_PREFIX[0] = "cpython"
         tar_path = build_cpython(
-            args.python, arch, sh_exe=pathlib.Path(args.sh), profile=args.profile,
+            args.python,
+            arch,
+            sh_exe=pathlib.Path(args.sh) if args.sh else None,
+            profile=args.profile,
         )
 
         compress_python_archive(
