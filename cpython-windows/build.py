@@ -1893,13 +1893,6 @@ def build_cpython(
             if f.startswith("LICENSE.") and f.endswith(".txt"):
                 shutil.copyfile(ROOT / f, licenses_dir / f)
 
-        if arch == "x86":
-            target_triple = "i686-pc-windows-msvc"
-        elif arch == "amd64":
-            target_triple = "x86_64-pc-windows-msvc"
-        else:
-            raise Exception("unhandled arch: %s" % arch)
-
         extension_module_loading = ["builtin"]
 
         # Static builds do not support loading extension modules, since Python
