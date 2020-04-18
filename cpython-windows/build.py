@@ -1605,7 +1605,7 @@ def build_cpython(
     openssl_archive,
     libffi_archive=None,
 ):
-    static = profile == "static"
+    static = "static" in profile
     pgo = "-pgo" in profile
 
     msbuild = find_msbuild()
@@ -1995,8 +1995,8 @@ def main():
     )
     parser.add_argument(
         "--profile",
-        choices={"static", "shared", "shared-pgo"},
-        default="static",
+        choices={"static-noopt", "shared-noopt", "shared-pgo"},
+        default="static-noopt",
         help="How to compile Python",
     )
     parser.add_argument("--sh", help="Path to sh.exe in a cygwin or mingw installation")
