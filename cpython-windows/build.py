@@ -636,6 +636,7 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: 
 
     sqlite_path = td / ("sqlite-autoconf-%s" % sqlite_version)
     bzip2_path = td / ("bzip2-%s" % bzip2_version)
+    libffi_path = td / "libffi"
     tcltk_path = td / ("cpython-bin-deps-%s" % tcltk_commit)
     xz_path = td / ("xz-%s" % xz_version)
     zlib_path = td / ("zlib-%s" % zlib_version)
@@ -653,6 +654,9 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: 
 
             if b"<bz2Dir>" in line:
                 line = b"<bz2Dir>%s\\</bz2Dir>" % bzip2_path
+
+            elif b"<libffiOutDir>" in line:
+                line = b"<libffiOutDir>%s\\</libffiOutDir>" % libffi_path
 
             elif b"<lzmaDir>" in line:
                 line = b"<lzmaDir>%s\\</lzmaDir>" % xz_path
@@ -1233,47 +1237,76 @@ def build_openssl(perl_path: pathlib.Path, arch: str, profile: str):
 
 
 def build_libffi(
-    build_dir: pathlib.Path, arch: str, prepare_ffi: pathlib.Path, sh_exe: pathlib.Path
+    python: str, arch: str, sh_exe: pathlib.Path, dest_archive: pathlib.Path
 ):
-    ffi_source_path = build_dir / "libffi"
+    with tempfile.TemporaryDirectory(prefix="libffi-build-") as td:
+        td = pathlib.Path(td)
 
-    # As of April 15, 2020, the libffi source release on GitHub doesn't
-    # have patches that we need to build. https://bugs.python.org/issue40293
-    # tracks getting a proper release. Until then, git clone the repo.
-    subprocess.run(
-        [
-            "git.exe",
-            "clone",
-            "--single-branch",
-            "--branch",
-            "libffi",
-            "https://github.com/python/cpython-source-deps.git",
-            str(ffi_source_path),
-        ],
-        check=True,
-    )
+        ffi_source_path = td / "libffi"
 
-    subprocess.run(
-        ["git.exe", "checkout", "ed22026f39b37f892ded95d7b30e77dfb5126334"],
-        cwd=ffi_source_path,
-        check=True,
-    )
+        # As of April 15, 2020, the libffi source release on GitHub doesn't
+        # have patches that we need to build. https://bugs.python.org/issue40293
+        # tracks getting a proper release. Until then, git clone the repo.
+        subprocess.run(
+            [
+                "git.exe",
+                "clone",
+                "--single-branch",
+                "--branch",
+                "libffi",
+                "https://github.com/python/cpython-source-deps.git",
+                str(ffi_source_path),
+            ],
+            check=True,
+        )
 
-    # We build libffi by running the build script that CPython ships.
-    env = dict(os.environ)
-    env["LIBFFI_SOURCE"] = str(ffi_source_path)
-    env["VCVARSALL"] = str(find_vcvarsall_path())
-    env["SH"] = str(sh_exe)
+        subprocess.run(
+            ["git.exe", "checkout", "ed22026f39b37f892ded95d7b30e77dfb5126334"],
+            cwd=ffi_source_path,
+            check=True,
+        )
 
-    args = [str(prepare_ffi), "-pdb"]
-    if arch == "x86":
-        args.append("-x86")
-    else:
-        args.append("-x64")
+        # We build libffi by running the build script that CPython ships.
+        python_archive = download_entry(python, BUILD)
+        extract_tar_to_directory(python_archive, td)
 
-    # Running the build script from Python will install the files into the
-    # appropriate directory.
-    subprocess.run(args, env=env, check=True)
+        python_entry = DOWNLOADS[python]
+        prepare_libffi = (
+            td
+            / ("Python-%s" % python_entry["version"])
+            / "PCBuild"
+            / "prepare_libffi.bat"
+        )
+
+        env = dict(os.environ)
+        env["LIBFFI_SOURCE"] = str(ffi_source_path)
+        env["VCVARSALL"] = str(find_vcvarsall_path())
+        env["SH"] = str(sh_exe)
+
+        args = [str(prepare_libffi), "-pdb"]
+        if arch == "x86":
+            args.append("-x86")
+            artifacts_path = ffi_source_path / "i686-pc-cygwin"
+        else:
+            args.append("-x64")
+            artifacts_path = ffi_source_path / "x86_64-w64-cygwin"
+
+        subprocess.run(args, env=env, check=True)
+
+        out_dir = td / "out" / "libffi"
+        out_dir.mkdir(parents=True)
+
+        for f in os.listdir(artifacts_path / ".libs"):
+            if f.endswith((".lib", ".exp", ".dll", ".pdb")):
+                shutil.copyfile(artifacts_path / ".libs" / f, out_dir / f)
+
+        shutil.copytree(artifacts_path / "include", out_dir / "include")
+        shutil.copyfile(
+            artifacts_path / "fficonfig.h", out_dir / "include" / "fficonfig.h"
+        )
+
+        with dest_archive.open("wb") as fh:
+            create_tar_from_directory(fh, td / "out")
 
 
 RE_ADDITIONAL_DEPENDENCIES = re.compile(
@@ -1564,7 +1597,7 @@ def collect_python_build_artifacts(
     return res
 
 
-def build_cpython(python_entry_name: str, arch: str, sh_exe, profile):
+def build_cpython(python_entry_name: str, arch: str, profile, libffi_archive=None):
     static = profile == "static"
     pgo = "-pgo" in profile
 
@@ -1607,7 +1640,7 @@ def build_cpython(python_entry_name: str, arch: str, sh_exe, profile):
     with tempfile.TemporaryDirectory(prefix="python-build-") as td:
         td = pathlib.Path(td)
 
-        with concurrent.futures.ThreadPoolExecutor(8) as e:
+        with concurrent.futures.ThreadPoolExecutor(9) as e:
             fs = []
             for a in (
                 python_archive,
@@ -1625,18 +1658,11 @@ def build_cpython(python_entry_name: str, arch: str, sh_exe, profile):
             for f in fs:
                 f.result()
 
+        if libffi_archive:
+            extract_tar_to_directory(libffi_archive, td)
+
         with zipfile.ZipFile(setuptools_archive) as zf:
             zf.extractall(td)
-
-        cpython_source_path = td / ("Python-%s" % python_version)
-        pcbuild_path = cpython_source_path / "PCBuild"
-
-        prepare_libffi = pcbuild_path / "prepare_libffi.bat"
-
-        if prepare_libffi.exists():
-            assert sh_exe
-
-            build_libffi(td, arch, prepare_libffi, sh_exe)
 
         # We need all the OpenSSL library files in the same directory to appease
         # install rules.
@@ -2002,12 +2028,16 @@ def main():
             LOG_PREFIX[0] = "openssl"
             build_openssl(perl_path, arch, profile=args.profile)
 
+        if "3.7" not in args.python:
+            libffi_archive = BUILD / ("libffi-windows-%s-%s.tar" % (arch, args.profile))
+            if not libffi_archive.exists():
+                build_libffi(args.python, arch, pathlib.Path(args.sh), libffi_archive)
+        else:
+            libffi_archive = None
+
         LOG_PREFIX[0] = "cpython"
         tar_path = build_cpython(
-            args.python,
-            arch,
-            sh_exe=pathlib.Path(args.sh) if args.sh else None,
-            profile=args.profile,
+            args.python, arch, profile=args.profile, libffi_archive=libffi_archive
         )
 
         compress_python_archive(
