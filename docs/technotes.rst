@@ -91,3 +91,59 @@ broke OpenSSL in our build environment. Projects like Alpine Linux appear
 to still be able to build OpenSSL 1.1.1c. It requires certain headers
 to be in place though. When we tried to work around this, it turned out to
 be easier to compile with LibreSSL than with OpenSSL.
+
+Upgrading CPython
+=================
+
+This section documents some of the work that needs to be performed
+when upgrading CPython major versions.
+
+Review Release Notes
+--------------------
+
+CPython's release notes often have a section on build system changes.
+e.g. https://docs.python.org/3/whatsnew/3.8.html#build-and-c-api-changes.
+These are a must review.
+
+``Modules/Setup``
+-----------------
+
+The ``Modules/Setup`` file defines the default extension build settings
+for *boring* extensions which are always compiled the same way.
+
+We need to audit it for differences such as added/removed extensions,
+changes to compile settings, etc just in case we have special code
+handling an extension defined in this file.
+
+See code in ``cpython.py`` dealing with this file.
+
+``setup.py`` / ``static-modules``
+---------------------------------
+
+The ``setup.py`` script in the Python source distribution defines
+logic for dynamically building C extensions depending on environment
+settings.
+
+Because we don't like what this file does by default in many cases,
+we have instead defined static compilation invocations for various
+extensions in ``static-modules.*`` files. Presence of an extension
+in this file overrides CPython's ``setup.py`` logic. Essentially what
+we've done is encoded what ``setup.py`` would have done into our
+``static-modules.*`` files, bypassing ``setup.py``.
+
+This means that we need to audit ``setup.py`` every time we perform
+an upgrade to see if we need to adjust the content of our
+``static-modules.*`` files.
+
+A telltale way to find added extension is to look for ``.so`` files
+in ``python/install/lib/pythonX.Y/lib-dynload``. If an extension
+exists in a static build, it is being built by ``setup.py`` and
+we may be missing an entry in our ``static-modules.*`` files.
+
+The most robust method to audit changes is to run a build of CPython
+out of a source checkout and then manually compare the compiler
+invocations for each extension against what exists in our
+``static-modules.*`` files. Differences like missing source files
+should be obvious, as they usually result in a compilation failure.
+But differences in preprocessor defines are more subtle and can
+sneak in if we aren't careful.
