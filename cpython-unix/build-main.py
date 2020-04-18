@@ -60,8 +60,15 @@ def main():
 
     if sys.platform == "linux":
         platform = "linux64"
+
+        if args.musl:
+            target_triple = "x86_64-unknown-linux-musl"
+        else:
+            target_triple = "x86_64-unknown-linux-gnu"
+
     elif sys.platform == "darwin":
         platform = "macos"
+        target_triple = "x86_64-apple-darwin"
     else:
         raise Exception("unhandled platform")
 
@@ -76,28 +83,28 @@ def main():
     subprocess.run(["make"], env=env, check=True)
 
     basename = "cpython-%s-%s" % (entry["version"], platform)
-    extra = ""
+
+    dest_components = [
+        "cpython-%s" % entry["version"],
+        target_triple,
+    ]
 
     if args.musl:
         basename += "-musl"
-        extra = "-musl"
     if args.debug:
         basename += "-debug"
-        extra += "-debug"
+        dest_components.append("debug")
     if args.optimized:
         basename += "-pgo"
-        extra += "-pgo"
+        dest_components.append("opt")
+
+    dest_components.append(now.strftime("%Y%m%dT%H%M"))
 
     basename += ".tar"
 
     DIST.mkdir(exist_ok=True)
 
-    compress_python_archive(
-        BUILD / basename,
-        DIST,
-        "cpython-%s-%s%s-%s"
-        % (entry["version"], platform, extra, now.strftime("%Y%m%dT%H:%M")),
-    )
+    compress_python_archive(BUILD / basename, DIST, ".".join(dest_components))
 
 
 if __name__ == "__main__":
