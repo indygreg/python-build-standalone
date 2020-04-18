@@ -1104,7 +1104,6 @@ def build_openssl_for_arch(
 ):
     openssl_version = DOWNLOADS["openssl"]["version"]
     nasm_version = DOWNLOADS["nasm-windows-bin"]["version"]
-    jom_version = DOWNLOADS["jom-windows-bin"]["version"]
 
     log("extracting %s to %s" % (openssl_archive, build_root))
     extract_tar_to_directory(openssl_archive, build_root)
