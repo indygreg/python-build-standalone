@@ -45,10 +45,12 @@ target_triple
 
    (Version 5 or above only.)
 
-debug
-   Boolean indicating if this is a debug build.
+optimizations
+   String indicating what optimization profile has been applied to the
+   build.
 
-   Debug builds have no optimizations.
+   Known values include ``debug``, ``noopt``, ``pgo``, ``lto``, and
+   ``pgo+lto``.
 
    (Version 5 or above only.)
 

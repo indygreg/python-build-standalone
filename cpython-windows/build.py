@@ -1886,11 +1886,16 @@ def build_cpython(python_entry_name: str, arch: str, sh_exe, profile):
         # We currently always link vcruntime140.dll.
         crt_features = ["vcruntime:140"]
 
+        if "pgo" in profile:
+            optimizations = "pgo"
+        else:
+            optimizations = "noopt"
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
             "version": "5",
             "target_triple": target_triple,
-            "debug": False,
+            "optimizations": optimizations,
             "python_tag": entry["python_tag"],
             "python_version": python_version,
             "python_symbol_visibility": python_symbol_visibility,
