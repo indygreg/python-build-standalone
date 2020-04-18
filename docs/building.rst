@@ -16,7 +16,9 @@ To build a Python distribution for Linux x64::
 
     $ ./build-linux.py
     # With profile-guided optimizations (generated code should be faster):
-    $ ./build-linux.py --optimized
+    $ ./build-linux.py --optimizations pgo
+    # Produce a debug build.
+    $ ./build-linux.py --optimizations debug
 
 You can also build another version of Python. e.g.::
 
@@ -24,7 +26,7 @@ You can also build another version of Python. e.g.::
 
 To build a Python distribution for Linux x64 using musl libc::
 
-    $ ./build-linux.py --musl --libressl
+    $ ./build-linux.py --target x86_64-unknown-linux-musl
 
 macOS
 =====

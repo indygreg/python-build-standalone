@@ -28,13 +28,23 @@ class ContainerContext(object):
         dest_path = dest_path or "/build"
         copy_file_to_container(source, self.container, dest_path, dest_name)
 
-    def install_artifact_archive(self, build_dir, package_name, platform, musl=False):
+    def install_toolchain_archive(self, build_dir, package_name, host_platform):
         entry = DOWNLOADS[package_name]
-        basename = "%s-%s-%s%s.tar" % (
+        basename = "%s-%s-%s.tar" % (package_name, entry["version"], host_platform)
+
+        p = build_dir / basename
+        self.copy_file(p)
+        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name], user="root")
+
+    def install_artifact_archive(
+        self, build_dir, package_name, target_triple, optimizations
+    ):
+        entry = DOWNLOADS[package_name]
+        basename = "%s-%s-%s-%s.tar" % (
             package_name,
             entry["version"],
-            platform,
-            "-musl" if musl else "",
+            target_triple,
+            optimizations,
         )
 
         p = build_dir / basename
@@ -43,19 +53,25 @@ class ContainerContext(object):
         self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name], user="root")
 
     def install_toolchain(
-        self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
+        self,
+        build_dir,
+        host_platform,
+        binutils=False,
+        gcc=False,
+        musl=False,
+        clang=False,
     ):
         if binutils:
-            self.install_artifact_archive(build_dir, "binutils", platform)
+            self.install_toolchain_archive(build_dir, "binutils", host_platform)
 
         if gcc:
-            self.install_artifact_archive(build_dir, "gcc", platform)
+            self.install_toolchain_archive(build_dir, "gcc", host_platform)
 
         if clang:
-            self.install_artifact_archive(build_dir, "clang", platform)
+            self.install_toolchain_archive(build_dir, "clang", host_platform)
 
         if musl:
-            self.install_artifact_archive(build_dir, "musl", platform)
+            self.install_toolchain_archive(build_dir, "musl", host_platform)
 
     def run(self, program, user="build", environment=None):
         if isinstance(program, str) and not program.startswith("/"):
@@ -121,13 +137,24 @@ class TempdirContext(object):
         log("copying %s to %s/%s" % (source, dest_dir, dest_name))
         shutil.copy(source, dest_dir / dest_name)
 
-    def install_artifact_archive(self, build_dir, package_name, platform, musl=False):
+    def install_toolchain_archive(self, build_dir, package_name, host_platform):
         entry = DOWNLOADS[package_name]
-        basename = "%s-%s-%s%s.tar" % (
+        basename = "%s-%s-%s.tar" % (package_name, entry["version"], host_platform)
+
+        p = build_dir / basename
+        dest_path = self.td / "tools"
+        log("extracting %s to %s" % (p, dest_path))
+        extract_tar_to_directory(p, dest_path)
+
+    def install_artifact_archive(
+        self, build_dir, package_name, target_triple, optimizations
+    ):
+        entry = DOWNLOADS[package_name]
+        basename = "%s-%s-%s-%s.tar" % (
             package_name,
             entry["version"],
-            platform,
-            "-musl" if musl else "",
+            target_triple,
+            optimizations,
         )
 
         p = build_dir / basename
@@ -139,16 +166,16 @@ class TempdirContext(object):
         self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
     ):
         if binutils:
-            self.install_artifact_archive(build_dir, "binutils", platform)
+            self.install_toolchain_archive(build_dir, "binutils", platform)
 
         if gcc:
-            self.install_artifact_archive(build_dir, "gcc", platform)
+            self.install_toolchain_archive(build_dir, "gcc", platform)
 
         if clang:
-            self.install_artifact_archive(build_dir, "clang", platform)
+            self.install_toolchain_archive(build_dir, "clang", platform)
 
         if musl:
-            self.install_artifact_archive(build_dir, "musl", platform)
+            self.install_toolchain_archive(build_dir, "musl", platform)
 
     def run(self, program, user="build", environment=None):
         if user != "build":

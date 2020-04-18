@@ -130,11 +130,12 @@ if [ -n "${CPYTHON_DEBUG}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-pydebug"
 fi
 
-# TODO support --with-lto
-# --with-lto will produce .o files that are LLVM bitcode and aren't compatible
-# with downstream consumers that can't handle them.
 if [ -n "${CPYTHON_OPTIMIZED}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations"
+fi
+
+if [ -n "${CPYTHON_LTO}" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-lto"
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \

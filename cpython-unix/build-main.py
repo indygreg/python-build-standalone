@@ -19,16 +19,39 @@ DIST = ROOT / "dist"
 
 
 def main():
+    if sys.platform == "linux":
+        host_platform = "linux64"
+        default_target_triple = "x86_64-unknown-linux-gnu"
+        targets = {
+            default_target_triple,
+            "x86_64-unknown-linux-musl",
+        }
+    elif sys.platform == "darwin":
+        host_platform = "macos"
+        default_target_triple = "x86_64-apple-darwin"
+        targets = {default_target_triple}
+    else:
+        print("unsupport build platform: %s" % sys.platform)
+        return 1
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--debug", action="store_true", help="Produce a debug build")
+
+    parser.add_argument(
+        "--target_triple",
+        default=default_target_triple,
+        choices=targets,
+        help="Target host triple to build for",
+    )
+
+    parser.add_argument(
+        "--optimizations",
+        choices={"debug", "noopt", "pgo", "lto", "pgo+lto"},
+        default="noopt",
+        help="Optimizations to apply when compiling Python",
+    )
+
     parser.add_argument(
         "--libressl", action="store_true", help="Build LibreSSL instead of OpenSSL"
-    )
-    parser.add_argument(
-        "--musl", action="store_true", help="Build against musl libc (Linux only)"
-    )
-    parser.add_argument(
-        "--optimized", action="store_true", help="Build an optimized build"
     )
     parser.add_argument(
         "--python",
@@ -45,34 +68,21 @@ def main():
 
     args = parser.parse_args()
 
+    target_triple = args.target_triple
+
+    musl = "musl" in target_triple
+
     env = dict(os.environ)
 
-    if args.debug:
-        env["PYBUILD_DEBUG"] = "1"
-    if args.libressl:
+    env["PYBUILD_HOST_PLATFORM"] = host_platform
+    env["PYBUILD_TARGET_TRIPLE"] = target_triple
+    env["PYBUILD_OPTIMIZATIONS"] = args.optimizations
+    if args.libressl or musl:
         env["PYBUILD_LIBRESSL"] = "1"
-    if args.musl:
+    if musl:
         env["PYBUILD_MUSL"] = "1"
-    if args.optimized:
-        env["PYBUILD_OPTIMIZED"] = "1"
     if args.no_docker:
         env["PYBUILD_NO_DOCKER"] = "1"
-
-    if sys.platform == "linux":
-        platform = "linux64"
-
-        if args.musl:
-            target_triple = "x86_64-unknown-linux-musl"
-        else:
-            target_triple = "x86_64-unknown-linux-gnu"
-
-    elif sys.platform == "darwin":
-        platform = "macos"
-        target_triple = "x86_64-apple-darwin"
-    else:
-        raise Exception("unhandled platform")
-
-    env["PYBUILD_UNIX_PLATFORM"] = platform
 
     entry = DOWNLOADS[args.python]
     env["PYBUILD_PYTHON_VERSION"] = entry["version"]
@@ -80,32 +90,24 @@ def main():
 
     now = datetime.datetime.utcnow()
 
-    subprocess.run(["make"], env=env, check=True)
-
-    basename = "cpython-%s-%s" % (entry["version"], platform)
-
-    dest_components = [
+    archive_components = [
         "cpython-%s" % entry["version"],
         target_triple,
+        args.optimizations,
     ]
 
-    if args.musl:
-        basename += "-musl"
-    if args.debug:
-        basename += "-debug"
-        dest_components.append("debug")
-    if args.optimized:
-        basename += "-pgo"
-        dest_components.append("opt")
+    build_basename = "-".join(archive_components) + ".tar"
+    dist_basename = "-".join(archive_components + [now.strftime("%Y%m%dT%H%M")])
 
-    dest_components.append(now.strftime("%Y%m%dT%H%M"))
-
-    basename += ".tar"
+    subprocess.run(["make"], env=env, check=True)
 
     DIST.mkdir(exist_ok=True)
 
-    compress_python_archive(BUILD / basename, DIST, ".".join(dest_components))
+    compress_python_archive(BUILD / build_basename, DIST, dist_basename)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except subprocess.CalledProcessError as e:
+        sys.exit(e.returncode)

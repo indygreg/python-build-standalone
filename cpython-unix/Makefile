@@ -9,14 +9,38 @@ COMMON_DEPENDS := \
 #    $(BUILD) \
     $(NULL)
 
-ifndef PYBUILD_UNIX_PLATFORM
-    $(error PYBUILD_UNIX_PLATFORM not defined)
+ifndef PYBUILD_TARGET_TRIPLE
+    $(error PYBUILD_TARGET_TRIPLE not defined)
 endif
 
-PLATFORM := $(PYBUILD_UNIX_PLATFORM)
-BASE_PLATFORM := $(PLATFORM)
+ifndef PYBUILD_OPTIMIZATIONS
+    $(error PYBUILD_OPTIMIZATIONS not defined)
+endif
 
-ifeq ($(PLATFORM),linux64)
+ifndef PYBUILD_HOST_PLATFORM
+    $(error PYBUILD_HOST_PLATFORM not defined)
+endif
+
+ifndef PYBUILD_PYTHON_VERSION
+    $(error PYBUILD_PYTHON_VERSION not defined)
+endif
+
+ifndef PYBUILD_PYTHON_MAJOR_VERSION
+    $(error PYBUILD_PYTHON_MAJOR_VERSION not defined)
+endif
+
+TARGET_TRIPLE := $(PYBUILD_TARGET_TRIPLE)
+HOST_PLATFORM := $(PYBUILD_HOST_PLATFORM)
+PACKAGE_SUFFIX := $(TARGET_TRIPLE)-$(PYBUILD_OPTIMIZATIONS)
+
+RUN_BUILD = $(BUILD) \
+    --host-platform $(HOST_PLATFORM) \
+    --target-triple $(TARGET_TRIPLE) \
+    --optimizations $(PYBUILD_OPTIMIZATIONS) \
+    --dest-archive $@ \
+    $(NULL)
+
+ifeq ($(HOST_PLATFORM),linux64)
     NEED_BINUTILS := 1
     NEED_GCC := 1
     NEED_MUSL :=
@@ -26,7 +50,7 @@ ifeq ($(PLATFORM),linux64)
     NEED_TIX := 1
 endif
 
-ifeq ($(PLATFORM),macos)
+ifeq ($(HOST_PLATFORM),macos)
     NEED_BINUTILS :=
     NEED_GCC :=
     NEED_MUSL :=
@@ -35,8 +59,6 @@ ifeq ($(PLATFORM),macos)
     NEED_READLINE :=
     NEED_TIX :=
 endif
-
-BASE_PLATFORM := $(PLATFORM)
 
 ifdef PYBUILD_MUSL
     PLATFORM := $(PLATFORM)-musl
@@ -51,29 +73,19 @@ else
     NEED_LIBRESSL :=
 endif
 
-ifdef PYBUILD_DEBUG
-	DEFAULT_EXTRA := -debug
-else
-ifdef PYBUILD_OPTIMIZED
-	DEFAULT_EXTRA := -pgo
-else
-	DEFAULT_EXTRA :=
-endif
-endif
-
 # Always write out package version files.
-$(shell $(BUILD) versions)
+$(shell $(RUN_BUILD) dummy_archive versions)
 include $(OUTDIR)/versions/VERSION.*
 
 BASE_TOOLCHAIN_DEPENDS := \
-    $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar) \
-    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar) \
-    $(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar \
+    $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar) \
+    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar) \
+    $(OUTDIR)/clang-$(CLANG_VERSION)-$(HOST_PLATFORM).tar \
     $(NULL)
 
 TOOLCHAIN_DEPENDS := \
     $(BASE_TOOLCHAIN_DEPENDS) \
-    $(if $(NEED_MUSL),$(OUTDIR)/musl-$(MUSL_VERSION)-$(BASE_PLATFORM).tar) \
+    $(if $(NEED_MUSL),$(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar) \
     $(NULL)
 
 PYTHON_DEP_DEPENDS := \
@@ -81,176 +93,197 @@ PYTHON_DEP_DEPENDS := \
     $(TOOLCHAIN_DEPENDS) \
     $(NULL)
 
-default: $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)$(DEFAULT_EXTRA).tar
+default: $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PACKAGE_SUFFIX).tar
 
 ifndef PYBUILD_NO_DOCKER
 $(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
-	$(BUILD) image-$*
+	$(RUN_BUILD) --toolchain image-$*
 endif
 
-$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
-	$(BUILD) binutils --platform $(BASE_PLATFORM)
+$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
+	$(RUN_BUILD) --toolchain binutils
 
-$(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar $(HERE)/build-gcc.sh
-	$(BUILD) gcc --platform $(BASE_PLATFORM)
+$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar $(HERE)/build-gcc.sh
+	$(RUN_BUILD) --toolchain gcc
 
 CLANG_DEPENDS := \
-    $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(BASE_PLATFORM).tar) \
-    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(BASE_PLATFORM).tar) \
+    $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar) \
+    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar) \
     $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-clang.tar) \
-    $(HERE)/build-clang-$(BASE_PLATFORM).sh \
+    $(HERE)/build-clang-$(HOST_PLATFORM).sh \
     $(NULL)
 
-$(OUTDIR)/clang-$(CLANG_VERSION)-$(BASE_PLATFORM).tar: $(CLANG_DEPENDS)
-	$(BUILD) clang --platform $(BASE_PLATFORM)
+$(OUTDIR)/clang-$(CLANG_VERSION)-$(HOST_PLATFORM).tar: $(CLANG_DEPENDS)
+	$(RUN_BUILD) --toolchain clang
 
-$(OUTDIR)/musl-$(MUSL_VERSION)-$(BASE_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
-	$(BUILD) musl --platform $(BASE_PLATFORM)
+$(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
+	$(RUN_BUILD) --toolchain musl
 
-$(OUTDIR)/bdb-$(BDB_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
-	$(BUILD) --platform $(PLATFORM) bdb
+$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
+	$(RUN_BUILD) bdb
 
-$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip2.sh
-	$(BUILD) --platform $(PLATFORM) bzip2
+$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip2.sh
+	$(RUN_BUILD) bzip2
 
-$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
-	$(BUILD) --platform $(PLATFORM) gdbm
+$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
+	$(RUN_BUILD) gdbm
 
-$(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-inputproto.sh
-	$(BUILD) --platform $(PLATFORM) inputproto
+$(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-inputproto.sh
+	$(RUN_BUILD) inputproto
 
-$(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-kbproto.sh
-	$(BUILD) --platform $(PLATFORM) kbproto
+$(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-kbproto.sh
+	$(RUN_BUILD) kbproto
 
-$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
-	$(BUILD) --platform $(PLATFORM) libffi
+$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
+	$(RUN_BUILD) libffi
 
-$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-build.tar
-	$(BUILD) --platform $(PLATFORM) libpthread-stubs
+$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-build.tar
+	$(RUN_BUILD) libpthread-stubs
 
 LIBX11_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \
     $(HERE)/build-libX11.sh \
-    $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/xextproto-$(XEXTPROTO_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/xtrans-$(XTRANS_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar \
+    $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/xextproto-$(XEXTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/xtrans-$(XTRANS_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(NULL)
 
-$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar: $(LIBX11_DEPENDS)
-	$(BUILD) --platform $(PLATFORM) libX11
+$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBX11_DEPENDS)
+	$(RUN_BUILD) libX11
 
-$(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libXau.sh $(OUTDIR)/x11-util-macros-$(X11_UTIL_MACROS_VERSION)-$(PLATFORM).tar $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar
-	$(BUILD) --platform $(PLATFORM) libXau
+LIBXAU_DEPENDS = \
+    $(PYTHON_DEP_DEPENDS) \
+    $(HERE)/build-libXau.sh \
+    $(OUTDIR)/x11-util-macros-$(X11_UTIL_MACROS_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(NULL)
+
+$(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBXAU_DEPENDS)
+	$(RUN_BUILD) libXau
 
 LIBXCB_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \
     $(HERE)/build-libxcb.sh \
     $(OUTDIR)/image-xcb.tar \
-    $(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PLATFORM).tar
+    $(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar
     $(NULL)
 
-$(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PLATFORM).tar: $(LIBXCB_DEPENDS)
-	$(BUILD) --platform $(PLATFORM) libxcb
+$(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBXCB_DEPENDS)
+	$(RUN_BUILD) libxcb
 
-$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
-	$(BUILD) --platform $(PLATFORM) ncurses
+$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
+	$(RUN_BUILD) ncurses
 
-$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-openssl.sh
-	$(BUILD) --platform $(PLATFORM) openssl
+$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-openssl.sh
+	$(RUN_BUILD) openssl
 
-$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar $(HERE)/build-libedit.sh
-	$(BUILD) --platform $(PLATFORM) libedit
+LIBEDIT_DEPENDS = \
+    $(PYTHON_DEP_DEPENDS) \
+    $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(HERE)/build-libedit.sh \
+    $(NULL)
 
-$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libressl.sh
-	$(BUILD) --platform $(PLATFORM) libressl
+$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBEDIT_DEPENDS)
+	$(RUN_BUILD) libedit
 
-$(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar $(HERE)/build-readline.sh
-	$(BUILD) --platform $(PLATFORM) readline
+$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libressl.sh
+	$(RUN_BUILD) libressl
 
-$(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-sqlite.sh
-	$(BUILD) --platform $(PLATFORM) sqlite
+READLINE_DEPENDS = \
+    $(PYTHON_DEP_DEPENDS) \
+    $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(HERE)/build-readline.sh
 
-$(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-tcl.sh
-	$(BUILD) --platform $(PLATFORM) tcl
+$(OUTDIR)/readline-$(READLINE_VERSION)-$(PACKAGE_SUFFIX).tar: $(READLINE_DEPENDS)
+	$(RUN_BUILD) readline
+
+$(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-sqlite.sh
+	$(RUN_BUILD) sqlite
+
+$(OUTDIR)/tcl-$(TCL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-tcl.sh
+	$(RUN_BUILD) tcl
 
 TIX_DEPENDS = \
     $(HERE)/build-tix.sh \
-    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar \
-    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar) \
+    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/tk-$(TK_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(NULL)
 
-$(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar: $(TIX_DEPENDS)
-	$(BUILD) --platform $(PLATFORM) tix
+$(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar: $(TIX_DEPENDS)
+	$(RUN_BUILD) tix
 
 TK_DEPENDS = \
     $(HERE)/build-tk.sh \
-    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PLATFORM).tar \
-    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PLATFORM).tar) \
+    $(OUTDIR)/tcl-$(TCL_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(NULL)
 
-$(OUTDIR)/tk-$(TK_VERSION)-$(PLATFORM).tar: $(TK_DEPENDS)
-	$(BUILD) --platform $(PLATFORM) tk
+$(OUTDIR)/tk-$(TK_VERSION)-$(PACKAGE_SUFFIX).tar: $(TK_DEPENDS)
+	$(RUN_BUILD) tk
 
-$(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-uuid.sh
-	$(BUILD) --platform $(PLATFORM) uuid
+$(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-uuid.sh
+	$(RUN_BUILD) uuid
 
-$(OUTDIR)/x11-util-macros-$(X11_UTIL_MACROS_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-x11-util-macros.sh
-	$(BUILD) --platform $(PLATFORM) x11-util-macros
+$(OUTDIR)/x11-util-macros-$(X11_UTIL_MACROS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-x11-util-macros.sh
+	$(RUN_BUILD) x11-util-macros
 
-$(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xcb-proto.sh
-	$(BUILD) --platform $(PLATFORM) xcb-proto
+$(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xcb-proto.sh
+	$(RUN_BUILD) xcb-proto
 
-$(OUTDIR)/xextproto-$(XEXTPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xextproto.sh
-	$(BUILD) --platform $(PLATFORM) xextproto
+$(OUTDIR)/xextproto-$(XEXTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xextproto.sh
+	$(RUN_BUILD) xextproto
 
-$(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xorgproto.sh
-	$(BUILD) --platform $(PLATFORM) xorgproto
+$(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xorgproto.sh
+	$(RUN_BUILD) xorgproto
 
-$(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xproto.sh
-	$(BUILD) --platform $(PLATFORM) xproto
+$(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xproto.sh
+	$(RUN_BUILD) xproto
 
-$(OUTDIR)/xtrans-$(XTRANS_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xtrans.sh
-	$(BUILD) --platform $(PLATFORM) xtrans
+$(OUTDIR)/xtrans-$(XTRANS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xtrans.sh
+	$(RUN_BUILD) xtrans
 
-$(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xz.sh
-	$(BUILD) --platform $(PLATFORM) xz
+$(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xz.sh
+	$(RUN_BUILD) xz
 
-$(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-zlib.sh
-	$(BUILD) --platform $(PLATFORM) zlib
+$(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar: $(TOOLCHAIN_DEPENDS) $(HERE)/build-zlib.sh
+	$(RUN_BUILD) zlib
 
 PYTHON_DEPENDS := \
-    $(OUTDIR)/bdb-$(BDB_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PLATFORM).tar \
-    $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PLATFORM).tar) \
-    $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PLATFORM).tar \
-    $(if $(NEED_LIBRESSL),$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PLATFORM).tar) \
-    $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PLATFORM).tar \
-    $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PLATFORM).tar) \
-    $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PLATFORM).tar) \
-    $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PLATFORM).tar \
-    $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PLATFORM).tar) \
-    $(OUTDIR)/uuid-$(UUID_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/xz-$(XZ_VERSION)-$(PLATFORM).tar \
-    $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PLATFORM).tar \
-    $(HERE)/disabled-static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(BASE_PLATFORM) \
-    $(HERE)/required-extensions.$(PYBUILD_PYTHON_MAJOR_VERSION).$(BASE_PLATFORM) \
-    $(HERE)/static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(BASE_PLATFORM) \
+    $(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_LIBRESSL),$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(HERE)/disabled-static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
+    $(HERE)/required-extensions.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
+    $(HERE)/static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
     $(NULL)
 
-$(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
-	$(BUILD) --platform $(PLATFORM) cpython
+ALL_PYTHON_DEPENDS = \
+    $(PYTHON_DEP_DEPENDS) \
+    $(HERE)/build-cpython.sh \
+    $(PYTHON_DEPENDS) \
+    $(NULL)
 
-$(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)-debug.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
-	$(BUILD) --platform $(PLATFORM) --debug cpython
+$(OUTDIR)/cpython-$(CPYTHON_3.7_VERSION)-$(PACKAGE_SUFFIX).tar: $(ALL_PYTHON_DEPENDS)
+	$(RUN_BUILD) cpython-3.7
 
-$(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PLATFORM)-pgo.tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-cpython.sh $(PYTHON_DEPENDS)
-	$(BUILD) --platform $(PLATFORM) --optimized cpython
+$(OUTDIR)/cpython-$(CPYTHON_3.8_VERSION)-$(PACKAGE_SUFFIX).tar: $(ALL_PYTHON_DEPENDS)
+	$(RUN_BUILD) cpython-3.8
