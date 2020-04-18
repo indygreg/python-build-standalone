@@ -113,6 +113,10 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
 
     # Prevent using symbols not supported by current macOS SDK target.
     CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"
+
+    # Suppress extremely frequent warnings we see in macOS SDK headers
+    # with LLVM 10.
+    CFLAGS="${CFLAGS} -Wno-nullability-completeness -Wno-expansion-to-defined"
 fi
 
 CPPFLAGS=$CFLAGS
