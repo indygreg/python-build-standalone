@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import tarfile
@@ -251,3 +252,129 @@ def exec_and_log(args, cwd, env):
     if p.returncode:
         print("process exited %d" % p.returncode)
         sys.exit(p.returncode)
+
+def file_text_replace(fnames, repls, *, enc = 'utf-8'):
+    if type(fnames) not in [tuple, list]:
+        fnames = [(fnames, fnames)]
+    elif type(fnames) is tuple:
+        fnames = [fnames]
+    elif type(fnames) is list:
+        fnames = [(f if type(f) is tuple else (f, f)) for f in fnames]
+        
+    if type(repls) is tuple:
+        repls = [repls]
+    assert type(repls) is list
+        
+    for sfname, dfname in fnames:
+        with open(str(sfname), 'r', encoding = enc) as f:
+            text = f.read()
+        for rfrom, rto in repls:
+            if type(rfrom) is str:
+                assert type(rto) is str
+                text = text.replace(rfrom, rto)
+            elif type(rfrom) is re.Pattern:
+                if type(rto) is str:
+                    text = re.sub(rfrom, rto, text)
+                elif callable(rto):
+                    for m in reversed(list(re.finditer(rfrom, text))):
+                        text = text[:m.start()] + rto(m) + text[m.end():]
+                else:
+                    assert False
+            else:
+                assert False
+        with open(str(dfname), 'w', encoding = enc) as f:
+            f.write(text)
+
+def file_xml_edit(fnames, repls, *, save_opts = {}):
+    from lxml import etree
+    
+    if type(fnames) not in [tuple, list]:
+        fnames = [(fnames, fnames)]
+    elif type(fnames) is tuple:
+        fnames = [fnames]
+    elif type(fnames) is list:
+        fnames = [(f if type(f) is tuple else (f, f)) for f in fnames]
+
+    if type(repls) is tuple:
+        repls = [repls]
+    assert type(repls) is list
+        
+    for sfname, dfname in fnames:
+        with open(str(sfname), 'rb') as f:
+            data = f.read()
+        tree = etree.fromstring(data)
+        nss = {'ns': tree.nsmap[None]} if len(tree.nsmap) > 0 else {}
+        def AddNS(x):
+            if 'ns' in nss:
+                return 'ns:' + x
+            else:
+                return x
+        
+        for repl in repls:
+            op = repl[0]
+            path = repl[1]
+            if type(path) is list:
+                path = '/' + '/'.join([AddNS(p) for p in path])
+            for el in tree.xpath(path, namespaces = nss):
+                if op == 'del':
+                    el.getparent().remove(el)
+                elif op == 'rep':
+                    try:
+                        child = etree.XML(repl[2])
+                        el.getparent().replace(el, child)
+                    except:
+                        assert type(repl[2]) is str or callable(repl[2])
+                        child = repl[2]
+                        if type(child) is str:
+                            el.text = child
+                        else:
+                            child(el)
+                elif op == 'add':
+                    try:
+                        el.append(etree.XML(repl[2]))
+                    except:
+                        assert type(repl[2]) is str or callable(repl[2])
+                        if type(repl[2]) is str:
+                            el.text += repl[2]
+                        else:
+                            repl[2](el)
+                elif op in ['repc', 'addc']:
+                    spath = repl[2]
+                    assert type(spath) is list
+                    try:
+                        child = etree.XML(repl[3])
+                    except:
+                        assert type(repl[3]) is str or callable(repl[3])
+                        child = repl[3]
+                    def Rec(node = el, ispath = 0):
+                        if ispath >= len(spath):
+                            if op == 'repc':
+                                if type(child) is str:
+                                    node.text = child
+                                elif callable(child):
+                                    child(node)
+                                else:
+                                    node.getparent().replace(node, child)
+                            elif op == 'addc':
+                                if type(child) is str:
+                                    node.text += child
+                                elif callable(child):
+                                    child(node)
+                                else:
+                                    node.append(child)
+                            else:
+                                assert False
+                        else:
+                            sels = node.findall(AddNS(spath[ispath]), namespaces = nss)
+                            if len(sels) == 0:
+                                node.append(etree.Element(spath[ispath]))
+                                sels = node.getchildren()[-1:]
+                            for sel in sels:
+                                Rec(sel, ispath + 1)
+                    Rec()
+                else:
+                    assert False
+                    
+        data = etree.tostring(tree, **{'pretty_print': True, 'xml_declaration': True, **save_opts})
+        with open(str(dfname), 'wb') as f:
+            f.write(data)
