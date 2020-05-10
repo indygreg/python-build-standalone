@@ -171,7 +171,7 @@ DOWNLOADS = {
         "license_file": "LICENSE.libX11.txt",
     },
     "libXau": {
-        "url": "ftp://xorg.mirrors.pair.com/X11R7.7/src/lib/libXau-1.0.7.tar.gz",
+        "url": "https://www.x.org/releases/individual/lib/libXau-1.0.7.tar.gz",
         "size": 349278,
         "sha256": "cbb81b4ba0f585faac8b9914b0bdbef6e0ef886a30c70d6584e2b30efeda9ac4",
         "version": "1.0.7",
