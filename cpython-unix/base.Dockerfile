@@ -1,5 +1,5 @@
-# Debian Wheezy.
-FROM debian@sha256:37103c15605251b2e35b70a3214af626a55cff39abbaadccd01ff828ee7005e0
+# Debian Jessie.
+FROM debian@sha256:734728c8e411698485ae644fc988dad06f757565e292b5b85edc084befa37bbb
 MAINTAINER Gregory Szorc <gregory.szorc@gmail.com>
 
 RUN groupadd -g 1000 build && \
@@ -17,8 +17,8 @@ ENV HOME=/build \
 CMD ["/bin/bash", "--login"]
 WORKDIR '/build'
 
-RUN for s in debian_wheezy debian_wheezy-updates debian_wheezy-backports debian-security_wheezy/updates; do \
-      echo "deb http://snapshot.debian.org/archive/${s%_*}/20190321T212815Z/ ${s#*_} main"; \
+RUN for s in debian_jessie debian_jessie-updates debian-security_jessie/updates; do \
+      echo "deb http://snapshot.debian.org/archive/${s%_*}/20200510T203930Z/ ${s#*_} main"; \
     done > /etc/apt/sources.list && \
     ( echo 'quiet "true";'; \
       echo 'APT::Get::Assume-Yes "true";'; \
