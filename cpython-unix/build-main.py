@@ -37,7 +37,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--target_triple",
+        "--target-triple",
         default=default_target_triple,
         choices=targets,
         help="Target host triple to build for",
