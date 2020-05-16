@@ -60,8 +60,18 @@ The following shared libraries are referenced:
 * libc.so.6
 * ld-linux-x86-64.so.2
 
-If built with MUSL, no shared library dependencies exist and the binaries
-should *just work* on practically any Linux system.
+The minimum glibc version required is 2.19. This should make binaries
+compatible with the following Linux distributions:
+
+* Fedora 21+
+* RHEL/CentOS 7+
+* openSUSE 13.2+
+* Debian 8+ (Jessie)
+* Ubuntu 14.04+
+
+If built with MUSL, no shared library dependencies nor glibc version
+requirements exist and the binaries should *just work* on practically any
+Linux system.
 
 Windows
 -------
