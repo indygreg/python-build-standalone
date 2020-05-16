@@ -36,7 +36,7 @@ patch -p1 << "EOF"
 diff --git a/Modules/makesetup b/Modules/makesetup
 --- a/Modules/makesetup
 +++ b/Modules/makesetup
-@@ -241,16 +241,6 @@ sed -e 's/[ 	]*#.*//' -e '/^[ 	]*$/d' |
+@@ -241,18 +241,11 @@ sed -e 's/[ 	]*#.*//' -e '/^[ 	]*$/d' |
  		case $doconfig in
  		yes)	OBJS="$OBJS $objs";;
  		esac
@@ -52,7 +52,12 @@ diff --git a/Modules/makesetup b/Modules/makesetup
 -		done
  	done
  
++	# Deduplicate OBJS.
++	OBJS=$(echo $OBJS | tr ' ' '\n' | sort -u | xargs)
++
  	case $SHAREDMODS in
+ 	'')	;;
+ 	*)	DEFS="SHAREDMODS=$SHAREDMODS$NL$DEFS";;
 EOF
 
 # Code that runs at ctypes module import time does not work with
