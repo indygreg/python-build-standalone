@@ -41,7 +41,8 @@ fi
 
 CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" ./configure \
     --prefix=/tools/deps \
-    --enable-shared=no
+    --enable-shared=no \
+    --enable-threads
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out

@@ -28,6 +28,7 @@ CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ./configure \
     --prefix=/tools/deps \
     --with-tcl=${TOOLS_PATH}/deps/lib \
     --enable-shared=no \
+    --enable-threads \
     ${EXTRA_CONFIGURE_FLAGS}
 
 # For some reason musl isn't link libXau and libxcb. So we hack the Makefile
