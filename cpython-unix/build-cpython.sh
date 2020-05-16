@@ -30,6 +30,31 @@ cat Makefile.extra
 
 pushd Python-${PYTHON_VERSION}
 
+# We build all extensions statically. So remove the auto-generated make
+# rules that produce shared libraries for them.
+patch -p1 << "EOF"
+diff --git a/Modules/makesetup b/Modules/makesetup
+--- a/Modules/makesetup
++++ b/Modules/makesetup
+@@ -241,16 +241,6 @@ sed -e 's/[ 	]*#.*//' -e '/^[ 	]*$/d' |
+ 		case $doconfig in
+ 		yes)	OBJS="$OBJS $objs";;
+ 		esac
+-		for mod in $mods
+-		do
+-			file="$srcdir/$mod\$(EXT_SUFFIX)"
+-			case $doconfig in
+-			no)	SHAREDMODS="$SHAREDMODS $file";;
+-			esac
+-			rule="$file: $objs"
+-			rule="$rule; \$(BLDSHARED) $objs $libs $ExtraLibs -o $file"
+-			echo "$rule" >>$rulesf
+-		done
+ 	done
+ 
+ 	case $SHAREDMODS in
+EOF
+
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.
 # See https://bugs.python.org/issue37060.
