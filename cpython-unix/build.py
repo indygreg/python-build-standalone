@@ -367,6 +367,7 @@ def python_build_info(
     build_env,
     version,
     platform,
+    musl,
     optimizations,
     config_c_in,
     setup_dist,
@@ -379,12 +380,36 @@ def python_build_info(
 
     bi = {"core": {"objs": [], "links": []}, "extensions": {}}
 
+    binary_suffix = "m" if version == "3.7" else ""
+
     if platform == "linux64":
+        bi["core"][
+            "static_lib"
+        ] = "install/lib/python{version}/config-{version}{binary_suffix}-x86_64-linux-gnu/libpython{version}{binary_suffix}.a".format(
+            version=version, binary_suffix=binary_suffix
+        )
+
+        if not musl:
+            bi["core"]["shared_lib"] = "install/lib/libpython%s%s.so.1.0" % (
+                version,
+                binary_suffix,
+            )
+
         if optimizations in ("lto", "pgo+lto"):
             object_file_format = "llvm-bitcode:%s" % DOWNLOADS["llvm"]["version"]
         else:
             object_file_format = "elf"
     elif platform == "macos":
+        bi["core"][
+            "static_lib"
+        ] = "install/lib/python{version}/config-{version}{binary_suffix}-darwin/libpython{version}{binary_suffix}.a".format(
+            version=version, binary_suffix=binary_suffix
+        )
+        bi["core"]["shared_lib"] = "install/lib/libpython%s%s.dylib" % (
+            version,
+            binary_suffix,
+        )
+
         if optimizations in ("lto", "pgo+lto"):
             object_file_format = "llvm-bitcode:%s" % DOWNLOADS["llvm"]["version"]
         else:
@@ -730,13 +755,14 @@ def build_cpython(
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "python_symbol_visibility": python_symbol_visibility,
             "python_extension_module_loading": extension_module_loading,
-            "libpython_link_mode": "static",
+            "libpython_link_mode": "static" if "musl" in target_triple else "shared",
             "crt_features": crt_features,
             "run_tests": "build/run_tests.py",
             "build_info": python_build_info(
                 build_env,
                 version,
                 host_platform,
+                "musl" in target_triple,
                 optimizations,
                 config_c_in,
                 setup_dist_content,

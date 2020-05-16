@@ -60,6 +60,78 @@ diff --git a/Modules/makesetup b/Modules/makesetup
  	*)	DEFS="SHAREDMODS=$SHAREDMODS$NL$DEFS";;
 EOF
 
+# The default build rule for the macOS dylib doesn't pick up libraries
+# from modules / makesetup. So patch it accordingly.
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
+    patch -p1 << "EOF"
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -643,7 +643,7 @@ libpython3.so:	libpython$(LDVERSION).so
+ 	$(BLDSHARED) $(NO_AS_NEEDED) -o $@ -Wl,-h$@ $^
+ 
+ libpython$(LDVERSION).dylib: $(LIBRARY_OBJS)
+-	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
++	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
+ 
+ 
+ libpython$(VERSION).sl: $(LIBRARY_OBJS)
+EOF
+else
+    patch -p1 << "EOF"
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -628,7 +628,7 @@ libpython3.so:	libpython$(LDVERSION).so
+ 	$(BLDSHARED) $(NO_AS_NEEDED) -o $@ -Wl,-h$@ $^
+ 
+ libpython$(LDVERSION).dylib: $(LIBRARY_OBJS)
+-	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(DTRACE_OBJS) $(SHLIBS) $(LIBC) $(LIBM); \
++	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(DTRACE_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM); \
+ 
+ 
+ libpython$(VERSION).sl: $(LIBRARY_OBJS)
+EOF
+fi
+
+# Also on macOS, the `python` executable is linked against libraries defined by statically
+# linked modules. But those libraries should only get linked into libpython, not the
+# executable. This behavior is kinda suspect on all platforms, as it could be adding
+# library dependencies that shouldn't need to be there.
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
+        patch -p1 <<"EOF"
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -578,7 +578,7 @@ clinic: check-clean-src $(srcdir)/Modules/_blake2/blake2s_impl.c
+ 
+ # Build the interpreter
+ $(BUILDPYTHON):	Programs/python.o $(LIBRARY) $(LDLIBRARY) $(PY3LIBRARY)
+-	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS) $(LDLAST)
++	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(SYSLIBS) $(LDLAST)
+ 
+ platform: $(BUILDPYTHON) pybuilddir.txt
+ 	$(RUNSHARED) $(PYTHON_FOR_BUILD) -c 'import sys ; from sysconfig import get_platform ; print("%s-%d.%d" % (get_platform(), *sys.version_info[:2]))' >platform
+EOF
+    else
+        patch -p1 <<"EOF"
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -563,7 +563,7 @@ clinic: check-clean-src $(srcdir)/Modules/_blake2/blake2s_impl.c
+ 
+ # Build the interpreter
+ $(BUILDPYTHON):	Programs/python.o $(LIBRARY) $(LDLIBRARY) $(PY3LIBRARY)
+-	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS)
++	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(SYSLIBS)
+ 
+ platform: $(BUILDPYTHON) pybuilddir.txt
+ 	$(RUNSHARED) $(PYTHON_FOR_BUILD) -c 'import sys ; from sysconfig import get_platform ; print("%s-%d.%d" % (get_platform(), *sys.version_info[:2]))' >platform
+EOF
+    fi
+fi
+
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.
 # See https://bugs.python.org/issue37060.
@@ -152,13 +224,17 @@ fi
 CPPFLAGS=$CFLAGS
 LDFLAGS="-L${TOOLS_PATH}/deps/lib"
 
+CONFIGURE_FLAGS="--prefix=/install --with-openssl=${TOOLS_PATH}/deps --without-ensurepip"
+
 if [ "${CC}" = "musl-clang" ]; then
     CFLAGS="${CFLAGS} -static"
     CPPFLAGS="${CPPFLAGS} -static"
     LDFLAGS="${LDFLAGS} -static"
+    PYBUILD_SHARED=0
+else
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-shared"
+    PYBUILD_SHARED=1
 fi
-
-CONFIGURE_FLAGS="--prefix=/install --with-openssl=${TOOLS_PATH}/deps --without-ensurepip"
 
 if [ -n "${CPYTHON_DEBUG}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-pydebug"
@@ -187,6 +263,51 @@ cat ../Makefile.extra >> Makefile
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
+
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
+    PYTHON_BINARY_SUFFIX=m
+else
+    PYTHON_BINARY_SUFFIX=
+fi
+
+# If we're building a shared library hack some binaries so rpath is set.
+# This ensures we can run the binary in any location without
+# LD_LIBRARY_PATH pointing to the directory containing libpython.
+if [ "${PYBUILD_SHARED}" = "1" ]; then
+    if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+        # There's only 1 dylib produced on macOS and it has the binary suffix.
+        install_name_tool \
+            -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib @executable_path/../lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib \
+            ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
+
+        # Python 3.7's build system doesn't make this file writable.
+        chmod 755 ${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+        install_name_tool \
+            -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib @executable_path/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib \
+            ${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+
+        # We also normalize /tools/deps/lib/libz.1.dylib to the system location.
+        install_name_tool \
+            -change /tools/deps/lib/libz.1.dylib /usr/lib/libz.1.dylib \
+            ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
+        install_name_tool \
+            -change /tools/deps/lib/libz.1.dylib /usr/lib/libz.1.dylib \
+            ${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+
+        if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
+            install_name_tool \
+                -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}.dylib @executable_path/../lib/libpython${PYTHON_MAJMIN_VERSION}.dylib \
+                ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}
+        fi
+    else
+        patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
+        patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/lib/libpython3.so
+
+        if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
+            patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}
+        fi
+    fi
+fi
 
 # Install pip so we can patch it to work with non-dynamic executables
 # and work around https://github.com/pypa/pip/issues/6543. But pip's bundled
@@ -316,21 +437,21 @@ fi
 # Symlink libpython so we don't have 2 copies. We only need to do
 # this on Python 3.7, as 3.8 dropped the m ABI suffix from binary names.
 
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
+if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
     if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
         PYTHON_ARCH="darwin"
     else
         PYTHON_ARCH="x86_64-linux-gnu"
     fi
 
-    LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}m.a
+    LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.a
     ln -sf \
-        python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}m-${PYTHON_ARCH}/${LIBPYTHON} \
+        python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}-${PYTHON_ARCH}/${LIBPYTHON} \
         ${ROOT}/out/python/install/lib/${LIBPYTHON}
 
     # Ditto for Python executable.
     ln -sf \
-        python${PYTHON_MAJMIN_VERSION}m \
+        python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX} \
         ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
 fi
 

@@ -4,6 +4,7 @@ RUN apt-get install \
     libc6-dev \
     make \
     patch \
+    patchelf \
     perl \
     pkg-config \
     tar \
