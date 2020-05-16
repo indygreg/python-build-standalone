@@ -24,7 +24,7 @@ chmod +x configure
 CFLAGS="-fPIC -DUSE_INTERP_RESULT"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include"
+    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include -Wno-nullability-completeness -Wno-expansion-to-defined"
     EXTRA_CONFIGURE_FLAGS="--without-x"
 else
     EXTRA_CONFIGURE_FLAGS="--x-includes=/tools/deps/include --x-libraries=/tools/deps/lib"
@@ -32,7 +32,7 @@ fi
 
 # -DUSE_INTERP_RESULT is to allow tix to use deprecated fields or something
 # like that.
-CFLAGS="${CFLAGS}" ./configure \
+CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" ./configure \
     --prefix=/tools/deps \
     --with-tcl=${TOOLS_PATH}/deps/lib \
     --with-tk=${TOOLS_PATH}/deps/lib \

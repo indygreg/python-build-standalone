@@ -33,7 +33,13 @@ rm -rf pkgs/sqlite* pkgs/tdbc*
 
 pushd unix
 
-CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include" ./configure \
+CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include"
+
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+  CFLAGS="${CFLAGS} -Wno-nullability-completeness -Wno-expansion-to-defined"
+fi
+
+CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" ./configure \
     --prefix=/tools/deps \
     --enable-shared=no
 
