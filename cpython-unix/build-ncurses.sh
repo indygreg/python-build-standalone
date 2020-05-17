@@ -17,6 +17,7 @@ CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
-    --without-cxx
+    --without-cxx \
+    --enable-widec
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
