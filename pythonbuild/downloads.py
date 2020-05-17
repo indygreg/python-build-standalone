@@ -153,7 +153,7 @@ DOWNLOADS = {
         "version": "0.1",
     },
     "libressl": {
-        "url": "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.1.1.tar.gz",
+        "url": "https://cdn.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.1.1.tar.gz",
         "size": 3765769,
         "sha256": "bdc6ce5ebb3a2eafc4c475f7eeaa5f0a8e60d9bead01efb76e2e254242b6db00",
         "version": "3.1.1",
