@@ -889,6 +889,19 @@ def hack_project_files(
             pcbuild_proj, b'<Projects2 Include="_freeze_importlib.vcxproj" />', b""
         )
 
+    # Switch to the static version of the run-time library.
+    if static:
+        static_replace_in_file(
+            pcbuild_path / "pyproject.props",
+            b"<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
+            b"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>",
+        )
+        static_replace_in_file(
+            pcbuild_path / "pyproject.props",
+            b"<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>",
+            b"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>",
+        )
+
 
 PYPORT_EXPORT_SEARCH_NEW = b"""
 #if defined(__CYGWIN__)
@@ -1224,6 +1237,9 @@ def build_openssl_for_arch(
         source_root,
         {**env, "CFLAGS": env.get("CFLAGS", "") + " /FS",},
     )
+
+    if "static" in profile:
+        static_replace_in_file(source_root / "Makefile", b"/MD", b"/MT")
 
     # exec_and_log(["nmake"], source_root, env)
     exec_and_log(
@@ -1965,8 +1981,10 @@ def build_cpython(
         # __declspec(dllexport), even for static distributions.
         python_symbol_visibility = "dllexport"
 
-        # We currently always link vcruntime140.dll.
-        crt_features = ["vcruntime:140"]
+        if static:
+            crt_features = ["static"]
+        else:
+            crt_features = ["vcruntime:140"]
 
         if "pgo" in profile:
             optimizations = "pgo"
