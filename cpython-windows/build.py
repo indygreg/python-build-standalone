@@ -99,6 +99,57 @@ EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY = {
 }
 
 
+# Tests to run during PGO profiling.
+#
+# This set was copied from test.libregrtest.pgo in the CPython source
+# distribution.
+PGO_TESTS = {
+    "test_array",
+    "test_base64",
+    "test_binascii",
+    "test_binop",
+    "test_bisect",
+    "test_bytes",
+    "test_bz2",
+    "test_cmath",
+    "test_codecs",
+    "test_collections",
+    "test_complex",
+    "test_dataclasses",
+    "test_datetime",
+    "test_decimal",
+    "test_difflib",
+    "test_embed",
+    "test_float",
+    "test_fstring",
+    "test_functools",
+    "test_generators",
+    "test_hashlib",
+    "test_heapq",
+    "test_int",
+    "test_itertools",
+    "test_json",
+    "test_long",
+    "test_lzma",
+    "test_math",
+    "test_memoryview",
+    "test_operator",
+    "test_ordered_dict",
+    "test_pickle",
+    "test_pprint",
+    "test_re",
+    "test_set",
+    "test_sqlite",
+    "test_statistics",
+    "test_struct",
+    "test_tabnanny",
+    "test_time",
+    "test_unicode",
+    "test_xml_etree",
+    "test_xml_etree_c",
+}
+
+
 def log(msg):
     if isinstance(msg, bytes):
         msg_str = msg.decode("utf-8", "replace")
@@ -1889,6 +1940,10 @@ def build_cpython(
             tests = [l.strip() for l in tests.decode("utf-8").splitlines() if l.strip()]
 
             for test in sorted(tests):
+                # Only look at specific tests, to keep runtime down.
+                if test not in PGO_TESTS:
+                    continue
+
                 # test_regrtest hangs for some reason. It is the test for the
                 # test harness itself and isn't exercising useful code. Skip it.
                 if test == "test_regrtest":
