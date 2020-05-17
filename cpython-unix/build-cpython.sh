@@ -273,6 +273,8 @@ fi
 # LD_LIBRARY_PATH pointing to the directory containing libpython.
 if [ "${PYBUILD_SHARED}" = "1" ]; then
     if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+        LIBPYTHON_SHARED_LIBRARY=${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+
         # There's only 1 dylib produced on macOS and it has the binary suffix.
         install_name_tool \
             -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib @executable_path/../lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib \
@@ -298,6 +300,8 @@ if [ "${PYBUILD_SHARED}" = "1" ]; then
                 ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}
         fi
     else
+        LIBPYTHON_SHARED_LIBRARY=${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.so.1.0
+
         patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
         patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/lib/libpython3.so
 
@@ -418,7 +422,7 @@ ${ROOT}/out/python/install/bin/python3 ${ROOT}/generate_metadata.py ${ROOT}/meta
 cat ${ROOT}/metadata.json
 
 if [ "${CC}" != "musl-clang" ]; then
-    objdump -T ${PYTHON_EXE} | grep GLIBC_ | awk '{print $5}' | awk -F_ '{print $2}' | sort -V | tail -n 1 > ${ROOT}/glibc_version.txt
+    objdump -T ${LIBPYTHON_SHARED_LIBRARY} | grep GLIBC_ | awk '{print $5}' | awk -F_ '{print $2}' | sort -V | tail -n 1 > ${ROOT}/glibc_version.txt
     cat ${ROOT}/glibc_version.txt
 fi
 
