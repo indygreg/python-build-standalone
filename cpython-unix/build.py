@@ -638,6 +638,9 @@ def build_cpython(
             "libedit",
             "libffi",
             "sqlite",
+            "tcl",
+            "tix",
+            "tk",
             "uuid",
             "xz",
             "zlib",
@@ -659,10 +662,6 @@ def build_cpython(
 
         if host_platform == "linux64":
             packages |= {"libX11", "libXau", "libxcb", "xorgproto"}
-
-        tix = host_platform != "macos"
-        if tix:
-            packages |= {"tcl", "tix", "tk"}
 
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
@@ -773,16 +772,14 @@ def build_cpython(
             "license_path": "licenses/LICENSE.cpython.txt",
         }
 
-        # We do not ship tcl libraries on macOS.
-        if host_platform != "macos":
-            python_info["tcl_library_path"] = "install/lib"
-            python_info["tcl_library_paths"] = [
-                "tcl8",
-                "tcl8.6",
-                "thread2.8.5",
-                "Tix8.4.3",
-                "tk8.6",
-            ]
+        python_info["tcl_library_path"] = "install/lib"
+        python_info["tcl_library_paths"] = [
+            "tcl8",
+            "tcl8.6",
+            "thread2.8.5",
+            "Tix8.4.3",
+            "tk8.6",
+        ]
 
         # Add metadata derived from built distribution.
         extra_metadata = build_env.get_file("metadata.json")

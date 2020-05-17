@@ -57,7 +57,7 @@ ifeq ($(HOST_PLATFORM),macos)
     NEED_GDBM :=
     NEED_X11 :=
     NEED_READLINE :=
-    NEED_TIX :=
+    NEED_TIX := 1
 endif
 
 ifdef PYBUILD_MUSL
