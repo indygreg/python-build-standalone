@@ -622,7 +622,13 @@ OPENSSL_PROPS_REMOVE_RULES = b"""
 """
 
 
-def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: bool):
+def hack_props(
+    td: pathlib.Path,
+    pcbuild_path: pathlib.Path,
+    arch: str,
+    static: bool,
+    building_libffi: bool,
+):
     # TODO can we pass props into msbuild.exe?
 
     # Our dependencies are in different directories from what CPython's
@@ -724,18 +730,37 @@ def hack_props(td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: 
                 b"<_DLLSuffix>-1_1-%s</_DLLSuffix>" % suffix,
             )
 
+    libffi_props = pcbuild_path / "libffi.props"
+
+    if static and building_libffi:
+        # For some reason the built .lib doesn't have the -7 suffix in
+        # static build mode. This is possibly a side-effect of CPython's
+        # libffi build script not officially supporting static-only builds.
+        static_replace_in_file(
+            libffi_props,
+            b"<AdditionalDependencies>libffi-7.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+            b"<AdditionalDependencies>libffi.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+        )
+
 
 def hack_project_files(
     td: pathlib.Path,
     cpython_source_path: pathlib.Path,
     build_directory: str,
     static: bool,
+    building_libffi: bool,
 ):
     """Hacks Visual Studio project files to work with our build."""
 
     pcbuild_path = cpython_source_path / "PCbuild"
 
-    hack_props(td, pcbuild_path, build_directory, static=static)
+    hack_props(
+        td,
+        pcbuild_path,
+        build_directory,
+        static=static,
+        building_libffi=building_libffi,
+    )
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
@@ -797,6 +822,24 @@ def hack_project_files(
         br'<ClCompile Include="$(opensslIncludeDir)\openssl\applink.c">',
     )
 
+    pythoncore_proj = pcbuild_path / "pythoncore.vcxproj"
+
+    # normally the _ctypes extension/project pulls in libffi via
+    # <Link><AdditionalDependencies>. However, as part of converting this
+    # extension to static, we lose the transitive dependency. Here, we
+    # hack pythoncore as a one-off to add the dependency. Ideally we would
+    # handle this when hacking the extension's project. But it is easier to
+    # do here.
+    if static and building_libffi:
+        libffi_path = td / "libffi" / "libffi.lib"
+        static_replace_in_file(
+            pythoncore_proj,
+            b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+            b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;"
+            + bytes(libffi_path)
+            + b";%(AdditionalDependencies)</AdditionalDependencies>",
+        )
+
     if static:
         for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
             if entry.get("ignore_static"):
@@ -810,7 +853,6 @@ def hack_project_files(
 
     # pythoncore.vcxproj produces libpython. Typically pythonXY.dll. We change
     # it to produce a static library.
-    pythoncore_proj = pcbuild_path / "pythoncore.vcxproj"
     pyproject_props = pcbuild_path / "pyproject.props"
 
     # Need to replace Py_ENABLE_SHARED with Py_NO_ENABLE_SHARED so symbol
@@ -1314,7 +1356,11 @@ def build_openssl(
 
 
 def build_libffi(
-    python: str, arch: str, sh_exe: pathlib.Path, dest_archive: pathlib.Path
+    python: str,
+    arch: str,
+    sh_exe: pathlib.Path,
+    dest_archive: pathlib.Path,
+    static: bool,
 ):
     with tempfile.TemporaryDirectory(prefix="libffi-build-") as td:
         td = pathlib.Path(td)
@@ -1354,6 +1400,23 @@ def build_libffi(
             / "PCBuild"
             / "prepare_libffi.bat"
         )
+
+        if static:
+            # We replace FFI_BUILDING_DLL with FFI_BUILDING so
+            # declspec(dllexport) isn't used.
+            # We add USE_STATIC_RTL to force static linking of the crt.
+            static_replace_in_file(
+                prepare_libffi,
+                b"CPPFLAGS='-DFFI_BUILDING_DLL'",
+                b"CPPFLAGS='-DFFI_BUILDING -DUSE_STATIC_RTL'",
+            )
+
+            # We also need to tell configure to only build a static library.
+            static_replace_in_file(
+                prepare_libffi,
+                b"--build=$BUILD --host=$HOST;",
+                b"--build=$BUILD --host=$HOST --disable-shared;",
+            )
 
         env = dict(os.environ)
         env["LIBFFI_SOURCE"] = str(ffi_source_path)
@@ -1776,7 +1839,13 @@ def build_cpython(
 
         builtin_extensions = parse_config_c(config_c)
 
-        hack_project_files(td, cpython_source_path, build_directory, static=static)
+        hack_project_files(
+            td,
+            cpython_source_path,
+            build_directory,
+            static=static,
+            building_libffi=libffi_archive is not None,
+        )
         hack_source_files(cpython_source_path, static=static)
 
         if pgo:
@@ -2114,7 +2183,13 @@ def main():
                 "libffi-%s-%s.tar" % (target_triple, args.profile)
             )
             if not libffi_archive.exists():
-                build_libffi(args.python, arch, pathlib.Path(args.sh), libffi_archive)
+                build_libffi(
+                    args.python,
+                    arch,
+                    pathlib.Path(args.sh),
+                    libffi_archive,
+                    "static" in args.profile,
+                )
         else:
             libffi_archive = None
 
