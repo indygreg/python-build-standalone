@@ -400,6 +400,7 @@ metadata = {
     "python_paths": {},
     "python_exe": "install/bin/python%s%s" % (sysconfig.get_python_version(), sys.abiflags),
     "python_major_minor_version": sysconfig.get_python_version(),
+    "python_stdlib_platform_config": sysconfig.get_config_var("LIBPL").lstrip("/"),
 }
 
 root = os.environ["ROOT"]

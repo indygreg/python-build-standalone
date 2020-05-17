@@ -154,6 +154,17 @@ python_stdlib
 
    (Deprecated in version 5 in favor of ``python_paths``.)
 
+python_stdlib_platform_config
+   Relative path to a ``config-<platform>`` directory in the standard
+   library containing files used to embed Python in a binary.
+
+   This is a standard directory present in POSIX Python installations
+   and is not specific to this project.
+
+   The key may be absent if no platform config directory exists.
+
+   (Version 5 or above only.)
+
 python_stdlib_test_packages
    Array of strings of Python packages that define tests. (Version 4 or above
    only.)
