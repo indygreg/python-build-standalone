@@ -263,7 +263,13 @@ make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
 if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
-    PYTHON_BINARY_SUFFIX=m
+    if [ -n "${CPYTHON_DEBUG}" ]; then
+        PYTHON_BINARY_SUFFIX=dm
+    else
+        PYTHON_BINARY_SUFFIX=m
+    fi
+elif [ -n "${CPYTHON_DEBUG}" ]; then
+    PYTHON_BINARY_SUFFIX=d
 else
     PYTHON_BINARY_SUFFIX=
 fi
@@ -303,7 +309,11 @@ if [ "${PYBUILD_SHARED}" = "1" ]; then
         LIBPYTHON_SHARED_LIBRARY=${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.so.1.0
 
         patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
-        patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/lib/libpython3.so
+
+        # libpython3.so isn't present in debug builds.
+        if [ -z "${CPYTHON_DEBUG}" ]; then
+            patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/lib/libpython3.so
+        fi
 
         if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
             patchelf --set-rpath '$ORIGIN/../lib' ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}
