@@ -88,7 +88,11 @@ def main():
     env["PYBUILD_PYTHON_VERSION"] = entry["version"]
     env["PYBUILD_PYTHON_MAJOR_VERSION"] = ".".join(entry["version"].split(".")[0:2])
 
-    now = datetime.datetime.utcnow()
+    if "PYBUILD_RELEASE_TAG" in os.environ:
+        release_tag = os.environ["PYBUILD_RELEASE_TAG"]
+    else:
+        now = datetime.datetime.utcnow()
+        release_tag = now.strftime("%Y%m%dT%H%M")
 
     archive_components = [
         "cpython-%s" % entry["version"],
@@ -97,7 +101,7 @@ def main():
     ]
 
     build_basename = "-".join(archive_components) + ".tar"
-    dist_basename = "-".join(archive_components + [now.strftime("%Y%m%dT%H%M")])
+    dist_basename = "-".join(archive_components + [release_tag])
 
     subprocess.run(["make"], env=env, check=True)
 
