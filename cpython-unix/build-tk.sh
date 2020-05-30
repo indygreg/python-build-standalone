@@ -11,7 +11,91 @@ export PATH=${TOOLS_PATH}/deps/bin:${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/
 export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib/pkgconfig
 
 tar -xf tk${TK_VERSION}-src.tar.gz
-pushd tk${TK_VERSION}/unix
+
+pushd tk${TK_VERSION}
+
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    # The @available annotations create missing symbol errors
+    # for ___isOSVersionAtLeast. We work around this by removing
+    # their use.
+    #
+    # This is not an ideal solution.
+    patch -p1 << EOF
+diff --git a/macosx/tkMacOSXColor.c b/macosx/tkMacOSXColor.c
+index 80b368f..b51796e 100644
+--- a/macosx/tkMacOSXColor.c
++++ b/macosx/tkMacOSXColor.c
+@@ -278,11 +278,9 @@ SetCGColorComponents(
+     OSStatus err = noErr;
+     NSColor *bgColor, *color = nil;
+     CGFloat rgba[4] = {0, 0, 0, 1};
+-#if MAC_OS_X_VERSION_MAX_ALLOWED < 101400
+     NSInteger colorVariant;
+     static CGFloat graphiteAccentRGBA[4] =
+ 	{152.0 / 255, 152.0 / 255, 152.0 / 255, 1.0};
+-#endif
+ 
+     if (!deviceRGB) {
+ 	deviceRGB = [NSColorSpace deviceRGBColorSpace];
+@@ -373,16 +371,6 @@ SetCGColorComponents(
+ 			  deviceRGB];
+ 	    break;
+ 	case 8:
+-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+-	    if (@available(macOS 10.14, *)) {
+-		color = [[NSColor controlAccentColor] colorUsingColorSpace:
+-							  deviceRGB];
+-	    } else {
+-		color = [NSColor colorWithColorSpace: deviceRGB
+-				 components: blueAccentRGBA
+-				 count: 4];
+-	    }
+-#else
+ 	    colorVariant = [[NSUserDefaults standardUserDefaults]
+ 			       integerForKey:@"AppleAquaColorVariant"];
+ 	    if (colorVariant == 6) {
+@@ -394,7 +382,6 @@ SetCGColorComponents(
+ 				 components: blueAccentRGBA
+ 				 count: 4];
+ 	    }
+-#endif
+ 	    break;
+ 	default:
+ #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101000
+diff --git a/macosx/tkMacOSXWm.c b/macosx/tkMacOSXWm.c
+index ceb3f3f..5c04f17 100644
+--- a/macosx/tkMacOSXWm.c
++++ b/macosx/tkMacOSXWm.c
+@@ -5928,12 +5928,6 @@ WmWinAppearance(
+ 	    resultString = appearanceStrings[APPEARANCE_AUTO];
+ 	} else if (appearance == NSAppearanceNameAqua) {
+ 	    resultString = appearanceStrings[APPEARANCE_AQUA];
+-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+-	} else if (@available(macOS 10.14, *)) {
+-	    if (appearance == NSAppearanceNameDarkAqua) {
+-		resultString = appearanceStrings[APPEARANCE_DARKAQUA];
+-	    }
+-#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+ 	}
+ 	result = Tcl_NewStringObj(resultString, strlen(resultString));
+     }
+@@ -5953,12 +5947,6 @@ WmWinAppearance(
+ 		NSAppearanceNameAqua];
+ 	    break;
+ 	case APPEARANCE_DARKAQUA:
+-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+-	    if (@available(macOS 10.14, *)) {
+-		win.appearance = [NSAppearance appearanceNamed:
+-		    NSAppearanceNameDarkAqua];
+-	    }
+-#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+ 	    break;
+ 	default:
+ 	    win.appearance = nil;
+EOF
+fi
+
+pushd unix
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC"
 LDFLAGS=""
