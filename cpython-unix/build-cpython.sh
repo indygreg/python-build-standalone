@@ -205,7 +205,7 @@ mv tmp Modules/readline-libedit.c
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
-CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/lib/libffi-3.2.1/include -I${TOOLS_PATH}/deps/include/uuid"
@@ -213,10 +213,6 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
 
     # Prevent using symbols not supported by current macOS SDK target.
     CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"
-
-    # Suppress extremely frequent warnings we see in macOS SDK headers
-    # with LLVM 10.
-    CFLAGS="${CFLAGS} -Wno-nullability-completeness -Wno-expansion-to-defined"
 fi
 
 CPPFLAGS=$CFLAGS

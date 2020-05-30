@@ -52,6 +52,13 @@ def add_target_env(env, platform, build_env):
         env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
         env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
         env["PATH"] = "/usr/bin:/bin"
+        env["EXTRA_TARGET_CFLAGS"] = " ".join(
+            [
+                # Suppress extremely verbose warnings we see with LLVM 10.
+                "-Wno-nullability-completeness",
+                "-Wno-expansion-to-defined",
+            ]
+        )
 
         # macOS SDK has historically been in /usr courtesy of an
         # installer provided by Xcode. But with Catalina, the files

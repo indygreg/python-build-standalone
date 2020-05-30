@@ -21,10 +21,10 @@ cd cpython-source-deps-tix-${TIX_VERSION}
 # Yes, really.
 chmod +x configure
 
-CFLAGS="-fPIC -DUSE_INTERP_RESULT"
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -DUSE_INTERP_RESULT"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include -Wno-nullability-completeness -Wno-expansion-to-defined"
+    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include"
     CFLAGS="${CFLAGS} -I${MACOS_SDK_PATH}/System/Library/Frameworks -F${MACOS_SDK_PATH}/System/Library/Frameworks"
     EXTRA_CONFIGURE_FLAGS="--without-x"
 else

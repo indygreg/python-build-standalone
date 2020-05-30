@@ -13,11 +13,11 @@ export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib
 tar -xf tk${TK_VERSION}-src.tar.gz
 pushd tk${TK_VERSION}/unix
 
-CFLAGS="-fPIC"
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC"
 LDFLAGS=""
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include -Wno-nullability-completeness -Wno-expansion-to-defined -Wno-availability"
+    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include -Wno-availability"
     CFLAGS="${CFLAGS} -Wno-deprecated-declarations -Wno-unknown-attributes -Wno-typedef-redefinition"
     CFLAGS="${CFLAGS} -I${MACOS_SDK_PATH}/System/Library/Frameworks -F ${MACOS_SDK_PATH}/System/Library/Frameworks"
     LDFLAGS="-L${TOOLS_PATH}/deps/lib"

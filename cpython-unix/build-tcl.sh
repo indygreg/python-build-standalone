@@ -33,10 +33,9 @@ rm -rf pkgs/sqlite* pkgs/tdbc*
 
 pushd unix
 
-CFLAGS="-fPIC -I${TOOLS_PATH}/deps/include"
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-  CFLAGS="${CFLAGS} -Wno-nullability-completeness -Wno-expansion-to-defined"
   CFLAGS="${CFLAGS} -I${MACOS_SDK_PATH}/System/Library/Frameworks -F${MACOS_SDK_PATH}/System/Library/Frameworks"
 fi
 
