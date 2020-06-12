@@ -63,12 +63,12 @@ If building CPython 3.8+, there are the following additional requirements:
 To build a Python distribution for Windows x64::
 
    # From a Visual Studio 2017/2019 x64 native tools command prompt:
-   $ py.exe build-windows.py --profile static-nopt
+   $ py.exe build-windows.py --profile static-noopt
 
 It is also possible to build a more traditional dynamically linked
 distribution, optionally with PGO optimizations::
 
-   $ py.exe build-windows.py --profile shared-nopt
+   $ py.exe build-windows.py --profile shared-noopt
    $ py.exe build-windows.py --profile shared-pgo
 
 If building CPython 3.8+, you will need to specify the path to a
