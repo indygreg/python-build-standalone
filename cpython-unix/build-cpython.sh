@@ -327,12 +327,12 @@ index ec9942f0..1b306ca7 100644
 --- a/setuptools/_vendor/packaging/tags.py
 +++ b/setuptools/_vendor/packaging/tags.py
 @@ -283,7 +283,10 @@ def _glibc_version_string():
-     # manpage says, "If filename is NULL, then the returned handle is for the
-     # main program". This way we can let the linker do the work to figure out
      # which libc our process is actually using.
--    process_namespace = ctypes.CDLL(None)
+     #
+     # Note: typeshed is wrong here so we are ignoring this line.
+-    process_namespace = ctypes.CDLL(None)  # type: ignore
 +    try:
-+        process_namespace = ctypes.CDLL(None)
++        process_namespace = ctypes.CDLL(None)  # type: ignore
 +    except OSError:
 +        return None
      try:
