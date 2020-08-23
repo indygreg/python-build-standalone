@@ -213,10 +213,10 @@ DOWNLOADS = {
         "version": "3.1.6",
     },
     "musl": {
-        "url": "https://www.musl-libc.org/releases/musl-1.1.22.tar.gz",
-        "size": 987296,
-        "sha256": "8b0941a48d2f980fd7036cfbd24aa1d414f03d9a0652ecbd5ec5c7ff1bee29e3",
-        "version": "1.1.22",
+        "url": "https://www.musl-libc.org/releases/musl-1.2.1.tar.gz",
+        "size": 1047481,
+        "sha256": "68af6e18539f646f9c41a3a2bb25be4a5cfa5a8f65f0bb647fd2bbfdf877e84b",
+        "version": "1.2.1",
     },
     "ncurses": {
         "url": "https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.2.tar.gz",
