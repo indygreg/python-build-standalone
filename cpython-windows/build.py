@@ -2019,9 +2019,7 @@ def build_cpython(
         if static:
             args.append("--flat-dlls")
         else:
-            args.extend(
-                ["--include-idle", "--include-tcltk",]
-            )
+            args.extend(["--include-idle", "--include-stable", "--include-tcltk"])
 
         exec_and_log(
             args, pcbuild_path, os.environ,
