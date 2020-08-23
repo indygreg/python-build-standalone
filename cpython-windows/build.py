@@ -1424,6 +1424,8 @@ def build_libffi(
         subprocess.run(
             [
                 "git.exe",
+                "-c",
+                "core.autocrlf=input",
                 "clone",
                 "--single-branch",
                 "--branch",
@@ -1435,7 +1437,13 @@ def build_libffi(
         )
 
         subprocess.run(
-            ["git.exe", "checkout", "ed22026f39b37f892ded95d7b30e77dfb5126334"],
+            [
+                "git.exe",
+                "-c",
+                "core.autocrlf=input",
+                "checkout",
+                "ed22026f39b37f892ded95d7b30e77dfb5126334",
+            ],
             cwd=ffi_source_path,
             check=True,
         )
