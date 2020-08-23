@@ -672,6 +672,12 @@ OPENSSL_PROPS_REMOVE_RULES = b"""
   </Target>
 """
 
+LIBFFI_PROPS_REMOVE_RULES = b"""
+  <Target Name="_CopyLIBFFIDLL" Inputs="@(_LIBFFIDLL)" Outputs="@(_LIBFFIDLL->'$(OutDir)%(Filename)%(Extension)')" AfterTargets="Build">
+    <Copy SourceFiles="@(_LIBFFIDLL)" DestinationFolder="$(OutDir)" />
+  </Target>
+"""
+
 
 def hack_props(
     td: pathlib.Path,
@@ -791,6 +797,10 @@ def hack_props(
             libffi_props,
             b"<AdditionalDependencies>libffi-7.lib;%(AdditionalDependencies)</AdditionalDependencies>",
             b"<AdditionalDependencies>libffi.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+        )
+
+        static_replace_in_file(
+            libffi_props, LIBFFI_PROPS_REMOVE_RULES.strip().replace(b"\n", b"\r\n"), b""
         )
 
 
