@@ -242,6 +242,12 @@ if [ -n "${CPYTHON_LTO}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-lto"
 fi
 
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    # Configure fails to find the textdomain symbol with our libintl
+    # for some reason. So force it.
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=yes"
+fi
+
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
     ./configure ${CONFIGURE_FLAGS}
 

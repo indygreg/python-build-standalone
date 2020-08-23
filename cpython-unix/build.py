@@ -498,6 +498,17 @@ def python_build_info(
             else:
                 links.append({"name": libname, "system": True})
 
+        if platform == "macos":
+            # For some reason, Python's build system adds libintl as a link
+            # against libpythonX.Y/pythonX.Y instead of the _locale extension
+            # despite the _location extension being the only user of its
+            # symbols. We add libintl here to work around that.
+            links.append({"name": "intl", "path_static": "build/lib/libintl.a"})
+
+            # And symbols in our built libintl reference iconv symbols. So we
+            # need to include that dependency as well.
+            links.append({"name": "iconv", "system": True})
+
         entry = {
             "in_core": False,
             "init_fn": "PyInit_%s" % extension,
@@ -662,6 +673,10 @@ def build_cpython(
         ncurses = host_platform != "macos"
         if ncurses:
             packages.add("ncurses")
+
+        gettext = host_platform == "macos"
+        if gettext:
+            packages.add("gettext")
 
         readline = host_platform != "macos"
         if readline:
@@ -921,6 +936,7 @@ def main():
             "bdb",
             "bzip2",
             "gdbm",
+            "gettext",
             "inputproto",
             "kbproto",
             "libffi",

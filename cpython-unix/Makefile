@@ -45,6 +45,7 @@ ifeq ($(HOST_PLATFORM),linux64)
     NEED_GCC := 1
     NEED_MUSL :=
     NEED_GDBM := 1
+    NEED_GETTEXT :=
     NEED_X11 := 1
     NEED_READLINE := 1
     NEED_TIX := 1
@@ -55,6 +56,7 @@ ifeq ($(HOST_PLATFORM),macos)
     NEED_GCC :=
     NEED_MUSL :=
     NEED_GDBM :=
+    NEED_GETTEXT := 1
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX := 1
@@ -127,6 +129,9 @@ $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(
 
 $(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
 	$(RUN_BUILD) gdbm
+
+$(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gettext.sh
+	$(RUN_BUILD) gettext
 
 $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-inputproto.sh
 	$(RUN_BUILD) inputproto
@@ -260,6 +265,7 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_GETTEXT),$(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(if $(NEED_LIBRESSL),$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
