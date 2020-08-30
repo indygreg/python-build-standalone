@@ -32,6 +32,12 @@ metadata = {
 root = os.environ["ROOT"]
 for name, path in sysconfig.get_paths().items():
     rel = os.path.relpath(path, root).replace("\\", "/")
+
+    # sysconfig on Windows reports the include path as "Include" but
+    # in reality it is "include." See https://bugs.python.org/issue41669.
+    # So we normalize accordingly.
+    rel = rel.replace("install/Include", "install/include")
+
     metadata["python_paths"][name] = rel
 
 with open(sys.argv[1], "w") as fh:
