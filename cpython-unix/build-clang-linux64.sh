@@ -149,6 +149,11 @@ popd
 find /tools/clang-stage2 | sort
 
 # Stage 3: Build with Clang built Clang.
+#
+# We remove LLVM_TARGETS_TO_BUILD from this configuration, enabling
+# support for all targets. The stage 1 and 2 builds don't benefit from
+# non-native target support, which is why we exclude host target support
+# above.
 mkdir stage3
 pushd stage3
 cmake \
@@ -162,7 +167,6 @@ cmake \
     -DCMAKE_CXX_FLAGS="-fPIC -Qunused-arguments -L/tools/clang-stage2/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
-    -DLLVM_TARGETS_TO_BUILD=X86 \
     -DLLVM_TOOL_LIBCXX_BUILD=ON \
     -DLIBCXX_LIBCPPABI_VERSION="" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
