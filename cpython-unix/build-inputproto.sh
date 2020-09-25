@@ -5,7 +5,7 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
 pkg-config --version
 
@@ -15,8 +15,10 @@ export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig
 tar -xf inputproto-${INPUTPROTO_VERSION}.tar.gz
 pushd inputproto-${INPUTPROTO_VERSION}
 
-CFLAGS="-fPIC" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j `nproc` install DESTDIR=${ROOT}/out

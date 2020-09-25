@@ -40,6 +40,8 @@ class ContainerContext(object):
         self, build_dir, package_name, target_triple, optimizations
     ):
         entry = DOWNLOADS[package_name]
+        if package_name.startswith("cpython-"):
+            package_name = "cpython"
         basename = "%s-%s-%s-%s.tar" % (
             package_name,
             entry["version"],
@@ -60,6 +62,7 @@ class ContainerContext(object):
         gcc=False,
         musl=False,
         clang=False,
+        target_triple=None
     ):
         if binutils:
             self.install_toolchain_archive(build_dir, "binutils", host_platform)
@@ -69,6 +72,16 @@ class ContainerContext(object):
 
         if clang:
             self.install_toolchain_archive(build_dir, "clang", host_platform)
+            if target_triple:
+                bin_dir = pathlib.Path("/tools") / "clang-{}".format(host_platform) / "bin"
+                with tempfile.NamedTemporaryFile() as temp:
+                    gnu_triple = target_triple.replace("unknown-", "")
+                    with open(temp.name, "w") as f:
+                        f.write("#!/bin/bash\n");
+                        f.write("exec {0} --target={1} -I/usr/{2}/include -Wno-incomplete-setjmp-declaration \"$@\"\n"
+                            .format(bin_dir / "clang", target_triple, gnu_triple))
+                    os.chmod(temp.name, 0o755)
+                    self.copy_file(pathlib.Path(temp.name), bin_dir, "cross-clang")
 
         if musl:
             self.install_toolchain_archive(build_dir, "musl", host_platform)

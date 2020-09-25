@@ -110,7 +110,9 @@ else
     EXTRA_CONFIGURE_FLAGS="--x-includes=${TOOLS_PATH}/deps/include --x-libraries=${TOOLS_PATH}/deps/lib"
 fi
 
-CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} ${CFLAGS}" CPPFLAGS="${EXTRA_TARGET_CFLAGS} ${CFLAGS}" LDFLAGS="${LDFLAGS}" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --with-tcl=${TOOLS_PATH}/deps/lib \
     --enable-shared=no \

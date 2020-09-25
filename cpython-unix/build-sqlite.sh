@@ -12,7 +12,9 @@ export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 tar -xf sqlite-autoconf-${SQLITE_VERSION}.tar.gz
 pushd sqlite-autoconf-${SQLITE_VERSION}
 
-CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix /tools/deps \
     --disable-shared
 

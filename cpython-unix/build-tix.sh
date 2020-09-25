@@ -33,7 +33,9 @@ fi
 
 # -DUSE_INTERP_RESULT is to allow tix to use deprecated fields or something
 # like that.
-CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} ${CFLAGS}" CPPFLAGS="${EXTRA_TARGET_CFLAGS} ${CFLAGS}" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --with-tcl=${TOOLS_PATH}/deps/lib \
     --with-tk=${TOOLS_PATH}/deps/lib \

@@ -5,7 +5,7 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
 export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig:/tools/deps/lib/pkgconfig
@@ -41,9 +41,17 @@ if [ "${CC}" = "musl-clang" ]; then
     EXTRA_FLAGS="--disable-shared"
 fi
 
-CFLAGS="-fPIC -I/tools/deps/include" ./configure \
+if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+    EXTRA_FLAGS="${EXTRA_FLAGS} \
+		--disable-ipv6 \
+		xorg_cv_malloc0_returns_null=yes"
+fi
+
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include" CFLAGS_FOR_BUILD="-I/tools/deps/include" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     ${EXTRA_FLAGS}
 
 make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j `nproc` install DESTDIR=${ROOT}/out

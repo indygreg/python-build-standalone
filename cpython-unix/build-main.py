@@ -25,6 +25,8 @@ def main():
         targets = {
             default_target_triple,
             "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-gnu",
+            "arm-unknown-linux-gnueabihf",
         }
     elif sys.platform == "darwin":
         host_platform = "macos"

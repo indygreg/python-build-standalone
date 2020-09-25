@@ -37,15 +37,28 @@ SUPPORT = ROOT / "cpython-unix"
 
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
+def cross_compiling(host_platform, target_triple):
+    if "linux" in host_platform and "x86_64" not in target_triple:
+        return True
+    else:
+        return False
 
-def add_target_env(env, platform, build_env):
+def add_target_env(env, platform, target_triple, build_env):
     env["PYBUILD_PLATFORM"] = platform
     env["NUM_CPUS"] = "%d" % multiprocessing.cpu_count()
     env["TOOLS_PATH"] = build_env.tools_path
 
     if platform == "linux64":
         env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
-        env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
+        env["TARGET_TRIPLE"] = target_triple
+        if "musl" in target_triple:
+            env["CC_FOR_BUILD"] = "musl-clang"
+            env["CC"] = "musl-clang"
+        else:
+            env["CC_FOR_BUILD"] = "clang"
+            env["CC"] = "cross-clang" if cross_compiling(platform, target_triple) else "clang"
+            env["READELF"] = "llvm-readelf"
+            env["STRIP"] = "llvm-strip"
 
     if platform == "macos":
         env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET
@@ -109,6 +122,7 @@ def simple_build(
             binutils=install_binutils(host_platform),
             clang=True,
             musl="musl" in target_triple,
+            target_triple=target_triple,
         )
 
         for a in extra_archives or []:
@@ -122,10 +136,8 @@ def simple_build(
             "TOOLCHAIN": "clang-%s" % host_platform,
             "%s_VERSION" % entry.upper().replace("-", "_"): DOWNLOADS[entry]["version"],
         }
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
 
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-%s.sh" % entry, environment=env)
 
@@ -271,6 +283,7 @@ def build_libedit(
             binutils=install_binutils(host_platform),
             clang=True,
             musl="musl" in target_triple,
+            target_triple=target_triple,
         )
 
         build_env.install_artifact_archive(
@@ -285,10 +298,7 @@ def build_libedit(
             "LIBEDIT_VERSION": DOWNLOADS["libedit"]["version"],
         }
 
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
-
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-libedit.sh", environment=env)
         build_env.get_tools_archive(dest_archive, "deps")
@@ -306,6 +316,7 @@ def build_readline(
             binutils=True,
             clang=True,
             musl="musl" in target_triple,
+            target_triple=target_triple,
         )
 
         build_env.install_artifact_archive(
@@ -320,10 +331,7 @@ def build_readline(
             "READLINE_VERSION": DOWNLOADS["readline"]["version"],
         }
 
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
-
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-readline.sh", environment=env)
         build_env.get_tools_archive(dest_archive, "deps")
@@ -341,6 +349,7 @@ def build_tix(client, image, host_platform, target_triple, optimizations, dest_a
             binutils=install_binutils(host_platform),
             clang=True,
             musl="musl" in target_triple,
+            target_triple=target_triple,
         )
 
         depends = {"tcl", "tk"}
@@ -361,10 +370,7 @@ def build_tix(client, image, host_platform, target_triple, optimizations, dest_a
             "TK_VERSION": DOWNLOADS["tk"]["version"],
         }
 
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
-
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-tix.sh", environment=env)
         build_env.get_tools_archive(dest_archive, "deps")
@@ -647,6 +653,7 @@ def build_cpython(
             binutils=install_binutils(host_platform),
             clang=True,
             musl="musl" in target_triple,
+            target_triple=target_triple,
         )
 
         # TODO support bdb/gdbm toggle
@@ -725,9 +732,6 @@ def build_cpython(
             "TOOLCHAIN": "clang-%s" % host_platform,
         }
 
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
-
         if optimizations == "debug":
             env["CPYTHON_DEBUG"] = "1"
         if optimizations in ("pgo", "pgo+lto"):
@@ -735,7 +739,11 @@ def build_cpython(
         if optimizations in ("lto", "pgo+lto"):
             env["CPYTHON_LTO"] = "1"
 
-        add_target_env(env, host_platform, build_env)
+        if cross_compiling(host_platform, target_triple):
+            build_env.install_artifact_archive(BUILD, entry_name, "x86_64-unknown-linux-gnu", optimizations)
+            env["PYTHON_FOR_BUILD"] = "/tools/python/install/bin/python3"
+
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-cpython.sh", environment=env)
 

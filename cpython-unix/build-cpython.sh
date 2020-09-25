@@ -248,6 +248,17 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=yes"
 fi
 
+if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+    CONFIGURE_FLAGS="--build=${BUILD_TRIPLE} \
+                    --host=${TARGET_TRIPLE} \
+                    --disable-ipv6 \
+                    ${CONFIGURE_FLAGS} \
+                    ac_cv_file__dev_ptmx=no \
+                    ac_cv_file__dev_ptc=no"
+    # Override sysconfig-provided project location during cross-builds.
+    export _PYTHON_PROJECT_BASE=$srcdir 
+fi
+
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
     ./configure ${CONFIGURE_FLAGS}
 
@@ -261,7 +272,7 @@ fi
 # Supplement produced Makefile with our modifications.
 cat ../Makefile.extra >> Makefile
 
-make -j ${NUM_CPUS}
+VERBOSE=1 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
 if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
@@ -274,6 +285,11 @@ elif [ -n "${CPYTHON_DEBUG}" ]; then
     PYTHON_BINARY_SUFFIX=d
 else
     PYTHON_BINARY_SUFFIX=
+fi
+
+# Python interpreter to use during the build.
+if [ -z "${PYTHON_FOR_BUILD}" ]; then
+    PYTHON_FOR_BUILD=${ROOT}/out/python/install/bin/python3
 fi
 
 # If we're building a shared library hack some binaries so rpath is set.
@@ -346,7 +362,7 @@ index ec9942f0..1b306ca7 100644
      except AttributeError:
 EOF
 
-${ROOT}/out/python/install/bin/python3 setup.py install
+${PYTHON_FOR_BUILD} setup.py install
 popd
 
 pushd ${ROOT}/pip-${PIP_VERSION}
@@ -385,7 +401,7 @@ index 60a69d8..08c0597 100644
      except AttributeError:
 EOF
 
-${ROOT}/out/python/install/bin/python3 setup.py install
+${PYTHON_FOR_BUILD} setup.py install
 popd
 
 # Emit metadata to be used in PYTHON.json.
@@ -428,9 +444,7 @@ with open(sys.argv[1], "w") as fh:
     json.dump(metadata, fh, sort_keys=True, indent=4)
 EOF
 
-PYTHON_EXE=${ROOT}/out/python/install/bin/$(readlink ${ROOT}/out/python/install/bin/python3)
-
-${ROOT}/out/python/install/bin/python3 ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
+${PYTHON_FOR_BUILD} ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
 cat ${ROOT}/metadata.json
 
 if [ "${CC}" != "musl-clang" ]; then

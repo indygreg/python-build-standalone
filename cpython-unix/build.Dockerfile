@@ -10,3 +10,6 @@ RUN apt-get install \
     tar \
     xz-utils \
     unzip
+
+RUN apt-get install crossbuild-essential-arm64 &&\
+    apt-get install crossbuild-essential-armhf

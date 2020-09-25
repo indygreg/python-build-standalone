@@ -25,11 +25,22 @@ fi
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
   OPENSSL_TARGET=darwin64-x86_64-cc
-else
+elif [ "${TARGET_TRIPLE}" = "x86_64-unknown-linux-gnu" ]; then
   OPENSSL_TARGET=linux-x86_64
+elif [ "${TARGET_TRIPLE}" = "aarch64-unknown-linux-gnu" ]; then
+  OPENSSL_TARGET=linux-aarch64
+elif [ "${TARGET_TRIPLE}" = "arm-unknown-linux-gnueabihf" ]; then
+  OPENSSL_TARGET=linux-armv4
+else
+  echo "Error: unsupported target"
+  exit 1
 fi
 
-/usr/bin/perl ./Configure --prefix=/tools/deps ${OPENSSL_TARGET} no-shared ${EXTRA_FLAGS}
+CFLAGS="${EXTRA_TARGET_CFLAGS}" /usr/bin/perl ./Configure \
+    --prefix=/tools/deps \
+    ${OPENSSL_TARGET} \
+    no-shared \
+    ${EXTRA_FLAGS}
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out

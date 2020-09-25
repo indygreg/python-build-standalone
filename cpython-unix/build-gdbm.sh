@@ -15,9 +15,9 @@ pushd gdbm-${GDBM_VERSION}
 
 # CPython setup.py looks for libgdbm_compat and gdbm-ndbm.h,
 # which require --enable-libgdbm-compat.
-CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
+CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LDFLAGS="${EXTRA_TARGET_CFLAGS}" ./configure \
     --build=${BUILD_TRIPLE} \
-    --target=${TARGET_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --disable-shared \
     --enable-libgdbm-compat
