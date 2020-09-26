@@ -741,7 +741,8 @@ def build_cpython(
 
         if cross_compiling(host_platform, target_triple):
             build_env.install_artifact_archive(BUILD, entry_name, "x86_64-unknown-linux-gnu", optimizations)
-            env["PYTHON_FOR_BUILD"] = "/tools/python/install/bin/python3"
+            env["PATH"] = "/tools/python/install/bin:{}".format(os.environ["PATH"])
+            env["BUILD_PYTHON"] = "python3"
 
         add_target_env(env, host_platform, target_triple, build_env)
 

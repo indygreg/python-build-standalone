@@ -250,13 +250,12 @@ fi
 
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
     CONFIGURE_FLAGS="--build=${BUILD_TRIPLE} \
-                    --host=${TARGET_TRIPLE} \
-                    --disable-ipv6 \
-                    ${CONFIGURE_FLAGS} \
-                    ac_cv_file__dev_ptmx=no \
-                    ac_cv_file__dev_ptc=no"
-    # Override sysconfig-provided project location during cross-builds.
-    export _PYTHON_PROJECT_BASE=$srcdir 
+                     --host=${TARGET_TRIPLE} \
+                     --disable-ipv6 \
+                     ${CONFIGURE_FLAGS} \
+                     ac_cv_file__dev_ptmx=no \
+                     ac_cv_file__dev_ptc=no"
+    export PYTHON_DECIMAL_WITH_MACHINE=uint128
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
@@ -272,7 +271,7 @@ fi
 # Supplement produced Makefile with our modifications.
 cat ../Makefile.extra >> Makefile
 
-VERBOSE=1 make -j ${NUM_CPUS}
+make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
 if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
@@ -288,8 +287,8 @@ else
 fi
 
 # Python interpreter to use during the build.
-if [ -z "${PYTHON_FOR_BUILD}" ]; then
-    PYTHON_FOR_BUILD=${ROOT}/out/python/install/bin/python3
+if [ -z "${BUILD_PYTHON}" ]; then
+    BUILD_PYTHON=${ROOT}/out/python/install/bin/python3
 fi
 
 # If we're building a shared library hack some binaries so rpath is set.
@@ -362,7 +361,7 @@ index ec9942f0..1b306ca7 100644
      except AttributeError:
 EOF
 
-${PYTHON_FOR_BUILD} setup.py install
+${BUILD_PYTHON} setup.py install
 popd
 
 pushd ${ROOT}/pip-${PIP_VERSION}
@@ -401,7 +400,7 @@ index 60a69d8..08c0597 100644
      except AttributeError:
 EOF
 
-${PYTHON_FOR_BUILD} setup.py install
+${BUILD_PYTHON} setup.py install
 popd
 
 # Emit metadata to be used in PYTHON.json.
@@ -444,7 +443,7 @@ with open(sys.argv[1], "w") as fh:
     json.dump(metadata, fh, sort_keys=True, indent=4)
 EOF
 
-${PYTHON_FOR_BUILD} ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
+${BUILD_PYTHON} ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
 cat ${ROOT}/metadata.json
 
 if [ "${CC}" != "musl-clang" ]; then
