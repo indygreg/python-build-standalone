@@ -276,6 +276,11 @@ else
     PYTHON_BINARY_SUFFIX=
 fi
 
+# Python interpreter to use during the build.
+if [ -z "${BUILD_PYTHON}" ]; then
+    BUILD_PYTHON=${ROOT}/out/python/install/bin/python3
+fi
+
 # If we're building a shared library hack some binaries so rpath is set.
 # This ensures we can run the binary in any location without
 # LD_LIBRARY_PATH pointing to the directory containing libpython.
@@ -346,7 +351,7 @@ index ec9942f0..1b306ca7 100644
      except AttributeError:
 EOF
 
-${ROOT}/out/python/install/bin/python3 setup.py install
+${BUILD_PYTHON} setup.py install
 popd
 
 pushd ${ROOT}/pip-${PIP_VERSION}
@@ -385,7 +390,7 @@ index 60a69d8..08c0597 100644
      except AttributeError:
 EOF
 
-${ROOT}/out/python/install/bin/python3 setup.py install
+${BUILD_PYTHON} setup.py install
 popd
 
 # Emit metadata to be used in PYTHON.json.
@@ -430,7 +435,7 @@ EOF
 
 PYTHON_EXE=${ROOT}/out/python/install/bin/$(readlink ${ROOT}/out/python/install/bin/python3)
 
-${ROOT}/out/python/install/bin/python3 ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
+${BUILD_PYTHON} ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
 cat ${ROOT}/metadata.json
 
 if [ "${CC}" != "musl-clang" ]; then
