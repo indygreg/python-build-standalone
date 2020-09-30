@@ -5,7 +5,7 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
 
@@ -17,4 +17,4 @@ pushd util-macros-${X11_UTIL_MACROS_VERSION}
     --prefix=/tools/deps
 
 make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j `nproc` install DESTDIR=${ROOT}/out

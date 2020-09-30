@@ -5,7 +5,7 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
 
@@ -22,4 +22,4 @@ CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LD
         --with-curses
 
 make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j `nproc` install DESTDIR=${ROOT}/out

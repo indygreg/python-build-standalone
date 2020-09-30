@@ -5,7 +5,7 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
 pkg-config --version
 
@@ -21,4 +21,4 @@ CFLAGS="-fPIC" ./configure \
     --prefix=/tools/deps
 
 make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j `nproc` install DESTDIR=${ROOT}/out

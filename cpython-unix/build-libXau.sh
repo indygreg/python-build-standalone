@@ -5,7 +5,7 @@
 
 set -ex
 
-cd /build
+ROOT=`pwd`
 
 export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
 export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig:/tools/deps/lib/pkgconfig
@@ -24,4 +24,4 @@ CFLAGS="-fPIC" ./configure \
     ${EXTRA_FLAGS}
 
 make -j `nproc`
-make -j `nproc` install DESTDIR=/build/out
+make -j `nproc` install DESTDIR=${ROOT}/out
