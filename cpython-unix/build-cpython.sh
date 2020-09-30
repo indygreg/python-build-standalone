@@ -433,8 +433,6 @@ with open(sys.argv[1], "w") as fh:
     json.dump(metadata, fh, sort_keys=True, indent=4)
 EOF
 
-PYTHON_EXE=${ROOT}/out/python/install/bin/$(readlink ${ROOT}/out/python/install/bin/python3)
-
 ${BUILD_PYTHON} ${ROOT}/generate_metadata.py ${ROOT}/metadata.json
 cat ${ROOT}/metadata.json
 
