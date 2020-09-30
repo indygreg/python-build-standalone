@@ -16,6 +16,8 @@ tar -xf kbproto-${KBPROTO_VERSION}.tar.gz
 pushd kbproto-${KBPROTO_VERSION}
 
 CFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`

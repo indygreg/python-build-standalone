@@ -42,6 +42,8 @@ if [ "${CC}" = "musl-clang" ]; then
 fi
 
 CFLAGS="-fPIC -I/tools/deps/include" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     ${EXTRA_FLAGS}
 

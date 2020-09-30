@@ -17,7 +17,7 @@ pushd gettext-${GETTEXT_VERSION}
 # an added dependency. So we force use of the bundled version.
 CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
     --build=${BUILD_TRIPLE} \
-    --target=${TARGET_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --disable-shared \
     --disable-java \

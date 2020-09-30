@@ -13,6 +13,8 @@ tar -xf libuuid-${UUID_VERSION}.tar.gz
 pushd libuuid-${UUID_VERSION}
 
 CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --disable-shared
 

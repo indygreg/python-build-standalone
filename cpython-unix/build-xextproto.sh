@@ -16,6 +16,8 @@ tar -xf xextproto-${XEXTPROTO_VERSION}.tar.gz
 pushd xextproto-${XEXTPROTO_VERSION}
 
 CFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`

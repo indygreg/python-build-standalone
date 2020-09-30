@@ -12,6 +12,8 @@ export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
 tar -xzf util-macros-${X11_UTIL_MACROS_VERSION}.tar.gz
 pushd util-macros-${X11_UTIL_MACROS_VERSION}
 ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`

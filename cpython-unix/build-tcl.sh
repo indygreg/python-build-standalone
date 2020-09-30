@@ -40,6 +40,8 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
 fi
 
 CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --enable-shared=no \
     --enable-threads

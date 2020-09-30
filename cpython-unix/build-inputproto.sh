@@ -16,6 +16,8 @@ tar -xf inputproto-${INPUTPROTO_VERSION}.tar.gz
 pushd inputproto-${INPUTPROTO_VERSION}
 
 CFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`

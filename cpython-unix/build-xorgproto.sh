@@ -16,6 +16,8 @@ tar -xf xorgproto-${XORGPROTO_VERSION}.tar.gz
 pushd xorgproto-${XORGPROTO_VERSION}
 
 CFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`

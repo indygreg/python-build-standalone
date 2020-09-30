@@ -14,6 +14,8 @@ tar -xf xz-${XZ_VERSION}.tar.gz
 pushd xz-${XZ_VERSION}
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CCASFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --disable-shared \
     --disable-xz \

@@ -16,6 +16,8 @@ tar -xf xtrans-${XTRANS_VERSION}.tar.gz
 pushd xtrans-${XTRANS_VERSION}
 
 CFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`

@@ -16,6 +16,8 @@ tar -xf libpthread-stubs-${LIBPTHREAD_STUBS_VERSION}.tar.gz
 pushd libpthread-stubs-${LIBPTHREAD_STUBS_VERSION}
 
 CFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j `nproc`

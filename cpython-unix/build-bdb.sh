@@ -15,7 +15,7 @@ pushd db-${BDB_VERSION}/build_unix
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ../dist/configure \
     --build=${BUILD_TRIPLE} \
-    --target=${TARGET_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --enable-dbm \
     --disable-shared

@@ -16,6 +16,8 @@ tar -xf xproto-${XPROTO_VERSION}.tar.gz
 pushd xproto-${XPROTO_VERSION}
 
 CFLAGS="-fPIC" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
 
 make -j ${NUM_CPUS}

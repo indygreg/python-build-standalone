@@ -111,6 +111,8 @@ else
 fi
 
 CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ./configure \
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
     --with-tcl=${TOOLS_PATH}/deps/lib \
     --enable-shared=no \
