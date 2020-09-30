@@ -15,7 +15,7 @@ export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig
 tar -xf xtrans-${XTRANS_VERSION}.tar.gz
 pushd xtrans-${XTRANS_VERSION}
 
-CFLAGS="-fPIC" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps

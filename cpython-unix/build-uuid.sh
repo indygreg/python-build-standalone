@@ -12,7 +12,7 @@ export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 tar -xf libuuid-${UUID_VERSION}.tar.gz
 pushd libuuid-${UUID_VERSION}
 
-CFLAGS="-fPIC" CPPFLAGS="-fPIC" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \

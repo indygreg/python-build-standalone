@@ -41,7 +41,7 @@ if [ "${CC}" = "musl-clang" ]; then
     EXTRA_FLAGS="--disable-shared"
 fi
 
-CFLAGS="-fPIC -I/tools/deps/include" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \

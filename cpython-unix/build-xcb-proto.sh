@@ -15,7 +15,7 @@ export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig
 tar -xf xcb-proto-${XCB_PROTO_VERSION}.tar.gz
 pushd xcb-proto-${XCB_PROTO_VERSION}
 
-CFLAGS="-fPIC" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps

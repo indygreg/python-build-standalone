@@ -15,7 +15,7 @@ export PKG_CONFIG_PATH=/tools/deps/share/pkgconfig
 tar -xf kbproto-${KBPROTO_VERSION}.tar.gz
 pushd kbproto-${KBPROTO_VERSION}
 
-CFLAGS="-fPIC" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps
