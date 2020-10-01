@@ -69,6 +69,8 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     },
     "_tkinter": {"ignore_static": True, "shared_depends": ["tcl86t", "tk86t"],},
     "_queue": {},
+    "_uuid": {"ignore_missing": True},
+    "_zoneinfo": {"ignore_missing": True},
     "pyexpat": {},
     "select": {},
     "unicodedata": {},
@@ -1588,7 +1590,16 @@ def collect_python_build_artifacts(
     # Projects that provide extensions.
     extension_projects = set()
 
+    dirs = {p for p in os.listdir(intermediates_path)}
+
     for extension, entry in CONVERT_TO_BUILTIN_EXTENSIONS.items():
+        if extension not in dirs:
+            if entry.get("ignore_missing"):
+                continue
+            else:
+                log("extension not present: %s" % extension)
+                sys.exit(1)
+
         if static and entry.get("ignore_static"):
             continue
 
@@ -1601,8 +1612,6 @@ def collect_python_build_artifacts(
             "liblzma",
             "sqlite3",
         }
-
-    dirs = {p for p in os.listdir(intermediates_path)}
 
     known_projects = (
         ignore_projects | other_projects | depends_projects | extension_projects
