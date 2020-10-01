@@ -41,6 +41,7 @@ STATIC_MODULES = {
     # built-in in order to facilitate testing.
     b"_testinternalcapi",
     b"_weakref",
+    b"_zoneinfo",
     b"array",
     b"audioop",
     b"binascii",

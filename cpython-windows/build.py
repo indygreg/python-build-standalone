@@ -2208,7 +2208,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--python",
-        choices={"cpython-3.7", "cpython-3.8"},
+        choices={"cpython-3.7", "cpython-3.8", "cpython-3.9"},
         default="cpython-3.7",
         help="Python distribution to build",
     )
@@ -2222,7 +2222,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.python == "cpython-3.8" and not args.sh:
+    if args.python in ("cpython-3.8", "cpython-3.9") and not args.sh:
         print("--sh required when building Python 3.8+")
         return 1
 

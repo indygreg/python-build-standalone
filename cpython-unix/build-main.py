@@ -55,7 +55,7 @@ def main():
     )
     parser.add_argument(
         "--python",
-        choices={"cpython-3.7", "cpython-3.8"},
+        choices={"cpython-3.7", "cpython-3.8", "cpython-3.9"},
         default="cpython-3.7",
         help="Python distribution to build",
     )

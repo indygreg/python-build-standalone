@@ -1055,7 +1055,7 @@ def main():
                 extra_archives=extra_archives,
             )
 
-        elif action in ("cpython-3.7", "cpython-3.8"):
+        elif action in ("cpython-3.7", "cpython-3.8", "cpython-3.9"):
             build_cpython(
                 client,
                 get_image(client, ROOT, BUILD, "build"),
