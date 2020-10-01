@@ -105,7 +105,16 @@ endif
 $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
 	$(RUN_BUILD) --toolchain binutils
 
-$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar: $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar $(HERE)/build-gcc.sh
+GCC_DEPENDS := \
+    $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar \
+    $(OUTDIR)/versions/VERSION.gmp \
+    $(OUTDIR)/versions/VERSION.isl \
+    $(OUTDIR)/versions/VERSION.mpc \
+    $(OUTDIR)/versions/VERSION.mpfr \
+    $(HERE)/build-gcc.sh \
+    $(NULL)
+
+$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar: $(GCC_DEPENDS)
 	$(RUN_BUILD) --toolchain gcc
 
 CLANG_DEPENDS := \
