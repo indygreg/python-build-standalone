@@ -44,7 +44,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         "allow_missing_preprocessor": True
     },
     "_bz2": {},
-    "_ctypes": {},
+    "_ctypes": {"shared_depends": ["libffi-7"]},
     "_decimal": {},
     "_elementtree": {},
     "_hashlib": {
