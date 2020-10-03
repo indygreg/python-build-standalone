@@ -1598,15 +1598,15 @@ def collect_python_build_artifacts(
     dirs = {p for p in os.listdir(intermediates_path)}
 
     for extension, entry in CONVERT_TO_BUILTIN_EXTENSIONS.items():
+        if static and entry.get("ignore_static"):
+            continue
+
         if extension not in dirs:
             if entry.get("ignore_missing"):
                 continue
             else:
                 log("extension not present: %s" % extension)
                 sys.exit(1)
-
-        if static and entry.get("ignore_static"):
-            continue
 
         extension_projects.add(extension)
         if static:
