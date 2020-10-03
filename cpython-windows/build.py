@@ -410,6 +410,11 @@ def make_project_static_library(source_path: pathlib.Path, project: str):
 def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: dict):
     """Converts an extension to a static library."""
 
+    proj_path = source_path / "PCbuild" / ("%s.vcxproj" % extension)
+
+    if not proj_path.exists() and entry.get("ignore_missing"):
+        return False
+
     # Make the extension's project emit a static library so we can link
     # against libpython.
     make_project_static_library(source_path, extension)
@@ -417,8 +422,6 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
     # And do the same thing for its dependencies.
     for project in entry.get("static_depends", []):
         make_project_static_library(source_path, project)
-
-    proj_path = source_path / "PCbuild" / ("%s.vcxproj" % extension)
 
     copy_link_to_lib(proj_path)
 
@@ -625,6 +628,8 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
 
         with pcbuild_sln_path.open("w", encoding="utf8") as fh:
             fh.write("\n".join(lines))
+
+    return True
 
 
 def copy_link_to_lib(p: pathlib.Path):
@@ -911,8 +916,8 @@ def hack_project_files(
 
             init_fn = entry.get("init", "PyInit_%s" % extension)
 
-            add_to_config_c(cpython_source_path, extension, init_fn)
-            convert_to_static_library(cpython_source_path, extension, entry)
+            if convert_to_static_library(cpython_source_path, extension, entry):
+                add_to_config_c(cpython_source_path, extension, init_fn)
 
     # pythoncore.vcxproj produces libpython. Typically pythonXY.dll. We change
     # it to produce a static library.
