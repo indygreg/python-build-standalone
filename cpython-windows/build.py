@@ -41,6 +41,8 @@ LOG_FH = [None]
 CONVERT_TO_BUILTIN_EXTENSIONS = {
     "_asyncio": {
         # _asynciomodule.c is included in pythoncore for some reason.
+        # This was fixed in Python 3.9. See hacky code for
+        # `honor_allow_missing_preprocessor`.
         "allow_missing_preprocessor": True
     },
     "_bz2": {},
@@ -407,7 +409,12 @@ def make_project_static_library(source_path: pathlib.Path, project: str):
         fh.write("\n".join(lines))
 
 
-def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: dict):
+def convert_to_static_library(
+    source_path: pathlib.Path,
+    extension: str,
+    entry: dict,
+    honor_allow_missing_preprocessor: bool,
+):
     """Converts an extension to a static library."""
 
     proj_path = source_path / "PCbuild" / ("%s.vcxproj" % extension)
@@ -460,7 +467,7 @@ def convert_to_static_library(source_path: pathlib.Path, extension: str, entry: 
             lines.append(line)
 
     if not found_preprocessor:
-        if entry.get("allow_missing_preprocessor"):
+        if honor_allow_missing_preprocessor and entry.get("allow_missing_preprocessor"):
             log("not adjusting preprocessor definitions for %s" % extension)
         else:
             log("introducing <PreprocessorDefinitions> to %s" % extension)
@@ -817,6 +824,7 @@ def hack_project_files(
     build_directory: str,
     static: bool,
     building_libffi: bool,
+    honor_allow_missing_preprocessor: bool,
 ):
     """Hacks Visual Studio project files to work with our build."""
 
@@ -900,13 +908,23 @@ def hack_project_files(
     # do here.
     if static and building_libffi:
         libffi_path = td / "libffi" / "libffi.lib"
-        static_replace_in_file(
-            pythoncore_proj,
-            b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>",
-            b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;"
-            + bytes(libffi_path)
-            + b";%(AdditionalDependencies)</AdditionalDependencies>",
-        )
+        try:
+            # Python 3.9 version
+            static_replace_in_file(
+                pythoncore_proj,
+                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;pathcch.lib;"
+                + bytes(libffi_path)
+                + b";%(AdditionalDependencies)</AdditionalDependencies>",
+            )
+        except NoSearchStringError:
+            static_replace_in_file(
+                pythoncore_proj,
+                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;"
+                + bytes(libffi_path)
+                + b";%(AdditionalDependencies)</AdditionalDependencies>",
+            )
 
     if static:
         for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
@@ -916,7 +934,9 @@ def hack_project_files(
 
             init_fn = entry.get("init", "PyInit_%s" % extension)
 
-            if convert_to_static_library(cpython_source_path, extension, entry):
+            if convert_to_static_library(
+                cpython_source_path, extension, entry, honor_allow_missing_preprocessor
+            ):
                 add_to_config_c(cpython_source_path, extension, init_fn)
 
     # pythoncore.vcxproj produces libpython. Typically pythonXY.dll. We change
@@ -1013,7 +1033,63 @@ def hack_project_files(
         )
 
 
-PYPORT_EXPORT_SEARCH_NEW = b"""
+PYPORT_EXPORT_SEARCH_39 = b"""
+#if defined(__CYGWIN__)
+#       define HAVE_DECLSPEC_DLL
+#endif
+
+#include "exports.h"
+
+/* only get special linkage if built as shared or platform is Cygwin */
+#if defined(Py_ENABLE_SHARED) || defined(__CYGWIN__)
+#       if defined(HAVE_DECLSPEC_DLL)
+#               if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+#                       define PyAPI_FUNC(RTYPE) Py_EXPORTED_SYMBOL RTYPE
+#                       define PyAPI_DATA(RTYPE) extern Py_EXPORTED_SYMBOL RTYPE
+        /* module init functions inside the core need no external linkage */
+        /* except for Cygwin to handle embedding */
+#                       if defined(__CYGWIN__)
+#                               define PyMODINIT_FUNC Py_EXPORTED_SYMBOL PyObject*
+#                       else /* __CYGWIN__ */
+#                               define PyMODINIT_FUNC PyObject*
+#                       endif /* __CYGWIN__ */
+#               else /* Py_BUILD_CORE */
+        /* Building an extension module, or an embedded situation */
+        /* public Python functions and data are imported */
+        /* Under Cygwin, auto-import functions to prevent compilation */
+        /* failures similar to those described at the bottom of 4.1: */
+        /* http://docs.python.org/extending/windows.html#a-cookbook-approach */
+#                       if !defined(__CYGWIN__)
+#                               define PyAPI_FUNC(RTYPE) Py_IMPORTED_SYMBOL RTYPE
+#                       endif /* !__CYGWIN__ */
+#                       define PyAPI_DATA(RTYPE) extern Py_IMPORTED_SYMBOL RTYPE
+        /* module init functions outside the core must be exported */
+#                       if defined(__cplusplus)
+#                               define PyMODINIT_FUNC extern "C" Py_EXPORTED_SYMBOL PyObject*
+#                       else /* __cplusplus */
+#                               define PyMODINIT_FUNC Py_EXPORTED_SYMBOL PyObject*
+#                       endif /* __cplusplus */
+#               endif /* Py_BUILD_CORE */
+#       endif /* HAVE_DECLSPEC_DLL */
+#endif /* Py_ENABLE_SHARED */
+
+/* If no external linkage macros defined by now, create defaults */
+#ifndef PyAPI_FUNC
+#       define PyAPI_FUNC(RTYPE) Py_EXPORTED_SYMBOL RTYPE
+#endif
+#ifndef PyAPI_DATA
+#       define PyAPI_DATA(RTYPE) extern Py_EXPORTED_SYMBOL RTYPE
+#endif
+#ifndef PyMODINIT_FUNC
+#       if defined(__cplusplus)
+#               define PyMODINIT_FUNC extern "C" Py_EXPORTED_SYMBOL PyObject*
+#       else /* __cplusplus */
+#               define PyMODINIT_FUNC Py_EXPORTED_SYMBOL PyObject*
+#       endif /* __cplusplus */
+#endif
+"""
+
+PYPORT_EXPORT_SEARCH_38 = b"""
 #if defined(__CYGWIN__)
 #       define HAVE_DECLSPEC_DLL
 #endif
@@ -1067,7 +1143,7 @@ PYPORT_EXPORT_SEARCH_NEW = b"""
 #endif
 """
 
-PYPORT_EXPORT_SEARCH_OLD = b"""
+PYPORT_EXPORT_SEARCH_37 = b"""
 #if defined(__CYGWIN__)
 #       define HAVE_DECLSPEC_DLL
 #endif
@@ -1121,7 +1197,14 @@ PYPORT_EXPORT_SEARCH_OLD = b"""
 #endif
 """
 
-PYPORT_EXPORT_REPLACE = b"""
+PYPORT_EXPORT_REPLACE_NEW = b"""
+#include "exports.h"
+#define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
+#define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
+#define PyMODINIT_FUNC __declspec(dllexport) PyObject*
+"""
+
+PYPORT_EXPORT_REPLACE_OLD = b"""
 #define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
 #define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
 #define PyMODINIT_FUNC __declspec(dllexport) PyObject*
@@ -1157,12 +1240,17 @@ def hack_source_files(source_path: pathlib.Path, static: bool):
         pyport_h = source_path / "Include" / "pyport.h"
         try:
             static_replace_in_file(
-                pyport_h, PYPORT_EXPORT_SEARCH_NEW, PYPORT_EXPORT_REPLACE
+                pyport_h, PYPORT_EXPORT_SEARCH_39, PYPORT_EXPORT_REPLACE_NEW
             )
         except NoSearchStringError:
-            static_replace_in_file(
-                pyport_h, PYPORT_EXPORT_SEARCH_OLD, PYPORT_EXPORT_REPLACE
-            )
+            try:
+                static_replace_in_file(
+                    pyport_h, PYPORT_EXPORT_SEARCH_38, PYPORT_EXPORT_REPLACE_OLD
+                )
+            except NoSearchStringError:
+                static_replace_in_file(
+                    pyport_h, PYPORT_EXPORT_SEARCH_37, PYPORT_EXPORT_REPLACE_OLD
+                )
 
     # Modules/_winapi.c and Modules/overlapped.c both define an
     # ``OverlappedType`` symbol. We rename one to make the symbol conflict
@@ -1928,6 +2016,8 @@ def build_cpython(
             build_directory,
             static=static,
             building_libffi=libffi_archive is not None,
+            honor_allow_missing_preprocessor=python_entry_name
+            in ("cpython-3.7", "cpython-3.8"),
         )
         hack_source_files(cpython_source_path, static=static)
 
