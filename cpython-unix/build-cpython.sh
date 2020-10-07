@@ -511,9 +511,12 @@ fi
 
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
-for d in Modules Objects Parser Programs Python; do
-    mkdir -p ${ROOT}/out/python/build/$d
-    cp -av $d/*.o ${ROOT}/out/python/build/$d/
+for d in Modules Objects Parser Parser/pegen Programs Python; do
+    # Parser/pegen only exists in 3.9+
+    if [ -d $d ]; then
+        mkdir -p ${ROOT}/out/python/build/$d
+        cp -av $d/*.o ${ROOT}/out/python/build/$d/
+    fi
 done
 
 # Also copy extension variant metadata files.
