@@ -57,6 +57,13 @@ def add_target_env(env, platform, build_env):
                 # Suppress extremely verbose warnings we see with LLVM 10.
                 "-Wno-nullability-completeness",
                 "-Wno-expansion-to-defined",
+                # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+                # which enables -Werror for undef-prefix=TARGET_OS_.
+                # However, the macOS SDK has headers that reference deprecated
+                # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+                # to work with the macOS SDKs out of the box. We work around
+                # this by undoing the -Werror=undef-prefix in that commit.
+                "-Wno-undef-prefix",
             ]
         )
 
