@@ -2237,7 +2237,7 @@ def build_cpython(
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            "version": "5",
+            "version": "6",
             "target_triple": target_triple,
             "optimizations": optimizations,
             "python_tag": entry["python_tag"],

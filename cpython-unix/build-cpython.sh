@@ -455,9 +455,11 @@ metadata = {
     },
     "python_bytecode_magic_number": codecs.encode(importlib.util.MAGIC_NUMBER, "hex").decode("ascii"),
     "python_paths": {},
+    "python_paths_abstract": sysconfig.get_paths(expand=False),
     "python_exe": "install/bin/python%s%s" % (sysconfig.get_python_version(), sys.abiflags),
     "python_major_minor_version": sysconfig.get_python_version(),
     "python_stdlib_platform_config": sysconfig.get_config_var("LIBPL").lstrip("/"),
+    "python_config_vars": {k: str(v) for k, v in sysconfig.get_config_vars().items()},
 }
 
 root = os.environ["ROOT"]

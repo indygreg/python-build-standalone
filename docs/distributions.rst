@@ -32,7 +32,7 @@ without having to resort to heuristics.
 The file contains a JSON map. This map has the following keys:
 
 version
-   Version number of the file format. Currently ``5``.
+   Version number of the file format. Currently ``6``.
 
 target_triple
    A target triple defining the platform and architecture of the machine
@@ -138,6 +138,28 @@ python_paths
    for the meaning of keys.
 
    (Version 5 or above only.)
+
+python_paths_abstract
+   Mapping of ``sysconfig`` path names with placeholder values.
+
+   See https://docs.python.org/3/library/sysconfig.html#installation-paths
+   for the meaning of keys.
+
+   This is equivalent to calling ``sysconfig.get_paths(expand=False)``.
+
+   (Version 6 or above only.)
+
+python_config_vars
+   Mapping of string configuration names to string values.
+
+   This is equivalent to ``sysconfig.get_config_vars()`` with all values
+   normalized to strings.
+
+   Many configuration values may represent state as it existed in the
+   build environment and aren't appropriate for the run-time environment
+   on a different system.
+
+   (Version 6 or above only.)
 
 python_exe
    Relative path to main Python interpreter executable.
