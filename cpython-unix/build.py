@@ -615,7 +615,7 @@ def fix_shebang(full_path, python):
             for line in fh:
                 if lines is None:
                     if not line.startswith("#!") or "python" not in line:
-                        # Files does not start with a shebang mentioning 'python' -> fix is not applicable
+                        # Applicable files have a shebang mentioning 'python'
                         return
 
                     # See http://rosettacode.org/wiki/Multiline_shebang#Python
@@ -634,7 +634,7 @@ def fix_shebang(full_path, python):
 
 
 def fix_bin_folder(folder):
-    """Make shebangs use portable python"""
+    """Auto-correct python scripts in the install/bin folder"""
     if not folder or not os.path.isdir(folder):
         return
 
