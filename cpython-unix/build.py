@@ -603,6 +603,52 @@ def python_build_info(
     return bi
 
 
+def fix_shebang(full_path, python):
+    """Correct shebang of file with 'full_path', if applicable"""
+    if os.path.islink(full_path) or not os.path.isfile(full_path) or not os.access(full_path, os.X_OK):
+        # Do only executable files (not symlinks)
+        return
+
+    try:
+        lines = None
+        with open(full_path) as fh:
+            for line in fh:
+                if lines is None:
+                    if not line.startswith("#!") or "python" not in line:
+                        # Files does not start with a shebang mentioning 'python' -> fix is not applicable
+                        return
+
+                    # See http://rosettacode.org/wiki/Multiline_shebang#Python
+                    lines = ["#!/bin/sh\n", '"exec" "`dirname $0`/%s" "$0" "$@"\n' % python]
+                    continue
+
+                lines.append(line)
+
+        lines = "".join(lines)
+        with open(full_path, "w") as fh:
+            fh.write(lines)
+
+    except Exception:
+        # Main python executable is a binary, open() will fail with a unicode error
+        return
+
+
+def fix_bin_folder(folder):
+    """Make shebangs use portable python"""
+    if not folder or not os.path.isdir(folder):
+        return
+
+    python = "python"
+    if not os.path.exists(os.path.join(folder, "python")):
+        # For some reason, some recent python distributions don't bundle a python executable...
+        # I would prefer to create a symlink python -> python3.7 here
+        # (unless there's an *excellent* reason not-to, that I don't know about)
+        python = "python3"
+
+    for file_name in os.listdir(folder):
+        fix_shebang(os.path.join(folder, file_name), python)
+
+
 def build_cpython(
     client,
     image,
@@ -745,6 +791,7 @@ def build_cpython(
         add_target_env(env, host_platform, build_env)
 
         build_env.run("build-cpython.sh", environment=env)
+        fix_bin_folder(build_env.td / "out" / "python" / "install" / "bin")
 
         extension_module_loading = ["builtin"]
         crt_features = []
