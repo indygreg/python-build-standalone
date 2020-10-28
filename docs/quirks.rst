@@ -47,7 +47,7 @@ If running a RedHat based Linux distribution::
 
    $ TERMINFO_DIRS=/etc/terminfo:/usr/share/terminfo
 
-If running macOS (note: quirk should not occur anymore for builds after Nov 2020)::
+If running macOS::
 
    $ TERMINFO_DIRS=/usr/share/terminfo
 
