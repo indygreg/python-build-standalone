@@ -49,6 +49,12 @@ popd
 mkdir llvm-objdir
 pushd llvm-objdir
 
+# This seems to be required on macOS 11 for clang to find system libraries.
+MACOSX_SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+if [ -d ${MACOSX_SDK_PATH} ]; then
+  EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH}
+fi
+
 # Stage 1: Build with system Clang
 mkdir stage1
 pushd stage1
@@ -63,6 +69,7 @@ cmake \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_TARGETS_TO_BUILD=X86 \
     -DLLVM_LINK_LLVM_DYLIB=ON \
+    ${EXTRA_FLAGS} \
     ../../llvm
 
 DESTDIR=${ROOT}/out ninja install
