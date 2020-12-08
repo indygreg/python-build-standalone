@@ -1006,18 +1006,11 @@ def hack_project_files(
     # Ditto for freeze_importlib, which isn't needed since we don't modify
     # the frozen importlib baked into the source distribution (
     # Python/importlib.h and Python/importlib_external.h).
-    try:
-        # Python 3.8.
-        static_replace_in_file(
-            pcbuild_proj,
-            b"""<Projects2 Condition="$(Platform) != 'ARM' and $(Platform) != 'ARM64'" Include="_freeze_importlib.vcxproj" />""",
-            b"",
-        )
-    except NoSearchStringError:
-        # Python 3.7.
-        static_replace_in_file(
-            pcbuild_proj, b'<Projects2 Include="_freeze_importlib.vcxproj" />', b""
-        )
+    static_replace_in_file(
+        pcbuild_proj,
+        b"""<Projects2 Condition="$(Platform) != 'ARM' and $(Platform) != 'ARM64'" Include="_freeze_importlib.vcxproj" />""",
+        b"",
+    )
 
     # Switch to the static version of the run-time library.
     if static:
@@ -1356,10 +1349,8 @@ def run_msbuild(
         # TODO support test extensions in static builds.
         "/property:IncludeTests=%s" % ("false" if static else "true"),
         "/property:OverrideVersion=%s" % python_version,
+        "/property:IncludeCTypes=true",
     ]
-
-    if not python_version.startswith("3.7"):
-        args.append("/property:IncludeCTypes=true")
 
     exec_and_log(args, str(pcbuild_path), os.environ)
 
@@ -2016,8 +2007,7 @@ def build_cpython(
             build_directory,
             static=static,
             building_libffi=libffi_archive is not None,
-            honor_allow_missing_preprocessor=python_entry_name
-            in ("cpython-3.7", "cpython-3.8"),
+            honor_allow_missing_preprocessor=python_entry_name == "cpython-3.8",
         )
         hack_source_files(cpython_source_path, static=static)
 
@@ -2312,8 +2302,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--python",
-        choices={"cpython-3.7", "cpython-3.8", "cpython-3.9"},
-        default="cpython-3.7",
+        choices={"cpython-3.8", "cpython-3.9"},
+        default="cpython-3.8",
         help="Python distribution to build",
     )
     parser.add_argument(
@@ -2353,20 +2343,15 @@ def main():
                 perl_path, arch, profile=args.profile, dest_archive=openssl_archive
             )
 
-        if "3.7" not in args.python:
-            libffi_archive = BUILD / (
-                "libffi-%s-%s.tar" % (target_triple, args.profile)
+        libffi_archive = BUILD / ("libffi-%s-%s.tar" % (target_triple, args.profile))
+        if not libffi_archive.exists():
+            build_libffi(
+                args.python,
+                arch,
+                pathlib.Path(args.sh),
+                libffi_archive,
+                "static" in args.profile,
             )
-            if not libffi_archive.exists():
-                build_libffi(
-                    args.python,
-                    arch,
-                    pathlib.Path(args.sh),
-                    libffi_archive,
-                    "static" in args.profile,
-                )
-        else:
-            libffi_archive = None
 
         LOG_PREFIX[0] = "cpython"
         tar_path = build_cpython(

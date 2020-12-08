@@ -62,23 +62,7 @@ EOF
 
 # The default build rule for the macOS dylib doesn't pick up libraries
 # from modules / makesetup. So patch it accordingly.
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
-    patch -p1 << "EOF"
-diff --git a/Makefile.pre.in b/Makefile.pre.in
---- a/Makefile.pre.in
-+++ b/Makefile.pre.in
-@@ -643,7 +643,7 @@ libpython3.so:	libpython$(LDVERSION).so
- 	$(BLDSHARED) $(NO_AS_NEEDED) -o $@ -Wl,-h$@ $^
- 
- libpython$(LDVERSION).dylib: $(LIBRARY_OBJS)
--	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
-+	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
- 
- 
- libpython$(VERSION).sl: $(LIBRARY_OBJS)
-EOF
-else
-    patch -p1 << "EOF"
+patch -p1 << "EOF"
 diff --git a/Makefile.pre.in b/Makefile.pre.in
 --- a/Makefile.pre.in
 +++ b/Makefile.pre.in
@@ -92,29 +76,13 @@ diff --git a/Makefile.pre.in b/Makefile.pre.in
  
  libpython$(VERSION).sl: $(LIBRARY_OBJS)
 EOF
-fi
 
 # Also on macOS, the `python` executable is linked against libraries defined by statically
 # linked modules. But those libraries should only get linked into libpython, not the
 # executable. This behavior is kinda suspect on all platforms, as it could be adding
 # library dependencies that shouldn't need to be there.
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
-        patch -p1 <<"EOF"
-diff --git a/Makefile.pre.in b/Makefile.pre.in
---- a/Makefile.pre.in
-+++ b/Makefile.pre.in
-@@ -578,7 +578,7 @@ clinic: check-clean-src $(srcdir)/Modules/_blake2/blake2s_impl.c
- 
- # Build the interpreter
- $(BUILDPYTHON):	Programs/python.o $(LIBRARY) $(LDLIBRARY) $(PY3LIBRARY)
--	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS) $(LDLAST)
-+	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(SYSLIBS) $(LDLAST)
- 
- platform: $(BUILDPYTHON) pybuilddir.txt
- 	$(RUNSHARED) $(PYTHON_FOR_BUILD) -c 'import sys ; from sysconfig import get_platform ; print("%s-%d.%d" % (get_platform(), *sys.version_info[:2]))' >platform
-EOF
-    elif [ "${PYTHON_MAJMIN_VERSION}" = "3.8" ]; then
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.8" ]; then
         patch -p1 <<"EOF"
 diff --git a/Makefile.pre.in b/Makefile.pre.in
 --- a/Makefile.pre.in
@@ -300,13 +268,7 @@ cat ../Makefile.extra >> Makefile
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.7" ]; then
-    if [ -n "${CPYTHON_DEBUG}" ]; then
-        PYTHON_BINARY_SUFFIX=dm
-    else
-        PYTHON_BINARY_SUFFIX=m
-    fi
-elif [ -n "${CPYTHON_DEBUG}" ]; then
+if [ -n "${CPYTHON_DEBUG}" ]; then
     PYTHON_BINARY_SUFFIX=d
 else
     PYTHON_BINARY_SUFFIX=
@@ -329,7 +291,7 @@ if [ "${PYBUILD_SHARED}" = "1" ]; then
             -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib @executable_path/../lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib \
             ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
 
-        # Python 3.7's build system doesn't make this file writable.
+        # Python's build system doesn't make this file writable.
         chmod 755 ${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
         install_name_tool \
             -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib @executable_path/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib \
@@ -490,9 +452,7 @@ if [ ! -d ${LIB_DYNLOAD} ]; then
   touch ${LIB_DYNLOAD}/.empty
 fi
 
-# Symlink libpython so we don't have 2 copies. We only need to do
-# this on Python 3.7, as 3.8 dropped the m ABI suffix from binary names.
-
+# Symlink libpython so we don't have 2 copies.
 if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
     if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
         PYTHON_ARCH="darwin"

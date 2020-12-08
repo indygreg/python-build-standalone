@@ -394,7 +394,7 @@ def python_build_info(
 
     bi = {"core": {"objs": [], "links": []}, "extensions": {}}
 
-    binary_suffix = "m" if version == "3.7" else ""
+    binary_suffix = ""
 
     if platform == "linux64":
         bi["core"][
@@ -1062,7 +1062,7 @@ def main():
                 extra_archives=extra_archives,
             )
 
-        elif action in ("cpython-3.7", "cpython-3.8", "cpython-3.9"):
+        elif action in ("cpython-3.8", "cpython-3.9"):
             build_cpython(
                 client,
                 get_image(client, ROOT, BUILD, "build"),

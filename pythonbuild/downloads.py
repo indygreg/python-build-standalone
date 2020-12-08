@@ -52,15 +52,6 @@ DOWNLOADS = {
         "sha256": "99e1161881dc136b77e0a27a6d2abcb2910e5126e173d4fa3bc017ec50f7b88b",
         "version": "3.15.1",
     },
-    "cpython-3.7": {
-        "url": "https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tar.xz",
-        "size": 17389636,
-        "sha256": "91923007b05005b5f9bd46f3b9172248aea5abc1543e8a636d59e629c3331b01",
-        "version": "3.7.9",
-        "licenses": ["Python-2.0", "CNRI-Python"],
-        "license_file": "LICENSE.cpython.txt",
-        "python_tag": "cp37",
-    },
     "cpython-3.8": {
         "url": "https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tar.xz",
         "size": 18233864,
