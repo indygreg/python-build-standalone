@@ -49,10 +49,21 @@ popd
 mkdir llvm-objdir
 pushd llvm-objdir
 
+# This is used in CI to use the 10.15 SDK.
+MACOSX_SDK_PATH_10_15=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+
 # This seems to be required on macOS 11 for clang to find system libraries.
 MACOSX_SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
-if [ -d ${MACOSX_SDK_PATH} ]; then
+
+if [ -d ${MACOSX_SDK_PATH_10_15} ]; then
+  EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH_10_15}
+elif [ -d ${MACOSX_SDK_PATH} ]; then
   EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH}
+fi
+
+# Configure a compiler wrapper if one is defined.
+if [ -n "${COMPILER_WRAPPER}" ]; then
+  EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${COMPILER_WRAPPER} -DCMAKE_CXX_COMPILER_LAUNCHER=${COMPILER_WRAPPER}"
 fi
 
 # Stage 1: Build with system Clang
@@ -72,7 +83,13 @@ cmake \
     ${EXTRA_FLAGS} \
     ../../llvm
 
-DESTDIR=${ROOT}/out ninja install
+if [ -n "${CI}" ]; then
+  NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
+else
+  NUM_JOBS=0
+fi
+
+DESTDIR=${ROOT}/out ninja -j ${NUM_JOBS} install
 
 # We should arguably do a 2nd build using Clang to build Clang.
 

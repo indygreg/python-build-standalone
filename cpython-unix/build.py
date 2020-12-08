@@ -5,7 +5,6 @@
 
 import argparse
 import json
-import multiprocessing
 import os
 import pathlib
 import subprocess
@@ -25,6 +24,7 @@ from pythonbuild.docker import build_docker_image, get_image
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.logging import log, set_logger
 from pythonbuild.utils import (
+    add_env_common,
     add_licenses_to_extension_entry,
     download_entry,
     write_package_versions,
@@ -39,8 +39,9 @@ MACOSX_DEPLOYMENT_TARGET = "10.9"
 
 
 def add_target_env(env, platform, build_env):
+    add_env_common(env)
+
     env["PYBUILD_PLATFORM"] = platform
-    env["NUM_CPUS"] = "%d" % multiprocessing.cpu_count()
     env["TOOLS_PATH"] = build_env.tools_path
 
     if platform == "linux64":
@@ -67,20 +68,31 @@ def add_target_env(env, platform, build_env):
             ]
         )
 
-        # macOS SDK has historically been in /usr courtesy of an
-        # installer provided by Xcode. But with Catalina, the files
-        # are now typically in
-        # /Applications/Xcode.app/Contents/Developer/Platforms/.
-        # The proper way to resolve this path is with xcrun, which
-        # will give us the headers that Xcode is configured to use.
-        res = subprocess.run(
-            ["xcrun", "--show-sdk-path"],
-            check=True,
-            capture_output=True,
-            encoding="utf-8",
+        # This path exists on GitHub Actions workers and is the 10.15 SDK. Using this
+        # SDK works around issues with the 11.0 SDK not working with CPython.
+        macosx_sdk_path_10_15 = (
+            "/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform"
+            "/Developer/SDKs/MacOSX.sdk "
         )
 
-        sdk_path = res.stdout.strip()
+        if os.path.exists(macosx_sdk_path_10_15):
+            sdk_path = macosx_sdk_path_10_15
+        else:
+            # macOS SDK has historically been in /usr courtesy of an
+            # installer provided by Xcode. But with Catalina, the files
+            # are now typically in
+            # /Applications/Xcode.app/Contents/Developer/Platforms/.
+            # The proper way to resolve this path is with xcrun, which
+            # will give us the headers that Xcode is configured to use.
+            res = subprocess.run(
+                ["xcrun", "--show-sdk-path"],
+                check=True,
+                capture_output=True,
+                encoding="utf-8",
+            )
+
+            sdk_path = res.stdout.strip()
+
         env["MACOS_SDK_PATH"] = sdk_path
         env["CPATH"] = "%s/usr/include" % sdk_path
 
@@ -235,6 +247,8 @@ def build_clang(client, image, host_platform):
             "LLD_VERSION": DOWNLOADS["lld"]["version"],
             "LLVM_VERSION": DOWNLOADS["llvm"]["version"],
         }
+
+        add_env_common(env)
 
         build_env.install_toolchain(BUILD, host_platform, binutils=binutils, gcc=gcc)
 

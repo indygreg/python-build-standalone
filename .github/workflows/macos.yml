@@ -2,8 +2,50 @@ on:
   - push
   - pull_request
 jobs:
-  build:
+  # We need to build our own sccache until e6326bc8a20ee06af37e16a3a7a14e3374c66c66
+  # is in a released version.
+  sccache:
     runs-on: 'macos-10.15'
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          profile: minimal
+
+      - uses: actions/checkout@v2
+        with:
+          repository: mozilla/sccache
+          # Update cache key if this changes.
+          ref: e6326bc8a20ee06af37e16a3a7a14e3374c66c66
+          fetch-depth: 0
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-sccache-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build sccache
+        run: |
+          cargo build --release
+
+      - name: Upload sccache executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: sccache
+          path: target/release/sccache
+
+  build:
+    needs: sccache
+    runs-on: 'macos-10.15'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SCCACHE_BUCKET: 'python-build-standalone-sccache'
+      SCCACHE_S3_USE_SSL: '1'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -14,6 +56,17 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Download sccache
+        uses: actions/download-artifact@v2
+        with:
+          name: sccache
+
+      - name: Start sccache
+        run: |
+          mv sccache /usr/local/bin/sccache
+          chmod +x /usr/local/bin/sccache
+          sccache --start-server
+
       - name: Build 3.8
         run: |
           ./build-macos.py --python cpython-3.8 --optimizations debug
@@ -21,3 +74,8 @@ jobs:
       - name: Build 3.9
         run: |
           ./build-macos.py --python cpython-3.9 --optimizations debug
+
+      - name: Stop sccache
+        continue-on-error: true
+        run: |
+          sccache --stop-server

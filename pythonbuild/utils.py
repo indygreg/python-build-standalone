@@ -4,6 +4,7 @@
 
 import gzip
 import hashlib
+import multiprocessing
 import os
 import pathlib
 import subprocess
@@ -231,6 +232,21 @@ def add_licenses_to_extension_entry(entry, ignore_keys=None):
     entry["licenses"] = sorted(licenses)
     entry["license_paths"] = sorted(license_paths)
     entry["license_public_domain"] = license_public_domain
+
+
+def add_env_common(env):
+    """Adds extra keys to environment variables."""
+
+    cpu_count = multiprocessing.cpu_count()
+    env["NUM_CPUS"] = "%d" % cpu_count
+    env["NUM_JOBS_AGGRESSIVE"] = "%d" % max(cpu_count + 2, cpu_count * 2)
+
+    if "CI" in os.environ:
+        env["CI"] = "1"
+
+        if os.path.exists("/usr/local/bin/sccache"):
+            # Path on macOS.
+            env["COMPILER_WRAPPER"] = "/usr/local/bin/sccache"
 
 
 def exec_and_log(args, cwd, env):
