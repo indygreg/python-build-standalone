@@ -1,0 +1,23 @@
+on:
+  - push
+  - pull_request
+jobs:
+  build:
+    runs-on: 'macos-10.15'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Build 3.8
+        run: |
+          ./build-macos.py --python cpython-3.8 --optimizations debug
+
+      - name: Build 3.9
+        run: |
+          ./build-macos.py --python cpython-3.9 --optimizations debug
