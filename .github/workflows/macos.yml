@@ -67,15 +67,17 @@ jobs:
           chmod +x /usr/local/bin/sccache
           sccache --start-server
 
-      - name: Build 3.8
+      - name: Build
         run: |
-          ./build-macos.py --python cpython-3.8 --optimizations debug
-
-      - name: Build 3.9
-        run: |
-          ./build-macos.py --python cpython-3.9 --optimizations debug
+          ./release-macos.sh
 
       - name: Stop sccache
         continue-on-error: true
         run: |
           sccache --stop-server
+
+      - name: Upload Distributions
+        uses: actions/upload-artifact@v2
+        with:
+          name: dists-macos
+          path: dist/*
