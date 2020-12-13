@@ -1,0 +1,53 @@
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '13 4 * * *'
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        py:
+          - 'cpython-3.8'
+          - 'cpython-3.9'
+        vcvars:
+          - 'vcvars32.bat'
+          - 'vcvars64.bat'
+        profile:
+          - 'static-noopt'
+          - 'shared-pgo'
+    runs-on: 'windows-2019'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Cygwin
+        uses: egor-tensin/setup-cygwin@f86ccb21e7a2ba792c837fb9a2b267a9d6335531
+        with:
+          platform: x64
+          packages: autoconf automake libtool
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      # We need to do this before we activate the VC++ environment or else binary packages
+      # don't get compiled properly.
+      - name: Bootstrap Python environment
+        run: |
+          py.exe build-windows.py --help
+
+      - name: Build
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ matrix.vcvars }}"
+          py.exe build-windows.py --python ${{ matrix.py }} --sh c:\tools\cygwin\bin\sh.exe --profile ${{ matrix.profile }}
+
+      - name: Upload Distributions
+        uses: actions/upload-artifact@v2
+        with:
+          name: dists-windows
+          path: dist/*
