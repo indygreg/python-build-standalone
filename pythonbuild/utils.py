@@ -244,9 +244,15 @@ def add_env_common(env):
     if "CI" in os.environ:
         env["CI"] = "1"
 
-        if os.path.exists("/usr/local/bin/sccache"):
-            # Path on macOS.
-            env["COMPILER_WRAPPER"] = "/usr/local/bin/sccache"
+    # Proxy variables used for sccache remote cache.
+    for k in (
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "SCCACHE_BUCKET",
+        "SCCACHE_S3_USE_SSL",
+    ):
+        if k in os.environ:
+            env[k] = os.environ[k]
 
 
 def exec_and_log(args, cwd, env):

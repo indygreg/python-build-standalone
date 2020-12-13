@@ -3,9 +3,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-set -e
+set -ex
 
 cd /build
+
+ROOT=$(pwd)
+SCCACHE="${ROOT}/sccache"
 
 tar -C /tools -xf /build/binutils-${BINUTILS_VERSION}-linux64.tar
 export PATH=/tools/host/bin:$PATH
@@ -22,6 +25,12 @@ ln -sf ../isl-${ISL_VERSION} isl
 ln -sf ../mpc-${MPC_VERSION} mpc
 ln -sf ../mpfr-${MPFR_VERSION} mpfr
 popd
+
+if [ -x "${SCCACHE}" ]; then
+  "${SCCACHE}" --start-server
+  export CC="${SCCACHE} /usr/bin/gcc"
+  export CXX="${SCCACHE} /usr/bin/g++"
+fi
 
 mkdir gcc-objdir
 

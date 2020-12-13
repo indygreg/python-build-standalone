@@ -5,7 +5,8 @@
 
 set -ex
 
-ROOT=`pwd`
+ROOT=$(pwd)
+SCCACHE="${ROOT}/sccache"
 
 tar --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-Darwin-x86_64.tar.gz
 
@@ -62,8 +63,8 @@ elif [ -d ${MACOSX_SDK_PATH} ]; then
 fi
 
 # Configure a compiler wrapper if one is defined.
-if [ -n "${COMPILER_WRAPPER}" ]; then
-  EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${COMPILER_WRAPPER} -DCMAKE_CXX_COMPILER_LAUNCHER=${COMPILER_WRAPPER}"
+if [ -x "${SCCACHE}" ]; then
+  EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"
 fi
 
 # Stage 1: Build with system Clang

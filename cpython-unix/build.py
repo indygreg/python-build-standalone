@@ -34,6 +34,7 @@ ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
+SCCACHE = ROOT / "sccache"
 
 MACOSX_DEPLOYMENT_TARGET = "10.9"
 
@@ -161,12 +162,18 @@ def build_binutils(client, image, host_platform):
     archive = download_entry("binutils", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
+        if SCCACHE.exists():
+            build_env.copy_file(SCCACHE)
+
         build_env.copy_file(archive)
         build_env.copy_file(SUPPORT / "build-binutils.sh")
 
+        env = {"BINUTILS_VERSION": DOWNLOADS["binutils"]["version"]}
+
+        add_env_common(env)
+
         build_env.run(
-            "build-binutils.sh",
-            environment={"BINUTILS_VERSION": DOWNLOADS["binutils"]["version"]},
+            "build-binutils.sh", environment=env,
         )
 
         build_env.get_tools_archive(
@@ -183,6 +190,9 @@ def build_gcc(client, image, host_platform):
     mpfr_archive = download_entry("mpfr", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
+        if SCCACHE.exists():
+            build_env.copy_file(SCCACHE)
+
         log("copying archives to container...")
         for a in (gcc_archive, gmp_archive, isl_archive, mpc_archive, mpfr_archive):
             build_env.copy_file(a)
@@ -190,17 +200,18 @@ def build_gcc(client, image, host_platform):
         build_env.copy_file(toolchain_archive_path("binutils", host_platform))
         build_env.copy_file(SUPPORT / "build-gcc.sh")
 
-        build_env.run(
-            "build-gcc.sh",
-            environment={
-                "BINUTILS_VERSION": DOWNLOADS["binutils"]["version"],
-                "GCC_VERSION": DOWNLOADS["gcc"]["version"],
-                "GMP_VERSION": DOWNLOADS["gmp"]["version"],
-                "ISL_VERSION": DOWNLOADS["isl"]["version"],
-                "MPC_VERSION": DOWNLOADS["mpc"]["version"],
-                "MPFR_VERSION": DOWNLOADS["mpfr"]["version"],
-            },
-        )
+        env = {
+            "BINUTILS_VERSION": DOWNLOADS["binutils"]["version"],
+            "GCC_VERSION": DOWNLOADS["gcc"]["version"],
+            "GMP_VERSION": DOWNLOADS["gmp"]["version"],
+            "ISL_VERSION": DOWNLOADS["isl"]["version"],
+            "MPC_VERSION": DOWNLOADS["mpc"]["version"],
+            "MPFR_VERSION": DOWNLOADS["mpfr"]["version"],
+        }
+
+        add_env_common(env)
+
+        build_env.run("build-gcc.sh", environment=env)
 
         build_env.get_tools_archive(
             toolchain_archive_path("gcc", host_platform), "host"
@@ -223,6 +234,9 @@ def build_clang(client, image, host_platform):
     libcxxabi_archive = download_entry("libc++abi", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
+        if SCCACHE.exists():
+            build_env.copy_file(SCCACHE)
+
         log("copying archives to container...")
         for a in (
             cmake_archive,

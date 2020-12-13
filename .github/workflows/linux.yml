@@ -8,19 +8,25 @@ jobs:
   # We need to build our own sccache until e6326bc8a20ee06af37e16a3a7a14e3374c66c66
   # is in a released version.
   sccache:
-    runs-on: 'macos-10.15'
+    runs-on: 'ubuntu-latest'
     steps:
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends musl-tools
+
       - uses: actions-rs/toolchain@v1
+        id: install-rust
         with:
           toolchain: stable
+          target: x86_64-unknown-linux-musl
           default: true
           profile: minimal
 
       - uses: actions/checkout@v2
         with:
-          repository: mozilla/sccache
-          # Update cache key if this changes.
-          ref: e6326bc8a20ee06af37e16a3a7a14e3374c66c66
+          repository: indygreg/sccache
+          ref: b0eae3f0d174b81e7582159cb9329dbea0af25c9
           fetch-depth: 0
 
       - uses: actions/cache@v2
@@ -29,30 +35,43 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-sccache-${{ hashFiles('Cargo.lock') }}
+          key: ${{ runner.os }}-${{ steps.install-rust.outputs.rustc}}-sccache-${{ hashFiles('Cargo.lock') }}
 
       - name: Build sccache
         run: |
-          cargo build --release
+          cargo build --release --target x86_64-unknown-linux-musl
 
       - name: Upload sccache executable
         uses: actions/upload-artifact@v2
         with:
           name: sccache
-          path: target/release/sccache
+          path: target/x86_64-unknown-linux-musl/release/sccache
 
   build:
     strategy:
       fail-fast: false
       matrix:
+        triple:
+          - 'x86_64-unknown-linux-gnu'
+          - 'x86_64-unknown-linux-musl'
         py:
           - 'cpython-3.8'
           - 'cpython-3.9'
         optimizations:
           - 'debug'
+          - 'noopt'
           - 'pgo'
-    needs: sccache
-    runs-on: 'macos-10.15'
+        exclude:
+          # We don't publish noopt builds for GNU Linux.
+          - triple: 'x86_64-unknown-linux-gnu'
+            optimizations: 'noopt'
+          # PGO doesn't work with musl libc.
+          - triple: 'x86_64-unknown-linux-musl'
+            optimizations: 'pgo'
+
+    needs:
+      - sccache
+    runs-on: 'ubuntu-latest'
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -73,23 +92,24 @@ jobs:
         with:
           name: sccache
 
-      - name: Start sccache
+      - name: Configure sccache
         run: |
           chmod +x sccache
-          ./sccache --start-server
 
       - name: Build
         run: |
           export PYBUILD_RELEASE_TAG=$(git log -n 1 --date=format:%Y%m%dT%H%M%S --pretty=format:%ad)
-          ./build-macos.py --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
 
-      - name: Stop sccache
-        continue-on-error: true
-        run: |
-          ./sccache --stop-server
+          if [ "${{ matrix.triple }}" = "x86_64-unknown-linux-musl" ]; then
+            EXTRA_ARGS=--libressl
+          else
+            EXTRA_ARGS=
+          fi
 
-      - name: Upload Distributions
+          ./build-linux.py --target-triple ${{ matrix.triple }} --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }} ${EXTRA_ARGS}
+
+      - name: Upload Distribution
         uses: actions/upload-artifact@v2
         with:
-          name: dists-macos
+          name: dists-linux
           path: dist/*

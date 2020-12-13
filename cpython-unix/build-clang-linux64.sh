@@ -36,7 +36,8 @@
 
 set -ex
 
-ROOT=`pwd`
+ROOT=$(pwd)
+SCCACHE="${ROOT}/sccache"
 
 mkdir /tools/extra
 tar -C /tools/extra --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz
@@ -79,6 +80,13 @@ popd
 mkdir llvm-objdir
 pushd llvm-objdir
 
+EXTRA_FLAGS=
+
+if [ -x "${SCCACHE}" ]; then
+  "${SCCACHE}" --start-server
+  EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"
+fi
+
 # Stage 1: Build with GCC.
 mkdir stage1
 pushd stage1
@@ -98,6 +106,7 @@ cmake \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
+    ${EXTRA_FLAGS} \
     ../../llvm
 
 LD_LIBRARY_PATH=/tools/host/lib64 ninja install
@@ -133,6 +142,7 @@ cmake \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
+    ${EXTRA_FLAGS} \
     ../../llvm
 
 LD_LIBRARY_PATH=/tools/clang-stage1/lib ninja install
@@ -172,6 +182,7 @@ cmake \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
+    ${EXTRA_FLAGS} \
     ../../llvm
 
 LD_LIBRARY_PATH=/tools/clang-stage2/lib DESTDIR=${ROOT}/out ninja install
