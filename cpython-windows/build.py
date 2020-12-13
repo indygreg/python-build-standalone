@@ -1421,6 +1421,7 @@ def build_openssl_for_arch(
             configure,
             "no-idea",
             "no-mdc2",
+            "no-tests",
             "--prefix=/%s" % prefix,
         ],
         source_root,
