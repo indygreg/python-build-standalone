@@ -34,7 +34,7 @@ else
    exit 1
 fi
 
-/usr/bin/perl ./Configure --prefix=/tools/deps ${OPENSSL_TARGET} no-shared ${EXTRA_FLAGS}
+/usr/bin/perl ./Configure --prefix=/tools/deps ${OPENSSL_TARGET} no-shared no-tests ${EXTRA_FLAGS}
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
