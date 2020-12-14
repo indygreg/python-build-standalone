@@ -75,7 +75,9 @@ def add_target_env(env, platform, build_env):
             "/Developer/SDKs/MacOSX.sdk "
         )
 
-        if os.path.exists(macosx_sdk_path_10_15):
+        if "MACOS_SDK_PATH" in os.environ:
+            sdk_path = os.environ["MACOS_SDK_PATH"]
+        elif os.path.exists(macosx_sdk_path_10_15):
             sdk_path = macosx_sdk_path_10_15
         else:
             # macOS SDK has historically been in /usr courtesy of an
@@ -92,6 +94,9 @@ def add_target_env(env, platform, build_env):
             )
 
             sdk_path = res.stdout.strip()
+
+        if not os.path.exists(sdk_path):
+            raise Exception("macOS SDK path %s does not exist" % sdk_path)
 
         env["MACOS_SDK_PATH"] = sdk_path
         env["CPATH"] = "%s/usr/include" % sdk_path
