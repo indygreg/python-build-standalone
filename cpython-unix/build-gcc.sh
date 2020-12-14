@@ -26,9 +26,13 @@ popd
 mkdir gcc-objdir
 
 pushd gcc-objdir
+
+# We don't use GCC for anything other than building llvm/clang. So
+# we can skip the 3 stage bootstrap to save time.
 ../gcc-${GCC_VERSION}/configure \
     --build=x86_64-unknown-linux-gnu \
     --prefix=/tools/host \
+    --disable-bootstrap \
     --enable-languages=c,c++ \
     --disable-nls \
     --disable-gnu-unique-object \
