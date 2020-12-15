@@ -87,6 +87,12 @@ if [ -x "${SCCACHE}" ]; then
   EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"
 fi
 
+if [ -n "${CI}" ]; then
+  NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
+else
+  NUM_JOBS=0
+fi
+
 # Stage 1: Build with GCC.
 mkdir stage1
 pushd stage1
@@ -109,7 +115,7 @@ cmake \
     ${EXTRA_FLAGS} \
     ../../llvm
 
-LD_LIBRARY_PATH=/tools/host/lib64 ninja install
+LD_LIBRARY_PATH=/tools/host/lib64 ninja -j ${NUM_JOBS} install
 
 mkdir -p /tools/clang-stage1/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}
 cp -av /tools/host/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/* /tools/clang-stage1/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/
@@ -145,7 +151,7 @@ cmake \
     ${EXTRA_FLAGS} \
     ../../llvm
 
-LD_LIBRARY_PATH=/tools/clang-stage1/lib ninja install
+LD_LIBRARY_PATH=/tools/clang-stage1/lib ninja -j ${NUM_JOBS} install
 
 mkdir -p /tools/clang-stage2/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}
 cp -av /tools/host/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/* /tools/clang-stage2/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/
@@ -185,7 +191,7 @@ cmake \
     ${EXTRA_FLAGS} \
     ../../llvm
 
-LD_LIBRARY_PATH=/tools/clang-stage2/lib DESTDIR=${ROOT}/out ninja install
+LD_LIBRARY_PATH=/tools/clang-stage2/lib DESTDIR=${ROOT}/out ninja -j ${NUM_JOBS} install
 
 mkdir -p ${ROOT}/out/tools/clang-linux64/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}
 cp -av /tools/host/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/* ${ROOT}/out/tools/clang-linux64/lib/gcc/x86_64-unknown-linux-gnu/${GCC_VERSION}/
