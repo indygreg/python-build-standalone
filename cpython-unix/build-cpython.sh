@@ -369,23 +369,6 @@ diff --git a/src/pip/_internal/utils/glibc.py b/src/pip/_internal/utils/glibc.py
      try:
          gnu_get_libc_version = process_namespace.gnu_get_libc_version
      except AttributeError:
-
-diff --git a/src/pip/_vendor/packaging/tags.py b/src/pip/_vendor/packaging/tags.py
-index 60a69d8..08c0597 100644
---- a/src/pip/_vendor/packaging/tags.py
-+++ b/src/pip/_vendor/packaging/tags.py
-@@ -466,7 +466,10 @@ def _glibc_version_string_ctypes():
-     # which libc our process is actually using.
-     #
-     # Note: typeshed is wrong here so we are ignoring this line.
--    process_namespace = ctypes.CDLL(None)  # type: ignore
-+    try:
-+        process_namespace = ctypes.CDLL(None)  # type: ignore
-+    except OSError:
-+        return None
-     try:
-         gnu_get_libc_version = process_namespace.gnu_get_libc_version
-     except AttributeError:
 EOF
 
 ${BUILD_PYTHON} setup.py install
