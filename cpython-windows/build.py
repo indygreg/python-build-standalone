@@ -1945,13 +1945,14 @@ def build_cpython(
     with tempfile.TemporaryDirectory(prefix="python-build-") as td:
         td = pathlib.Path(td)
 
-        with concurrent.futures.ThreadPoolExecutor(9) as e:
+        with concurrent.futures.ThreadPoolExecutor(10) as e:
             fs = []
             for a in (
                 python_archive,
                 bzip2_archive,
                 openssl_archive,
                 pip_archive,
+                setuptools_archive,
                 sqlite_archive,
                 tk_bin_archive,
                 xz_archive,
@@ -1965,9 +1966,6 @@ def build_cpython(
 
         if libffi_archive:
             extract_tar_to_directory(libffi_archive, td)
-
-        with zipfile.ZipFile(setuptools_archive) as zf:
-            zf.extractall(td)
 
         # We need all the OpenSSL library files in the same directory to appease
         # install rules.

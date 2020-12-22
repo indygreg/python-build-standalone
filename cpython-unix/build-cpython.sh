@@ -20,7 +20,7 @@ export LLVM_PROFDATA=${TOOLS_PATH}/${TOOLCHAIN}/bin/llvm-profdata
 find ${TOOLS_PATH}/deps -name '*.so*' -exec rm {} \;
 
 tar -xf Python-${PYTHON_VERSION}.tar.xz
-unzip setuptools-${SETUPTOOLS_VERSION}.zip
+tar -xf setuptools-${SETUPTOOLS_VERSION}.tar.gz
 tar -xf pip-${PIP_VERSION}.tar.gz
 
 cat Setup.local
