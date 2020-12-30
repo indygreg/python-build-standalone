@@ -79,7 +79,6 @@ cmake \
     -DCMAKE_ASM_COMPILER=/usr/bin/clang \
     -DLLVM_ENABLE_LIBCXX=ON \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
-    -DLLVM_TARGETS_TO_BUILD=X86 \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     ${EXTRA_FLAGS} \
     ../../llvm
