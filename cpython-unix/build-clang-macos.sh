@@ -86,7 +86,7 @@ cmake \
 if [ -n "${CI}" ]; then
   NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
 else
-  NUM_JOBS=0
+  NUM_JOBS=${NUM_CPUS}
 fi
 
 DESTDIR=${ROOT}/out ninja -j ${NUM_JOBS} install
