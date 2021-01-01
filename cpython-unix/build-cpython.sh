@@ -257,7 +257,8 @@ CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
 
 # configure checks for the presence of functions and blindly uses them,
 # even if they aren't available in the target macOS SDK. Work around that.
-if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+# But only on Python 3.8, as Python 3.9.1 improved this functionality.
+if [[ "${PYBUILD_PLATFORM}" = "macos" && "${PYTHON_MAJMIN_VERSION}" = "3.8" ]]; then
     sed -i "" "s/#define HAVE_UTIMENSAT 1//g" pyconfig.h
     sed -i "" "s/#define HAVE_FUTIMENS 1//g" pyconfig.h
 fi
