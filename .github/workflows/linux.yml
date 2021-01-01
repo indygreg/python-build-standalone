@@ -87,14 +87,22 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          profile: minimal
+
       - name: Download sccache
         uses: actions/download-artifact@v2
         with:
           name: sccache
 
-      - name: Configure sccache
+      - name: Start sccache
         run: |
           chmod +x sccache
+          ./sccache --start-server
 
       - name: Build
         run: |
@@ -107,6 +115,11 @@ jobs:
           fi
 
           ./build-linux.py --target-triple ${{ matrix.triple }} --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }} ${EXTRA_ARGS}
+
+      - name: Validate Distribution
+        run: |
+          export RUSTC_WRAPPER=$(pwd)/sccache
+          cargo run -- validate-distribution dist/*.tar.zst
 
       - name: Upload Distribution
         uses: actions/upload-artifact@v2

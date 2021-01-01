@@ -2,5 +2,6 @@
 build/
 docs/_build/
 dist/
+target/
 venv/
 __pycache__/

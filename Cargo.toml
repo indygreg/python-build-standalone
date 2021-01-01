@@ -1,0 +1,12 @@
+[package]
+name = "pythonbuild"
+version = "0.1.0"
+authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0"
+clap = "2.33"
+goblin = "0.3"
+tar = "0.4"
+zstd = "0.6"
