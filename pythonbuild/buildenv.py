@@ -23,6 +23,10 @@ class ContainerContext(object):
 
         self.tools_path = "/tools"
 
+    @property
+    def is_isolated(self):
+        return True
+
     def copy_file(self, source: pathlib.Path, dest_path=None, dest_name=None):
         dest_name = dest_name or source.name
         dest_path = dest_path or "/build"
@@ -124,6 +128,10 @@ class TempdirContext(object):
         self.td = pathlib.Path(td)
 
         self.tools_path = str(self.td / "tools")
+
+    @property
+    def is_isolated(self):
+        return False
 
     def copy_file(self, source: pathlib.Path, dest_path=None, dest_name=None):
         if dest_path:

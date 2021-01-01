@@ -45,8 +45,21 @@ def install_sccache(build_env):
     into the root directory of the build environment.
     """
     candidates = [
-        ROOT / "sccache",
+        # Prefer a binary in the project itself.
+        ROOT
+        / "sccache",
     ]
+
+    # Look for sccache in $PATH, but only if the build environment
+    # isn't isolated, as copying binaries into an isolated environment
+    # may not run. And running sccache in an isolated environment won't
+    # do anything meaningful unless an external cache is being used.
+    if not build_env.is_isolated:
+        for path in os.environ.get("PATH", "").split(":"):
+            if not path:
+                continue
+
+            candidates.append(pathlib.Path(path) / "sccache")
 
     for candidate in candidates:
         if candidate.exists():
