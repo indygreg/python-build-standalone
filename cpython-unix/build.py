@@ -34,9 +34,24 @@ ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
-SCCACHE = ROOT / "sccache"
 
 MACOSX_DEPLOYMENT_TARGET = "10.9"
+
+
+def install_sccache(build_env):
+    """Attempt to install sccache into the build environment.
+
+    This will attempt to locate a sccache executable and copy it
+    into the root directory of the build environment.
+    """
+    candidates = [
+        ROOT / "sccache",
+    ]
+
+    for candidate in candidates:
+        if candidate.exists():
+            build_env.copy_file(candidate)
+            return
 
 
 def add_target_env(env, platform, build_env):
@@ -162,8 +177,7 @@ def build_binutils(client, image, host_platform):
     archive = download_entry("binutils", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        if SCCACHE.exists():
-            build_env.copy_file(SCCACHE)
+        install_sccache(build_env)
 
         build_env.copy_file(archive)
         build_env.copy_file(SUPPORT / "build-binutils.sh")
@@ -190,8 +204,7 @@ def build_gcc(client, image, host_platform):
     mpfr_archive = download_entry("mpfr", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        if SCCACHE.exists():
-            build_env.copy_file(SCCACHE)
+        install_sccache(build_env)
 
         log("copying archives to container...")
         for a in (gcc_archive, gmp_archive, isl_archive, mpc_archive, mpfr_archive):
@@ -234,8 +247,7 @@ def build_clang(client, image, host_platform):
     libcxxabi_archive = download_entry("libc++abi", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        if SCCACHE.exists():
-            build_env.copy_file(SCCACHE)
+        install_sccache(build_env)
 
         log("copying archives to container...")
         for a in (
