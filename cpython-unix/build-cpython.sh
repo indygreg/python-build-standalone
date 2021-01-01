@@ -247,9 +247,9 @@ if [ -n "${CPYTHON_LTO}" ]; then
 fi
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    # Configure fails to find the textdomain symbol with our libintl
-    # for some reason. So force it.
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=yes"
+    # Configure may detect libintl from non-system sources, such
+    # as Homebrew or MacPorts. So nerf the check to prevent this.
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=no"
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \

@@ -95,6 +95,33 @@ to still be able to build OpenSSL 1.1.1c. It requires certain headers
 to be in place though. When we tried to work around this, it turned out to
 be easier to compile with LibreSSL than with OpenSSL.
 
+gettext / locale Module
+-----------------------
+
+The ``locale`` Python module exposes some functionality from the ``gettext``
+software (specifically ``libintl``). (Technically, this functionality is exposed
+from the ``_locale`` C extension module and ``locale`` re-exports symbols.)
+
+``gettext`` is GPL version 3 or later licensed. And having it statically linked
+in the Python distribution via the ``_locale`` module can have licensing
+implications.
+
+Python's configure script probes for the ability to compile/link with
+``-lintl``. If it works, Python is linked against ``libintl``. If it doesn't,
+``libintl`` is omitted. (Search ``configure`` for ``ac_cv_lib_intl_textdomain``
+and ``-lintl`` references.)
+
+With the container based build environment on Linux, presence of ``gettext``
+and ``libintl`` is deterministic. However, on macOS where there is no
+sandboxing of the build environment, Python's configure script can find and
+use a ``gettext``/``libintl`` installed outside the system default (e.g. via
+Homebrew or MacPorts). This can result in the built Python referencing a shared
+library not reliably present on every macOS machine. So our build system
+disables the configure check.
+
+This means that the ``gettext``/``libintl`` features in the Python distribution
+are not available.
+
 Upgrading CPython
 =================
 

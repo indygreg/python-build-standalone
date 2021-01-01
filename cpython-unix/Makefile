@@ -56,7 +56,7 @@ ifeq ($(HOST_PLATFORM),macos)
     NEED_GCC :=
     NEED_MUSL :=
     NEED_GDBM :=
-    NEED_GETTEXT := 1
+    NEED_GETTEXT :=
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX := 1
