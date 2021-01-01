@@ -566,7 +566,7 @@ def python_build_info(
         if platform == "macos":
             # For some reason, Python's build system adds libintl as a link
             # against libpythonX.Y/pythonX.Y instead of the _locale extension
-            # despite the _location extension being the only user of its
+            # despite the _locale extension being the only user of its
             # symbols. We add libintl here to work around that.
             links.append({"name": "intl", "path_static": "build/lib/libintl.a"})
 
