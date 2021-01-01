@@ -90,7 +90,7 @@ fi
 if [ -n "${CI}" ]; then
   NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
 else
-  NUM_JOBS=0
+  NUM_JOBS=${NUM_CPUS}
 fi
 
 # Stage 1: Build with GCC.
