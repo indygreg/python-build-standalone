@@ -27,6 +27,7 @@ from pythonbuild.utils import (
     add_env_common,
     add_licenses_to_extension_entry,
     download_entry,
+    validate_python_json,
     write_package_versions,
 )
 
@@ -871,6 +872,8 @@ def build_cpython(
         # Add metadata derived from built distribution.
         extra_metadata = build_env.get_file("metadata.json")
         python_info.update(json.loads(extra_metadata))
+
+        validate_python_json(python_info)
 
         with tempfile.NamedTemporaryFile("w") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)

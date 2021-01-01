@@ -25,6 +25,7 @@ from pythonbuild.utils import (
     extract_tar_to_directory,
     extract_zip_to_directory,
     compress_python_archive,
+    validate_python_json,
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
@@ -2272,6 +2273,8 @@ def build_cpython(
                 "tcl8",
                 "tix8.4.3",
             ]
+
+        validate_python_json(python_info)
 
         with (out_dir / "python" / "PYTHON.json").open("w", encoding="utf8") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)

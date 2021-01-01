@@ -206,8 +206,12 @@ def add_licenses_to_extension_entry(entry, ignore_keys=None):
     license_paths = set()
     license_public_domain = None
 
+    have_local_link = False
+
     for link in entry["links"]:
         name = link["name"]
+        if "path_static" in link or "path_dynamic" in link:
+            have_local_link = True
 
         for key, value in DOWNLOADS.items():
             if ignore_keys and key in ignore_keys:
@@ -225,6 +229,11 @@ def add_licenses_to_extension_entry(entry, ignore_keys=None):
             licenses |= set(value["licenses"])
             license_paths.add("licenses/%s" % value["license_file"])
             license_public_domain = value.get("license_public_domain", False)
+
+    if have_local_link and not have_licenses:
+        raise Exception(
+            "missing license for local library for extension entry: %s" % entry
+        )
 
     if not have_licenses:
         return
@@ -273,3 +282,38 @@ def exec_and_log(args, cwd, env):
     if p.returncode:
         print("process exited %d" % p.returncode)
         sys.exit(p.returncode)
+
+
+def validate_python_json(info):
+    """Validate a PYTHON.json file for problems.
+
+    Raises an exception if an issue is detected.
+    """
+
+    for name, variants in info["build_info"]["extensions"].items():
+        for ext in variants:
+            variant = ext["variant"]
+
+            local_links = set()
+
+            for link in ext["links"]:
+                if "path_static" in link:
+                    local_links.add(link["path_static"])
+                if "path_dynamic" in link:
+                    local_links.add(link["path_dynamic"])
+
+                if not local_links and "framework" not in link and "system" not in link:
+                    raise Exception(
+                        "Invalid link entry for extension %s[%s]: link type not defined"
+                        % (name, variant)
+                    )
+
+            if (
+                local_links
+                and not ext.get("licenses")
+                and not ext.get("license_public_domain")
+            ):
+                raise Exception(
+                    "Missing license annotations for extension %s[%s] for library files %s"
+                    % (name, variant, ", ".join(sorted(local_links)))
+                )
