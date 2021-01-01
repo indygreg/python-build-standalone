@@ -229,7 +229,7 @@ DOWNLOADS = {
         "size": 3425862,
         "sha256": "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d",
         "version": "6.2",
-        "library_names": ["ncurses", "panel"],
+        "library_names": ["ncurses", "ncursesw", "panel", "panelw"],
         "licenses": ["X11"],
         "license_file": "LICENSE.ncurses.txt",
     },
