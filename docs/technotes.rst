@@ -62,8 +62,7 @@ readline / libedit / ncurses
 
 Python has the option of building its ``readline`` extension against
 either ``libreadline`` or ``libedit``. ``libreadline`` is licensed GNU
-GPL Version 3 and ``libedit`` has a more permissive license. We choose
-to link against ``libedit`` because of the more permissive license.
+GPL Version 3 and ``libedit`` has a more permissive license.
 
 ``libedit``/``libreadline`` link against a curses library, most likely
 ``ncurses``. And ``ncurses`` has tie-ins with a terminal database. This
@@ -76,8 +75,12 @@ On macOS, we statically link a ``libedit`` we compile ourselves. We
 dynamically link against ``libncurses``, which is provided by the
 system, typically in ``/usr/lib``.
 
-On Linux, we statically link a ``libedit`` we compile ourselves, which
-is compiled against a ``libncurses`` we build ourselves.
+On Linux, we produce ``readline`` extension module variants compiled
+against both ``libreadline`` and ``libedit``, which are statically linked
+against libraries built ourselves. These libraries each statically link
+against a ``libncurses`` built ourselves. The ``readline`` extension
+module variant is the default, as Python compiles against ``readline``
+by default.
 
 OpenSSL / LibreSSL
 ------------------
