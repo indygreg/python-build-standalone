@@ -8,7 +8,7 @@ set -ex
 ROOT=$(pwd)
 SCCACHE="${ROOT}/sccache"
 
-tar --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-Darwin-x86_64.tar.gz
+tar --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-macos-universal.tar.gz
 
 mkdir ninja
 pushd ninja
