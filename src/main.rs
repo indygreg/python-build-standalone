@@ -24,24 +24,15 @@ lazy_static! {
                 max_compatibility_version: "3.8.0".try_into().unwrap(),
             },
             MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.8d.dylib".to_string(),
+                max_compatibility_version: "3.8.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
             },
-            // TODO remove these references?
             MachOAllowedDylib {
-                name: "/install/lib/libpython3.8.dylib".to_string(),
-                max_compatibility_version: "3.8.0".try_into().unwrap(),
-            },
-            MachOAllowedDylib {
-                name: "/install/lib/libpython3.8d.dylib".to_string(),
-                max_compatibility_version: "3.8.0".try_into().unwrap(),
-            },
-            MachOAllowedDylib {
-                name: "/install/lib/libpython3.9.dylib".to_string(),
-                max_compatibility_version: "3.9.0".try_into().unwrap(),
-            },
-            MachOAllowedDylib {
-                name: "/install/lib/libpython3.9d.dylib".to_string(),
+                name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
             },
             MachOAllowedDylib {

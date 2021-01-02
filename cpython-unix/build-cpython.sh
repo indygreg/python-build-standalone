@@ -285,18 +285,19 @@ fi
 # LD_LIBRARY_PATH pointing to the directory containing libpython.
 if [ "${PYBUILD_SHARED}" = "1" ]; then
     if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-        LIBPYTHON_SHARED_LIBRARY=${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+        LIBPYTHON_SHARED_LIBRARY_BASENAME=libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+        LIBPYTHON_SHARED_LIBRARY=${ROOT}/out/python/install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME}
 
         # There's only 1 dylib produced on macOS and it has the binary suffix.
         install_name_tool \
-            -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib @executable_path/../lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib \
+            -change /install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME} @executable_path/../lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME} \
             ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
 
         # Python's build system doesn't make this file writable.
-        chmod 755 ${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+        chmod 755 ${ROOT}/out/python/install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME}
         install_name_tool \
-            -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib @executable_path/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib \
-            ${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+            -change /install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME} @executable_path/${LIBPYTHON_SHARED_LIBRARY_BASENAME} \
+            ${ROOT}/out/python/install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME}
 
         # We also normalize /tools/deps/lib/libz.1.dylib to the system location.
         install_name_tool \
@@ -304,11 +305,11 @@ if [ "${PYBUILD_SHARED}" = "1" ]; then
             ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
         install_name_tool \
             -change /tools/deps/lib/libz.1.dylib /usr/lib/libz.1.dylib \
-            ${ROOT}/out/python/install/lib/libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
+            ${ROOT}/out/python/install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME}
 
         if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
             install_name_tool \
-                -change /install/lib/libpython${PYTHON_MAJMIN_VERSION}.dylib @executable_path/../lib/libpython${PYTHON_MAJMIN_VERSION}.dylib \
+                -change /install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME} @executable_path/../lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME} \
                 ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}
         fi
     else
