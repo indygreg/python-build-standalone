@@ -167,6 +167,7 @@ dependencies = [
  "anyhow",
  "clap",
  "goblin",
+ "scroll",
  "tar",
  "zstd",
 ]

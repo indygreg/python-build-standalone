@@ -5,6 +5,8 @@
 use {
     anyhow::{anyhow, Context, Result},
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
+    goblin::mach::load_command::CommandVariant,
+    scroll::Pread,
     std::{
         io::Read,
         path::{Path, PathBuf},
@@ -13,7 +15,6 @@ use {
 
 /// dylib paths that we are allowed to load.
 const MACHO_ALLOW_LIBRARIES: &[&str] = &[
-    "self",
     "@executable_path/../lib/libpython3.8.dylib",
     "@executable_path/../lib/libpython3.9.dylib",
     // TODO fix these references?
@@ -39,10 +40,21 @@ const MACHO_ALLOW_LIBRARIES: &[&str] = &[
     "/usr/lib/libz.1.dylib",
 ];
 
-fn validate_macho(path: &Path, macho: &goblin::mach::MachO) -> Result<()> {
-    for lib in &macho.libs {
-        if !MACHO_ALLOW_LIBRARIES.contains(lib) {
-            return Err(anyhow!("{} loads illegal library: {}", path.display(), lib));
+fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Result<()> {
+    for load_command in &macho.load_commands {
+        match load_command.command {
+            CommandVariant::LoadDylib(command)
+            | CommandVariant::LoadUpwardDylib(command)
+            | CommandVariant::ReexportDylib(command)
+            | CommandVariant::LoadWeakDylib(command)
+            | CommandVariant::LazyLoadDylib(command) => {
+                let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
+
+                if !MACHO_ALLOW_LIBRARIES.contains(&lib) {
+                    return Err(anyhow!("{} loads illegal library: {}", path.display(), lib));
+                }
+            }
+            _ => {}
         }
     }
 
@@ -72,7 +84,7 @@ fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
             match object {
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
-                        validate_macho(path.as_ref(), &macho)?;
+                        validate_macho(path.as_ref(), &macho, &data)?;
                     }
                     goblin::mach::Mach::Fat(_) => {
                         println!("unexpected fat mach-o binary: {}", path.display());
