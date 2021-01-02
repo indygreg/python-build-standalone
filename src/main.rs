@@ -18,6 +18,21 @@ use {
     },
 };
 
+const ELF_ALLOWED_LIBRARIES: &[&str] = &[
+    // LSB set.
+    "libc.so.6",
+    "libcrypt.so.1",
+    "libdl.so.2",
+    "libm.so.6",
+    "libnsl.so.1",
+    "libpthread.so.0",
+    "librt.so.1",
+    "libutil.so.1",
+    // Our set.
+    "libpython3.8.so.1.0",
+    "libpython3.9.so.1.0",
+];
+
 lazy_static! {
     static ref MACHO_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
         [
@@ -108,6 +123,18 @@ lazy_static! {
     };
 }
 
+fn validate_elf(path: &Path, elf: &goblin::elf::Elf) -> Result<Vec<String>> {
+    let mut errors = vec![];
+
+    for lib in &elf.libraries {
+        if !ELF_ALLOWED_LIBRARIES.contains(lib) {
+            errors.push(format!("{} loads illegal library {}", path.display(), lib));
+        }
+    }
+
+    Ok(errors)
+}
+
 fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Result<Vec<String>> {
     let mut errors = vec![];
 
@@ -162,6 +189,9 @@ fn validate_distribution(path: &Path) -> Result<Vec<String>> {
 
         if let Ok(object) = goblin::Object::parse(&data) {
             match object {
+                goblin::Object::Elf(elf) => {
+                    errors.extend(validate_elf(path.as_ref(), &elf)?);
+                }
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
                         errors.extend(validate_macho(path.as_ref(), &macho, &data)?);
