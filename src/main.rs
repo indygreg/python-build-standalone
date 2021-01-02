@@ -108,7 +108,9 @@ lazy_static! {
     };
 }
 
-fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Result<()> {
+fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Result<Vec<String>> {
+    let mut errors = vec![];
+
     for load_command in &macho.load_commands {
         match load_command.command {
             CommandVariant::LoadDylib(command)
@@ -118,31 +120,31 @@ fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Res
             | CommandVariant::LazyLoadDylib(command) => {
                 let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
 
-                let entry = MACHO_ALLOWED_DYLIBS
-                    .iter()
-                    .find(|l| l.name == lib)
-                    .ok_or_else(|| anyhow!("{} loads illegal library {}", path.display(), lib))?;
-
-                let load_version = MachOPackedVersion::from(command.dylib.compatibility_version);
-                if load_version > entry.max_compatibility_version {
-                    return Err(anyhow!(
-                        "{} loads too new version of {}; got {}, max allowed {}",
-                        path.display(),
-                        lib,
-                        load_version,
-                        entry.max_compatibility_version
-                    ));
+                if let Some(entry) = MACHO_ALLOWED_DYLIBS.iter().find(|l| l.name == lib) {
+                    let load_version =
+                        MachOPackedVersion::from(command.dylib.compatibility_version);
+                    if load_version > entry.max_compatibility_version {
+                        errors.push(format!(
+                            "{} loads too new version of {}; got {}, max allowed {}",
+                            path.display(),
+                            lib,
+                            load_version,
+                            entry.max_compatibility_version
+                        ));
+                    }
+                } else {
+                    errors.push(format!("{} loads illegal library {}", path.display(), lib));
                 }
             }
             _ => {}
         }
     }
 
-    Ok(())
+    Ok(errors)
 }
 
-fn validate_distribution(path: &Path) -> Result<()> {
-    let mut success = true;
+fn validate_distribution(path: &Path) -> Result<Vec<String>> {
+    let mut errors = vec![];
 
     let fh =
         std::fs::File::open(&path).with_context(|| format!("unable to open {}", path.display()))?;
@@ -162,11 +164,10 @@ fn validate_distribution(path: &Path) -> Result<()> {
             match object {
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
-                        validate_macho(path.as_ref(), &macho, &data)?;
+                        errors.extend(validate_macho(path.as_ref(), &macho, &data)?);
                     }
                     goblin::mach::Mach::Fat(_) => {
-                        println!("unexpected fat mach-o binary: {}", path.display());
-                        success = false;
+                        errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
                     }
                 },
                 _ => {}
@@ -174,11 +175,7 @@ fn validate_distribution(path: &Path) -> Result<()> {
         }
     }
 
-    if success {
-        Ok(())
-    } else {
-        Err(anyhow!("errors found"))
-    }
+    Ok(errors)
 }
 
 fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
@@ -187,10 +184,17 @@ fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
     for path in args.values_of("path").unwrap() {
         let path = PathBuf::from(path);
         println!("validating {}", path.display());
-        validate_distribution(&path).unwrap_or_else(|e| {
-            println!("error: {}", e);
+        let errors = validate_distribution(&path)?;
+
+        if errors.is_empty() {
+            println!("{} OK", path.display());
+        } else {
+            for error in errors {
+                println!("error: {}", error);
+            }
+
             success = false;
-        });
+        }
     }
 
     if success {
