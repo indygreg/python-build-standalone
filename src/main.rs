@@ -33,6 +33,57 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "libpython3.9.so.1.0",
 ];
 
+const PE_ALLOWED_LIBRARIES: &[&str] = &[
+    "ADVAPI32.dll",
+    "api-ms-win-core-path-l1-1-0.dll",
+    "api-ms-win-crt-conio-l1-1-0.dll",
+    "api-ms-win-crt-convert-l1-1-0.dll",
+    "api-ms-win-crt-heap-l1-1-0.dll",
+    "api-ms-win-crt-environment-l1-1-0.dll",
+    "api-ms-win-crt-filesystem-l1-1-0.dll",
+    "api-ms-win-crt-locale-l1-1-0.dll",
+    "api-ms-win-crt-math-l1-1-0.dll",
+    "api-ms-win-crt-process-l1-1-0.dll",
+    "api-ms-win-crt-runtime-l1-1-0.dll",
+    "api-ms-win-crt-stdio-l1-1-0.dll",
+    "api-ms-win-crt-string-l1-1-0.dll",
+    "api-ms-win-crt-time-l1-1-0.dll",
+    "api-ms-win-crt-utility-l1-1-0.dll",
+    "bcrypt.dll",
+    "Cabinet.dll",
+    "COMCTL32.dll",
+    "COMDLG32.dll",
+    "CRYPT32.dll",
+    "GDI32.dll",
+    "IMM32.dll",
+    "IPHLPAPI.DLL",
+    "KERNEL32.dll",
+    "msi.dll",
+    "NETAPI32.dll",
+    "ole32.dll",
+    "OLEAUT32.dll",
+    "RPCRT4.dll",
+    "SHELL32.dll",
+    "SHLWAPI.dll",
+    "USER32.dll",
+    "USERENV.dll",
+    "VERSION.dll",
+    "VCRUNTIME140.dll",
+    "WINMM.dll",
+    "WS2_32.dll",
+    // Our libraries.
+    "libcrypto-1_1.dll",
+    "libcrypto-1_1-x64.dll",
+    "libffi-7.dll",
+    "libssl-1_1.dll",
+    "libssl-1_1-x64.dll",
+    "python38.dll",
+    "python39.dll",
+    "sqlite3.dll",
+    "tcl86t.dll",
+    "tk86t.dll",
+];
+
 lazy_static! {
     static ref MACHO_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
         [
@@ -170,11 +221,23 @@ fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Res
     Ok(errors)
 }
 
-fn validate_distribution(path: &Path) -> Result<Vec<String>> {
+fn validate_pe(path: &Path, pe: &goblin::pe::PE) -> Result<Vec<String>> {
     let mut errors = vec![];
 
-    let fh =
-        std::fs::File::open(&path).with_context(|| format!("unable to open {}", path.display()))?;
+    for lib in &pe.libraries {
+        if !PE_ALLOWED_LIBRARIES.contains(lib) {
+            errors.push(format!("{} loads illegal library {}", path.display(), lib));
+        }
+    }
+
+    Ok(errors)
+}
+
+fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
+    let mut errors = vec![];
+
+    let fh = std::fs::File::open(&dist_path)
+        .with_context(|| format!("unable to open {}", dist_path.display()))?;
 
     let reader = std::io::BufReader::new(fh);
     let dctx = zstd::stream::Decoder::new(reader)?;
@@ -200,6 +263,14 @@ fn validate_distribution(path: &Path) -> Result<Vec<String>> {
                         errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
                     }
                 },
+                goblin::Object::PE(pe) => {
+                    // We don't care about the wininst-*.exe distutils executables.
+                    if path.to_string_lossy().contains("wininst-") {
+                        continue;
+                    }
+
+                    errors.extend(validate_pe(path.as_ref(), &pe)?);
+                }
                 _ => {}
             }
         }
