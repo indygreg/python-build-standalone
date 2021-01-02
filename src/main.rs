@@ -192,10 +192,8 @@ fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Res
     Ok(())
 }
 
-fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
+fn validate_distribution(path: &Path) -> Result<()> {
     let mut success = true;
-
-    let path = PathBuf::from(args.value_of("path").unwrap());
 
     let fh =
         std::fs::File::open(&path).with_context(|| format!("unable to open {}", path.display()))?;
@@ -234,6 +232,25 @@ fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
     }
 }
 
+fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
+    let mut success = true;
+
+    for path in args.values_of("path").unwrap() {
+        let path = PathBuf::from(path);
+        println!("validating {}", path.display());
+        validate_distribution(&path).unwrap_or_else(|e| {
+            println!("error: {}", e);
+            success = false;
+        });
+    }
+
+    if success {
+        Ok(())
+    } else {
+        Err(anyhow!("errors found"))
+    }
+}
+
 fn main_impl() -> Result<()> {
     let matches = App::new("Python Build")
         .setting(AppSettings::ArgRequiredElseHelp)
@@ -246,6 +263,7 @@ fn main_impl() -> Result<()> {
                 .arg(
                     Arg::with_name("path")
                         .help("Path to tar.zst file to validate")
+                        .multiple(true)
                         .required(true),
                 ),
         )
