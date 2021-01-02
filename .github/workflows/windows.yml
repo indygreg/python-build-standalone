@@ -4,6 +4,36 @@ on:
   schedule:
     - cron: '13 4 * * *'
 jobs:
+  pythonbuild:
+    runs-on: 'windows-2019'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          profile: minimal
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            C:/Rust/.cargo/registry
+            C:/Rust/.cargo/git
+            target
+          key: ${{ runner.os }}-pythonbuild-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build
+        run: |
+          cargo build --release
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: pythonbuild
+          path: target/release/pythonbuild.exe
+
   build:
     strategy:
       fail-fast: false
@@ -17,6 +47,7 @@ jobs:
         profile:
           - 'static-noopt'
           - 'shared-pgo'
+    needs: pythonbuild
     runs-on: 'windows-2019'
     steps:
       - uses: actions/checkout@v2
@@ -34,6 +65,11 @@ jobs:
         with:
           python-version: '3.8'
 
+      - name: Download pythonbuild Executable
+        uses: actions/download-artifact@v2
+        with:
+          name: pythonbuild
+
       # We need to do this before we activate the VC++ environment or else binary packages
       # don't get compiled properly.
       - name: Bootstrap Python environment
@@ -45,6 +81,11 @@ jobs:
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ matrix.vcvars }}"
           py.exe build-windows.py --python ${{ matrix.py }} --sh c:\tools\cygwin\bin\sh.exe --profile ${{ matrix.profile }}
+
+      - name: Validate Distribution
+        run: |
+          $Dists = Resolve-Path -Path "dist/*.tar.zst" -Relative
+          .\pythonbuild.exe validate-distribution $Dists
 
       - name: Upload Distributions
         uses: actions/upload-artifact@v2
