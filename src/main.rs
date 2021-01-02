@@ -6,39 +6,167 @@ use {
     anyhow::{anyhow, Context, Result},
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
     goblin::mach::load_command::CommandVariant,
+    lazy_static::lazy_static,
     scroll::Pread,
     std::{
+        convert::{TryFrom, TryInto},
         io::Read,
         path::{Path, PathBuf},
+        str::FromStr,
     },
 };
 
-/// dylib paths that we are allowed to load.
-const MACHO_ALLOW_LIBRARIES: &[&str] = &[
-    "@executable_path/../lib/libpython3.8.dylib",
-    "@executable_path/../lib/libpython3.9.dylib",
-    // TODO fix these references?
-    "/install/lib/libpython3.8.dylib",
-    "/install/lib/libpython3.8d.dylib",
-    "/install/lib/libpython3.9.dylib",
-    "/install/lib/libpython3.9d.dylib",
-    "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit",
-    "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices",
-    "/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon",
-    "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
-    "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics",
-    "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices",
-    "/System/Library/Frameworks/CoreText.framework/Versions/A/CoreText",
-    "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
-    "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
-    "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration",
-    "/usr/lib/libSystem.B.dylib",
-    "/usr/lib/libedit.3.dylib",
-    "/usr/lib/libncurses.5.4.dylib",
-    "/usr/lib/libobjc.A.dylib",
-    "/usr/lib/libpanel.5.4.dylib",
-    "/usr/lib/libz.1.dylib",
-];
+lazy_static! {
+    static ref MACHO_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
+        [
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.8.dylib".to_string(),
+                max_compatibility_version: "3.8.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
+                max_compatibility_version: "3.9.0".try_into().unwrap(),
+            },
+            // TODO remove these references?
+            MachOAllowedDylib {
+                name: "/install/lib/libpython3.8.dylib".to_string(),
+                max_compatibility_version: "3.8.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/install/lib/libpython3.8d.dylib".to_string(),
+                max_compatibility_version: "3.8.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/install/lib/libpython3.9.dylib".to_string(),
+                max_compatibility_version: "3.9.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/install/lib/libpython3.9d.dylib".to_string(),
+                max_compatibility_version: "3.9.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit".to_string(),
+                max_compatibility_version: "45.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon".to_string(),
+                max_compatibility_version: "2.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name:
+                    "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation"
+                        .to_string(),
+                max_compatibility_version: "150.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics".to_string(),
+                max_compatibility_version: "64.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/CoreText.framework/Versions/A/CoreText".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation".to_string(),
+                max_compatibility_version: "300.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libedit.3.dylib".to_string(),
+                max_compatibility_version: "2.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libncurses.5.4.dylib".to_string(),
+                max_compatibility_version: "5.4.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libobjc.A.dylib".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libpanel.5.4.dylib".to_string(),
+                max_compatibility_version: "5.4.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libSystem.B.dylib".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libz.1.dylib".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+        ]
+        .to_vec()
+    };
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
+struct MachOPackedVersion {
+    value: u32,
+}
+
+impl TryFrom<&str> for MachOPackedVersion {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let parts = value.split('.').collect::<Vec<_>>();
+
+        if parts.len() != 3 {
+            return Err(anyhow!("packed version must have 3 components"));
+        }
+
+        let major = u32::from_str(parts[0])?;
+        let minor = u32::from_str(parts[1])?;
+        let subminor = u32::from_str(parts[2])?;
+
+        let value = (major << 16) | ((minor & 0xff) << 8) | (subminor & 0xff);
+
+        Ok(Self { value })
+    }
+}
+
+impl From<u32> for MachOPackedVersion {
+    fn from(value: u32) -> Self {
+        Self { value }
+    }
+}
+
+impl std::fmt::Display for MachOPackedVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let major = self.value >> 16;
+        let minor = (self.value >> 8) & 0xff;
+        let subminor = self.value & 0xff;
+
+        f.write_str(&format!("{}.{}.{}", major, minor, subminor))
+    }
+}
+
+/// Describes a mach-o dylib that can be loaded by a distribution.
+#[derive(Clone, Debug, PartialEq)]
+struct MachOAllowedDylib {
+    /// Name of the dylib.
+    ///
+    /// Typically an absolute filesystem path.
+    name: String,
+
+    /// Maximum compatibility version that can be referenced.
+    max_compatibility_version: MachOPackedVersion,
+}
 
 fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Result<()> {
     for load_command in &macho.load_commands {
@@ -50,8 +178,20 @@ fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Res
             | CommandVariant::LazyLoadDylib(command) => {
                 let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
 
-                if !MACHO_ALLOW_LIBRARIES.contains(&lib) {
-                    return Err(anyhow!("{} loads illegal library: {}", path.display(), lib));
+                let entry = MACHO_ALLOWED_DYLIBS
+                    .iter()
+                    .find(|l| l.name == lib)
+                    .ok_or_else(|| anyhow!("{} loads illegal library {}", path.display(), lib))?;
+
+                let load_version = MachOPackedVersion::from(command.dylib.compatibility_version);
+                if load_version > entry.max_compatibility_version {
+                    return Err(anyhow!(
+                        "{} loads too new version of {}; got {}, max allowed {}",
+                        path.display(),
+                        lib,
+                        load_version,
+                        entry.max_compatibility_version
+                    ));
                 }
             }
             _ => {}
