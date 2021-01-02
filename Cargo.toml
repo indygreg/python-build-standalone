@@ -11,4 +11,10 @@ goblin = "0.3"
 lazy_static = "1.4"
 scroll = "0.10"
 tar = "0.4"
+version-compare = "0.0.11"
 zstd = "0.6"
+
+[dependencies.tugger-binary-analysis]
+version = "0.1.0-pre"
+git = "https://github.com/indygreg/PyOxidizer.git"
+rev = "e86b2f46ed6b449bdb912900b0ac83576ad5ebe9"

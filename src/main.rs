@@ -14,6 +14,7 @@ use {
     std::{
         convert::TryInto,
         io::Read,
+        ops::Deref,
         path::{Path, PathBuf},
     },
 };
@@ -85,6 +86,8 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
 ];
 
 lazy_static! {
+    static ref GLIBC_MAX_VERSION: version_compare::Version<'static> =
+        version_compare::Version::from("2.19").unwrap();
     static ref MACHO_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
         [
             MachOAllowedDylib {
@@ -174,12 +177,36 @@ lazy_static! {
     };
 }
 
-fn validate_elf(path: &Path, elf: &goblin::elf::Elf) -> Result<Vec<String>> {
+fn validate_elf(path: &Path, elf: &goblin::elf::Elf, bytes: &[u8]) -> Result<Vec<String>> {
     let mut errors = vec![];
 
     for lib in &elf.libraries {
         if !ELF_ALLOWED_LIBRARIES.contains(lib) {
             errors.push(format!("{} loads illegal library {}", path.display(), lib));
+        }
+    }
+
+    let mut undefined_symbols = tugger_binary_analysis::find_undefined_elf_symbols(&bytes, elf);
+    undefined_symbols.sort();
+
+    for symbol in undefined_symbols {
+        if let Some(version) = &symbol.version {
+            let parts: Vec<&str> = version.splitn(2, '_').collect();
+
+            if parts.len() == 2 {
+                if parts[0] == "GLIBC" {
+                    let v =
+                        version_compare::Version::from(parts[1]).expect("unable to parse version");
+
+                    if &v > GLIBC_MAX_VERSION.deref() {
+                        errors.push(format!(
+                            "{} references too new glibc symbol {:?}",
+                            path.display(),
+                            symbol
+                        ))
+                    }
+                }
+            }
         }
     }
 
@@ -253,7 +280,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         if let Ok(object) = goblin::Object::parse(&data) {
             match object {
                 goblin::Object::Elf(elf) => {
-                    errors.extend(validate_elf(path.as_ref(), &elf)?);
+                    errors.extend(validate_elf(path.as_ref(), &elf, &data)?);
                 }
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
