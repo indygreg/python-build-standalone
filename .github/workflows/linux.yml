@@ -8,7 +8,7 @@ jobs:
   # We need to build our own sccache until e6326bc8a20ee06af37e16a3a7a14e3374c66c66
   # is in a released version.
   sccache:
-    runs-on: 'ubuntu-latest'
+    runs-on: 'ubuntu-20.04'
     steps:
       - name: Install System Dependencies
         run: |
@@ -35,7 +35,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-${{ steps.install-rust.outputs.rustc}}-sccache-${{ hashFiles('Cargo.lock') }}
+          key: ${{ runner.os }}-20.04-${{ steps.install-rust.outputs.rustc}}-sccache-${{ hashFiles('Cargo.lock') }}
 
       - name: Build sccache
         run: |
@@ -71,7 +71,7 @@ jobs:
 
     needs:
       - sccache
-    runs-on: 'ubuntu-latest'
+    runs-on: 'ubuntu-20.04'
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
