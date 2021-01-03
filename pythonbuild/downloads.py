@@ -285,10 +285,10 @@ DOWNLOADS = {
         "version": "1.30.1",
     },
     "setuptools": {
-        "url": "https://files.pythonhosted.org/packages/ea/81/a7428efddb7bac2db7969cc02c94d89f57a98acdc0b6f760c7e123234ab5/setuptools-51.1.0.tar.gz",
-        "size": 2050951,
-        "sha256": "b4f6f2e65bbdb66452f6f94da46a436da962da3ec1f8a412fdba3bcd4fdc4eb7",
-        "version": "51.1.0",
+        "url": "https://files.pythonhosted.org/packages/94/23/e9e3d96500c063129a19feb854efbb01e6ffe7d913f1da8176692418ab8e/setuptools-51.1.1.tar.gz",
+        "size": 2051053,
+        "sha256": "0b43d1e0e0ac1467185581c2ceaf86b5c1a1bc408f8f6407687b0856302d1850",
+        "version": "51.1.1",
     },
     "sqlite": {
         "url": "https://www.sqlite.org/2020/sqlite-autoconf-3340000.tar.gz",
