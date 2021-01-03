@@ -183,7 +183,7 @@ def compress_python_archive(
     try:
         with source_path.open("rb") as ifh, temp_path.open("wb") as ofh:
             params = zstandard.ZstdCompressionParameters.from_level(
-                22, compression_strategy=zstandard.STRATEGY_BTULTRA2
+                22, strategy=zstandard.STRATEGY_BTULTRA2
             )
             cctx = zstandard.ZstdCompressor(compression_params=params)
             cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
