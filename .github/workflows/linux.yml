@@ -47,6 +47,36 @@ jobs:
           name: sccache
           path: target/x86_64-unknown-linux-musl/release/sccache
 
+  pythonbuild:
+    runs-on: 'ubuntu-20.04'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          profile: minimal
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-pythonbuild-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build
+        run: |
+          cargo build --release
+
+      - name: Upload pythonbuild Executable
+        uses: actions/upload-artifact@v2
+        with:
+          name: pythonbuild
+          path: target/release/pythonbuild
+
   build:
     strategy:
       fail-fast: false
@@ -70,6 +100,7 @@ jobs:
             optimizations: 'pgo'
 
     needs:
+      - pythonbuild
       - sccache
     runs-on: 'ubuntu-20.04'
     env:
@@ -87,17 +118,16 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          default: true
-          profile: minimal
-
       - name: Download sccache
         uses: actions/download-artifact@v2
         with:
           name: sccache
+
+      - name: Download pythonbuild
+        uses: actions/download-artifact@v2
+        with:
+          name: pythonbuild
+          path: build
 
       - name: Start sccache
         run: |
@@ -119,7 +149,8 @@ jobs:
       - name: Validate Distribution
         run: |
           export RUSTC_WRAPPER=$(pwd)/sccache
-          cargo run -- validate-distribution dist/*.tar.zst
+          chmod +x build/pythonbuild
+          build/pythonbuild validate-distribution dist/*.tar.zst
 
       - name: Upload Distribution
         uses: actions/upload-artifact@v2
