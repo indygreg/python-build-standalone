@@ -4,14 +4,16 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import argparse
-import datetime
 import os
 import pathlib
 import subprocess
 import sys
 
 from pythonbuild.downloads import DOWNLOADS
-from pythonbuild.utils import compress_python_archive
+from pythonbuild.utils import (
+    compress_python_archive,
+    release_tag_from_git,
+)
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / "build"
@@ -91,8 +93,7 @@ def main():
     if "PYBUILD_RELEASE_TAG" in os.environ:
         release_tag = os.environ["PYBUILD_RELEASE_TAG"]
     else:
-        now = datetime.datetime.utcnow()
-        release_tag = now.strftime("%Y%m%dT%H%M")
+        release_tag = release_tag_from_git()
 
     archive_components = [
         "cpython-%s" % entry["version"],

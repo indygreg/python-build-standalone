@@ -5,7 +5,6 @@
 
 import argparse
 import concurrent.futures
-import datetime
 import json
 import os
 import pathlib
@@ -25,6 +24,7 @@ from pythonbuild.utils import (
     extract_tar_to_directory,
     extract_zip_to_directory,
     compress_python_archive,
+    release_tag_from_git,
     validate_python_json,
 )
 
@@ -2322,8 +2322,6 @@ def main():
         print("--sh required when building Python 3.8+")
         return 1
 
-    now = datetime.datetime.utcnow()
-
     log_path = BUILD / "build.log"
 
     with log_path.open("wb") as log_fh:
@@ -2365,8 +2363,13 @@ def main():
             libffi_archive=libffi_archive,
         )
 
+        if "PYBUILD_RELEASE_TAG" in os.environ:
+            release_tag = os.environ["PYBUILD_RELEASE_TAG"]
+        else:
+            release_tag = release_tag_from_git()
+
         compress_python_archive(
-            tar_path, DIST, "%s-%s" % (tar_path.stem, now.strftime("%Y%m%dT%H%M")),
+            tar_path, DIST, "%s-%s" % (tar_path.stem, release_tag),
         )
 
 

@@ -19,6 +19,23 @@ from .downloads import DOWNLOADS
 from .logging import log
 
 
+def release_tag_from_git():
+    return (
+        subprocess.check_output(
+            [
+                "git",
+                "log",
+                "-n",
+                "1",
+                "--date=format:%Y%m%dT%H%M",
+                "--pretty=format:%ad",
+            ]
+        )
+        .strip()
+        .decode("ascii")
+    )
+
+
 def hash_path(p: pathlib.Path):
     h = hashlib.sha256()
 

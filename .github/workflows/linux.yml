@@ -136,8 +136,6 @@ jobs:
 
       - name: Build
         run: |
-          export PYBUILD_RELEASE_TAG=$(git log -n 1 --date=format:%Y%m%dT%H%M --pretty=format:%ad)
-
           if [ "${{ matrix.triple }}" = "x86_64-unknown-linux-musl" ]; then
             EXTRA_ARGS=--libressl
           else
