@@ -29,7 +29,7 @@ If you want to extract the distribution with Python, use the
 
 .. code-block:: python
 
-   import tar
+   import tarfile
    import zstandard
 
    with open("path/to/distribution.tar.zstd", "rb") as ifh:
