@@ -13,11 +13,13 @@ tar -xf ncurses-${NCURSES_VERSION}.tar.gz
 
 pushd ncurses-${NCURSES_VERSION}
 
-CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
-    --build=${BUILD_TRIPLE} \
-    --host=${TARGET_TRIPLE} \
-    --prefix=/tools/deps \
-    --without-cxx \
-    --enable-widec
+CONFIGURE_FLAGS="
+    --build=${BUILD_TRIPLE}
+    --host=${TARGET_TRIPLE}
+    --prefix=/tools/deps
+    --without-cxx
+    --enable-widec"
+
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure ${CONFIGURE_FLAGS}
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
