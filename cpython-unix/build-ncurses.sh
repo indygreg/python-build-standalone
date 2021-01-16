@@ -18,6 +18,8 @@ CONFIGURE_FLAGS="
     --host=${TARGET_TRIPLE}
     --prefix=/tools/deps
     --without-cxx
+    --without-tests
+    --without-manpages
     --enable-widec"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
