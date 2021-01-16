@@ -1,4 +1,3 @@
 docker
 jinja2
-pip-tools
 zstandard
