@@ -55,7 +55,7 @@ and use their own version of ``readline``/``libedit`` and
 because the build environment is different from your
 machine, the default search locations for the *terminfo
 database* built into binaries distributed with this project
-point to a path that doesn't exist. The *terminfo database*
+may point to a path that doesn't exist. The *terminfo database*
 cannot be located and ``readline``/``libedit`` do not know
 how to convert special key presses to special behavior.
 
@@ -77,6 +77,10 @@ If running macOS::
 e.g.::
 
    $ TERMINFO_DIRS=/etc/terminfo:/lib/terminfo:/usr/share/terminfo install/bin/python3.9
+
+The macOS distributions built with this project should automatically
+use the terminfo database in ``/usr/share/terminfo``. Please file
+a bug report if the macOS distributions do not behave as expected.
 
 .. _quirk_tcl:
 
