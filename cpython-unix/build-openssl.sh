@@ -23,10 +23,17 @@ if [ "${CC}" = "musl-clang" ]; then
     EXTRA_FLAGS="${EXTRA_FLAGS} no-async -DOPENSSL_NO_ASYNC -D__STDC_NO_ATOMICS__=1 no-engine -DOPENSSL_NO_SECURE_MEMORY"
 fi
 
+# The -arch cflags confuse Configure. And OpenSSL adds them anyway.
+# Strip them.
+EXTRA_TARGET_CFLAGS=${EXTRA_TARGET_CFLAGS/\-arch arm64/}
+EXTRA_TARGET_CFLAGS=${EXTRA_TARGET_CFLAGS/\-arch x86_64/}
+
 EXTRA_FLAGS="${EXTRA_FLAGS} ${EXTRA_TARGET_CFLAGS}"
 
-if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+if [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin18.7.0" ]; then
   OPENSSL_TARGET=darwin64-x86_64-cc
+elif [ "${TARGET_TRIPLE}" = "aarch64-apple-darwin" ]; then
+  OPENSSL_TARGET=darwin64-arm64-cc
 elif [ "${TARGET_TRIPLE}" = "x86_64-unknown-linux-gnu" ]; then
   OPENSSL_TARGET=linux-x86_64
 else
