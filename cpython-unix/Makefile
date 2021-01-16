@@ -41,6 +41,7 @@ RUN_BUILD = $(BUILD) \
     $(NULL)
 
 ifeq ($(HOST_PLATFORM),linux64)
+    NEED_BDB := 1
     NEED_BINUTILS := 1
     NEED_GCC := 1
     NEED_MUSL :=
@@ -52,6 +53,7 @@ ifeq ($(HOST_PLATFORM),linux64)
 endif
 
 ifeq ($(HOST_PLATFORM),macos)
+    NEED_BDB :=
     NEED_BINUTILS :=
     NEED_GCC :=
     NEED_MUSL :=
@@ -271,7 +273,7 @@ $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar: $(TOOLCHAIN_DEPENDS) $(HER
 	$(RUN_BUILD) zlib
 
 PYTHON_DEPENDS := \
-    $(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_GETTEXT),$(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar) \

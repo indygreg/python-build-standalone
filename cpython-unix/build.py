@@ -706,7 +706,6 @@ def build_cpython(
 
         # TODO support bdb/gdbm toggle
         packages = {
-            "bdb",
             "bzip2",
             "libedit",
             "libffi",
@@ -718,6 +717,10 @@ def build_cpython(
             "xz",
             "zlib",
         }
+
+        bdb = host_platform != "macos"
+        if bdb:
+            packages.add("bdb")
 
         if libressl:
             packages.add("libressl")
