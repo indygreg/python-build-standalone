@@ -477,6 +477,18 @@ mkdir ${ROOT}/out/python/build/lib
 cp -av ${TOOLS_PATH}/deps/lib/*.a ${ROOT}/out/python/build/lib/
 cp -av ${TOOLS_PATH}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
 
+# On Apple, Python 3.9+ uses __builtin_available() to sniff for feature
+# availability. This symbol is defined by clang_rt, which isn't linked
+# by default. When building a static library, one must explicitly link
+# against clang_rt or you will get an undefined symbol error for
+# ___isOSVersionAtLeast.
+#
+# We copy the libclang_rt.<platform>.a library from our clang into the
+# distribution so it is available. See documentation in quirks.rst for more.
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+  cp -av $(dirname $(which clang))/../lib/clang/*/lib/darwin/libclang_rt.osx.a ${ROOT}/out/python/build/lib/
+fi
+
 # And prune libraries we never reference.
 rm -f ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 

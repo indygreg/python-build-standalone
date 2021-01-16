@@ -159,3 +159,28 @@ For reference, PyOxidizer's approach to this problem is to copy all the
 run time, the ``TCL_LIBRARY`` environment variable is set from within
 the process before the Python interpreter is initialized. This ensures the
 ``.tcl`` files from the Python distribution are used.
+
+.. _quirk_macos_linking:
+
+Linking Static Library on macOS
+===============================
+
+Python 3.9+ makes use of the ``__builtin_available()`` compiler feature.
+This functionality requires a symbol from ``libclang_rt``, which may not
+be linked by default. Failure to link against ``libclang_rt`` could result
+in a linker error due to an undefined symbol ``___isOSVersionAtLeast``.
+
+To work around this linker failure, link against the static library
+``libclang_rt.<platform>.a`` present in the Clang installation. e.g.
+``libclang_rt.osx.a``. You can find this library by invoking
+``clang --print-search-dirs`` and looking in the ``lib/darwin`` directory
+under the printed ``libraries`` directory. An example path is
+``/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.osx.a``.
+
+A copy of the ``libclang_rt.<platform>.a`` from the Clang used to build
+the distribution is included in the archive. However, it isn't annotated
+in ``PYTHON.json`` because we're unsure if using the file with another
+build/version of Clang is supported. Use at your own risk.
+
+See https://jonnyzzz.com/blog/2018/06/05/link-error-2/ and
+https://jonnyzzz.com/blog/2018/06/13/link-error-3/ for more on this topic.
