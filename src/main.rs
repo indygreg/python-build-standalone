@@ -287,7 +287,10 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                         errors.extend(validate_macho(path.as_ref(), &macho, &data)?);
                     }
                     goblin::mach::Mach::Fat(_) => {
-                        errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
+                        if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
+                            errors
+                                .push(format!("unexpected fat mach-o binary: {}", path.display()));
+                        }
                     }
                 },
                 goblin::Object::PE(pe) => {
