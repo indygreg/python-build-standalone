@@ -36,7 +36,11 @@ BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
 
-MACOSX_DEPLOYMENT_TARGET = "10.9"
+# Target older macOS on x86 for maximum run-time compatibility.
+MACOSX_DEPLOYMENT_TARGET_X86 = "10.9"
+
+# ARM macOS only supports 11.0+, so we can use a newer target.
+MACOSX_DEPLOYMENT_TARGET_ARM = "11.0"
 
 
 def install_sccache(build_env):
@@ -68,7 +72,7 @@ def install_sccache(build_env):
             return
 
 
-def add_target_env(env, platform, build_env):
+def add_target_env(env, platform, target_triple, build_env):
     add_env_common(env)
 
     env["PYBUILD_PLATFORM"] = platform
@@ -79,24 +83,40 @@ def add_target_env(env, platform, build_env):
         env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
 
     if platform == "macos":
-        env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET
         env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
-        env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
+
+        if target_triple == "x86_64-apple-darwin":
+            env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_X86
+            env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
+            arch = "x86_64"
+        elif target_triple == "aarch64-apple-darwin":
+            env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_ARM
+            env["TARGET_TRIPLE"] = "aarch64-apple-darwin"
+            arch = "arm64"
+        else:
+            raise ValueError("unhandled target triple: %s" % target_triple)
+
         env["PATH"] = "/usr/bin:/bin"
-        env["EXTRA_TARGET_CFLAGS"] = " ".join(
-            [
-                # Suppress extremely verbose warnings we see with LLVM 10.
-                "-Wno-nullability-completeness",
-                "-Wno-expansion-to-defined",
-                # LLVM 11 contains commit https://reviews.llvm.org/D83250,
-                # which enables -Werror for undef-prefix=TARGET_OS_.
-                # However, the macOS SDK has headers that reference deprecated
-                # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
-                # to work with the macOS SDKs out of the box. We work around
-                # this by undoing the -Werror=undef-prefix in that commit.
-                "-Wno-undef-prefix",
-            ]
-        )
+
+        extra_target_cflags = [
+            # Suppress extremely verbose warnings we see with LLVM 10.
+            "-Wno-nullability-completeness",
+            "-Wno-expansion-to-defined",
+            # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+            # which enables -Werror for undef-prefix=TARGET_OS_.
+            # However, the macOS SDK has headers that reference deprecated
+            # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+            # to work with the macOS SDKs out of the box. We work around
+            # this by undoing the -Werror=undef-prefix in that commit.
+            "-Wno-undef-prefix",
+            "-arch",
+            arch,
+        ]
+
+        extra_target_ldflags = ["-arch", arch]
+
+        env["EXTRA_TARGET_CFLAGS"] = " ".join(extra_target_cflags)
+        env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
 
         # This path exists on GitHub Actions workers and is the 10.15 SDK. Using this
         # SDK works around issues with the 11.0 SDK not working with CPython.
@@ -179,7 +199,7 @@ def simple_build(
         if "musl" in target_triple:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-%s.sh" % entry, environment=env)
 
@@ -354,7 +374,7 @@ def build_libedit(
         if "musl" in target_triple:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-libedit.sh", environment=env)
         build_env.get_tools_archive(dest_archive, "deps")
@@ -389,7 +409,7 @@ def build_readline(
         if "musl" in target_triple:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-readline.sh", environment=env)
         build_env.get_tools_archive(dest_archive, "deps")
@@ -430,7 +450,7 @@ def build_tix(client, image, host_platform, target_triple, optimizations, dest_a
         if "musl" in target_triple:
             env["CC"] = "musl-clang"
 
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-tix.sh", environment=env)
         build_env.get_tools_archive(dest_archive, "deps")
@@ -789,7 +809,7 @@ def build_cpython(
         if optimizations in ("lto", "pgo+lto"):
             env["CPYTHON_LTO"] = "1"
 
-        add_target_env(env, host_platform, build_env)
+        add_target_env(env, host_platform, target_triple, build_env)
 
         build_env.run("build-cpython.sh", environment=env)
 

@@ -23,12 +23,83 @@ tar -xf Python-${PYTHON_VERSION}.tar.xz
 tar -xf setuptools-${SETUPTOOLS_VERSION}.tar.gz
 tar -xf pip-${PIP_VERSION}.tar.gz
 
+# If we are cross-compiling, we need to build a host Python to use during
+# the build.
+if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+  pushd "Python-${PYTHON_VERSION}"
+
+  ./configure --prefix "${TOOLS_PATH}/pyhost"
+  make -j "${NUM_CPUS}" install
+  # configure will look for a pythonX.Y executable. Install our host Python
+  # at the front of PATH.
+  export PATH="${TOOLS_PATH}/pyhost/bin:${PATH}"
+
+  popd
+  # Nuke and re-pave the source directory out of paranoia.
+  rm -rf "Python-${PYTHON_VERSION}"
+  tar -xf "Python-${PYTHON_VERSION}.tar.xz"
+fi
+
 cat Setup.local
 mv Setup.local Python-${PYTHON_VERSION}/Modules/Setup.local
 
 cat Makefile.extra
 
 pushd Python-${PYTHON_VERSION}
+
+# configure doesn't support cross-compiling on Apple. Teach it.
+patch -p1 << "EOF"
+diff --git a/configure b/configure
+index 1d81c00c63..8a7370c291 100755
+--- a/configure
++++ b/configure
+@@ -3358,6 +3358,9 @@ if test "$cross_compiling" = yes; then
+ 	*-*-cygwin*)
+ 		_host_cpu=
+ 		;;
++	*-*-darwin*)
++		_host_cpu=
++		;;
+ 	*-*-vxworks*)
+ 		_host_cpu=$host_cpu
+ 		;;
+@@ -6199,13 +6202,6 @@ esac
+   fi
+ fi
+ 
+-if test "$cross_compiling" = yes; then
+-    case "$READELF" in
+-	readelf|:)
+-	as_fn_error $? "readelf for the host is required for cross builds" "$LINENO" 5
+-	;;
+-    esac
+-fi
+ 
+ 
+ 
+EOF
+
+# Add a make target to write the PYTHON_FOR_BUILD variable so we can
+# invoke the host Python on our own.
+patch -p1 << "EOF"
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index f128444b98..d2013a2987 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -1930,6 +1930,12 @@ patchcheck: @DEF_MAKE_RULE@
+ 
+ Python/thread.o: @THREADHEADERS@ $(srcdir)/Python/condvar.h
+ 
++write-python-for-build:
++	echo "#!/bin/sh" > python-for-build
++	echo "set -e" >> python-for-build
++	echo "exec env $(PYTHON_FOR_BUILD) \$$@" >> python-for-build
++	chmod +x python-for-build
++
+ # Declare targets that aren't real files
+ .PHONY: all build_all sharedmods check-clean-src oldsharedmods test quicktest
+ .PHONY: install altinstall oldsharedinstall bininstall altbininstall
+EOF
 
 # We build all extensions statically. So remove the auto-generated make
 # rules that produce shared libraries for them.
@@ -210,8 +281,13 @@ fi
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
+LDFLAGS="${EXTRA_TARGET_LDFLAGS} -L${TOOLS_PATH}/deps/lib"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    # Ensure we use the configured SDK. This also enables cross-compilation.
+    CFLAGS="${CFLAGS} -isysroot ${MACOS_SDK_PATH}"
+    LDFLAGS="${LDFLAGS} -isysroot ${MACOS_SDK_PATH}"
+
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/lib/libffi-3.2.1/include -I${TOOLS_PATH}/deps/include/uuid"
     CFLAGS="${CFLAGS} -F${MACOS_SDK_PATH}/System/Library/Frameworks"
 
@@ -220,9 +296,13 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
 fi
 
 CPPFLAGS=$CFLAGS
-LDFLAGS="-L${TOOLS_PATH}/deps/lib"
 
-CONFIGURE_FLAGS="--prefix=/install --with-openssl=${TOOLS_PATH}/deps --without-ensurepip"
+CONFIGURE_FLAGS="
+    --build=${BUILD_TRIPLE} \
+    --host=${TARGET_TRIPLE}
+    --prefix=/install
+    --with-openssl=${TOOLS_PATH}/deps
+    --without-ensurepip"
 
 if [ "${CC}" = "musl-clang" ]; then
     CFLAGS="${CFLAGS} -static"
@@ -250,6 +330,23 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # Configure may detect libintl from non-system sources, such
     # as Homebrew or MacPorts. So nerf the check to prevent this.
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=no"
+
+    if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+      # Python's configure doesn't support cross-compiling on macOS. So we need
+      # to explicitly set MACHDEP to avoid busted checks. The code for setting
+      # MACHDEP also sets ac_sys_system/ac_sys_release, so we have to set
+      # those as well.
+      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=darwin"
+      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=Darwin"
+      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_release=$(uname -r)"
+
+      # getaddrinfo buggy test fails for some reason.
+      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
+
+      # We also need to nerf the /dev/* check
+      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
+      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
+    fi
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
@@ -275,8 +372,14 @@ else
     PYTHON_BINARY_SUFFIX=
 fi
 
-# Python interpreter to use during the build.
-if [ -z "${BUILD_PYTHON}" ]; then
+# Python interpreter to use during the build. When cross-compiling,
+# we have the Makefile emit a script which sets some environment
+# variables that force the invoked Python to pick up the configuration
+# of the target Python but invoke the host binary.
+if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+    make write-python-for-build
+    BUILD_PYTHON=$(pwd)/python-for-build
+else
     BUILD_PYTHON=${ROOT}/out/python/install/bin/python3
 fi
 

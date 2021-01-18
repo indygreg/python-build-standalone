@@ -31,7 +31,7 @@ def main():
     elif sys.platform == "darwin":
         host_platform = "macos"
         default_target_triple = "x86_64-apple-darwin"
-        targets = {default_target_triple}
+        targets = {default_target_triple, "aarch64-apple-darwin"}
     else:
         print("unsupport build platform: %s" % sys.platform)
         return 1
