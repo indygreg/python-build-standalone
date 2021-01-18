@@ -19,6 +19,15 @@ use {
     },
 };
 
+const RECOGNIZED_TRIPLES: &[&str] = &[
+    "aarch64-apple-darwin",
+    "i686-pc-windows-msvc",
+    "x86_64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+];
+
 const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     // LSB set.
     "libc.so.6",
@@ -213,8 +222,28 @@ fn validate_elf(path: &Path, elf: &goblin::elf::Elf, bytes: &[u8]) -> Result<Vec
     Ok(errors)
 }
 
-fn validate_macho(path: &Path, macho: &goblin::mach::MachO, bytes: &[u8]) -> Result<Vec<String>> {
+fn validate_macho(
+    target_triple: &str,
+    path: &Path,
+    macho: &goblin::mach::MachO,
+    bytes: &[u8],
+) -> Result<Vec<String>> {
     let mut errors = vec![];
+
+    let wanted_cpu_type = match target_triple {
+        "aarch64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_ARM64,
+        "x86_64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_X86_64,
+        _ => return Err(anyhow!("unhandled target triple: {}", target_triple)),
+    };
+
+    if macho.header.cputype() != wanted_cpu_type {
+        errors.push(format!(
+            "{} has incorrect CPU type; got {}, wanted {}",
+            path.display(),
+            macho.header.cputype(),
+            wanted_cpu_type
+        ));
+    }
 
     for load_command in &macho.load_commands {
         match load_command.command {
@@ -266,6 +295,16 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let fh = std::fs::File::open(&dist_path)
         .with_context(|| format!("unable to open {}", dist_path.display()))?;
 
+    let triple = RECOGNIZED_TRIPLES
+        .iter()
+        .find(|triple| dist_path.to_string_lossy().contains(*triple))
+        .ok_or_else(|| {
+            anyhow!(
+                "could not identify triple from distribution filename: {}",
+                dist_path.display()
+            )
+        })?;
+
     let reader = std::io::BufReader::new(fh);
     let dctx = zstd::stream::Decoder::new(reader)?;
     let mut tf = tar::Archive::new(dctx);
@@ -284,7 +323,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                 }
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
-                        errors.extend(validate_macho(path.as_ref(), &macho, &data)?);
+                        errors.extend(validate_macho(triple, path.as_ref(), &macho, &data)?);
                     }
                     goblin::mach::Mach::Fat(_) => {
                         if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
