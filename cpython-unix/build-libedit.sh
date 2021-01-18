@@ -81,6 +81,7 @@ index 5f20ebe..eecc67a 100755
 EOF
 
 cflags="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
+ldflags="${EXTRA_TARGET_LDFLAGS} -L${TOOLS_PATH}/deps/lib"
 
 # musl doesn't define __STDC_ISO_10646__, so work around that.
 if [ "${CC}" = "musl-clang" ]; then
@@ -88,7 +89,7 @@ if [ "${CC}" = "musl-clang" ]; then
 fi
 
 # Install to /tools/deps/libedit so it doesn't conflict with readline's files.
-CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="-L${TOOLS_PATH}/deps/lib" \
+CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="${ldflags}" \
     ./configure \
         --build=${BUILD_TRIPLE} \
         --host=${TARGET_TRIPLE} \
