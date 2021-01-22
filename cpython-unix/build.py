@@ -122,8 +122,8 @@ def add_target_env(env, platform, target_triple, build_env):
             "/Developer/SDKs/MacOSX.sdk "
         )
 
-        if "MACOS_SDK_PATH" in os.environ:
-            sdk_path = os.environ["MACOS_SDK_PATH"]
+        if "APPLE_SDK_PATH" in os.environ:
+            sdk_path = os.environ["APPLE_SDK_PATH"]
         elif os.path.exists(macosx_sdk_path_10_15):
             sdk_path = macosx_sdk_path_10_15
         else:

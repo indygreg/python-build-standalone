@@ -48,6 +48,10 @@ To build a Python distribution for macOS::
 macOS uses the same build code as Linux, just without Docker.
 So similar build configuration options are available.
 
+The ``APPLE_SDK_PATH`` environment variable is recognized as the path
+to the Apple SDK to use. If not defined, the build will attempt to find
+an SDK by running ``xcrun --show-sdk-path``.
+
 Windows
 =======
 
