@@ -134,7 +134,7 @@ def add_target_env(env, platform, target_triple, build_env):
             # The proper way to resolve this path is with xcrun, which
             # will give us the headers that Xcode is configured to use.
             res = subprocess.run(
-                ["xcrun", "--show-sdk-path"],
+                ["xcrun", "--sdk", "macosx", "--show-sdk-path"],
                 check=True,
                 capture_output=True,
                 encoding="utf-8",
