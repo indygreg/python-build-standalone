@@ -88,11 +88,18 @@ def add_target_env(env, platform, target_triple, build_env):
         if target_triple == "x86_64-apple-darwin":
             env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_X86
             env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
-            arch = "x86_64"
+            arches = ["x86_64"]
+            sdk_platform = "macosx"
         elif target_triple == "aarch64-apple-darwin":
             env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_ARM
             env["TARGET_TRIPLE"] = "aarch64-apple-darwin"
-            arch = "arm64"
+            arches = ["arm64"]
+            sdk_platform = "macosx"
+        elif target_triple == "aarch64-apple-ios":
+            env["TARGET_TRIPLE"] = "aarch64-apple-ios"
+            # TODO arm64e not supported by open source Clang.
+            arches = ["arm64"]
+            sdk_platform = "iphoneos"
         else:
             raise ValueError("unhandled target triple: %s" % target_triple)
 
@@ -109,11 +116,13 @@ def add_target_env(env, platform, target_triple, build_env):
             # to work with the macOS SDKs out of the box. We work around
             # this by undoing the -Werror=undef-prefix in that commit.
             "-Wno-undef-prefix",
-            "-arch",
-            arch,
         ]
 
-        extra_target_ldflags = ["-arch", arch]
+        extra_target_ldflags = []
+
+        for arch in arches:
+            extra_target_cflags.extend(["-arch", arch])
+            extra_target_ldflags.extend(["-arch", arch])
 
         # This path exists on GitHub Actions workers and is the 10.15 SDK. Using this
         # SDK works around issues with the 11.0 SDK not working with CPython.
@@ -134,7 +143,7 @@ def add_target_env(env, platform, target_triple, build_env):
             # The proper way to resolve this path is with xcrun, which
             # will give us the headers that Xcode is configured to use.
             res = subprocess.run(
-                ["xcrun", "--sdk", "macosx", "--show-sdk-path"],
+                ["xcrun", "--sdk", sdk_platform, "--show-sdk-path"],
                 check=True,
                 capture_output=True,
                 encoding="utf-8",
