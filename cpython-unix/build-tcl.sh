@@ -35,10 +35,6 @@ pushd unix
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include"
 
-if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-  CFLAGS="${CFLAGS} -I${MACOS_SDK_PATH}/System/Library/Frameworks -F${MACOS_SDK_PATH}/System/Library/Frameworks"
-fi
-
 CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \

@@ -284,12 +284,7 @@ CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH
 LDFLAGS="${EXTRA_TARGET_LDFLAGS} -L${TOOLS_PATH}/deps/lib"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    # Ensure we use the configured SDK. This also enables cross-compilation.
-    CFLAGS="${CFLAGS} -isysroot ${MACOS_SDK_PATH}"
-    LDFLAGS="${LDFLAGS} -isysroot ${MACOS_SDK_PATH}"
-
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/lib/libffi-3.2.1/include -I${TOOLS_PATH}/deps/include/uuid"
-    CFLAGS="${CFLAGS} -F${MACOS_SDK_PATH}/System/Library/Frameworks"
 
     # Prevent using symbols not supported by current macOS SDK target.
     CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"

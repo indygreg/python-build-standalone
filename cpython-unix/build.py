@@ -115,9 +115,6 @@ def add_target_env(env, platform, target_triple, build_env):
 
         extra_target_ldflags = ["-arch", arch]
 
-        env["EXTRA_TARGET_CFLAGS"] = " ".join(extra_target_cflags)
-        env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
-
         # This path exists on GitHub Actions workers and is the 10.15 SDK. Using this
         # SDK works around issues with the 11.0 SDK not working with CPython.
         macosx_sdk_path_10_15 = (
@@ -148,7 +145,19 @@ def add_target_env(env, platform, target_triple, build_env):
         if not os.path.exists(sdk_path):
             raise Exception("macOS SDK path %s does not exist" % sdk_path)
 
-        env["MACOS_SDK_PATH"] = sdk_path
+        extra_target_cflags.extend(
+            [
+                "-isysroot",
+                sdk_path,
+                "-F%s" % os.path.join(sdk_path, "System", "Library", "Frameworks"),
+                "-I%s" % os.path.join(sdk_path, "System", "Library", "Frameworks"),
+            ]
+        )
+
+        extra_target_ldflags.extend(["-isysroot", sdk_path])
+
+        env["EXTRA_TARGET_CFLAGS"] = " ".join(extra_target_cflags)
+        env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
         env["CPATH"] = "%s/usr/include" % sdk_path
 
 
