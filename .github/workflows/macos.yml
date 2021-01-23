@@ -71,6 +71,47 @@ jobs:
           name: pythonbuild
           path: target/release/pythonbuild
 
+  toolchain:
+    needs:
+      - sccache
+    runs-on: 'macos-10.15'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SCCACHE_BUCKET: 'python-build-standalone-sccache'
+      SCCACHE_S3_USE_SSL: '1'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Download sccache
+        uses: actions/download-artifact@v2
+        with:
+          name: sccache
+
+      - name: Start sccache
+        run: |
+          chmod +x sccache
+          ./sccache --start-server
+
+      - name: Build
+        run: |
+          python3.9 ./build-macos.py --make-target toolchain
+
+      - name: Stop sccache
+        run: |
+          ./sccache -s
+
+      - name: Upload Toolchain Archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: toolchain
+          path: build/clang-*.tar
+
   build:
     strategy:
       fail-fast: false
@@ -83,13 +124,8 @@ jobs:
           - 'pgo'
     needs:
       - pythonbuild
-      - sccache
+      - toolchain
     runs-on: 'macos-10.15'
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      SCCACHE_BUCKET: 'python-build-standalone-sccache'
-      SCCACHE_S3_USE_SSL: '1'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -100,30 +136,21 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Download sccache
-        uses: actions/download-artifact@v2
-        with:
-          name: sccache
-
       - name: Download pythonbuild
         uses: actions/download-artifact@v2
         with:
           name: pythonbuild
           path: build
 
-      - name: Start sccache
-        run: |
-          chmod +x sccache
-          ./sccache --start-server
+      - name: Download toolchain
+        uses: actions/download-artifact@v2
+        with:
+          name: toolchain
+          path: build
 
       - name: Build
         run: |
-          ./build-macos.py --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
-
-      - name: Stop sccache
-        continue-on-error: true
-        run: |
-          ./sccache --stop-server
+          ./build-macos.py --skip-toolchain --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
 
       - name: Validate Distribution
         run: |
