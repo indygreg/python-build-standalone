@@ -53,6 +53,7 @@ ifeq ($(HOST_PLATFORM),linux64)
     NEED_READLINE := 1
     NEED_SQLITE := 1
     NEED_TIX := 1
+    NEED_UUID := 1
 endif
 
 ifeq ($(HOST_PLATFORM),macos)
@@ -69,6 +70,7 @@ ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX :=
+    NEED_UUID :=
 else
     NEED_BDB :=
     NEED_BINUTILS :=
@@ -82,6 +84,7 @@ else
     NEED_READLINE :=
     NEED_SQLITE := 1
     NEED_TIX := 1
+    NEED_UUID := 1
 endif
 endif
 
@@ -306,7 +309,7 @@ PYTHON_DEPENDS := \
     $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_SQLITE),$(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_UUID),$(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(HERE)/disabled-static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \

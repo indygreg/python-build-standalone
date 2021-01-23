@@ -745,7 +745,6 @@ def build_cpython(
         packages = {
             "bzip2",
             "libffi",
-            "uuid",
             "xz",
             "zlib",
         }
@@ -779,6 +778,10 @@ def build_cpython(
         tk = target_triple != "aarch64-apple-ios"
         if tk:
             packages |= {"tcl", "tix", "tk"}
+
+        uuid = target_triple != "aarch64-apple-ios"
+        if uuid:
+            packages.add("uuid")
 
         if host_platform == "linux64":
             packages |= {"libX11", "libXau", "libxcb", "xorgproto"}
