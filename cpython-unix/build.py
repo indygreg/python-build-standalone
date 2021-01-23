@@ -744,7 +744,6 @@ def build_cpython(
         # TODO support bdb/gdbm toggle
         packages = {
             "bzip2",
-            "libedit",
             "libffi",
             "sqlite",
             "tcl",
@@ -758,6 +757,10 @@ def build_cpython(
         bdb = host_platform != "macos"
         if bdb:
             packages.add("bdb")
+
+        libedit = target_triple != "aarch64-apple-ios"
+        if libedit:
+            packages.add("libedit")
 
         if libressl:
             packages.add("libressl")

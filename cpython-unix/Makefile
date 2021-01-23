@@ -55,6 +55,19 @@ ifeq ($(HOST_PLATFORM),linux64)
 endif
 
 ifeq ($(HOST_PLATFORM),macos)
+ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
+    NEED_BDB :=
+    NEED_BINUTILS :=
+    NEED_GCC :=
+    NEED_MUSL :=
+    NEED_GDBM :=
+    NEED_GETTEXT :=
+    NEED_LIBEDIT :=
+    NEED_NCURSES :=
+    NEED_X11 :=
+    NEED_READLINE :=
+    NEED_TIX := 1
+else
     NEED_BDB :=
     NEED_BINUTILS :=
     NEED_GCC :=
@@ -66,6 +79,7 @@ ifeq ($(HOST_PLATFORM),macos)
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX := 1
+endif
 endif
 
 ifdef PYBUILD_MUSL
