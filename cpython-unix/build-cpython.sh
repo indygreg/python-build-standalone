@@ -342,7 +342,8 @@ EOF
 fi
 
 # iOS doesn't have system(). Teach posixmodule.c about that.
-patch -p1 <<EOF
+if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
+    patch -p1 <<EOF
 diff --git a/Modules/posixmodule.c b/Modules/posixmodule.c
 index 12f72f525f..4503c5fc60 100644
 --- a/Modules/posixmodule.c
@@ -362,6 +363,7 @@ index 12f72f525f..4503c5fc60 100644
 
  /*[clinic input]
 EOF
+fi
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
