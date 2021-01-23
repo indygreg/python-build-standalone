@@ -47,6 +47,8 @@ ifeq ($(HOST_PLATFORM),linux64)
     NEED_MUSL :=
     NEED_GDBM := 1
     NEED_GETTEXT :=
+    NEED_LIBEDIT := 1
+    NEED_NCURSES := 1
     NEED_X11 := 1
     NEED_READLINE := 1
     NEED_TIX := 1
@@ -59,6 +61,8 @@ ifeq ($(HOST_PLATFORM),macos)
     NEED_MUSL :=
     NEED_GDBM :=
     NEED_GETTEXT :=
+    NEED_LIBEDIT := 1
+    NEED_NCURSES := 1
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX := 1
@@ -277,10 +281,10 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_GETTEXT),$(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(if $(NEED_LIBRESSL),$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_NCURSES),$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar \
