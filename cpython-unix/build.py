@@ -158,7 +158,6 @@ def add_target_env(env, platform, target_triple, build_env):
 
         env["EXTRA_TARGET_CFLAGS"] = " ".join(extra_target_cflags)
         env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
-        env["CPATH"] = "%s/usr/include" % sdk_path
 
 
 def toolchain_archive_path(package_name, host_platform):
