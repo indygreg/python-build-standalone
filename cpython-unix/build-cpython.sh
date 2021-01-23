@@ -691,12 +691,14 @@ fi
 # And prune libraries we never reference.
 rm -f ${ROOT}/out/python/build/lib/{libdb-6.0,libxcb-*,libX11-xcb}.a
 
-# Copy tcl/tk/tix resources needed by tkinter.
-mkdir ${ROOT}/out/python/install/lib/tcl
-# Keep this list in sync with tcl_library_paths.
-for source in ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.5,Tix8.4.3,tk8.6}; do
-    cp -av $source ${ROOT}/out/python/install/lib/
-done
+if [ -d "${TOOLS_PATH}/deps/lib/tcl8" ]; then
+    # Copy tcl/tk/tix resources needed by tkinter.
+    mkdir ${ROOT}/out/python/install/lib/tcl
+    # Keep this list in sync with tcl_library_paths.
+    for source in ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.5,Tix8.4.3,tk8.6}; do
+        cp -av $source ${ROOT}/out/python/install/lib/
+    done
+fi
 
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
