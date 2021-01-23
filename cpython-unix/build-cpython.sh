@@ -50,7 +50,7 @@ pushd Python-${PYTHON_VERSION}
 # configure doesn't support cross-compiling on Apple. Teach it.
 patch -p1 << "EOF"
 diff --git a/configure b/configure
-index 2d379feb4b..d714125be2 100755
+index 2d379feb4b..3eb8dbe9ea 100755
 --- a/configure
 +++ b/configure
 @@ -3301,6 +3301,15 @@ then
@@ -102,6 +102,15 @@ index 2d379feb4b..d714125be2 100755
    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
    # or has another value. By not (re)defining it, the defaults come in place.
+@@ -5968,7 +5996,7 @@ $as_echo "#define Py_ENABLE_SHARED 1" >>confdefs.h
+ 	  BLDLIBRARY='-Wl,+b,$(LIBDIR) -L. -lpython$(LDVERSION)'
+ 	  RUNSHARED=SHLIB_PATH=`pwd`${SHLIB_PATH:+:${SHLIB_PATH}}
+ 	  ;;
+-    Darwin*)
++    Darwin*|iOS*|tvOS*|watchOS*)
+     	LDLIBRARY='libpython$(LDVERSION).dylib'
+ 	BLDLIBRARY='-L. -lpython$(LDVERSION)'
+ 	RUNSHARED=DYLD_LIBRARY_PATH=`pwd`${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
 @@ -6205,16 +6233,6 @@ esac
    fi
  fi
@@ -119,6 +128,18 @@ index 2d379feb4b..d714125be2 100755
  case $MACHDEP in
  hp*|HP*)
  	# install -d does not work on HP-UX
+@@ -9541,6 +9559,11 @@ then
+ 			BLDSHARED="$LDSHARED"
+ 		fi
+ 		;;
++  iOS*|tvOS*|watchOS*)
++    LDSHARED='$(CC) -bundle -undefined dynamic_lookup'
++    LDCXXSHARED='$(CXX) -bundle -undefined dynamic_lookup'
++    BLDSHARED="$LDSHARED"
++    ;;
+ 	Linux*|GNU*|QNX*|VxWorks*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
 EOF
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
