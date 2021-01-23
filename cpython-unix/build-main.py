@@ -62,6 +62,11 @@ def main():
         help="Python distribution to build",
     )
     parser.add_argument(
+        "--break-on-failure",
+        action="store_true",
+        help="Enter a Python debugger if an error occurs",
+    )
+    parser.add_argument(
         "--no-docker",
         action="store_true",
         default=True if sys.platform == "darwin" else False,
@@ -83,6 +88,8 @@ def main():
         env["PYBUILD_LIBRESSL"] = "1"
     if musl:
         env["PYBUILD_MUSL"] = "1"
+    if args.break_on_failure:
+        env["PYBUILD_BREAK_ON_FAILURE"] = "1"
     if args.no_docker:
         env["PYBUILD_NO_DOCKER"] = "1"
 

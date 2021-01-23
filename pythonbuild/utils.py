@@ -297,6 +297,11 @@ def exec_and_log(args, cwd, env):
     p.wait()
 
     if p.returncode:
+        if "PYBUILD_BREAK_ON_FAILURE" in os.environ:
+            import pdb
+
+            pdb.set_trace()
+
         print("process exited %d" % p.returncode)
         sys.exit(p.returncode)
 
