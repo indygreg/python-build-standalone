@@ -50,20 +50,59 @@ pushd Python-${PYTHON_VERSION}
 # configure doesn't support cross-compiling on Apple. Teach it.
 patch -p1 << "EOF"
 diff --git a/configure b/configure
-index 1d81c00c63..8a7370c291 100755
+index 2d379feb4b..d714125be2 100755
 --- a/configure
 +++ b/configure
-@@ -3358,6 +3358,9 @@ if test "$cross_compiling" = yes; then
+@@ -3301,6 +3301,15 @@ then
+ 	*-*-cygwin*)
+ 		ac_sys_system=Cygwin
+ 		;;
++	*-apple-ios*)
++		ac_sys_system=iOS
++		;;
++	*-apple-tvos*)
++		ac_sys_system=tvOS
++		;;
++	*-apple-watchos*)
++		ac_sys_system=watchOS
++		;;
+ 	*-*-vxworks*)
+ 	    ac_sys_system=VxWorks
+ 	    ;;
+@@ -3351,6 +3360,19 @@ if test "$cross_compiling" = yes; then
  	*-*-cygwin*)
  		_host_cpu=
  		;;
 +	*-*-darwin*)
 +		_host_cpu=
 +		;;
++	*-apple-*)
++	  case "$host_cpu" in
++	  arm*)
++	    _host_cpu=arm
++	    ;;
++	  *)
++	    _host_cpu=$host_cpu
++	    ;;
++	  esac
++	  ;;
  	*-*-vxworks*)
  		_host_cpu=$host_cpu
  		;;
-@@ -6199,13 +6202,6 @@ esac
+@@ -3426,6 +3448,12 @@ $as_echo "#define _BSD_SOURCE 1" >>confdefs.h
+     define_xopen_source=no;;
+   Darwin/[12][0-9].*)
+     define_xopen_source=no;;
++  iOS/*)
++    define_xopen_source=no;;
++  tvOS/*)
++    define_xopen_source=no;;
++  watchOS/*)
++    define_xopen_source=no;;
+   # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+   # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+   # or has another value. By not (re)defining it, the defaults come in place.
+@@ -6205,16 +6233,6 @@ esac
    fi
  fi
  
@@ -74,9 +113,12 @@ index 1d81c00c63..8a7370c291 100755
 -	;;
 -    esac
 -fi
- 
- 
- 
+-
+-
+-
+ case $MACHDEP in
+ hp*|HP*)
+ 	# install -d does not work on HP-UX
 EOF
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
@@ -327,20 +369,29 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=no"
 
     if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
-      # Python's configure doesn't support cross-compiling on macOS. So we need
-      # to explicitly set MACHDEP to avoid busted checks. The code for setting
-      # MACHDEP also sets ac_sys_system/ac_sys_release, so we have to set
-      # those as well.
-      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=darwin"
-      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=Darwin"
-      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_release=$(uname -r)"
+        # Python's configure doesn't support cross-compiling on macOS. So we need
+        # to explicitly set MACHDEP to avoid busted checks. The code for setting
+        # MACHDEP also sets ac_sys_system/ac_sys_release, so we have to set
+        # those as well.
+        if [ "${TARGET_TRIPLE}" = "aarch64-apple-darwin" ]; then
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=darwin"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=Darwin"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_release=$(uname -r)"
+        elif [ "${TARGET_TRIPLE}" = "aarch64-apple-ios" ]; then
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=iOS"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=iOS"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_release="
+        else
+            echo "unsupported target triple: ${TARGET_TRIPLE}"
+            exit 1
+        fi
 
-      # getaddrinfo buggy test fails for some reason.
-      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
+        # getaddrinfo buggy test fails for some reason.
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
 
-      # We also need to nerf the /dev/* check
-      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
-      CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
+        # We also need to nerf the /dev/* check
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
     fi
 fi
 
