@@ -477,6 +477,7 @@ def python_build_info(
     build_env,
     version,
     platform,
+    target_triple,
     musl,
     optimizations,
     config_c_in,
@@ -670,9 +671,9 @@ def python_build_info(
             }
         )
 
-    with (SUPPORT / ("required-extensions.%s.%s" % (version, platform))).open(
-        "r"
-    ) as fh:
+    with get_target_support_file(
+        "required-extensions", version, platform, target_triple
+    ).open("r") as fh:
         required_extensions = {l.strip() for l in fh if l.strip()}
 
     for extension, entries in bi["extensions"].items():
@@ -686,6 +687,25 @@ def python_build_info(
         bi["core"]["objs"].append(str(p))
 
     return bi
+
+
+def get_target_support_file(prefix, python_version, host_platform, target_triple):
+    candidates = [
+        SUPPORT / ("%s.%s.%s" % (prefix, python_version, target_triple)),
+        SUPPORT / ("%s.%s.%s" % (prefix, python_version, host_platform)),
+    ]
+
+    for path in candidates:
+        if path.exists():
+            return path
+
+    raise Exception(
+        "Could not find support file %s for (%s, %s, %s)",
+        prefix,
+        python_version,
+        host_platform,
+        target_triple,
+    )
 
 
 def build_cpython(
@@ -706,14 +726,14 @@ def build_cpython(
     setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
     pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
-    with (SUPPORT / ("static-modules.%s.%s" % (version, host_platform))).open(
-        "rb"
-    ) as fh:
+    with get_target_support_file(
+        "static-modules", version, host_platform, target_triple
+    ).open("rb") as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
 
-    with (SUPPORT / ("disabled-static-modules.%s.%s" % (version, host_platform))).open(
-        "rb"
-    ) as fh:
+    with get_target_support_file(
+        "disabled-static-modules", version, host_platform, target_triple
+    ).open("rb") as fh:
         disabled_static_modules = {
             l.strip() for l in fh if l.strip() and not l.strip().startswith(b"#")
         }
@@ -884,6 +904,7 @@ def build_cpython(
                 build_env,
                 version,
                 host_platform,
+                target_triple,
                 "musl" in target_triple,
                 optimizations,
                 config_c_in,
