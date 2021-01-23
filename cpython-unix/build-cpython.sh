@@ -671,7 +671,10 @@ fi
 # library files as well.
 mkdir ${ROOT}/out/python/build/lib
 cp -av ${TOOLS_PATH}/deps/lib/*.a ${ROOT}/out/python/build/lib/
-cp -av ${TOOLS_PATH}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
+
+if [ -d "${TOOLS_PATH}/deps/libedit" ]; then
+    cp -av ${TOOLS_PATH}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
+fi
 
 # On Apple, Python 3.9+ uses __builtin_available() to sniff for feature
 # availability. This symbol is defined by clang_rt, which isn't linked
