@@ -156,6 +156,14 @@ $(OUTDIR)/clang-$(CLANG_VERSION)-$(HOST_PLATFORM).tar: $(CLANG_DEPENDS)
 $(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
 	$(RUN_BUILD) --toolchain musl
 
+ifeq ($(HOST_PLATFORM),linux64)
+    TOOLCHAIN_TARGET := $(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar
+else
+    TOOLCHAIN_TARGET := $(OUTDIR)/clang-$(CLANG_VERSION)-$(HOST_PLATFORM).tar
+endif
+
+toolchain: $(TOOLCHAIN_TARGET)
+
 $(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
 	$(RUN_BUILD) bdb
 

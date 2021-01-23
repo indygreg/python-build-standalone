@@ -77,6 +77,12 @@ def main():
         action="store_true",
         help="Skip building the toolchain (requires a tar file in expected location)",
     )
+    parser.add_argument(
+        "--make-target",
+        choices={"default", "toolchain"},
+        default="default",
+        help="The make target to evaluate",
+    )
 
     args = parser.parse_args()
 
@@ -118,11 +124,12 @@ def main():
     build_basename = "-".join(archive_components) + ".tar"
     dist_basename = "-".join(archive_components + [release_tag])
 
-    subprocess.run(["make"], env=env, check=True)
+    subprocess.run(["make", args.make_target], env=env, check=True)
 
     DIST.mkdir(exist_ok=True)
 
-    compress_python_archive(BUILD / build_basename, DIST, dist_basename)
+    if args.make_target == "default":
+        compress_python_archive(BUILD / build_basename, DIST, dist_basename)
 
 
 if __name__ == "__main__":
