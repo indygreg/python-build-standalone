@@ -381,6 +381,8 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=iOS"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=iOS"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_release="
+            # getentropy() not available on iOS.
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_getentropy=no"
         else
             echo "unsupported target triple: ${TARGET_TRIPLE}"
             exit 1
