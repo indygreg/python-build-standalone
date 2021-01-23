@@ -320,6 +320,28 @@ index adc8653773..fc9070fc21 100644
 EOF
 fi
 
+# iOS doesn't have system(). Teach posixmodule.c about that.
+patch -p1 <<EOF
+diff --git a/Modules/posixmodule.c b/Modules/posixmodule.c
+index 12f72f525f..4503c5fc60 100644
+--- a/Modules/posixmodule.c
++++ b/Modules/posixmodule.c
+@@ -326,6 +326,13 @@ corresponding Unix manual entries for more information on calls.");
+ #  endif  /* _MSC_VER */
+ #endif  /* ! __WATCOMC__ || __QNX__ */
+
++#if __APPLE__
++#include <TargetConditionals.h>
++#if TARGET_OS_IPHONE
++#    undef HAVE_SYSTEM
++#endif
++#endif
++
+ _Py_IDENTIFIER(__fspath__);
+
+ /*[clinic input]
+EOF
+
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
 # So we need to set both.
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
@@ -381,6 +403,8 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=iOS"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=iOS"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_release="
+            # clock_settime() not available on iOS.
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_clock_settime=no"
             # getentropy() not available on iOS.
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_getentropy=no"
         else
