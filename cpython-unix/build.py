@@ -745,9 +745,6 @@ def build_cpython(
         packages = {
             "bzip2",
             "libffi",
-            "tcl",
-            "tix",
-            "tk",
             "uuid",
             "xz",
             "zlib",
@@ -778,6 +775,10 @@ def build_cpython(
         sqlite = target_triple != "aarch64-apple-ios"
         if sqlite:
             packages.add("sqlite")
+
+        tk = target_triple != "aarch64-apple-ios"
+        if tk:
+            packages |= {"tcl", "tix", "tk"}
 
         if host_platform == "linux64":
             packages |= {"libX11", "libXau", "libxcb", "xorgproto"}

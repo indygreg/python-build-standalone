@@ -68,7 +68,7 @@ ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
     NEED_SQLITE :=
     NEED_X11 :=
     NEED_READLINE :=
-    NEED_TIX := 1
+    NEED_TIX :=
 else
     NEED_BDB :=
     NEED_BINUTILS :=
