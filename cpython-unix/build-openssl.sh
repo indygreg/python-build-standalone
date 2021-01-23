@@ -34,6 +34,8 @@ if [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin18.7.0" ]; then
   OPENSSL_TARGET=darwin64-x86_64-cc
 elif [ "${TARGET_TRIPLE}" = "aarch64-apple-darwin" ]; then
   OPENSSL_TARGET=darwin64-arm64-cc
+elif [ "${TARGET_TRIPLE}" = "aarch64-apple-ios" ]; then
+  OPENSSL_TARGET=ios64-cross
 elif [ "${TARGET_TRIPLE}" = "x86_64-unknown-linux-gnu" ]; then
   OPENSSL_TARGET=linux-x86_64
 else
