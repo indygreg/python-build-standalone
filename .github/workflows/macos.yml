@@ -126,6 +126,10 @@ jobs:
       - pythonbuild
       - toolchain
     runs-on: 'macos-10.15'
+    env:
+      # Force use of 10.15 SDK since Python 3.8 has issues with 11.x SDK
+      # as of at least 3.8.7.
+      APPLE_SDK_PATH: '/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk'
     steps:
       - uses: actions/checkout@v2
         with:

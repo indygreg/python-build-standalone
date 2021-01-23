@@ -124,17 +124,8 @@ def add_target_env(env, platform, target_triple, build_env):
             extra_target_cflags.extend(["-arch", arch])
             extra_target_ldflags.extend(["-arch", arch])
 
-        # This path exists on GitHub Actions workers and is the 10.15 SDK. Using this
-        # SDK works around issues with the 11.0 SDK not working with CPython.
-        macosx_sdk_path_10_15 = (
-            "/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform"
-            "/Developer/SDKs/MacOSX.sdk "
-        )
-
         if "APPLE_SDK_PATH" in os.environ:
             sdk_path = os.environ["APPLE_SDK_PATH"]
-        elif os.path.exists(macosx_sdk_path_10_15):
-            sdk_path = macosx_sdk_path_10_15
         else:
             # macOS SDK has historically been in /usr courtesy of an
             # installer provided by Xcode. But with Catalina, the files
