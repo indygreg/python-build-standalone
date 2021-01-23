@@ -51,6 +51,7 @@ ifeq ($(HOST_PLATFORM),linux64)
     NEED_NCURSES := 1
     NEED_X11 := 1
     NEED_READLINE := 1
+    NEED_SQLITE := 1
     NEED_TIX := 1
 endif
 
@@ -64,6 +65,7 @@ ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
     NEED_GETTEXT :=
     NEED_LIBEDIT :=
     NEED_NCURSES :=
+    NEED_SQLITE :=
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX := 1
@@ -78,6 +80,7 @@ else
     NEED_NCURSES := 1
     NEED_X11 :=
     NEED_READLINE :=
+    NEED_SQLITE := 1
     NEED_TIX := 1
 endif
 endif
@@ -301,7 +304,7 @@ PYTHON_DEPENDS := \
     $(if $(NEED_NCURSES),$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_SQLITE),$(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar \
