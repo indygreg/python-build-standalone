@@ -32,7 +32,7 @@ def bootstrap():
 
     args = [str(PYTHON), __file__, *sys.argv[1:]]
 
-    subprocess.run(args, check=True)
+    os.execv(str(PYTHON), args)
 
 
 def run():
@@ -45,7 +45,8 @@ def run():
         *sys.argv[1:],
     ]
 
-    subprocess.run(args, cwd=str(MAKE_DIR), env=env, check=True)
+    os.chdir(MAKE_DIR)
+    os.execve(str(PYTHON), args, env)
 
 
 if __name__ == "__main__":
