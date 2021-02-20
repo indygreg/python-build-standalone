@@ -103,14 +103,10 @@ def secure_download_stream(url, size, sha256):
 
     digest = h.hexdigest()
 
-    if length != size:
+    if length != size or digest != sha256:
         raise IntegrityError(
-            "size mismatch on %s: wanted %d; got %d" % (url, size, length)
-        )
-
-    if digest != sha256:
-        raise IntegrityError(
-            "sha256 mismatch on %s: wanted %s; got %s" % (url, sha256, digest)
+            "integrity mismatch on %s: wanted size=%d, sha256=%s; got size=%d, sha256=%s"
+            % (url, size, sha256, length, digest)
         )
 
 
