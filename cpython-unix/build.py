@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import pathlib
+import platform
 import subprocess
 import sys
 import tempfile
@@ -83,7 +84,14 @@ def add_target_env(env, build_platform, target_triple, build_env):
         env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
 
     if build_platform == "macos":
-        env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
+        machine = platform.machine()
+
+        if machine == "arm64":
+            env["BUILD_TRIPLE"] = "aarch64-apple-darwin"
+        elif machine == "x86_64":
+            env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
+        else:
+            raise Exception("unhandled macOS machine value: %s" % machine)
 
         if target_triple == "x86_64-apple-darwin":
             env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_X86
