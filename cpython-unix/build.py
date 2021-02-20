@@ -72,17 +72,17 @@ def install_sccache(build_env):
             return
 
 
-def add_target_env(env, platform, target_triple, build_env):
+def add_target_env(env, build_platform, target_triple, build_env):
     add_env_common(env)
 
-    env["PYBUILD_PLATFORM"] = platform
+    env["PYBUILD_PLATFORM"] = build_platform
     env["TOOLS_PATH"] = build_env.tools_path
 
-    if platform == "linux64":
+    if build_platform == "linux64":
         env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
         env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
 
-    if platform == "macos":
+    if build_platform == "macos":
         env["BUILD_TRIPLE"] = "x86_64-apple-darwin18.7.0"
 
         if target_triple == "x86_64-apple-darwin":
