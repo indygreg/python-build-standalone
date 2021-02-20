@@ -532,10 +532,10 @@ fi
 pushd ${ROOT}/setuptools-${SETUPTOOLS_VERSION}
 patch -p1 <<EOF
 diff --git a/setuptools/_vendor/packaging/tags.py b/setuptools/_vendor/packaging/tags.py
-index ec9942f0..1b306ca7 100644
+index 9064910b..c541e648 100644
 --- a/setuptools/_vendor/packaging/tags.py
 +++ b/setuptools/_vendor/packaging/tags.py
-@@ -283,7 +283,10 @@ def _glibc_version_string():
+@@ -475,7 +475,10 @@ def _glibc_version_string_ctypes():
      # which libc our process is actually using.
      #
      # Note: typeshed is wrong here so we are ignoring this line.
@@ -553,11 +553,19 @@ ${BUILD_PYTHON} setup.py install
 popd
 
 pushd ${ROOT}/pip-${PIP_VERSION}
+
+# pip 21 shipped DOS line endings. https://github.com/pypa/pip/issues/9638.
+# Let's fix that.
+for f in $(find . -name '*.py'); do
+    sed 's/\r$//' $f > $f.bak && mv $f.bak $f
+done
+
 patch -p1 <<EOF
 diff --git a/src/pip/_internal/utils/glibc.py b/src/pip/_internal/utils/glibc.py
+index 819979d80..4ae91e364 100644
 --- a/src/pip/_internal/utils/glibc.py
 +++ b/src/pip/_internal/utils/glibc.py
-@@ -18,7 +18,10 @@ def glibc_version_string():
+@@ -47,7 +47,10 @@ def glibc_version_string_ctypes():
      # manpage says, "If filename is NULL, then the returned handle is for the
      # main program". This way we can let the linker do the work to figure out
      # which libc our process is actually using.
