@@ -98,7 +98,7 @@ fi
 pushd unix
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC"
-LDFLAGS=""
+LDFLAGS="${EXTRA_TARGET_LDFLAGS}"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include -Wno-availability"

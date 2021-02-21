@@ -13,6 +13,6 @@ tar -xf zlib-${ZLIB_VERSION}.tar.gz
 
 pushd zlib-${ZLIB_VERSION}
 
-CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure --prefix=/tools/deps
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LDFLAGS="${EXTRA_TARGET_LDFLAGS}" ./configure --prefix=/tools/deps
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
