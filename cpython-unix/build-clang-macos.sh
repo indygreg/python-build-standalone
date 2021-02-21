@@ -50,18 +50,6 @@ popd
 mkdir llvm-objdir
 pushd llvm-objdir
 
-# This is used in CI to use the 10.15 SDK.
-MACOSX_SDK_PATH_10_15=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
-
-# This seems to be required on macOS 11 for clang to find system libraries.
-MACOSX_SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
-
-if [ -d ${MACOSX_SDK_PATH_10_15} ]; then
-    EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH_10_15}
-elif [ -d ${MACOSX_SDK_PATH} ]; then
-    EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH}
-fi
-
 # Configure a compiler wrapper if one is defined.
 if [ -x "${SCCACHE}" ]; then
     EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"

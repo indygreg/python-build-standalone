@@ -266,8 +266,8 @@ def add_env_common(env):
     if "CI" in os.environ:
         env["CI"] = "1"
 
-    # Proxy variables used for sccache remote cache.
     for k in (
+        # Proxy variables used for sccache remote cache.
         "AWS_ACCESS_KEY_ID",
         "AWS_SECRET_ACCESS_KEY",
         "SCCACHE_BUCKET",
