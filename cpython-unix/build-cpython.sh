@@ -89,19 +89,6 @@ index 2d379feb4b..3eb8dbe9ea 100755
  	*-*-vxworks*)
  		_host_cpu=$host_cpu
  		;;
-@@ -3426,6 +3448,12 @@ $as_echo "#define _BSD_SOURCE 1" >>confdefs.h
-     define_xopen_source=no;;
-   Darwin/[12][0-9].*)
-     define_xopen_source=no;;
-+  iOS/*)
-+    define_xopen_source=no;;
-+  tvOS/*)
-+    define_xopen_source=no;;
-+  watchOS/*)
-+    define_xopen_source=no;;
-   # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
-   # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
-   # or has another value. By not (re)defining it, the defaults come in place.
 @@ -5968,7 +5996,7 @@ $as_echo "#define Py_ENABLE_SHARED 1" >>confdefs.h
  	  BLDLIBRARY='-Wl,+b,$(LIBDIR) -L. -lpython$(LDVERSION)'
  	  RUNSHARED=SHLIB_PATH=`pwd`${SHLIB_PATH:+:${SHLIB_PATH}}
@@ -141,6 +128,49 @@ index 2d379feb4b..3eb8dbe9ea 100755
  		LDSHARED='$(CC) -shared'
  		LDCXXSHARED='$(CXX) -shared';;
 EOF
+
+# This patch is slightly different on Python 3.10+.
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
+    patch -p1 << "EOF"
+diff --git a/configure b/configure
+index 2d379feb4b..3eb8dbe9ea 100755
+--- a/configure
++++ b/configure
+@@ -3426,6 +3448,12 @@ $as_echo "#define _BSD_SOURCE 1" >>confdefs.h
+     define_xopen_source=no;;
+   Darwin/[12][0-9].*)
+     define_xopen_source=no;;
++  iOS/*)
++    define_xopen_source=no;;
++  tvOS/*)
++    define_xopen_source=no;;
++  watchOS/*)
++    define_xopen_source=no;;
+   # On QNX 6.3.2, defining _XOPEN_SOURCE prevents netdb.h from
+   # defining NI_NUMERICHOST.
+   QNX/6.3.2)
+EOF
+else
+    patch -p1 << "EOF"
+diff --git a/configure b/configure
+index 2d379feb4b..3eb8dbe9ea 100755
+--- a/configure
++++ b/configure
+@@ -3426,6 +3448,12 @@ $as_echo "#define _BSD_SOURCE 1" >>confdefs.h
+     define_xopen_source=no;;
+   Darwin/[12][0-9].*)
+     define_xopen_source=no;;
++  iOS/*)
++    define_xopen_source=no;;
++  tvOS/*)
++    define_xopen_source=no;;
++  watchOS/*)
++    define_xopen_source=no;;
+   # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+   # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+   # or has another value. By not (re)defining it, the defaults come in place.
+EOF
+fi
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
 # invoke the host Python on our own.
@@ -323,7 +353,7 @@ mv tmp Modules/readline-libedit.c
 # Modules/_hashopenssl.c redefines some libcrypto symbols on Python 3.9 and
 # this makes the linker unhappy. So rename the symbols to work around.
 # https://bugs.python.org/issue41949.
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
     patch -p1 <<EOF
 diff --git a/Modules/_hashopenssl.c b/Modules/_hashopenssl.c
 index adc8653773..fc9070fc21 100644

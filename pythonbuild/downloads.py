@@ -70,6 +70,15 @@ DOWNLOADS = {
         "license_file": "LICENSE.cpython.txt",
         "python_tag": "cp39",
     },
+    "cpython-3.10": {
+        "url": "https://www.python.org/ftp/python/3.10.0/Python-3.10.0a5.tar.xz",
+        "size": 18286124,
+        "sha256": "0418e57e7036e219f1e6b6303b21e711f64cfd0fddb0894d8f19f37afffc5d4d",
+        "version": "3.10.0a5",
+        "licenses": ["Python-2.0", "CNRI-Python"],
+        "license_file": "LICENSE.cpython.txt",
+        "python_tag": "cp310",
+    },
     "gcc": {
         "url": "https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz",
         "size": 75004144,

@@ -840,7 +840,7 @@ def build_cpython(
             "CC": "clang",
             "PIP_VERSION": DOWNLOADS["pip"]["version"],
             "PYTHON_VERSION": entry["version"],
-            "PYTHON_MAJMIN_VERSION": entry["version"][:3],
+            "PYTHON_MAJMIN_VERSION": ".".join(entry["version"].split(".")[0:2]),
             "SETUPTOOLS_VERSION": DOWNLOADS["setuptools"]["version"],
             "TOOLCHAIN": "clang-%s" % host_platform,
         }
@@ -1178,7 +1178,7 @@ def main():
                 extra_archives=extra_archives,
             )
 
-        elif action in ("cpython-3.8", "cpython-3.9"):
+        elif action in ("cpython-3.8", "cpython-3.9", "cpython-3.10"):
             build_cpython(
                 client,
                 get_image(client, ROOT, BUILD, "build"),

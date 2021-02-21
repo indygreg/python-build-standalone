@@ -127,6 +127,7 @@ jobs:
         py:
           - 'cpython-3.8'
           - 'cpython-3.9'
+          - 'cpython-3.10'
         optimizations:
           - 'debug'
           - 'noopt'
