@@ -586,9 +586,12 @@ pushd ${ROOT}/pip-${PIP_VERSION}
 
 # pip 21 shipped DOS line endings. https://github.com/pypa/pip/issues/9638.
 # Let's fix that.
-for f in $(find . -name '*.py'); do
-    sed 's/\r//' $f > $f.bak && mv $f.bak $f
-done
+
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    find . -name '*.py' | xargs sed -i '' 's/\r$//g'
+else
+    find . -name '*.py' | xargs sed -i 's/\r$//g'
+fi
 
 patch -p1 <<EOF
 diff --git a/src/pip/_internal/utils/glibc.py b/src/pip/_internal/utils/glibc.py
