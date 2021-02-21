@@ -6,6 +6,7 @@
 import argparse
 import os
 import pathlib
+import platform
 import subprocess
 import sys
 
@@ -30,7 +31,15 @@ def main():
         }
     elif sys.platform == "darwin":
         host_platform = "macos"
-        default_target_triple = "x86_64-apple-darwin"
+        machine = platform.machine()
+
+        if machine == "arm64":
+            default_target_triple = "aarch64-apple-darwin"
+        elif machine == "x86_64":
+            default_target_triple = "x86_64-apple-darwin"
+        else:
+            raise Exception("unhandled macOS machine value: %s" % machine)
+
         targets = {default_target_triple, "aarch64-apple-darwin", "aarch64-apple-ios"}
     else:
         print("unsupport build platform: %s" % sys.platform)
