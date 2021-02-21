@@ -557,7 +557,7 @@ pushd ${ROOT}/pip-${PIP_VERSION}
 # pip 21 shipped DOS line endings. https://github.com/pypa/pip/issues/9638.
 # Let's fix that.
 for f in $(find . -name '*.py'); do
-    sed 's/\r$//' $f > $f.bak && mv $f.bak $f
+    sed 's/\r//' $f > $f.bak && mv $f.bak $f
 done
 
 patch -p1 <<EOF
