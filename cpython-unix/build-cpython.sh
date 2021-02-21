@@ -28,7 +28,7 @@ tar -xf pip-${PIP_VERSION}.tar.gz
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
-  ./configure --prefix "${TOOLS_PATH}/pyhost"
+  CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
   make -j "${NUM_CPUS}" install
   # configure will look for a pythonX.Y executable. Install our host Python
   # at the front of PATH.

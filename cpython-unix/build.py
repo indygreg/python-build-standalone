@@ -162,8 +162,16 @@ def add_target_env(env, build_platform, target_triple, build_env):
             ]
         )
 
+        extra_host_cflags = [
+            "-isysroot",
+            sdk_path,
+        ]
+        extra_host_ldflags = ["-isysroot", sdk_path]
+
         extra_target_ldflags.extend(["-isysroot", sdk_path])
 
+        env["EXTRA_HOST_CFLAGS"] = " ".join(extra_host_cflags)
+        env["EXTRA_HOST_LDFLAGS"] = " ".join(extra_host_ldflags)
         env["EXTRA_TARGET_CFLAGS"] = " ".join(extra_target_cflags)
         env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
 
