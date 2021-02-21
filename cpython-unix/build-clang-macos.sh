@@ -57,14 +57,14 @@ MACOSX_SDK_PATH_10_15=/Applications/Xcode_12.1.1.app/Contents/Developer/Platform
 MACOSX_SDK_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
 
 if [ -d ${MACOSX_SDK_PATH_10_15} ]; then
-  EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH_10_15}
+    EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH_10_15}
 elif [ -d ${MACOSX_SDK_PATH} ]; then
-  EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH}
+    EXTRA_FLAGS=-DDEFAULT_SYSROOT=${MACOSX_SDK_PATH}
 fi
 
 # Configure a compiler wrapper if one is defined.
 if [ -x "${SCCACHE}" ]; then
-  EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"
+    EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"
 fi
 
 # Stage 1: Build with system Clang
@@ -84,9 +84,9 @@ cmake \
     ../../llvm
 
 if [ -n "${CI}" ]; then
-  NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
+    NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
 else
-  NUM_JOBS=${NUM_CPUS}
+    NUM_JOBS=${NUM_CPUS}
 fi
 
 DESTDIR=${ROOT}/out ninja -j ${NUM_JOBS} install
