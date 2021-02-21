@@ -2,8 +2,7 @@ on:
   push:
   pull_request:
   schedule:
-    # Run daily to keep sccache cache up to date.
-    - cron: '13 4 * * *'
+    - cron: '13 15 * * *'
 jobs:
   # We need to build our own sccache until e6326bc8a20ee06af37e16a3a7a14e3374c66c66
   # is in a released version.
