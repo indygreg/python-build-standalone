@@ -77,7 +77,7 @@ DOWNLOADS = {
         "version": "10.2.0",
     },
     "gdbm": {
-        "url": "ftp://ftp.gnu.org/gnu/gdbm/gdbm-1.18.1.tar.gz",
+        "url": "https://ftp.gnu.org/gnu/gdbm/gdbm-1.18.1.tar.gz",
         "size": 941863,
         "sha256": "86e613527e5dba544e73208f42b78b7c022d4fa5a6d5498bf18c8d6f745b91dc",
         "version": "1.18.1",
