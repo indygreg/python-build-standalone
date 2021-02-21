@@ -111,24 +111,27 @@ jobs:
           name: toolchain
           path: build/clang-*.tar
 
-  build-x86_64:
+  build:
     strategy:
       fail-fast: false
       matrix:
+        triple:
+          - 'x86_64-apple-darwin'
+          - 'aarch64-apple-darwin'
         py:
           - 'cpython-3.8'
           - 'cpython-3.9'
         optimizations:
           - 'debug'
           - 'pgo'
+        exclude:
+          # aarch64 only supports by CPython 3.9+.
+          - triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.8'
     needs:
       - pythonbuild
       - toolchain
     runs-on: 'macos-10.15'
-    env:
-      # Force use of 10.15 SDK since Python 3.8 has issues with 11.x SDK
-      # as of at least 3.8.7.
-      APPLE_SDK_PATH: '/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -153,57 +156,14 @@ jobs:
 
       - name: Build
         run: |
-          ./build-macos.py --skip-toolchain --target-triple x86_64-apple-darwin --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
+          # Force use of 10.15 SDK on Python 3.8, as it has trouble with macOS 11 SDK.
+          if [ "${{ matrix.py }}" = "cpython-3.8" ]; then
+             export APPLE_SDK_PATH=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+          else
+             export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+          fi
 
-      - name: Validate Distribution
-        run: |
-          chmod +x build/pythonbuild
-          build/pythonbuild validate-distribution dist/*.tar.zst
-
-      - name: Upload Distributions
-        uses: actions/upload-artifact@v2
-        with:
-          name: dists-macos
-          path: dist/*
-
-  build-arm64:
-    strategy:
-      fail-fast: false
-      matrix:
-        py:
-          - 'cpython-3.9'
-        optimizations:
-          - 'debug'
-          - 'pgo'
-    needs:
-      - pythonbuild
-      - toolchain
-    runs-on: 'macos-11.0'
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Download pythonbuild
-        uses: actions/download-artifact@v2
-        with:
-          name: pythonbuild
-          path: build
-
-      - name: Download toolchain
-        uses: actions/download-artifact@v2
-        with:
-          name: toolchain
-          path: build
-
-      - name: Build
-        run: |
-          ./build-macos.py --skip-toolchain --target-triple aarch64-apple-darwin --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
+          ./build-macos.py --skip-toolchain --target-triple ${{ matrix.triple }} --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
 
       - name: Validate Distribution
         run: |
