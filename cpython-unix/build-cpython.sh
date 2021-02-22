@@ -29,6 +29,19 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
   CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
+
+  # When building on macOS 10.15 (and possibly earlier) using the 11.0
+  # SDK, the _ctypes extension fails to import due to a missing symbol on
+  # _dyld_shared_cache_contains_path. The cause of this is unclear.
+  # But the missing _ctypes extension causes problems later in the
+  # build.
+  #
+  # We work around this by disabling the feature, which isn't required
+  # for our host builds.
+  if [[ "${PYBUILD_PLATFORM}" = "macos" ]]; then
+    sed -i "" "s/#define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH 1//g" pyconfig.h || true
+  fi
+
   make -j "${NUM_CPUS}" install
   # configure will look for a pythonX.Y executable. Install our host Python
   # at the front of PATH.
