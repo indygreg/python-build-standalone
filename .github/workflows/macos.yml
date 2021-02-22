@@ -123,11 +123,19 @@ jobs:
           - 'cpython-3.9'
         optimizations:
           - 'debug'
+          - 'noopt'
           - 'pgo'
         exclude:
-          # aarch64 only supports by CPython 3.9+.
+          # aarch64 only supported by CPython 3.9+.
           - triple: 'aarch64-apple-darwin'
             py: 'cpython-3.8'
+          # PGO doesn't work when cross-compiling. Goal with following
+          # rules is to disable PGO when cross-compiling and disable noopt
+          # for host builds (since PGO is superior).
+          - triple: 'aarch64-apple-darwin'
+            optimizations: 'pgo'
+          - triple: 'x86_64-apple-darwin'
+            optimizations: 'noopt'
     needs:
       - pythonbuild
       - toolchain
