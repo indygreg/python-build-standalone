@@ -414,7 +414,7 @@ CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH
 LDFLAGS="${EXTRA_TARGET_LDFLAGS} -L${TOOLS_PATH}/deps/lib"
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/lib/libffi-3.2.1/include -I${TOOLS_PATH}/deps/include/uuid"
+    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include/uuid"
 
     # Prevent using symbols not supported by current macOS SDK target.
     CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"
