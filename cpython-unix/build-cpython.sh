@@ -602,7 +602,7 @@ pushd ${ROOT}/pip-${PIP_VERSION}
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     find . -name '*.py' -exec perl -i -pe 's/\r\n$/\n/g' {} \;
 else
-    find . -name '*.py' -exec sed -i 's/\r\n$/\n/g' {} \;
+    find . -name '*.py' -exec sed -i 's/\r$//g' {} \;
 fi
 
 patch -p1 <<EOF
