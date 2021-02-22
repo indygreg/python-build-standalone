@@ -48,9 +48,23 @@ To build a Python distribution for macOS::
 macOS uses the same build code as Linux, just without Docker.
 So similar build configuration options are available.
 
+``build-macos.py`` accepts a ``--target-triple`` argument to support building
+for non-native targets (i.e. cross-compiling). By default, macOS builds target
+the currently running architecture. e.g. an Intel Mac will target
+``x86_64-apple-darwin`` and an M1 (ARM) Mac will target ``aarch64-apple-darwin``.
+It should be possible to build an ARM distribution on an Intel Mac and an Intel
+distribution on an ARM Mac.
+
 The ``APPLE_SDK_PATH`` environment variable is recognized as the path
 to the Apple SDK to use. If not defined, the build will attempt to find
 an SDK by running ``xcrun --show-sdk-path``.
+
+``aarch64-apple-darwin`` builds require a macOS 11.0+ SDK and building
+Python 3.9+. It should be possible to build for ``aarch64-apple-darwin`` from
+an Intel 10.15 machine (as long as the 11.0+ SDK is used).
+
+Python 3.8 may not build properly with a macOS 11.0+ SDK: try using the
+macOS 10.15 SDK instead.
 
 Windows
 =======
