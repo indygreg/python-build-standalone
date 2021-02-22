@@ -131,7 +131,9 @@ jobs:
         optimizations:
           - 'debug'
           - 'noopt'
+          - 'lto'
           - 'pgo'
+          - 'pgo+lto'
         exclude:
           # We don't publish noopt builds for GNU Linux.
           - triple: 'x86_64-unknown-linux-gnu'
@@ -139,6 +141,8 @@ jobs:
           # PGO doesn't work with musl libc.
           - triple: 'x86_64-unknown-linux-musl'
             optimizations: 'pgo'
+          - triple: 'x86_64-unknown-linux-musl'
+            optimizations: 'pgo+lto'
 
     needs:
       - pythonbuild
