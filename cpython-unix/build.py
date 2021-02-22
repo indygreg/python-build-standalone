@@ -154,11 +154,25 @@ def add_target_env(env, build_platform, target_triple, build_env):
             raise Exception("macOS SDK path %s does not exist" % sdk_path)
 
         extra_target_cflags.extend(["-isysroot", sdk_path])
-
-        extra_host_cflags = ["-isysroot", sdk_path]
-        extra_host_ldflags = ["-isysroot", sdk_path]
-
         extra_target_ldflags.extend(["-isysroot", sdk_path])
+
+        # The host SDK may be for a different platform from the target SDK.
+        # Resolve that separately.
+        if "APPLE_HOST_SDK_PATH" in os.environ:
+            host_sdk_path = os.environ["APPLE_HOST_SDK_PATH"]
+        else:
+            host_sdk_path = subprocess.run(
+                ["xcrun", "--show-sdk-path"],
+                check=True,
+                capture_output=True,
+                encoding="utf-8",
+            ).stdout.strip()
+
+        if not os.path.exists(host_sdk_path):
+            raise Exception("macOS host SDK path %s does not exist" % host_sdk_path)
+
+        extra_host_cflags = ["-isysroot", host_sdk_path]
+        extra_host_ldflags = ["-isysroot", host_sdk_path]
 
         env["EXTRA_HOST_CFLAGS"] = " ".join(extra_host_cflags)
         env["EXTRA_HOST_LDFLAGS"] = " ".join(extra_host_ldflags)

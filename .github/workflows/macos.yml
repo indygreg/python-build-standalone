@@ -171,8 +171,10 @@ jobs:
           # Force use of 10.15 SDK on Python 3.8, as it has trouble with macOS 11 SDK.
           if [ "${{ matrix.py }}" = "cpython-3.8" ]; then
              export APPLE_SDK_PATH=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
+             export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
           else
              export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+             export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
           fi
 
           ./build-macos.py --skip-toolchain --target-triple ${{ matrix.triple }} --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
