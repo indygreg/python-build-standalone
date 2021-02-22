@@ -10,6 +10,7 @@ _crypt _cryptmodule.c
 _curses _cursesmodule.c -DHAVE_NCURSESW=1 -D_XOPEN_SOURCE_EXTENDED=1 -lncurses
 _curses_panel _curses_panel.c -DHAVE_NCURSESW=1 -D_XOPEN_SOURCE_EXTENDED=1 -lpanel -lncurses
 _ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/darwin/dlfcn_simple.c _ctypes/malloc_closure.c _ctypes/stgdict.c _ctypes/cfield.c -DMACOSX -I_ctypes/darwin -lffi -ldl
+_ctypes_test _ctypes/_ctypes_test.c -lm
 _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/constants.c _decimal/libmpdec/context.c _decimal/libmpdec/convolute.c _decimal/libmpdec/crt.c _decimal/libmpdec/difradix2.c _decimal/libmpdec/fnt.c _decimal/libmpdec/fourstep.c _decimal/libmpdec/io.c _decimal/libmpdec/mpalloc.c _decimal/libmpdec/mpdecimal.c _decimal/libmpdec/numbertheory.c _decimal/libmpdec/sixstep.c _decimal/libmpdec/transpose.c -DUNIVERSAL=1 -IModules/_decimal/libmpdec
 # macOS ships with an ndbm implementation in libSystem. CPython's setup.py will
 # use it unless an ndbl or gdbm_compat library is present.
@@ -28,7 +29,12 @@ _queue _queuemodule.c
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 _sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -lsqlite3
 _ssl _ssl.c -lssl -lcrypto
+_testbuffer _testbuffer.c
+_testimportmultiple _testimportmultiple.c
+_testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
+_testmultiphase.c _testmultiphase.c
 _tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreServices -framework CoreGraphics -framework IOKit -ltcl8.6 -ltk8.6
 _uuid _uuidmodule.c -luuid
+_xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 pyexpat pyexpat.c expat/xmlparse.c expat/xmlrole.c expat/xmltok.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
 readline readline.c -ledit -lncurses
