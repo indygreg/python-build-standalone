@@ -13,3 +13,8 @@ spwd
 # our validation script when it screens for the target machine type of
 # binaries. So just disable it.
 _testcapi
+
+# Similar story as _testcapi. The extension exists to test the limited API,
+# which we don't really care about. Statically building it runs into problems
+# and cross-compiling emits wrong machine type when built via setup.py.
+xxlimited
