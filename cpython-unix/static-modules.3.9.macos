@@ -32,7 +32,7 @@ _ssl _ssl.c -lssl -lcrypto
 _testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
-_testmultiphase.c _testmultiphase.c
+_testmultiphase _testmultiphase.c
 _tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreServices -framework CoreGraphics -framework IOKit -ltcl8.6 -ltk8.6
 _uuid _uuidmodule.c -luuid
 _xxsubinterpreters _xxsubinterpretersmodule.c
