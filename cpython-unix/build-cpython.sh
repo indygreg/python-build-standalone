@@ -599,11 +599,10 @@ pushd ${ROOT}/pip-${PIP_VERSION}
 
 # pip 21 shipped DOS line endings. https://github.com/pypa/pip/issues/9638.
 # Let's fix that.
-
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    find . -name '*.py' -exec perl -i -pe 's/\R/\n/g' {} \;
+    find . -name '*.py' -exec perl -i -pe 's/\r\n$/\n/g' {} \;
 else
-    find . -name '*.py' -exec sed -i 's/\r$//g' {} \;
+    find . -name '*.py' -exec sed -i 's/\r\n$/\n/g' {} \;
 fi
 
 patch -p1 <<EOF
