@@ -194,7 +194,7 @@ jobs:
              elif [ "${{ matrix.triple }}" = "x86_64-apple-darwin" ]; then
                export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
              elif [ "${{ matrix.triple }}" = "x86_64-apple-ios" ]; then
-               export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.4.sdk
+               export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator14.4.sdk
              else
                echo "unhandled target triple: ${{ matrix.triple }}"
                exit 1
