@@ -30,7 +30,7 @@ EXTRA_TARGET_CFLAGS=${EXTRA_TARGET_CFLAGS/\-arch x86_64/}
 
 EXTRA_FLAGS="${EXTRA_FLAGS} ${EXTRA_TARGET_CFLAGS}"
 
-if [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin18.7.0" ]; then
+if [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin" ]; then
   OPENSSL_TARGET=darwin64-x86_64-cc
 elif [ "${TARGET_TRIPLE}" = "x86_64-apple-ios" ]; then
   OPENSSL_TARGET=darwin64-x86_64-cc
