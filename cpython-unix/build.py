@@ -45,6 +45,10 @@ MACOSX_DEPLOYMENT_TARGET_ARM = "11.0"
 
 IPHONEOS_DEPLOYMENT_TARGET = "12.3"
 
+TVOS_DEPLOYMENT_TARGET = "12.3"
+
+WATCHOS_DEPLOYMENT_TARGET = "7.0"
+
 
 def install_sccache(build_env):
     """Attempt to install sccache into the build environment.
@@ -95,14 +99,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
         else:
             raise Exception("unhandled macOS machine value: %s" % machine)
 
-        if target_triple == "x86_64-apple-darwin":
-            env["TARGET_TRIPLE"] = "x86_64-apple-darwin"
-            arches = ["x86_64"]
-            sdk_platform = "macosx"
-            min_version_flags = [
-                "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_X86
-            ]
-        elif target_triple == "aarch64-apple-darwin":
+        if target_triple == "aarch64-apple-darwin":
             env["TARGET_TRIPLE"] = "aarch64-apple-darwin"
             arches = ["arm64"]
             sdk_platform = "macosx"
@@ -116,12 +113,43 @@ def add_target_env(env, build_platform, target_triple, build_env):
             arches = ["arm64"]
             sdk_platform = "iphoneos"
             min_version_flags = ["-mios-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET]
+        elif target_triple == "arm64-apple-tvos":
+            env["TARGET_TRIPLE"] = "arm64-apple-tvos"
+            arches = ["arm64"]
+            sdk_platform = "appletvos"
+            min_version_flags = ["-mappletvos-version-min=%s" % TVOS_DEPLOYMENT_TARGET]
+        elif target_triple == "thumbv7k-apple-watchos":
+            env["TARGET_TRIPLE"] = "thumbv7k-apple-watchos"
+            arches = ["armv7k"]
+            sdk_platform = "watchos"
+            min_version_flags = ["-mwatchos-version-min=%s" % WATCHOS_DEPLOYMENT_TARGET]
+        elif target_triple == "x86_64-apple-darwin":
+            env["TARGET_TRIPLE"] = "x86_64-apple-darwin"
+            arches = ["x86_64"]
+            sdk_platform = "macosx"
+            min_version_flags = [
+                "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_X86
+            ]
         elif target_triple == "x86_64-apple-ios":
             env["TARGET_TRIPLE"] = "x86_64-apple-ios"
             arches = ["x86_64"]
             sdk_platform = "iphonesimulator"
             min_version_flags = [
                 "-mios-simulator-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET,
+            ]
+        elif target_triple == "x86_64-apple-tvos":
+            env["TARGET_TRIPLE"] = "x86_64-apple-tvos"
+            arches = ["x86_64"]
+            sdk_platform = "appletvsimulator"
+            min_version_flags = [
+                "-mappletvsimulator-version-min=%s" % TVOS_DEPLOYMENT_TARGET
+            ]
+        elif target_triple == "x86_64-apple-watchos":
+            env["TARGET_TRIPLE"] = "x86_64-apple-watchos"
+            arches = ["x86_64"]
+            sdk_platform = "watchsimulator"
+            min_version_flags = [
+                "-mwatchsimulator-version-min=%s" % WATCHOS_DEPLOYMENT_TARGET
             ]
         else:
             raise ValueError("unhandled target triple: %s" % target_triple)

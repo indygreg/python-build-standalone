@@ -48,6 +48,7 @@ ifeq ($(HOST_PLATFORM),linux64)
     NEED_GDBM := 1
     NEED_GETTEXT :=
     NEED_LIBEDIT := 1
+    NEED_LIBFFI := 1
     NEED_NCURSES := 1
     NEED_X11 := 1
     NEED_READLINE := 1
@@ -56,7 +57,23 @@ ifeq ($(HOST_PLATFORM),linux64)
     NEED_UUID := 1
 endif
 
-ifeq ($(HOST_PLATFORM),macos)
+ifeq ($(TARGET_TRIPLE),aarch64-apple-darwin)
+    NEED_BDB :=
+    NEED_BINUTILS :=
+    NEED_GCC :=
+    NEED_MUSL :=
+    NEED_GDBM :=
+    NEED_GETTEXT :=
+    NEED_LIBEDIT := 1
+    NEED_LIBFFI := 1
+    NEED_NCURSES := 1
+    NEED_X11 :=
+    NEED_READLINE :=
+    NEED_SQLITE := 1
+    NEED_TIX := 1
+    NEED_UUID := 1
+endif
+
 ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
     NEED_BDB :=
     NEED_BINUTILS :=
@@ -65,13 +82,66 @@ ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
     NEED_GDBM :=
     NEED_GETTEXT :=
     NEED_LIBEDIT :=
+    NEED_LIBFFI :=
     NEED_NCURSES :=
     NEED_SQLITE := 1
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX :=
     NEED_UUID :=
-else
+endif
+
+ifeq ($(TARGET_TRIPLE),arm64-apple-tvos)
+    NEED_BDB :=
+    NEED_BINUTILS :=
+    NEED_GCC :=
+    NEED_MUSL :=
+    NEED_GDBM :=
+    NEED_GETTEXT :=
+    NEED_LIBEDIT :=
+    NEED_LIBFFI :=
+    NEED_NCURSES :=
+    NEED_SQLITE := 1
+    NEED_X11 :=
+    NEED_READLINE :=
+    NEED_TIX :=
+    NEED_UUID :=
+endif
+
+ifeq ($(TARGET_TRIPLE),thumb7k-apple-watchos)
+    NEED_BDB :=
+    NEED_BINUTILS :=
+    NEED_GCC :=
+    NEED_MUSL :=
+    NEED_GDBM :=
+    NEED_GETTEXT :=
+    NEED_LIBEDIT :=
+    NEED_LIBFFI :=
+    NEED_NCURSES :=
+    NEED_SQLITE := 1
+    NEED_X11 :=
+    NEED_READLINE :=
+    NEED_TIX :=
+    NEED_UUID :=
+endif
+
+ifeq ($(TARGET_TRIPLE),x86_64-apple-darwin)
+    NEED_BDB :=
+    NEED_BINUTILS :=
+    NEED_GCC :=
+    NEED_MUSL :=
+    NEED_GDBM :=
+    NEED_GETTEXT :=
+    NEED_LIBEDIT := 1
+    NEED_LIBFFI := 1
+    NEED_NCURSES := 1
+    NEED_X11 :=
+    NEED_READLINE :=
+    NEED_SQLITE := 1
+    NEED_TIX := 1
+    NEED_UUID := 1
+endif
+
 ifeq ($(TARGET_TRIPLE),x86_64-apple-ios)
     NEED_BDB :=
     NEED_BINUTILS :=
@@ -80,28 +150,47 @@ ifeq ($(TARGET_TRIPLE),x86_64-apple-ios)
     NEED_GDBM :=
     NEED_GETTEXT :=
     NEED_LIBEDIT :=
+    NEED_LIBFFI :=
     NEED_NCURSES :=
     NEED_SQLITE := 1
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX :=
     NEED_UUID :=
-else
+endif
+
+ifeq ($(TARGET_TRIPLE),x86_64-apple-tvos)
     NEED_BDB :=
     NEED_BINUTILS :=
     NEED_GCC :=
     NEED_MUSL :=
     NEED_GDBM :=
     NEED_GETTEXT :=
-    NEED_LIBEDIT := 1
-    NEED_NCURSES := 1
+    NEED_LIBEDIT :=
+    NEED_LIBFFI :=
+    NEED_NCURSES :=
+    NEED_SQLITE := 1
     NEED_X11 :=
     NEED_READLINE :=
+    NEED_TIX :=
+    NEED_UUID :=
+endif
+
+ifeq ($(TARGET_TRIPLE),x86_64-apple-watchos)
+    NEED_BDB :=
+    NEED_BINUTILS :=
+    NEED_GCC :=
+    NEED_MUSL :=
+    NEED_GDBM :=
+    NEED_GETTEXT :=
+    NEED_LIBEDIT :=
+    NEED_LIBFFI :=
+    NEED_NCURSES :=
     NEED_SQLITE := 1
-    NEED_TIX := 1
-    NEED_UUID := 1
-endif
-endif
+    NEED_X11 :=
+    NEED_READLINE :=
+    NEED_TIX :=
+    NEED_UUID :=
 endif
 
 ifdef PYBUILD_MUSL
@@ -326,7 +415,7 @@ PYTHON_DEPENDS := \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_GETTEXT),$(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_LIBFFI),$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBRESSL),$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_NCURSES),$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar) \

@@ -41,10 +41,14 @@ def main():
             raise Exception("unhandled macOS machine value: %s" % machine)
 
         targets = {
-            "x86_64-apple-darwin",
-            "x86_64-apple-ios",
             "aarch64-apple-darwin",
             "aarch64-apple-ios",
+            "arm64-apple-tvos",
+            "thumbv7k-apple-watchos",
+            "x86_64-apple-darwin",
+            "x86_64-apple-ios",
+            "x86_64-apple-tvos",
+            "x86_64-apple-watchos",
         }
     else:
         print("unsupport build platform: %s" % sys.platform)

@@ -24,9 +24,13 @@ use {
 const RECOGNIZED_TRIPLES: &[&str] = &[
     "aarch64-apple-darwin",
     "aarch64-apple-ios",
+    "arm64-apple-tvos",
     "i686-pc-windows-msvc",
+    "thumbv7k-apple-watchos",
     "x86_64-apple-darwin",
     "x86_64-apple-ios",
+    "x86_64-apple-tvos",
+    "x86_64-apple-watchos",
     "x86_64-pc-windows-msvc",
     "x86_64-unknown-linux-gnu",
     "x86_64-unknown-linux-musl",
