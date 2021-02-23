@@ -186,6 +186,18 @@ lazy_static! {
         ]
         .to_vec()
     };
+    static ref IOS_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
+        [
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
+                max_compatibility_version: "3.9.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
+                max_compatibility_version: "3.9.0".try_into().unwrap(),
+            },
+        ].to_vec()
+    };
 }
 
 fn validate_elf(path: &Path, elf: &goblin::elf::Elf, bytes: &[u8]) -> Result<Vec<String>> {
@@ -257,7 +269,14 @@ fn validate_macho(
             | CommandVariant::LazyLoadDylib(command) => {
                 let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
 
-                if let Some(entry) = DARWIN_ALLOWED_DYLIBS.iter().find(|l| l.name == lib) {
+                let mut allowed = match target_triple {
+                    "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.iter(),
+                    "x86_64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.iter(),
+                    "aarch64-apple-ios" => IOS_ALLOWED_DYLIBS.iter(),
+                    _ => return Err(anyhow!("unhandled target triple: {}", target_triple))
+                };
+
+                if let Some(entry) = allowed.find(|l| l.name == lib) {
                     let load_version =
                         MachOPackedVersion::from(command.dylib.compatibility_version);
                     if load_version > entry.max_compatibility_version {
