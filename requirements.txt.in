@@ -1,3 +1,4 @@
 docker
 jinja2
+PyYAML
 zstandard

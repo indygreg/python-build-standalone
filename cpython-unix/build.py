@@ -13,6 +13,7 @@ import sys
 import tempfile
 
 import docker
+import yaml
 
 from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import (
@@ -30,12 +31,14 @@ from pythonbuild.utils import (
     download_entry,
     validate_python_json,
     write_package_versions,
+    write_triples_makefiles,
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
+TARGETS_CONFIG = SUPPORT / "targets.yml"
 
 # Target older macOS on x86 for maximum run-time compatibility.
 MACOSX_DEPLOYMENT_TARGET_X86 = "10.9"
@@ -48,6 +51,12 @@ IPHONEOS_DEPLOYMENT_TARGET = "12.3"
 TVOS_DEPLOYMENT_TARGET = "12.3"
 
 WATCHOS_DEPLOYMENT_TARGET = "7.0"
+
+
+def get_targets():
+    """Obtain the parsed targets YAML file."""
+    with TARGETS_CONFIG.open("rb") as fh:
+        return yaml.load(fh, Loader=yaml.SafeLoader)
 
 
 def install_sccache(build_env):
@@ -1051,8 +1060,8 @@ def main():
     optimizations = args.optimizations
     dest_archive = pathlib.Path(args.dest_archive)
 
-    if args.action == "versions":
-        log_name = "versions"
+    if args.action == "makefiles":
+        log_name = "makefiles"
     elif args.action.startswith("image-"):
         log_name = "image-%s" % action
     elif args.toolchain:
@@ -1070,7 +1079,8 @@ def main():
 
     with log_path.open("wb") as log_fh:
         set_logger(action, log_fh)
-        if action == "versions":
+        if action == "makefiles":
+            write_triples_makefiles(get_targets(), BUILD)
             write_package_versions(BUILD / "versions")
 
         elif action.startswith("image-"):

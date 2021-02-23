@@ -40,162 +40,8 @@ RUN_BUILD = $(BUILD) \
     --dest-archive $@ \
     $(NULL)
 
-ifeq ($(HOST_PLATFORM),linux64)
-    NEED_BDB := 1
-    NEED_BINUTILS := 1
-    NEED_GCC := 1
-    NEED_MUSL :=
-    NEED_GDBM := 1
-    NEED_GETTEXT :=
-    NEED_LIBEDIT := 1
-    NEED_LIBFFI := 1
-    NEED_NCURSES := 1
-    NEED_X11 := 1
-    NEED_READLINE := 1
-    NEED_SQLITE := 1
-    NEED_TIX := 1
-    NEED_UUID := 1
-endif
-
-ifeq ($(TARGET_TRIPLE),aarch64-apple-darwin)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT := 1
-    NEED_LIBFFI := 1
-    NEED_NCURSES := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_SQLITE := 1
-    NEED_TIX := 1
-    NEED_UUID := 1
-endif
-
-ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT :=
-    NEED_LIBFFI :=
-    NEED_NCURSES :=
-    NEED_SQLITE := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_TIX :=
-    NEED_UUID :=
-endif
-
-ifeq ($(TARGET_TRIPLE),arm64-apple-tvos)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT :=
-    NEED_LIBFFI :=
-    NEED_NCURSES :=
-    NEED_SQLITE := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_TIX :=
-    NEED_UUID :=
-endif
-
-ifeq ($(TARGET_TRIPLE),thumb7k-apple-watchos)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT :=
-    NEED_LIBFFI :=
-    NEED_NCURSES :=
-    NEED_SQLITE := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_TIX :=
-    NEED_UUID :=
-endif
-
-ifeq ($(TARGET_TRIPLE),x86_64-apple-darwin)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT := 1
-    NEED_LIBFFI := 1
-    NEED_NCURSES := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_SQLITE := 1
-    NEED_TIX := 1
-    NEED_UUID := 1
-endif
-
-ifeq ($(TARGET_TRIPLE),x86_64-apple-ios)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT :=
-    NEED_LIBFFI :=
-    NEED_NCURSES :=
-    NEED_SQLITE := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_TIX :=
-    NEED_UUID :=
-endif
-
-ifeq ($(TARGET_TRIPLE),x86_64-apple-tvos)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT :=
-    NEED_LIBFFI :=
-    NEED_NCURSES :=
-    NEED_SQLITE := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_TIX :=
-    NEED_UUID :=
-endif
-
-ifeq ($(TARGET_TRIPLE),x86_64-apple-watchos)
-    NEED_BDB :=
-    NEED_BINUTILS :=
-    NEED_GCC :=
-    NEED_MUSL :=
-    NEED_GDBM :=
-    NEED_GETTEXT :=
-    NEED_LIBEDIT :=
-    NEED_LIBFFI :=
-    NEED_NCURSES :=
-    NEED_SQLITE := 1
-    NEED_X11 :=
-    NEED_READLINE :=
-    NEED_TIX :=
-    NEED_UUID :=
-endif
-
 ifdef PYBUILD_MUSL
     PLATFORM := $(PLATFORM)-musl
-    NEED_MUSL := 1
 endif
 
 ifdef PYBUILD_LIBRESSL
@@ -206,8 +52,9 @@ else
     NEED_LIBRESSL :=
 endif
 
-# Always write out package version files.
-$(shell $(RUN_BUILD) dummy_archive versions)
+# Always write out settings files.
+$(shell $(RUN_BUILD) placeholder_archive makefiles)
+include $(OUTDIR)/Makefile.$(TARGET_TRIPLE)
 include $(OUTDIR)/versions/VERSION.*
 
 BASE_TOOLCHAIN_DEPENDS := \

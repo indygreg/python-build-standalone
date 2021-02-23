@@ -13,6 +13,7 @@ import tarfile
 import zipfile
 import urllib.request
 
+import yaml
 import zstandard
 
 from .downloads import DOWNLOADS
@@ -62,6 +63,20 @@ def write_if_different(p: pathlib.Path, data: bytes):
     if write:
         with p.open("wb") as fh:
             fh.write(data)
+
+
+def write_triples_makefiles(targets, dest_dir: pathlib.Path):
+    """Write out makefiles containing make variable settings derived from config."""
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    for triple, settings in targets.items():
+        makefile_path = dest_dir / ("Makefile.%s" % triple)
+
+        lines = []
+        for need in settings.get("needs", []):
+            lines.append("NEED_%s := 1\n" % need.upper())
+
+        write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 
 def write_package_versions(dest_path: pathlib.Path):

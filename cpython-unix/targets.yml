@@ -1,0 +1,73 @@
+---
+aarch64-apple-darwin:
+  needs:
+    - libedit
+    - libffi
+    - ncurses
+    - sqlite
+    - tix
+    - uuid
+
+aarch64-apple-ios:
+  needs:
+    - sqlite
+
+arm64-apple-tvos:
+  needs:
+    - sqlite
+
+thumb7k-apple-watchos:
+  needs:
+    - sqlite
+
+x86_64-apple-darwin:
+  needs:
+    - libedit
+    - libffi
+    - ncurses
+    - sqlite
+    - tix
+    - uuid
+
+x86_64-apple-ios:
+  needs:
+    - sqlite
+
+x86_64-apple-tvos:
+  needs:
+    - sqlite
+
+x86_64-apple-watchos:
+  needs:
+    - sqlite
+
+x86_64-unknown-linux-gnu:
+  needs:
+    - bdb
+    - binutils
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - ncurses
+    - x11
+    - readline
+    - sqlite
+    - tix
+    - uuid
+
+x86_64-unknown-linux-musl:
+  needs:
+    - bdb
+    - binutils
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - musl
+    - ncurses
+    - x11
+    - readline
+    - sqlite
+    - tix
+    - uuid
