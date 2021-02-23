@@ -66,7 +66,7 @@ ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
     NEED_GETTEXT :=
     NEED_LIBEDIT :=
     NEED_NCURSES :=
-    NEED_SQLITE :=
+    NEED_SQLITE := 1
     NEED_X11 :=
     NEED_READLINE :=
     NEED_TIX :=

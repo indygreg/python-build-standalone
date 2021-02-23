@@ -12,11 +12,15 @@ export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 tar -xf sqlite-autoconf-${SQLITE_VERSION}.tar.gz
 pushd sqlite-autoconf-${SQLITE_VERSION}
 
-CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LDFLAGS="${EXTRA_TARGET_LDFLAGS}" ./configure \
-    --build=${BUILD_TRIPLE} \
-    --host=${TARGET_TRIPLE} \
-    --prefix /tools/deps \
-    --disable-shared
+
+CONFIGURE_FLAGS="--build=${BUILD_TRIPLE} --host=${TARGET_TRIPLE}"
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix /tools/deps --disable-shared"
+
+if [ "${TARGET_TRIPLE}" = "aarch64-apple-ios" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_search_system=no"
+fi
+
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LDFLAGS="${EXTRA_TARGET_LDFLAGS}" ./configure ${CONFIGURE_FLAGS}
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
