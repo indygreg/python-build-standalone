@@ -96,27 +96,33 @@ def add_target_env(env, build_platform, target_triple, build_env):
             raise Exception("unhandled macOS machine value: %s" % machine)
 
         if target_triple == "x86_64-apple-darwin":
-            env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_X86
             env["TARGET_TRIPLE"] = "x86_64-apple-darwin18.7.0"
             arches = ["x86_64"]
             sdk_platform = "macosx"
+            min_version_flags = [
+                "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_X86
+            ]
         elif target_triple == "aarch64-apple-darwin":
-            env["MACOSX_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_ARM
             env["TARGET_TRIPLE"] = "aarch64-apple-darwin"
             arches = ["arm64"]
             sdk_platform = "macosx"
+            min_version_flags = [
+                "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_ARM
+            ]
         elif target_triple == "aarch64-apple-ios":
-            env["IPHONEOS_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
             env["TARGET_TRIPLE"] = "aarch64-apple-ios"
             # TODO arm64e not supported by open source Clang.
             # TODO add arm7 / arm7s?
             arches = ["arm64"]
             sdk_platform = "iphoneos"
+            min_version_flags = ["-mios-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET]
         elif target_triple == "x86_64-apple-ios":
-            env["IPHONEOS_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
             env["TARGET_TRIPLE"] = "x86_64-apple-ios"
             arches = ["x86_64"]
             sdk_platform = "iphonesimulator"
+            min_version_flags = [
+                "-mios-simulator-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET,
+            ]
         else:
             raise ValueError("unhandled target triple: %s" % target_triple)
 
@@ -164,6 +170,8 @@ def add_target_env(env, build_platform, target_triple, build_env):
 
         extra_target_cflags.extend(["-isysroot", sdk_path])
         extra_target_ldflags.extend(["-isysroot", sdk_path])
+        extra_target_cflags.extend(min_version_flags)
+        extra_target_ldflags.extend(min_version_flags)
 
         # The host SDK may be for a different platform from the target SDK.
         # Resolve that separately.
