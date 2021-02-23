@@ -116,8 +116,10 @@ jobs:
       fail-fast: false
       matrix:
         triple:
-          - 'x86_64-apple-darwin'
           - 'aarch64-apple-darwin'
+          - 'aarch64-apple-ios'
+          - 'x86_64-apple-darwin'
+          - 'x86_64-apple-ios'
         py:
           - 'cpython-3.8'
           - 'cpython-3.9'
@@ -128,9 +130,12 @@ jobs:
           - 'pgo'
           - 'pgo+lto'
         exclude:
-          # aarch64 only supported by CPython 3.9+.
+          # Cross-compiling only supported by CPython 3.9+.
           - triple: 'aarch64-apple-darwin'
             py: 'cpython-3.8'
+          - triple: 'aarch64-apple-ios'
+            py: 'cpython-3.8'
+          - triple: 'x86_64-apple-ios'
           # PGO doesn't work when cross-compiling. Goal with following
           # rules is to disable PGO when cross-compiling and disable noopt
           # for host builds (since PGO is superior).
@@ -138,7 +143,13 @@ jobs:
             optimizations: 'pgo'
           - triple: 'aarch64-apple-darwin'
             optimizations: 'pgo+lto'
+          - triple: 'aarch64-apple-ios'
+            optimizations: 'pgo'
+          - triple: 'aarch64-apple-ios'
+            optimizations: 'pgo+lto'
           - triple: 'x86_64-apple-darwin'
+            optimizations: 'noopt'
+          - triple: 'x86_64-apple-ios'
             optimizations: 'noopt'
     needs:
       - pythonbuild
@@ -173,8 +184,20 @@ jobs:
              export APPLE_SDK_PATH=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
              export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
           else
-             export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
              export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+
+             if [ "${{ matrix.triple }}" = "aarch64-apple-darwin" ]; then
+                 export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+             elif [ "${{ matrix.triple }}" = "aarch64-apple-ios" ]; then
+                 export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.4.sdk
+             if [ "${{ matrix.triple }}" = "x86_64-apple-darwin" ]; then
+                 export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+             elif [ "${{ matrix.triple }}" = "x86_64-apple-ios" ]; then
+                 export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.4.sdk
+             else
+                echo "unhandled target triple: ${{ matrix.triple }}"
+                exit 1
+             fi
           fi
 
           ./build-macos.py --skip-toolchain --target-triple ${{ matrix.triple }} --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
