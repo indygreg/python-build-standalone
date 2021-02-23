@@ -44,14 +44,6 @@ ifdef PYBUILD_MUSL
     PLATFORM := $(PLATFORM)-musl
 endif
 
-ifdef PYBUILD_LIBRESSL
-    NEED_LIBRESSL := 1
-    NEED_OPENSSL :=
-else
-    NEED_OPENSSL := 1
-    NEED_LIBRESSL :=
-endif
-
 # Always write out settings files.
 $(shell $(RUN_BUILD) placeholder_archive makefiles)
 include $(OUTDIR)/Makefile.$(TARGET_TRIPLE)

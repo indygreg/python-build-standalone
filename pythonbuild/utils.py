@@ -94,6 +94,11 @@ def write_triples_makefiles(targets, dest_dir: pathlib.Path):
         for need in settings.get("needs", []):
             lines.append("NEED_%s := 1\n" % need.upper())
 
+        if "PYBUILD_LIBRESSL" in os.environ:
+            lines.append("NEED_LIBRESSL := 1\n")
+        else:
+            lines.append("NEED_OPENSSL := 1\n")
+
         write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 
