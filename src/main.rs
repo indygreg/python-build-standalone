@@ -21,6 +21,7 @@ use {
 
 const RECOGNIZED_TRIPLES: &[&str] = &[
     "aarch64-apple-darwin",
+    "aarch64-apple-ios",
     "i686-pc-windows-msvc",
     "x86_64-apple-darwin",
     "x86_64-pc-windows-msvc",
@@ -233,6 +234,7 @@ fn validate_macho(
 
     let wanted_cpu_type = match target_triple {
         "aarch64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_ARM64,
+        "aarch64-apple-ios" => goblin::mach::cputype::CPU_TYPE_ARM64,
         "x86_64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_X86_64,
         _ => return Err(anyhow!("unhandled target triple: {}", target_triple)),
     };
