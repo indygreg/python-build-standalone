@@ -109,6 +109,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["IPHONEOS_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
             env["TARGET_TRIPLE"] = "aarch64-apple-ios"
             # TODO arm64e not supported by open source Clang.
+            # TODO add arm7 / arm7s?
             arches = ["arm64"]
             sdk_platform = "iphoneos"
         elif target_triple == "x86_64-apple-ios":
