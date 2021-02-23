@@ -196,6 +196,18 @@ lazy_static! {
                 name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
             },
+            MachOAllowedDylib {
+                name: "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation".to_string(),
+                max_compatibility_version: "150.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libSystem.B.dylib".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
+            MachOAllowedDylib {
+                name: "/usr/lib/libz.1.dylib".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+            },
         ].to_vec()
     };
 }
