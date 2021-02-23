@@ -227,6 +227,11 @@ lazy_static! {
                 required: true,
             },
             MachOAllowedDylib {
+                name: "/usr/lib/libsqlite3.dylib".to_string(),
+                max_compatibility_version: "9.0.0".try_into().unwrap(),
+                required: true,
+            },
+            MachOAllowedDylib {
                 name: "/usr/lib/libSystem.B.dylib".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
                 required: true,
