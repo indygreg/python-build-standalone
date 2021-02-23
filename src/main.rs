@@ -99,7 +99,7 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
 lazy_static! {
     static ref GLIBC_MAX_VERSION: version_compare::Version<'static> =
         version_compare::Version::from("2.19").unwrap();
-    static ref MACHO_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
+    static ref DARWIN_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
         [
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.8.dylib".to_string(),
@@ -257,7 +257,7 @@ fn validate_macho(
             | CommandVariant::LazyLoadDylib(command) => {
                 let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
 
-                if let Some(entry) = MACHO_ALLOWED_DYLIBS.iter().find(|l| l.name == lib) {
+                if let Some(entry) = DARWIN_ALLOWED_DYLIBS.iter().find(|l| l.name == lib) {
                     let load_version =
                         MachOPackedVersion::from(command.dylib.compatibility_version);
                     if load_version > entry.max_compatibility_version {
