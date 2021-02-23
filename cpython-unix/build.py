@@ -823,7 +823,6 @@ def build_cpython(
         # TODO support bdb/gdbm toggle
         packages = {
             "bzip2",
-            "libffi",
             "xz",
             "zlib",
         }
@@ -835,6 +834,10 @@ def build_cpython(
         libedit = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
         if libedit:
             packages.add("libedit")
+
+        libffi = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
+        if libffi:
+            packages.add("libffi")
 
         if libressl:
             packages.add("libressl")
