@@ -136,6 +136,7 @@ jobs:
           - triple: 'aarch64-apple-ios'
             py: 'cpython-3.8'
           - triple: 'x86_64-apple-ios'
+            py: 'cpython-3.8'
           # PGO doesn't work when cross-compiling. Goal with following
           # rules is to disable PGO when cross-compiling and disable noopt
           # for host builds (since PGO is superior).
