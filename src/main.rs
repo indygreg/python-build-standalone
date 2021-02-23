@@ -249,13 +249,13 @@ lazy_static! {
     };
 }
 
-fn allowed_dylibs_for_triple(triple: &str) -> Result<&Vec<MachOAllowedDylib>> {
+fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     match triple {
-        "aarch64-apple-darwin" => Ok(&*DARWIN_ALLOWED_DYLIBS),
-        "x86_64-apple-darwin" => Ok(&*DARWIN_ALLOWED_DYLIBS),
-        "aarch64-apple-ios" => Ok(&*IOS_ALLOWED_DYLIBS),
-        "x86_64-apple-ios" => Ok(&*IOS_ALLOWED_DYLIBS),
-        _ => Err(anyhow!("unhandled target triple: {}", triple))
+        "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.clone(),
+        "x86_64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.clone(),
+        "aarch64-apple-ios" => IOS_ALLOWED_DYLIBS.clone(),
+        "x86_64-apple-ios" => IOS_ALLOWED_DYLIBS.clone(),
+        _ => vec![]
     }
 }
 
@@ -330,7 +330,7 @@ fn validate_macho(
             | CommandVariant::LazyLoadDylib(command) => {
                 let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
 
-                let allowed = allowed_dylibs_for_triple(target_triple)?;
+                let allowed = allowed_dylibs_for_triple(target_triple);
 
                 if let Some(entry) = allowed.iter().find(|l| l.name == lib) {
                     let load_version =
@@ -429,10 +429,10 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         }
     }
 
-    let wanted_dylibs = BTreeSet::from_iter(allowed_dylibs_for_triple(triple)?.iter().filter(|d| d.required).map(|d| d.name.clone()));
+    let wanted_dylibs = BTreeSet::from_iter(allowed_dylibs_for_triple(triple).iter().filter(|d| d.required).map(|d| d.name.clone()));
 
     for lib in wanted_dylibs.difference(&seen_dylibs) {
-        errors.push(format!("required dylib dependency {} not seen", lib));
+        errors.push(format!("required library dependency {} not seen", lib));
     }
 
     Ok(errors)
