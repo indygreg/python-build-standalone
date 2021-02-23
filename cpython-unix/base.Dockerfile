@@ -1,5 +1,5 @@
 # Debian Jessie.
-FROM debian@sha256:e180975d5c1012518e711c92ab26a4ff98218f439a97d9adbcd503b0d3ad1c8a
+FROM debian@sha256:40d6faa8c33e8ab03428ad97fc109c369fb510d99f4700df9058940ac9944f09
 MAINTAINER Gregory Szorc <gregory.szorc@gmail.com>
 
 RUN groupadd -g 1000 build && \
@@ -18,7 +18,7 @@ CMD ["/bin/bash", "--login"]
 WORKDIR '/build'
 
 RUN for s in debian_jessie debian_jessie-updates debian-security_jessie/updates; do \
-      echo "deb http://snapshot.debian.org/archive/${s%_*}/20200930T144429Z/ ${s#*_} main"; \
+      echo "deb http://snapshot.debian.org/archive/${s%_*}/20210223T023121Z/ ${s#*_} main"; \
     done > /etc/apt/sources.list && \
     ( echo 'quiet "true";'; \
       echo 'APT::Get::Assume-Yes "true";'; \
