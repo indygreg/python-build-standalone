@@ -1,5 +1,16 @@
+# This file defines configurations for each supported build target/triple.
+#
+# host_platform
+#    Defines the Python sys.platform value where this configuration
+#    can be built from.
+#
+# needs
+#    Packages required to build Python.
+
 ---
 aarch64-apple-darwin:
+  host_platforms:
+    - darwin
   needs:
     - libedit
     - libffi
@@ -9,18 +20,26 @@ aarch64-apple-darwin:
     - uuid
 
 aarch64-apple-ios:
+  host_platforms:
+    - darwin
   needs:
     - sqlite
 
 arm64-apple-tvos:
+  host_platforms:
+    - darwin
   needs:
     - sqlite
 
 thumb7k-apple-watchos:
+  host_platforms:
+    - darwin
   needs:
     - sqlite
 
 x86_64-apple-darwin:
+  host_platforms:
+    - darwin
   needs:
     - libedit
     - libffi
@@ -30,18 +49,26 @@ x86_64-apple-darwin:
     - uuid
 
 x86_64-apple-ios:
+  host_platforms:
+    - darwin
   needs:
     - sqlite
 
 x86_64-apple-tvos:
+  host_platforms:
+    - darwin
   needs:
     - sqlite
 
 x86_64-apple-watchos:
+  host_platforms:
+    - darwin
   needs:
     - sqlite
 
 x86_64-unknown-linux-gnu:
+  host_platforms:
+    - linux
   needs:
     - bdb
     - binutils
@@ -57,6 +84,8 @@ x86_64-unknown-linux-gnu:
     - uuid
 
 x86_64-unknown-linux-musl:
+  host_platforms:
+    - linux
   needs:
     - bdb
     - binutils

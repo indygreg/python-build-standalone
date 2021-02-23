@@ -20,6 +20,24 @@ from .downloads import DOWNLOADS
 from .logging import log
 
 
+def get_targets(yaml_path: pathlib.Path):
+    """Obtain the parsed targets YAML file."""
+    with yaml_path.open("rb") as fh:
+        return yaml.load(fh, Loader=yaml.SafeLoader)
+
+
+def supported_targets(yaml_path: pathlib.Path):
+    """Obtain a set of named targets that we can build."""
+    targets = set()
+
+    for target, settings in get_targets(yaml_path).items():
+        for platform in settings["host_platforms"]:
+            if sys.platform == platform:
+                targets.add(target)
+
+    return targets
+
+
 def release_tag_from_git():
     return (
         subprocess.check_output(

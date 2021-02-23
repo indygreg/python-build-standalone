@@ -13,7 +13,6 @@ import sys
 import tempfile
 
 import docker
-import yaml
 
 from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import (
@@ -29,6 +28,7 @@ from pythonbuild.utils import (
     add_env_common,
     add_licenses_to_extension_entry,
     download_entry,
+    get_targets,
     validate_python_json,
     write_package_versions,
     write_triples_makefiles,
@@ -51,12 +51,6 @@ IPHONEOS_DEPLOYMENT_TARGET = "12.3"
 TVOS_DEPLOYMENT_TARGET = "12.3"
 
 WATCHOS_DEPLOYMENT_TARGET = "7.0"
-
-
-def get_targets():
-    """Obtain the parsed targets YAML file."""
-    with TARGETS_CONFIG.open("rb") as fh:
-        return yaml.load(fh, Loader=yaml.SafeLoader)
 
 
 def install_sccache(build_env):
@@ -1080,7 +1074,7 @@ def main():
     with log_path.open("wb") as log_fh:
         set_logger(action, log_fh)
         if action == "makefiles":
-            write_triples_makefiles(get_targets(), BUILD)
+            write_triples_makefiles(get_targets(TARGETS_CONFIG), BUILD)
             write_package_versions(BUILD / "versions")
 
         elif action.startswith("image-"):

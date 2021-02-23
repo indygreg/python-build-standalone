@@ -14,21 +14,20 @@ from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.utils import (
     compress_python_archive,
     release_tag_from_git,
+    supported_targets,
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / "build"
 DIST = ROOT / "dist"
+SUPPORT = ROOT / "cpython-unix"
+TARGETS_CONFIG = SUPPORT / "targets.yml"
 
 
 def main():
     if sys.platform == "linux":
         host_platform = "linux64"
         default_target_triple = "x86_64-unknown-linux-gnu"
-        targets = {
-            "x86_64-unknown-linux-gnu",
-            "x86_64-unknown-linux-musl",
-        }
     elif sys.platform == "darwin":
         host_platform = "macos"
         machine = platform.machine()
@@ -39,17 +38,6 @@ def main():
             default_target_triple = "x86_64-apple-darwin"
         else:
             raise Exception("unhandled macOS machine value: %s" % machine)
-
-        targets = {
-            "aarch64-apple-darwin",
-            "aarch64-apple-ios",
-            "arm64-apple-tvos",
-            "thumbv7k-apple-watchos",
-            "x86_64-apple-darwin",
-            "x86_64-apple-ios",
-            "x86_64-apple-tvos",
-            "x86_64-apple-watchos",
-        }
     else:
         print("unsupport build platform: %s" % sys.platform)
         return 1
@@ -59,7 +47,7 @@ def main():
     parser.add_argument(
         "--target-triple",
         default=default_target_triple,
-        choices=targets,
+        choices=supported_targets(TARGETS_CONFIG),
         help="Target host triple to build for",
     )
 
