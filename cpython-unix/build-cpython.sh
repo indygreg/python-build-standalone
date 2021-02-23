@@ -28,6 +28,11 @@ tar -xf pip-${PIP_VERSION}.tar.gz
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
+  # Presence of *_DEPLOYMENT_TARGET variables confuses host compiles. So unset
+  # and restore later.
+  OLD_IPHONEOS_DEPLOYMENT_TARGET=${IPHONEOS_DEPLOYMENT_TARGET}
+  unset IPHONEOS_DEPLOYMENT_TARGET
+
   CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
 
   # When building on macOS 10.15 (and possibly earlier) using the 11.0
@@ -43,6 +48,11 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   fi
 
   make -j "${NUM_CPUS}" install
+
+  if [ -n "${OLD_IPHONEOS_DEPLOYMENT_TARGET}" ]; then
+    export IPHONEOS_DEPLOYMENT_TARGET=${OLD_IPHONEOS_DEPLOYMENT_TARGET}
+  fi
+
   # configure will look for a pythonX.Y executable. Install our host Python
   # at the front of PATH.
   export PATH="${TOOLS_PATH}/pyhost/bin:${PATH}"

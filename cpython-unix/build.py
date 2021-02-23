@@ -43,6 +43,8 @@ MACOSX_DEPLOYMENT_TARGET_X86 = "10.9"
 # ARM macOS only supports 11.0+, so we can use a newer target.
 MACOSX_DEPLOYMENT_TARGET_ARM = "11.0"
 
+IPHONEOS_DEPLOYMENT_TARGET = "12.3"
+
 
 def install_sccache(build_env):
     """Attempt to install sccache into the build environment.
@@ -104,6 +106,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
             arches = ["arm64"]
             sdk_platform = "macosx"
         elif target_triple == "aarch64-apple-ios":
+            env["IPHONEOS_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
             env["TARGET_TRIPLE"] = "aarch64-apple-ios"
             # TODO arm64e not supported by open source Clang.
             arches = ["arm64"]
