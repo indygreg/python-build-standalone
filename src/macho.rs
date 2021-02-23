@@ -58,4 +58,7 @@ pub struct MachOAllowedDylib {
 
     /// Maximum compatibility version that can be referenced.
     pub max_compatibility_version: MachOPackedVersion,
+
+    /// Whether the loading of this dylib must be present in the distribution.
+    pub required: bool,
 }

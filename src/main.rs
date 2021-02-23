@@ -12,8 +12,10 @@ use {
     lazy_static::lazy_static,
     scroll::Pread,
     std::{
+        collections::BTreeSet,
         convert::TryInto,
         io::Read,
+        iter::FromIterator,
         ops::Deref,
         path::{Path, PathBuf},
     },
@@ -104,84 +106,104 @@ lazy_static! {
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.8.dylib".to_string(),
                 max_compatibility_version: "3.8.0".try_into().unwrap(),
+                required: false,
             },
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.8d.dylib".to_string(),
                 max_compatibility_version: "3.8.0".try_into().unwrap(),
+                required: false,
             },
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
+                required: false,
             },
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
+                required: false,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit".to_string(),
                 max_compatibility_version: "45.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon".to_string(),
                 max_compatibility_version: "2.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name:
                     "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation"
                         .to_string(),
                 max_compatibility_version: "150.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics".to_string(),
                 max_compatibility_version: "64.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/CoreText.framework/Versions/A/CoreText".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation".to_string(),
                 max_compatibility_version: "300.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libedit.3.dylib".to_string(),
                 max_compatibility_version: "2.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libncurses.5.4.dylib".to_string(),
                 max_compatibility_version: "5.4.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libobjc.A.dylib".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libpanel.5.4.dylib".to_string(),
                 max_compatibility_version: "5.4.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libSystem.B.dylib".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libz.1.dylib".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
         ]
         .to_vec()
@@ -191,25 +213,40 @@ lazy_static! {
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
+                required: false,
             },
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
+                required: false,
             },
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation".to_string(),
                 max_compatibility_version: "150.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libSystem.B.dylib".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libz.1.dylib".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
             },
         ].to_vec()
     };
+}
+
+fn allowed_dylibs_for_triple(triple: &str) -> Result<&Vec<MachOAllowedDylib>> {
+    match triple {
+        "aarch64-apple-darwin" => Ok(&*DARWIN_ALLOWED_DYLIBS),
+        "x86_64-apple-darwin" => Ok(&*DARWIN_ALLOWED_DYLIBS),
+        "aarch64-apple-ios" => Ok(&*IOS_ALLOWED_DYLIBS),
+        "x86_64-apple-ios" => Ok(&*IOS_ALLOWED_DYLIBS),
+        _ => Err(anyhow!("unhandled target triple: {}", triple))
+    }
 }
 
 fn validate_elf(path: &Path, elf: &goblin::elf::Elf, bytes: &[u8]) -> Result<Vec<String>> {
@@ -253,8 +290,9 @@ fn validate_macho(
     path: &Path,
     macho: &goblin::mach::MachO,
     bytes: &[u8],
-) -> Result<Vec<String>> {
+) -> Result<(Vec<String>, Vec<String>)> {
     let mut errors = vec![];
+    let mut seen_dylibs = vec![];
 
     let wanted_cpu_type = match target_triple {
         "aarch64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_ARM64,
@@ -282,15 +320,9 @@ fn validate_macho(
             | CommandVariant::LazyLoadDylib(command) => {
                 let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
 
-                let mut allowed = match target_triple {
-                    "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.iter(),
-                    "x86_64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.iter(),
-                    "aarch64-apple-ios" => IOS_ALLOWED_DYLIBS.iter(),
-                    "x86_64-apple-ios" => IOS_ALLOWED_DYLIBS.iter(),
-                    _ => return Err(anyhow!("unhandled target triple: {}", target_triple))
-                };
+                let allowed = allowed_dylibs_for_triple(target_triple)?;
 
-                if let Some(entry) = allowed.find(|l| l.name == lib) {
+                if let Some(entry) = allowed.iter().find(|l| l.name == lib) {
                     let load_version =
                         MachOPackedVersion::from(command.dylib.compatibility_version);
                     if load_version > entry.max_compatibility_version {
@@ -302,6 +334,8 @@ fn validate_macho(
                             entry.max_compatibility_version
                         ));
                     }
+
+                    seen_dylibs.push(lib.to_string());
                 } else {
                     errors.push(format!("{} loads illegal library {}", path.display(), lib));
                 }
@@ -310,7 +344,7 @@ fn validate_macho(
         }
     }
 
-    Ok(errors)
+    Ok((errors, seen_dylibs))
 }
 
 fn validate_pe(path: &Path, pe: &goblin::pe::PE) -> Result<Vec<String>> {
@@ -327,6 +361,7 @@ fn validate_pe(path: &Path, pe: &goblin::pe::PE) -> Result<Vec<String>> {
 
 fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let mut errors = vec![];
+    let mut seen_dylibs = BTreeSet::new();
 
     let fh = std::fs::File::open(&dist_path)
         .with_context(|| format!("unable to open {}", dist_path.display()))?;
@@ -359,7 +394,10 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                 }
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
-                        errors.extend(validate_macho(triple, path.as_ref(), &macho, &data)?);
+                        let (local_errors, local_seen_dylibs) = validate_macho(triple, path.as_ref(), &macho,&data)?;
+
+                        errors.extend(local_errors);
+                        seen_dylibs.extend(local_seen_dylibs);
                     }
                     goblin::mach::Mach::Fat(_) => {
                         if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
@@ -379,6 +417,12 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                 _ => {}
             }
         }
+    }
+
+    let wanted_dylibs = BTreeSet::from_iter(allowed_dylibs_for_triple(triple)?.iter().filter(|d| d.required).map(|d| d.name.clone()));
+
+    for lib in wanted_dylibs.difference(&seen_dylibs) {
+        errors.push(format!("required dylib dependency {} not seen", lib));
     }
 
     Ok(errors)
