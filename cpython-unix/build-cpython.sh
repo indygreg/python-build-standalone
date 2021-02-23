@@ -474,6 +474,10 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_clock_settime=no"
             # getentropy() not available on iOS.
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_getentropy=no"
+        elif [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin" ]; then
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=darwin"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=Darwin"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_release=$(uname -r)"
         elif [ "${TARGET_TRIPLE}" = "x86_64-apple-ios" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=iOS"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=iOS"
