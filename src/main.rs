@@ -260,6 +260,7 @@ fn validate_macho(
         "aarch64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_ARM64,
         "aarch64-apple-ios" => goblin::mach::cputype::CPU_TYPE_ARM64,
         "x86_64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_X86_64,
+        "x86_64-apple-ios" => goblin::mach::cputype::CPU_TYPE_X86_64,
         _ => return Err(anyhow!("unhandled target triple: {}", target_triple)),
     };
 
@@ -285,6 +286,7 @@ fn validate_macho(
                     "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.iter(),
                     "x86_64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.iter(),
                     "aarch64-apple-ios" => IOS_ALLOWED_DYLIBS.iter(),
+                    "x86_64-apple-ios" => IOS_ALLOWED_DYLIBS.iter(),
                     _ => return Err(anyhow!("unhandled target triple: {}", target_triple))
                 };
 

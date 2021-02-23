@@ -111,6 +111,11 @@ def add_target_env(env, build_platform, target_triple, build_env):
             # TODO arm64e not supported by open source Clang.
             arches = ["arm64"]
             sdk_platform = "iphoneos"
+        elif target_triple == "x86_64-apple-ios":
+            env["IPHONEOS_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
+            env["TARGET_TRIPLE"] = "x86_64-apple-ios"
+            arches = ["x86_64"]
+            sdk_platform = "iphonesimulator"
         else:
             raise ValueError("unhandled target triple: %s" % target_triple)
 
@@ -787,7 +792,7 @@ def build_cpython(
         if bdb:
             packages.add("bdb")
 
-        libedit = target_triple != "aarch64-apple-ios"
+        libedit = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
         if libedit:
             packages.add("libedit")
 
@@ -805,15 +810,15 @@ def build_cpython(
         if readline:
             packages.add("readline")
 
-        sqlite = target_triple != "aarch64-apple-ios"
+        sqlite = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
         if sqlite:
             packages.add("sqlite")
 
-        tk = target_triple != "aarch64-apple-ios"
+        tk = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
         if tk:
             packages |= {"tcl", "tix", "tk"}
 
-        uuid = target_triple != "aarch64-apple-ios"
+        uuid = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
         if uuid:
             packages.add("uuid")
 

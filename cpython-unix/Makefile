@@ -72,6 +72,21 @@ ifeq ($(TARGET_TRIPLE),aarch64-apple-ios)
     NEED_TIX :=
     NEED_UUID :=
 else
+ifeq ($(TARGET_TRIPLE),x86_64-apple-ios)
+    NEED_BDB :=
+    NEED_BINUTILS :=
+    NEED_GCC :=
+    NEED_MUSL :=
+    NEED_GDBM :=
+    NEED_GETTEXT :=
+    NEED_LIBEDIT :=
+    NEED_NCURSES :=
+    NEED_SQLITE := 1
+    NEED_X11 :=
+    NEED_READLINE :=
+    NEED_TIX :=
+    NEED_UUID :=
+else
     NEED_BDB :=
     NEED_BINUTILS :=
     NEED_GCC :=
@@ -85,6 +100,7 @@ else
     NEED_SQLITE := 1
     NEED_TIX := 1
     NEED_UUID := 1
+endif
 endif
 endif
 

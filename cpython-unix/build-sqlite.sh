@@ -18,6 +18,8 @@ CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix /tools/deps --disable-shared"
 
 if [ "${TARGET_TRIPLE}" = "aarch64-apple-ios" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_search_system=no"
+elif [ "${TARGET_TRIPLE}" = "x86_64-apple-ios" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_search_system=no"
 fi
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LDFLAGS="${EXTRA_TARGET_LDFLAGS}" ./configure ${CONFIGURE_FLAGS}

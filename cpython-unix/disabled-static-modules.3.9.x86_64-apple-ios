@@ -1,0 +1,16 @@
+# We don't support GDBM because it is GPL v3.
+_gdbm
+# ncurses not available on iOS.
+_curses
+_curses_panel
+# APIs required by _scproxy not available on iOS.
+_scproxy
+# tk not available on iOS.
+_tkinter
+# Not available on iOS.
+nis
+# Not available on iOS.
+ossaudiodev
+# readline not available on iOS.
+# Not available on iOS.
+spwd
