@@ -278,6 +278,10 @@ def simple_build(
 
         add_target_env(env, host_platform, target_triple, build_env)
 
+        if entry == "openssl":
+            settings = get_targets(TARGETS_CONFIG)[target_triple]
+            env["OPENSSL_TARGET"] = settings["openssl_target"]
+
         build_env.run("build-%s.sh" % entry, environment=env)
 
         build_env.get_tools_archive(dest_archive, "deps")

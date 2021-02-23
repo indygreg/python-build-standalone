@@ -6,6 +6,9 @@
 #
 # needs
 #    Packages required to build Python.
+#
+# openssl_target
+#    Name of OpenSSL platform build target.
 
 ---
 aarch64-apple-darwin:
@@ -21,6 +24,7 @@ aarch64-apple-darwin:
     - uuid
     - xz
     - zlib
+  openssl_target: darwin64-arm64-cc
 
 aarch64-apple-ios:
   host_platforms:
@@ -31,6 +35,7 @@ aarch64-apple-ios:
     - sqlite
     - xz
     - zlib
+  openssl_target: ios64-cross
 
 arm64-apple-tvos:
   host_platforms:
@@ -40,6 +45,7 @@ arm64-apple-tvos:
     - sqlite
     - xz
     - zlib
+  openssl_target: todo
 
 thumb7k-apple-watchos:
   host_platforms:
@@ -49,6 +55,7 @@ thumb7k-apple-watchos:
     - sqlite
     - xz
     - zlib
+  openssl_target: todo
 
 x86_64-apple-darwin:
   host_platforms:
@@ -63,6 +70,7 @@ x86_64-apple-darwin:
     - uuid
     - xz
     - zlib
+  openssl_target: darwin64-x86_64-cc
 
 x86_64-apple-ios:
   host_platforms:
@@ -73,6 +81,7 @@ x86_64-apple-ios:
     - sqlite
     - xz
     - zlib
+  openssl_target: darwin64-x86_64-cc
 
 x86_64-apple-tvos:
   host_platforms:
@@ -81,6 +90,7 @@ x86_64-apple-tvos:
     - bzip2
     - sqlite
     - xz
+  openssl_target: todo
 
 x86_64-apple-watchos:
   host_platforms:
@@ -90,6 +100,7 @@ x86_64-apple-watchos:
     - sqlite
     - xz
     - zlib
+  openssl_target: todo
 
 x86_64-unknown-linux-gnu:
   host_platforms:
@@ -115,6 +126,7 @@ x86_64-unknown-linux-gnu:
     - xorgproto
     - xz
     - zlib
+  openssl_target: linux-x86_64
 
 x86_64-unknown-linux-musl:
   host_platforms:
@@ -141,3 +153,4 @@ x86_64-unknown-linux-musl:
     - xorgproto
     - xz
     - zlib
+  openssl_target: unsupported
