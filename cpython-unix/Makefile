@@ -206,7 +206,7 @@ TIX_DEPENDS = \
     $(HERE)/build-tix.sh \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(OUTDIR)/tk-$(TK_VERSION)-$(PACKAGE_SUFFIX).tar \
-    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_LIBX11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(NULL)
 
 $(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar: $(TIX_DEPENDS)
@@ -215,7 +215,7 @@ $(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar: $(TIX_DEPENDS)
 TK_DEPENDS = \
     $(HERE)/build-tk.sh \
     $(OUTDIR)/tcl-$(TCL_VERSION)-$(PACKAGE_SUFFIX).tar \
-    $(if $(NEED_X11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_LIBX11),$(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(NULL)
 
 $(OUTDIR)/tk-$(TK_VERSION)-$(PACKAGE_SUFFIX).tar: $(TK_DEPENDS)
@@ -250,7 +250,7 @@ $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HE
 
 PYTHON_DEPENDS := \
     $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_GETTEXT),$(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
@@ -262,8 +262,8 @@ PYTHON_DEPENDS := \
     $(if $(NEED_SQLITE),$(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_UUID),$(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar \
-    $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(if $(NEED_XZ),$(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_ZLIB),$(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(HERE)/disabled-static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
     $(HERE)/required-extensions.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
     $(HERE)/static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \

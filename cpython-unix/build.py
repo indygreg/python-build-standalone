@@ -29,6 +29,7 @@ from pythonbuild.utils import (
     add_licenses_to_extension_entry,
     download_entry,
     get_targets,
+    target_needs,
     validate_python_json,
     write_package_versions,
     write_triples_makefiles,
@@ -820,53 +821,11 @@ def build_cpython(
             musl="musl" in target_triple,
         )
 
-        # TODO support bdb/gdbm toggle
-        packages = {
-            "bzip2",
-            "xz",
-            "zlib",
-        }
-
-        bdb = host_platform != "macos"
-        if bdb:
-            packages.add("bdb")
-
-        libedit = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
-        if libedit:
-            packages.add("libedit")
-
-        libffi = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
-        if libffi:
-            packages.add("libffi")
-
-        if libressl:
-            packages.add("libressl")
-        else:
-            packages.add("openssl")
-
-        # We use the system ncurses on macOS for now.
-        ncurses = host_platform != "macos"
-        if ncurses:
-            packages.add("ncurses")
-
-        readline = host_platform != "macos"
-        if readline:
-            packages.add("readline")
-
-        sqlite = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
-        if sqlite:
-            packages.add("sqlite")
-
-        tk = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
-        if tk:
-            packages |= {"tcl", "tix", "tk"}
-
-        uuid = target_triple not in ("aarch64-apple-ios", "x86_64-apple-ios")
-        if uuid:
-            packages.add("uuid")
-
-        if host_platform == "linux64":
-            packages |= {"libX11", "libXau", "libxcb", "xorgproto"}
+        packages = target_needs(TARGETS_CONFIG, target_triple)
+        # Toolchain packages are handled specially.
+        packages.discard("binutils")
+        packages.discard("clang")
+        packages.discard("gcc")
 
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)

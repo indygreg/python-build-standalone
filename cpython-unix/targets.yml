@@ -12,59 +12,84 @@ aarch64-apple-darwin:
   host_platforms:
     - darwin
   needs:
+    - bzip2
     - libedit
     - libffi
     - ncurses
     - sqlite
     - tix
     - uuid
+    - xz
+    - zlib
 
 aarch64-apple-ios:
   host_platforms:
     - darwin
   needs:
+    - bzip2
+    - libffi
     - sqlite
+    - xz
+    - zlib
 
 arm64-apple-tvos:
   host_platforms:
     - darwin
   needs:
+    - bzip2
     - sqlite
+    - xz
+    - zlib
 
 thumb7k-apple-watchos:
   host_platforms:
     - darwin
   needs:
+    - bzip2
     - sqlite
+    - xz
+    - zlib
 
 x86_64-apple-darwin:
   host_platforms:
     - darwin
   needs:
+    - bzip2
     - libedit
     - libffi
     - ncurses
     - sqlite
     - tix
     - uuid
+    - xz
+    - zlib
 
 x86_64-apple-ios:
   host_platforms:
     - darwin
   needs:
+    - bzip2
+    - libffi
     - sqlite
+    - xz
+    - zlib
 
 x86_64-apple-tvos:
   host_platforms:
     - darwin
   needs:
+    - bzip2
     - sqlite
+    - xz
 
 x86_64-apple-watchos:
   host_platforms:
     - darwin
   needs:
+    - bzip2
     - sqlite
+    - xz
+    - zlib
 
 x86_64-unknown-linux-gnu:
   host_platforms:
@@ -72,16 +97,24 @@ x86_64-unknown-linux-gnu:
   needs:
     - bdb
     - binutils
+    - bzip2
     - gcc
     - gdbm
     - libedit
     - libffi
+    - libX11
+    - libXau
+    - libxcb
     - ncurses
-    - x11
     - readline
     - sqlite
+    - tcl
+    - tk
     - tix
     - uuid
+    - xorgproto
+    - xz
+    - zlib
 
 x86_64-unknown-linux-musl:
   host_platforms:
@@ -89,14 +122,22 @@ x86_64-unknown-linux-musl:
   needs:
     - bdb
     - binutils
+    - bzip2
     - gcc
     - gdbm
     - libedit
     - libffi
+    - libX11
+    - libXau
+    - libxcb
     - musl
     - ncurses
-    - x11
     - readline
     - sqlite
+    - tcl
+    - tk
     - tix
     - uuid
+    - xorgproto
+    - xz
+    - zlib

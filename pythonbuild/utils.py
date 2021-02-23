@@ -38,6 +38,20 @@ def supported_targets(yaml_path: pathlib.Path):
     return targets
 
 
+def target_needs(yaml_path: pathlib.Path, target: str):
+    """Obtain the dependencies needed to build the specified target."""
+    settings = get_targets(yaml_path)[target]
+
+    needs = set(settings["needs"])
+
+    if "PYBUILD_LIBRESSL" in os.environ:
+        needs.add("libressl")
+    else:
+        needs.add("openssl")
+
+    return needs
+
+
 def release_tag_from_git():
     return (
         subprocess.check_output(
