@@ -830,6 +830,7 @@ def build_cpython(
         packages.discard("binutils")
         packages.discard("clang")
         packages.discard("gcc")
+        packages.discard("musl")
 
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
