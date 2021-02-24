@@ -43,7 +43,7 @@ CONFIGURE_FLAGS="
     --enable-widec"
 
 # ncurses wants --with-build-cc when cross-compiling.
-if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+if [[ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" && "${PYBUILD_PLATFORM}" != "macos" ]]; then
   CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-cc=${TOOLS_PATH}/${TOOLCHAIN}/bin/clang"
 fi
 
