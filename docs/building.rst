@@ -28,6 +28,10 @@ To build a Python distribution for Linux x64 using musl libc::
 
     $ ./build-linux.py --target x86_64-unknown-linux-musl
 
+Building a 32-bit x86 Python distribution is also possible::
+
+    $ ./build-linux.py --target i686-unknown-linux-gnu
+
 macOS
 =====
 
