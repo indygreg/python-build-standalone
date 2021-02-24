@@ -225,10 +225,12 @@ lazy_static! {
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
                 required: false,
             },
+            // For some reason, CoreFoundation is present in debug/noopt builds but not
+            // LTO builds.
             MachOAllowedDylib {
                 name: "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation".to_string(),
                 max_compatibility_version: "150.0.0".try_into().unwrap(),
-                required: true,
+                required: false,
             },
             MachOAllowedDylib {
                 name: "/usr/lib/libSystem.B.dylib".to_string(),
