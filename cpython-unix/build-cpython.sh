@@ -208,6 +208,28 @@ index 2d379feb4b..3eb8dbe9ea 100755
 EOF
 fi
 
+# Configure nerfs RUNSHARED when cross-compiling, which prevents i386 PGO from
+# running from an x86_64 environment. Undo that, as we can run i386 from x86_64.
+if [[ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" && "${TARGET_TRIPLE}" = "i686-unknown-linux-gnu" ]]; then
+    patch -p1 << "EOF"
+diff --git a/configure b/configure
+index 1252335472..33c11fbade 100755
+--- a/configure
++++ b/configure
+@@ -5989,10 +5989,6 @@ else # shared is disabled
+   esac
+ fi
+ 
+-if test "$cross_compiling" = yes; then
+-	RUNSHARED=
+-fi
+-
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LDLIBRARY" >&5
+ $as_echo "$LDLIBRARY" >&6; }
+ 
+EOF
+fi
+
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
 # invoke the host Python on our own.
 patch -p1 << "EOF"
