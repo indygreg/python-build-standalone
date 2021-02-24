@@ -145,6 +145,11 @@ jobs:
             optimizations: 'pgo'
           - triple: 'x86_64-unknown-linux-musl'
             optimizations: 'pgo+lto'
+          # PGO doesn't work with cross-compiled builds.
+          - triple: 'i686-unknown-linux-gnu'
+            optimizations: 'pgo'
+          - triple: 'i686-unknown-linux-gnu'
+            optimizations: 'pgo+lto'
 
     needs:
       - pythonbuild
