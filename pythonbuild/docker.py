@@ -5,6 +5,7 @@
 import contextlib
 import io
 import operator
+import os
 import pathlib
 import tarfile
 
@@ -125,6 +126,12 @@ def container_exec(container, command, user="build", environment=None):
     inspect_res = container.client.api.exec_inspect(create_res["Id"])
 
     if inspect_res["ExitCode"] != 0:
+        if "PYBUILD_BREAK_ON_FAILURE" in os.environ:
+            print("to enter container: docker exec -it %s /bin/bash" % container.id)
+            import pdb
+
+            pdb.set_trace()
+
         raise Exception("exit code %d from %s" % (inspect_res["ExitCode"], command))
 
 
