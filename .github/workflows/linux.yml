@@ -137,17 +137,14 @@ jobs:
           - 'pgo+lto'
         exclude:
           # We don't publish noopt builds for GNU Linux when PGO is available.
+          - triple: 'i686-unknown-linux-gnu'
+            optimizations: 'noopt'
           - triple: 'x86_64-unknown-linux-gnu'
             optimizations: 'noopt'
           # PGO doesn't work with musl libc.
           - triple: 'x86_64-unknown-linux-musl'
             optimizations: 'pgo'
           - triple: 'x86_64-unknown-linux-musl'
-            optimizations: 'pgo+lto'
-          # PGO doesn't work with cross-compiled builds.
-          - triple: 'i686-unknown-linux-gnu'
-            optimizations: 'pgo'
-          - triple: 'i686-unknown-linux-gnu'
             optimizations: 'pgo+lto'
 
     needs:
