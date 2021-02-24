@@ -16,7 +16,7 @@ tar -xf ncurses-${NCURSES_VERSION}.tar.gz
 # ncurses version. Our workaround is to build ncurses for the host when
 # cross-compiling then make its `tic` available to the target ncurses
 # build.
-if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+if [[ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" && "${PYBUILD_PLATFORM}" != "macos" ]]; then
   echo "building host ncurses to provide modern tic for cross-compile"
 
   pushd ncurses-${NCURSES_VERSION}
