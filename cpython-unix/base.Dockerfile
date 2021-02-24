@@ -27,4 +27,10 @@ RUN for s in debian_jessie debian_jessie-updates debian-security_jessie/updates;
       echo 'Acquire::Retries "5";'; \
     ) > /etc/apt/apt.conf.d/99cpython-portable
 
+RUN ( echo 'amd64'; \
+      echo 'armel'; \
+      echo 'armhf'; \
+      echo 'i386'; \
+    ) > /var/lib/dpkg/arch
+
 RUN apt-get update
