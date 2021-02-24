@@ -151,8 +151,6 @@ jobs:
           - triple: 'x86_64-apple-darwin'
             optimizations: 'noopt'
           - triple: 'x86_64-apple-ios'
-            optimizations: 'noopt'
-          - triple: 'x86_64-apple-ios'
             optimizations: 'pgo'
           - triple: 'x86_64-apple-ios'
             optimizations: 'pgo+lto'
