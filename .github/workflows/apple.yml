@@ -152,6 +152,10 @@ jobs:
             optimizations: 'noopt'
           - triple: 'x86_64-apple-ios'
             optimizations: 'noopt'
+          - triple: 'x86_64-apple-ios'
+            optimizations: 'pgo'
+          - triple: 'x86_64-apple-ios'
+            optimizations: 'pgo+lto'
     needs:
       - pythonbuild
       - toolchain
