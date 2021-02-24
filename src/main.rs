@@ -46,6 +46,8 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "libpthread.so.0",
     "librt.so.1",
     "libutil.so.1",
+    // Linux loader.
+    "ld-linux-x86-64.so.2",
     // Our set.
     "libpython3.8.so.1.0",
     "libpython3.9.so.1.0",
