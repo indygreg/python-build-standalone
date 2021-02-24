@@ -89,9 +89,22 @@ def add_target_env(env, build_platform, target_triple, build_env):
     env["PYBUILD_PLATFORM"] = build_platform
     env["TOOLS_PATH"] = build_env.tools_path
 
+    extra_target_cflags = []
+    extra_target_ldflags = []
+    extra_host_cflags = []
+    extra_host_ldflags = []
+
     if build_platform == "linux64":
         env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
-        env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
+
+        if target_triple in ("x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl"):
+            env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
+        elif target_triple == "i686-unknown-linux-gnu":
+            env["TARGET_TRIPLE"] = "i686-unknown-linux-gnu"
+            extra_target_cflags.append("-m32")
+            extra_target_ldflags.append("-m32")
+        else:
+            raise Exception("unhandled target triple: %s" % target_triple)
 
     if build_platform == "macos":
         machine = platform.machine()
@@ -160,20 +173,20 @@ def add_target_env(env, build_platform, target_triple, build_env):
 
         env["PATH"] = "/usr/bin:/bin"
 
-        extra_target_cflags = [
-            # Suppress extremely verbose warnings we see with LLVM 10.
-            "-Wno-nullability-completeness",
-            "-Wno-expansion-to-defined",
-            # LLVM 11 contains commit https://reviews.llvm.org/D83250,
-            # which enables -Werror for undef-prefix=TARGET_OS_.
-            # However, the macOS SDK has headers that reference deprecated
-            # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
-            # to work with the macOS SDKs out of the box. We work around
-            # this by undoing the -Werror=undef-prefix in that commit.
-            "-Wno-undef-prefix",
-        ]
-
-        extra_target_ldflags = []
+        extra_target_cflags.extend(
+            [
+                # Suppress extremely verbose warnings we see with LLVM 10.
+                "-Wno-nullability-completeness",
+                "-Wno-expansion-to-defined",
+                # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+                # which enables -Werror for undef-prefix=TARGET_OS_.
+                # However, the macOS SDK has headers that reference deprecated
+                # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+                # to work with the macOS SDKs out of the box. We work around
+                # this by undoing the -Werror=undef-prefix in that commit.
+                "-Wno-undef-prefix",
+            ]
+        )
 
         for arch in arches:
             extra_target_cflags.extend(["-arch", arch])
@@ -220,13 +233,13 @@ def add_target_env(env, build_platform, target_triple, build_env):
         if not os.path.exists(host_sdk_path):
             raise Exception("macOS host SDK path %s does not exist" % host_sdk_path)
 
-        extra_host_cflags = ["-isysroot", host_sdk_path]
-        extra_host_ldflags = ["-isysroot", host_sdk_path]
+        extra_host_cflags.extend(["-isysroot", host_sdk_path])
+        extra_host_ldflags.extend(["-isysroot", host_sdk_path])
 
-        env["EXTRA_HOST_CFLAGS"] = " ".join(extra_host_cflags)
-        env["EXTRA_HOST_LDFLAGS"] = " ".join(extra_host_ldflags)
-        env["EXTRA_TARGET_CFLAGS"] = " ".join(extra_target_cflags)
-        env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
+    env["EXTRA_HOST_CFLAGS"] = " ".join(extra_host_cflags)
+    env["EXTRA_HOST_LDFLAGS"] = " ".join(extra_host_ldflags)
+    env["EXTRA_TARGET_CFLAGS"] = " ".join(extra_target_cflags)
+    env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
 
 
 def toolchain_archive_path(package_name, host_platform):

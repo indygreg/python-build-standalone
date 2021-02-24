@@ -28,6 +28,28 @@ tar -xf pip-${PIP_VERSION}.tar.gz
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
+  # When cross-compiling, we need to build a host Python that has working zlib
+  # and ctypes extensions, otherwise various things fail. (`make install` fails
+  # without zlib and setuptools / pip used by target install fail due to missing
+  # ctypes.)
+  #
+  # On Apple, the dependencies are present in the Apple SDK and missing extensions
+  # are built properly by setup.py. However, on other platforms, we need to teach
+  # the host build system where to find things.
+  #
+  # Adding /usr paths on Linux is a bit funky. This is a side-effect or our
+  # custom Clang purposefully omitting default system search paths to help
+  # prevent unwanted dependencies from sneaking in.
+  case "${TARGET_TRIPLE}" in
+    i686-unknown-linux-gnu)
+      EXTRA_HOST_CFLAGS="${EXTRA_HOST_CFLAGS} -I/usr/include/x86_64-linux-gnu"
+      EXTRA_HOST_CPPFLAGS="${EXTRA_HOST_CPPFLAGS} -I/usr/include/x86_64-linux-gnu"
+      EXTRA_HOST_LDFLAGS="${EXTRA_HOST_LDFLAGS} -L/usr/lib/x86_64-linux-gnu"
+      ;;
+    *)
+      ;;
+  esac
+
   CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
 
   # When building on macOS 10.15 (and possibly earlier) using the 11.0
@@ -490,14 +512,32 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
             echo "unsupported target triple: ${TARGET_TRIPLE}"
             exit 1
         fi
-
-        # getaddrinfo buggy test fails for some reason.
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
-
-        # We also need to nerf the /dev/* check
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
     fi
+fi
+
+if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+    # configure doesn't like a handful of scenarios when cross-compiling.
+    #
+    # getaddrinfo buggy test fails for some reason. So we short-circuit it.
+    #
+    # The /dev/* check also fails for some reason.
+    case "${TARGET_TRIPLE}" in
+        *-apple-*)
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
+            ;;
+        i686-unknown-linux-gnu)
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
+            ;;
+        x86_64-unknown-linux-musl)
+            ;;
+        *)
+            echo "unhandled cross-compiling triple; may run into issues"
+            ;;
+    esac
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \

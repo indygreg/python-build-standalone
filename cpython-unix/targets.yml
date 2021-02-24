@@ -49,6 +49,33 @@ arm64-apple-tvos:
     - zlib
   openssl_target: todo
 
+i686-unknown-linux-gnu:
+  host_platforms:
+    - linux
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gcc
+    # TODO cross-compiling has issues.
+    # - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-x86-clang
+
 thumb7k-apple-watchos:
   host_platforms:
     - darwin

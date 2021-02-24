@@ -15,7 +15,7 @@ export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig
 tar -xf xproto-${XPROTO_VERSION}.tar.gz
 pushd xproto-${XPROTO_VERSION}
 
-CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" LDFLAGS="${EXTRA_TARGET_LDFLAGS}" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps

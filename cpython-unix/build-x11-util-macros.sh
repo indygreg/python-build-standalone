@@ -11,7 +11,7 @@ export PATH=/tools/${TOOLCHAIN}/bin:/tools/host/bin:$PATH
 
 tar -xzf util-macros-${X11_UTIL_MACROS_VERSION}.tar.gz
 pushd util-macros-${X11_UTIL_MACROS_VERSION}
-CFLAGS="${EXTRA_TARGET_CFLAGS}" ./configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS}" CPPFLAGS="${EXTRA_TARGET_CFLAGS}" LDFLAGS="${EXTRA_TARGET_LDFLAGS}" ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps

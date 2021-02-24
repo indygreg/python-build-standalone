@@ -41,10 +41,33 @@ if [ "${CC}" = "musl-clang" ]; then
     EXTRA_FLAGS="--disable-shared"
 fi
 
-CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include" ./configure \
+# configure doesn't support cross-compiling in malloc(0) returns null test.
+# So we have to force a value.
+if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+  case "${TARGET_TRIPLE}" in
+    i686-unknown-linux-gnu)
+      EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
+      ;;
+
+    *)
+      echo "cross-compiling but malloc(0) override not set; failures possible"
+      ;;
+  esac
+fi
+
+# CC_FOR_BUILD is here because configure doesn't look for `clang` when
+# cross-compiling. So we force it.
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include" \
+  CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include" \
+  LDFLAGS="${EXTRA_TARGET_LDFLAGS}" \
+  CC_FOR_BUILD=clang \
+  CFLAGS_FOR_BUILD="-I/tools/deps/include" \
+  CPPFLAGS_FOR_BUILD="-I/tools/deps/include" \
+  ./configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
+    --disable-silent-rules \
     ${EXTRA_FLAGS}
 
 make -j `nproc`
