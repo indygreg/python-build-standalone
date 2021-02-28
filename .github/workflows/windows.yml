@@ -90,5 +90,5 @@ jobs:
       - name: Upload Distributions
         uses: actions/upload-artifact@v2
         with:
-          name: dists-windows
+          name: cpython-windows
           path: dist/*

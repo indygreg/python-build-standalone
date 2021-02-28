@@ -213,5 +213,5 @@ jobs:
       - name: Upload Distributions
         uses: actions/upload-artifact@v2
         with:
-          name: dists-macos
+          name: cpython-${{ matrix.triple }}
           path: dist/*
