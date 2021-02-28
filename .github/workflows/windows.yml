@@ -90,5 +90,5 @@ jobs:
       - name: Upload Distributions
         uses: actions/upload-artifact@v2
         with:
-          name: cpython-windows
+          name: ${{ matrix.py }}-${{ matrix.vcvars }}
           path: dist/*
