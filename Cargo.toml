@@ -10,6 +10,8 @@ clap = "2.33"
 goblin = "0.3"
 lazy_static = "1.4"
 scroll = "0.10"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 tar = "0.4"
 version-compare = "0.0.11"
 zstd = "0.6"

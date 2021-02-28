@@ -2,17 +2,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+mod json;
 mod macho;
 
 use {
-    crate::macho::*,
+    crate::{json::*, macho::*},
     anyhow::{anyhow, Context, Result},
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
     goblin::mach::load_command::CommandVariant,
     lazy_static::lazy_static,
     scroll::Pread,
     std::{
-        collections::BTreeSet,
+        collections::{BTreeSet, HashMap},
         convert::TryInto,
         io::Read,
         iter::FromIterator,
@@ -247,6 +248,20 @@ lazy_static! {
             },
         ].to_vec()
     };
+
+    static ref PLATFORM_TAG_BY_TRIPLE: HashMap<&'static str, &'static str> = {
+        [
+            ("aarch64-apple-darwin", "macosx-11.0-arm64"),
+            ("aarch64-apple-ios", "iOS-aarch64"),
+            ("i686-pc-windows-msvc", "win32"),
+            ("i686-unknown-linux-gnu", "linux-i686"),
+            ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
+            ("x86_64-apple-ios", "iOS-x86_64"),
+            ("x86_64-pc-windows-msvc", "win-amd64"),
+            ("x86_64-unknown-linux-gnu", "linux-x86_64"),
+            ("x86_64-unknown-linux-musl", "linux-x86_64"),
+        ].iter().cloned().collect()
+    };
 }
 
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
@@ -255,7 +270,7 @@ fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
         "x86_64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.clone(),
         "aarch64-apple-ios" => IOS_ALLOWED_DYLIBS.clone(),
         "x86_64-apple-ios" => IOS_ALLOWED_DYLIBS.clone(),
-        _ => vec![]
+        _ => vec![],
     }
 }
 
@@ -369,6 +384,31 @@ fn validate_pe(path: &Path, pe: &goblin::pe::PE) -> Result<Vec<String>> {
     Ok(errors)
 }
 
+fn validate_json(json: &PythonJsonMain, triple: &str) -> Result<Vec<String>> {
+    let mut errors = vec![];
+
+    if json.version != "6" {
+        errors.push(format!(
+            "expected version 6 in PYTHON.json; got {}",
+            json.version
+        ));
+    }
+
+    let wanted_platform_tag = PLATFORM_TAG_BY_TRIPLE
+        .get(triple)
+        .ok_or_else(|| anyhow!("platform tag not defined for triple {}", triple))?
+        .clone();
+
+    if json.python_platform_tag != wanted_platform_tag {
+        errors.push(format!(
+            "wanted platform tag {}; got {}",
+            wanted_platform_tag, json.python_platform_tag
+        ));
+    }
+
+    Ok(errors)
+}
+
 fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let mut errors = vec![];
     let mut seen_dylibs = BTreeSet::new();
@@ -404,7 +444,8 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                 }
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
-                        let (local_errors, local_seen_dylibs) = validate_macho(triple, path.as_ref(), &macho,&data)?;
+                        let (local_errors, local_seen_dylibs) =
+                            validate_macho(triple, path.as_ref(), &macho, &data)?;
 
                         errors.extend(local_errors);
                         seen_dylibs.extend(local_seen_dylibs);
@@ -427,9 +468,20 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                 _ => {}
             }
         }
+
+        if path == PathBuf::from("python/PYTHON.json") {
+            let json = parse_python_json(&data).context("parsing PYTHON.json")?;
+
+            errors.extend(validate_json(&json, triple)?);
+        }
     }
 
-    let wanted_dylibs = BTreeSet::from_iter(allowed_dylibs_for_triple(triple).iter().filter(|d| d.required).map(|d| d.name.clone()));
+    let wanted_dylibs = BTreeSet::from_iter(
+        allowed_dylibs_for_triple(triple)
+            .iter()
+            .filter(|d| d.required)
+            .map(|d| d.name.clone()),
+    );
 
     for lib in wanted_dylibs.difference(&seen_dylibs) {
         errors.push(format!("required library dependency {} not seen", lib));
