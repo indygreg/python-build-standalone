@@ -86,7 +86,7 @@ pushd Python-${PYTHON_VERSION}
 # configure doesn't support cross-compiling on Apple. Teach it.
 patch -p1 << "EOF"
 diff --git a/configure b/configure
-index 2d379feb4b..3eb8dbe9ea 100755
+index 1252335472..6665645839 100755
 --- a/configure
 +++ b/configure
 @@ -3301,6 +3301,15 @@ then
@@ -125,7 +125,31 @@ index 2d379feb4b..3eb8dbe9ea 100755
  	*-*-vxworks*)
  		_host_cpu=$host_cpu
  		;;
-@@ -5968,7 +5996,7 @@ $as_echo "#define Py_ENABLE_SHARED 1" >>confdefs.h
+@@ -3359,7 +3381,22 @@ if test "$cross_compiling" = yes; then
+ 		MACHDEP="unknown"
+ 		as_fn_error $? "cross build not supported for $host" "$LINENO" 5
+ 	esac
+-	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
++
++	case "$host" in
++	  # The _PYTHON_HOST_PLATFORM environment variable is used to
++	  # override the platform name in distutils and sysconfig when
++	  # cross-compiling. On Apple, the platform name expansion logic
++	  # is non-trivial, including renaming MACHDEP=darwin to macosx
++	  # and including the deployment target (or current OS version if
++	  # not set). Our hack here is not generic, but gets the job done
++	  # for python-build-standalone's cross-compile use cases.
++	  aarch64-apple-darwin*)
++	    _PYTHON_HOST_PLATFORM="macosx-${MACOSX_DEPLOYMENT_TARGET}-arm64"
++	    ;;
++	  *)
++	    _PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
++	esac
++
+ fi
+ 
+ # Some systems cannot stand _XOPEN_SOURCE being defined at all; they
+@@ -5968,7 +6005,7 @@ $as_echo "#define Py_ENABLE_SHARED 1" >>confdefs.h
  	  BLDLIBRARY='-Wl,+b,$(LIBDIR) -L. -lpython$(LDVERSION)'
  	  RUNSHARED=SHLIB_PATH=`pwd`${SHLIB_PATH:+:${SHLIB_PATH}}
  	  ;;
@@ -134,7 +158,7 @@ index 2d379feb4b..3eb8dbe9ea 100755
      	LDLIBRARY='libpython$(LDVERSION).dylib'
  	BLDLIBRARY='-L. -lpython$(LDVERSION)'
  	RUNSHARED=DYLD_LIBRARY_PATH=`pwd`${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
-@@ -6205,16 +6233,6 @@ esac
+@@ -6205,16 +6242,6 @@ esac
    fi
  fi
  
@@ -151,7 +175,7 @@ index 2d379feb4b..3eb8dbe9ea 100755
  case $MACHDEP in
  hp*|HP*)
  	# install -d does not work on HP-UX
-@@ -9541,6 +9559,11 @@ then
+@@ -9541,6 +9568,11 @@ then
  			BLDSHARED="$LDSHARED"
  		fi
  		;;
