@@ -52,8 +52,11 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "ld-linux-x86-64.so.2",
     // Our set.
     "libpython3.8.so.1.0",
+    "libpython3.8d.so.1.0",
     "libpython3.9.so.1.0",
+    "libpython3.9d.so.1.0",
     "libpython3.10.so.1.0",
+    "libpython3.10d.so.1.0",
 ];
 
 const PE_ALLOWED_LIBRARIES: &[&str] = &[
