@@ -535,6 +535,15 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
             exit 1
         fi
     fi
+
+    # Python's configure looks exclusively at MACOSX_DEPLOYMENT_TARGET for
+    # determining the platform tag. We specify the minimum target via cflags
+    # like -mmacosx-version-min but configure doesn't pick up on those. In
+    # addition, configure isn't smart enough to look at environment variables
+    # for other SDK targets to determine the OS version. So our hack here is
+    # to expose MACOSX_DEPLOYMENT_TARGET everywhere so the value percolates
+    # into platform tag.
+    export MACOSX_DEPLOYMENT_TARGET="${APPLE_MIN_DEPLOYMENT_TARGET}"
 fi
 
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
