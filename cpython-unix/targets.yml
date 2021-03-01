@@ -62,6 +62,16 @@ aarch64-apple-darwin:
     - '-arch'
     - 'arm64'
     - '-mmacosx-version-min=11.0'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'arm64'
@@ -93,6 +103,16 @@ aarch64-apple-ios:
     - '-arch'
     - 'arm64'
     - '-mios-version-min=12.3'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'arm64'
@@ -148,6 +168,16 @@ arm64-apple-tvos:
     - '-arch'
     - 'arm64'
     - '-mappletvos-version-min=12.3'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'arm64'
@@ -360,6 +390,16 @@ thumb7k-apple-watchos:
     - '-arch'
     - 'armv7k'
     - '-mwatchos-version-min-7.0'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'armv7k'
@@ -389,6 +429,16 @@ x86_64-apple-darwin:
     - '-arch'
     - 'x86_64'
     - '-mmacosx-version-min=10.9'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'x86_64'
@@ -420,6 +470,16 @@ x86_64-apple-ios:
     - '-arch'
     - 'x86_64'
     - '-mios-simulator-version-min=12.3'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'x86_64'
@@ -445,6 +505,16 @@ x86_64-apple-tvos:
     - '-arch'
     - 'x86_64'
     - '-mappletvsimulator-version-min=12.3'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'x86_64'
@@ -468,6 +538,16 @@ x86_64-apple-watchos:
     - '-arch'
     - 'x86_64'
     - '-mwatchsimulator-version-min=7.0'
+    # Suppress extremely verbose warnings we see with LLVM 10.
+    - '-Wno-nullability-completeness'
+    - '-Wno-expansion-to-defined'
+    # LLVM 11 contains commit https://reviews.llvm.org/D83250,
+    # which enables -Werror for undef-prefix=TARGET_OS_.
+    # However, the macOS SDK has headers that reference deprecated
+    # TARGET_OS defines, like TARGET_OS_EMBEDDED. So LLVM 11 refuses
+    # to work with the macOS SDKs out of the box. We work around
+    # this by undoing the -Werror=undef-prefix in that commit.
+    - '-Wno-undef-prefix'
   target_ldflags:
     - '-arch'
     - 'x86_64'
