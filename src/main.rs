@@ -51,8 +51,6 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "libpthread.so.0",
     "librt.so.1",
     "libutil.so.1",
-    // Linux loader.
-    "ld-linux-x86-64.so.2",
     // Our set.
     "libpython3.8.so.1.0",
     "libpython3.8d.so.1.0",
@@ -127,6 +125,8 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
                 "armv7-unknown-linux-gnueabihf",
                 vec!["ld-linux-armhf.so.3", "libgcc_s.so.1"],
             ),
+            ("i686-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
+            ("x86_64-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
         ]
         .iter()
         .cloned()
