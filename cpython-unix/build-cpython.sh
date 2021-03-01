@@ -622,6 +622,11 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
             ;;
+        s390x-unknown-linux-gnu)
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
+            ;;
         x86_64-unknown-linux-musl)
             ;;
         *)

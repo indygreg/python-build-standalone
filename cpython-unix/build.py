@@ -106,6 +106,8 @@ def add_target_env(env, build_platform, target_triple, build_env):
         env["CC"] = "mipsel-linux-gnu-gcc"
     elif target_triple == "mips64el-unknown-linux-gnuabi64":
         env["CC"] = "mips64el-linux-gnuabi64-gcc"
+    elif target_triple == "s390x-unknown-linux-gnu":
+        env["CC"] = "s390x-linux-gnu-gcc"
     else:
         raise Exception("unhandled target triple: %s" % target_triple)
 
@@ -132,6 +134,8 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["TARGET_TRIPLE"] = "mipsel-unknown-linux-gnu"
         elif target_triple == "mips64el-unknown-linux-gnuabi64":
             env["TARGET_TRIPLE"] = "mips64el-unknown-linux-gnuabi64"
+        elif target_triple == "s390x-unknown-linux-gnu":
+            env["TARGET_TRIPLE"] = "s390x-unknown-linux-gnu"
         elif target_triple in ("x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl"):
             env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
         elif target_triple == "i686-unknown-linux-gnu":

@@ -128,6 +128,7 @@ jobs:
           - 'i686-unknown-linux-gnu'
           - 'mips-unknown-linux-gnu'
           - 'mipsel-unknown-linux-gnu'
+          - 's390x-unknown-linux-gnu'
           - 'x86_64-unknown-linux-gnu'
           - 'x86_64-unknown-linux-musl'
         py:
@@ -162,6 +163,10 @@ jobs:
             py: 'cpython-3.8'
           - triple: 'mipsel-unknown-linux-gnu'
             py: 'cpython-3.10'
+          - triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.8'
+          - triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.10'
           # We don't publish noopt builds for GNU Linux when PGO is available.
           - triple: 'i686-unknown-linux-gnu'
             optimizations: 'noopt'
@@ -192,6 +197,10 @@ jobs:
           - triple: 'mipsel-unknown-linux-gnu'
             optimizations: 'pgo'
           - triple: 'mipsel-unknown-linux-gnu'
+            optimizations: 'pgo+lto'
+          - triple: 's390x-unknown-linux-gnu'
+            optimizations: 'pgo'
+          - triple: 's390x-unknown-linux-gnu'
             optimizations: 'pgo+lto'
 
     needs:

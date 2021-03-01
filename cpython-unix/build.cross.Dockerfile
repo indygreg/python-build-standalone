@@ -52,9 +52,11 @@ RUN apt-get install \
     gcc-mips-linux-gnu \
     gcc-mips64el-linux-gnuabi64 \
     gcc-mipsel-linux-gnu \
+    gcc-s390x-linux-gnu \
     libc6-dev-arm64-cross \
     libc6-dev-armel-cross \
     libc6-dev-armhf-cross \
     libc6-dev-mips-cross \
     libc6-dev-mips64el-cross \
-    libc6-dev-mipsel-cross
+    libc6-dev-mipsel-cross \
+    libc6-dev-s390x-cross

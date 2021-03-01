@@ -66,6 +66,9 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
     mips64el-unknown-linux-gnuabi64)
       EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
       ;;
+    s390x-unknown-linux-gnu)
+      EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
+      ;;
     *)
       echo "cross-compiling but malloc(0) override not set; failures possible"
       ;;
@@ -89,6 +92,9 @@ case "${TARGET_TRIPLE}" in
     CC_FOR_BUILD=gcc
     ;;
   mips64el-unknown-linux-gnuabi64)
+    CC_FOR_BUILD=gcc
+    ;;
+  s390x-unknown-linux-gnu)
     CC_FOR_BUILD=gcc
     ;;
   *)

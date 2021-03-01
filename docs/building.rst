@@ -39,7 +39,7 @@ As are various other targets::
     $ ./build-linux.py --target armv7-unknown-linux-gnueabihf
     $ ./build-linux.py --target mips-unknown-linux-gnu
     $ ./build-linux.py --target mipsel-unknown-linux-gnu
-
+    $ ./build-linux.py --target s390x-unknown-linux-gnu
 
 macOS
 =====

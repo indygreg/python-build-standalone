@@ -33,6 +33,7 @@ const RECOGNIZED_TRIPLES: &[&str] = &[
     "mips-unknown-linux-gnu",
     "mipsel-unknown-linux-gnu",
     "mips64el-unknown-linux-gnuabi64",
+    "s390x-unknown-linux-gnu",
     "thumbv7k-apple-watchos",
     "x86_64-apple-darwin",
     "x86_64-apple-ios",
@@ -146,6 +147,10 @@ static GLIBC_MAX_VERSION_BY_TRIPLE: Lazy<HashMap<&'static str, version_compare::
             version_compare::Version::from("2.17").unwrap(),
         );
         versions.insert(
+            "s390x-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
             "x86_64-unknown-linux-gnu",
             version_compare::Version::from("2.17").unwrap(),
         );
@@ -173,6 +178,7 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
             ("mips-unknown-linux-gnu", vec!["ld.so.1"]),
             ("mipsel-unknown-linux-gnu", vec!["ld.so.1"]),
             ("mips64el-unknown-linux-gnuabi64", vec![]),
+            ("s390x-unknown-linux-gnu", vec!["ld64.so.1"]),
             ("x86_64-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
         ]
         .iter()
@@ -333,6 +339,7 @@ static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy:
         ("mips-unknown-linux-gnu", "linux-mips"),
         ("mipsel-unknown-linux-gnu", "linux-mipsel"),
         ("mips64el-unknown-linux-gnuabi64", "todo"),
+        ("s390x-unknown-linux-gnu", "linux-s390x"),
         ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
         ("x86_64-apple-ios", "iOS-x86_64"),
         ("x86_64-pc-windows-msvc", "win-amd64"),
@@ -370,6 +377,7 @@ fn validate_elf(
         "mips-unknown-linux-gnu" => goblin::elf::header::EM_MIPS,
         "mipsel-unknown-linux-gnu" => goblin::elf::header::EM_MIPS,
         "mips64el-unknown-linux-gnuabi64" => 0,
+        "s390x-unknown-linux-gnu" => goblin::elf::header::EM_S390,
         "x86_64-unknown-linux-gnu" => goblin::elf::header::EM_X86_64,
         "x86_64-unknown-linux-musl" => goblin::elf::header::EM_X86_64,
         _ => panic!("unhandled target triple: {}", target_triple),
@@ -400,7 +408,7 @@ fn validate_elf(
         .expect("max glibc version not defined for target triple");
 
     // functionality doesn't yet support mips.
-    if !target_triple.starts_with("mips") {
+    if !target_triple.starts_with("mips") && !target_triple.starts_with("s390x-") {
         let mut undefined_symbols = tugger_binary_analysis::find_undefined_elf_symbols(&bytes, elf);
         undefined_symbols.sort();
 
