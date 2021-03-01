@@ -312,6 +312,25 @@ fn validate_elf(
 ) -> Result<Vec<String>> {
     let mut errors = vec![];
 
+    let wanted_cpu_type = match target_triple {
+        "aarch64-unknown-linux-gnu" => goblin::elf::header::EM_AARCH64,
+        "armv7-unknown-linux-gnueabi" => goblin::elf::header::EM_ARM,
+        "armv7-unknown-linux-gnueabihf" => goblin::elf::header::EM_ARM,
+        "i686-unknown-linux-gnu" => goblin::elf::header::EM_386,
+        "x86_64-unknown-linux-gnu" => goblin::elf::header::EM_X86_64,
+        "x86_64-unknown-linux-musl" => goblin::elf::header::EM_X86_64,
+        _ => panic!("unhandled target triple: {}", target_triple),
+    };
+
+    if elf.header.e_machine != wanted_cpu_type {
+        errors.push(format!(
+            "invalid ELF machine type in {}; wanted {}, got {}",
+            path.display(),
+            wanted_cpu_type,
+            elf.header.e_machine
+        ));
+    }
+
     let mut allowed_libraries = ELF_ALLOWED_LIBRARIES.to_vec();
     if let Some(extra) = ELF_ALLOWED_LIBRARIES_BY_TRIPLE.get(target_triple) {
         allowed_libraries.extend(extra.iter());
