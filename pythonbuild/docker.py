@@ -47,7 +47,7 @@ def ensure_docker_image(client, fh, image_path=None):
         raise Exception("unable to determine built Docker image")
 
     if image_path:
-        tar_path = image_path.with_suffix(".tar")
+        tar_path = pathlib.Path(str(image_path) + ".tar")
         with tar_path.open("wb") as fh:
             for chunk in client.images.get(image).save():
                 fh.write(chunk)
