@@ -440,7 +440,11 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
 
     let triple = RECOGNIZED_TRIPLES
         .iter()
-        .find(|triple| dist_path.to_string_lossy().contains(*triple))
+        .find(|triple| {
+            dist_path
+                .to_string_lossy()
+                .contains(&format!("-{}-", triple))
+        })
         .ok_or_else(|| {
             anyhow!(
                 "could not identify triple from distribution filename: {}",
