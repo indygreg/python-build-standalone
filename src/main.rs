@@ -25,6 +25,8 @@ use {
 const RECOGNIZED_TRIPLES: &[&str] = &[
     "aarch64-apple-darwin",
     "aarch64-apple-ios",
+    "aarch64-unknown-linux-gnu",
+    "armv7-unknown-linux-gnueabi",
     "armv7-unknown-linux-gnueabihf",
     "arm64-apple-tvos",
     "i686-pc-windows-msvc",
@@ -117,6 +119,7 @@ lazy_static! {
 
     static ref ELF_ALLOWED_LIBRARIES_BY_TRIPLE: HashMap<&'static str, Vec<&'static str>> = {
         [
+            ("armv7-unknown-linux-gnueabi", vec!["ld-linux.so.3", "libgcc_s.so.1"]),
             ("armv7-unknown-linux-gnueabihf", vec!["ld-linux-armhf.so.3", "libgcc_s.so.1"]),
         ].iter().cloned().collect()
     };
@@ -264,6 +267,8 @@ lazy_static! {
         [
             ("aarch64-apple-darwin", "macosx-11.0-arm64"),
             ("aarch64-apple-ios", "iOS-aarch64"),
+            ("aarch64-unknown-linux-gnu", "linux-aarch64"),
+            ("armv7-unknown-linux-gnueabi", "linux-arm"),
             ("armv7-unknown-linux-gnueabihf", "linux-arm"),
             ("i686-pc-windows-msvc", "win32"),
             ("i686-unknown-linux-gnu", "linux-i686"),

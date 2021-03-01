@@ -46,6 +46,32 @@ aarch64-apple-ios:
     - zlib
   openssl_target: ios64-cross
 
+aarch64-unknown-linux-gnu:
+  host_platforms:
+    - linux
+  docker_image_suffix: .cross
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-aarch64
+
 arm64-apple-tvos:
   host_platforms:
     - darwin
@@ -56,6 +82,32 @@ arm64-apple-tvos:
     - xz
     - zlib
   openssl_target: todo
+
+armv7-unknown-linux-gnueabi:
+  host_platforms:
+    - linux
+  docker_image_suffix: .cross
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-armv4
 
 armv7-unknown-linux-gnueabihf:
   host_platforms:

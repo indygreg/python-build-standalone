@@ -46,5 +46,9 @@ RUN apt-get install \
 
 # Cross-building.
 RUN apt-get install \
+    gcc-aarch64-linux-gnu \
+    gcc-arm-linux-gnueabi \
     gcc-arm-linux-gnueabihf \
+    libc6-dev-arm64-cross \
+    libc6-dev-armel-cross \
     libc6-dev-armhf-cross

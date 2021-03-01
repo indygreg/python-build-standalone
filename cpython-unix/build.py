@@ -94,6 +94,10 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["CC"] = "musl-clang"
         else:
             env["CC"] = "clang"
+    elif target_triple == "aarch64-unknown-linux-gnu":
+        env["CC"] = "aarch64-linux-gnu-gcc"
+    elif target_triple == "armv7-unknown-linux-gnueabi":
+        env["CC"] = "arm-linux-gnueabi-gcc"
     elif target_triple == "armv7-unknown-linux-gnueabihf":
         env["CC"] = "arm-linux-gnueabihf-gcc"
     else:
@@ -110,7 +114,11 @@ def add_target_env(env, build_platform, target_triple, build_env):
     if build_platform == "linux64":
         env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
 
-        if target_triple == "armv7-unknown-linux-gnueabihf":
+        if target_triple == "aarch64-unknown-linux-gnu":
+            env["TARGET_TRIPLE"] = "aarch64-unknown-linux-gnu"
+        elif target_triple == "armv7-unknown-linux-gnueabi":
+            env["TARGET_TRIPLE"] = "armv7-unknown-linux-gnueabi"
+        elif target_triple == "armv7-unknown-linux-gnueabihf":
             env["TARGET_TRIPLE"] = "armv7-unknown-linux-gnueabihf"
         elif target_triple in ("x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl"):
             env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
