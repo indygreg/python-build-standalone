@@ -61,7 +61,7 @@ TOOLCHAIN_DEPENDS := \
     $(NULL)
 
 PYTHON_DEP_DEPENDS := \
-    $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-build.tar) \
+    $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).tar) \
     $(if $(PYBUILD_SKIP_TOOLCHAIN),,$(TOOLCHAIN_DEPENDS)) \
     $(NULL)
 
@@ -109,28 +109,28 @@ endif
 toolchain: $(TOOLCHAIN_TARGET)
 
 $(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
-	$(RUN_BUILD) bdb
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) bdb
 
 $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip2.sh
-	$(RUN_BUILD) bzip2
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) bzip2
 
 $(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
-	$(RUN_BUILD) gdbm
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) gdbm
 
 $(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gettext.sh
-	$(RUN_BUILD) gettext
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) gettext
 
 $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-inputproto.sh
-	$(RUN_BUILD) inputproto
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) inputproto
 
 $(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-kbproto.sh
-	$(RUN_BUILD) kbproto
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) kbproto
 
 $(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
-	$(RUN_BUILD) libffi
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libffi
 
-$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-build.tar
-	$(RUN_BUILD) libpthread-stubs
+$(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).tar
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libpthread-stubs
 
 LIBX11_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \
@@ -145,7 +145,7 @@ LIBX11_DEPENDS = \
     $(NULL)
 
 $(OUTDIR)/libX11-$(LIBX11_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBX11_DEPENDS)
-	$(RUN_BUILD) libX11
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libX11
 
 LIBXAU_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \
@@ -155,12 +155,12 @@ LIBXAU_DEPENDS = \
     $(NULL)
 
 $(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBXAU_DEPENDS)
-	$(RUN_BUILD) libXau
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libXau
 
 LIBXCB_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \
     $(HERE)/build-libxcb.sh \
-    $(OUTDIR)/image-xcb.tar \
+    $(OUTDIR)/image-$(DOCKER_IMAGE_XCB).tar \
     $(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(OUTDIR)/libXau-$(LIBXAU_VERSION)-$(PACKAGE_SUFFIX).tar \
     $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PACKAGE_SUFFIX).tar \
@@ -168,13 +168,13 @@ LIBXCB_DEPENDS = \
     $(NULL)
 
 $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBXCB_DEPENDS)
-	$(RUN_BUILD) libxcb
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_XCB) libxcb
 
 $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
-	$(RUN_BUILD) ncurses
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) ncurses
 
 $(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-openssl.sh
-	$(RUN_BUILD) openssl
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) openssl
 
 LIBEDIT_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \
@@ -183,10 +183,10 @@ LIBEDIT_DEPENDS = \
     $(NULL)
 
 $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBEDIT_DEPENDS)
-	$(RUN_BUILD) libedit
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libedit
 
 $(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libressl.sh
-	$(RUN_BUILD) libressl
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libressl
 
 READLINE_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \
@@ -194,13 +194,13 @@ READLINE_DEPENDS = \
     $(HERE)/build-readline.sh
 
 $(OUTDIR)/readline-$(READLINE_VERSION)-$(PACKAGE_SUFFIX).tar: $(READLINE_DEPENDS)
-	$(RUN_BUILD) readline
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) readline
 
 $(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-sqlite.sh
-	$(RUN_BUILD) sqlite
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) sqlite
 
 $(OUTDIR)/tcl-$(TCL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-tcl.sh
-	$(RUN_BUILD) tcl
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) tcl
 
 TIX_DEPENDS = \
     $(HERE)/build-tix.sh \
@@ -210,7 +210,7 @@ TIX_DEPENDS = \
     $(NULL)
 
 $(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar: $(TIX_DEPENDS)
-	$(RUN_BUILD) tix
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) tix
 
 TK_DEPENDS = \
     $(HERE)/build-tk.sh \
@@ -219,34 +219,34 @@ TK_DEPENDS = \
     $(NULL)
 
 $(OUTDIR)/tk-$(TK_VERSION)-$(PACKAGE_SUFFIX).tar: $(TK_DEPENDS)
-	$(RUN_BUILD) tk
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_XCB) tk
 
 $(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-uuid.sh
-	$(RUN_BUILD) uuid
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) uuid
 
 $(OUTDIR)/x11-util-macros-$(X11_UTIL_MACROS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-x11-util-macros.sh
-	$(RUN_BUILD) x11-util-macros
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) x11-util-macros
 
 $(OUTDIR)/xcb-proto-$(XCB_PROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xcb-proto.sh
-	$(RUN_BUILD) xcb-proto
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_XCB) xcb-proto
 
 $(OUTDIR)/xextproto-$(XEXTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xextproto.sh
-	$(RUN_BUILD) xextproto
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) xextproto
 
 $(OUTDIR)/xorgproto-$(XORGPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xorgproto.sh
-	$(RUN_BUILD) xorgproto
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) xorgproto
 
 $(OUTDIR)/xproto-$(XPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xproto.sh
-	$(RUN_BUILD) xproto
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) xproto
 
 $(OUTDIR)/xtrans-$(XTRANS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xtrans.sh
-	$(RUN_BUILD) xtrans
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) xtrans
 
 $(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-xz.sh
-	$(RUN_BUILD) xz
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) xz
 
 $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-zlib.sh
-	$(RUN_BUILD) zlib
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) zlib
 
 PYTHON_DEPENDS := \
     $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
@@ -276,10 +276,10 @@ ALL_PYTHON_DEPENDS = \
     $(NULL)
 
 $(OUTDIR)/cpython-$(CPYTHON_3.8_VERSION)-$(PACKAGE_SUFFIX).tar: $(ALL_PYTHON_DEPENDS)
-	$(RUN_BUILD) cpython-3.8
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.8
 
 $(OUTDIR)/cpython-$(CPYTHON_3.9_VERSION)-$(PACKAGE_SUFFIX).tar: $(ALL_PYTHON_DEPENDS)
-	$(RUN_BUILD) cpython-3.9
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.9
 
 $(OUTDIR)/cpython-$(CPYTHON_3.10_VERSION)-$(PACKAGE_SUFFIX).tar: $(ALL_PYTHON_DEPENDS)
-	$(RUN_BUILD) cpython-3.10
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.10

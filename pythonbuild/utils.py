@@ -113,6 +113,9 @@ def write_triples_makefiles(targets, dest_dir: pathlib.Path):
         else:
             lines.append("NEED_OPENSSL := 1\n")
 
+        lines.append("DOCKER_IMAGE_BUILD := build\n")
+        lines.append("DOCKER_IMAGE_XCB := xcb\n")
+
         write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 

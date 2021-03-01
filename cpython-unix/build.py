@@ -1031,6 +1031,7 @@ def main():
     parser.add_argument(
         "--dest-archive", required=True, help="Path to archive that we are producing"
     )
+    parser.add_argument("--docker-image", help="Docker image to use for building")
     parser.add_argument("action")
 
     args = parser.parse_args()
@@ -1041,6 +1042,7 @@ def main():
     host_platform = args.host_platform
     optimizations = args.optimizations
     dest_archive = pathlib.Path(args.dest_archive)
+    docker_image = args.docker_image
 
     if args.action == "makefiles":
         log_name = "makefiles"
@@ -1087,7 +1089,7 @@ def main():
         elif action == "libedit":
             build_libedit(
                 client,
-                get_image(client, ROOT, BUILD, "build"),
+                get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
                 target_triple=target_triple,
                 optimizations=optimizations,
@@ -1097,7 +1099,7 @@ def main():
         elif action == "readline":
             build_readline(
                 client,
-                get_image(client, ROOT, BUILD, "build"),
+                get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
                 target_triple=target_triple,
                 optimizations=optimizations,
@@ -1129,7 +1131,7 @@ def main():
         ):
             simple_build(
                 client,
-                get_image(client, ROOT, BUILD, "build"),
+                get_image(client, ROOT, BUILD, docker_image),
                 action,
                 host_platform=host_platform,
                 target_triple=target_triple,
@@ -1140,7 +1142,7 @@ def main():
         elif action == "libX11":
             simple_build(
                 client,
-                get_image(client, ROOT, BUILD, "build"),
+                get_image(client, ROOT, BUILD, docker_image),
                 action,
                 host_platform=host_platform,
                 target_triple=target_triple,
@@ -1163,7 +1165,7 @@ def main():
         elif action == "libXau":
             simple_build(
                 client,
-                get_image(client, ROOT, BUILD, "build"),
+                get_image(client, ROOT, BUILD, docker_image),
                 action,
                 host_platform=host_platform,
                 target_triple=target_triple,
@@ -1175,7 +1177,7 @@ def main():
         elif action == "xcb-proto":
             simple_build(
                 client,
-                get_image(client, ROOT, BUILD, "xcb"),
+                get_image(client, ROOT, BUILD, docker_image),
                 action,
                 host_platform=host_platform,
                 target_triple=target_triple,
@@ -1186,7 +1188,7 @@ def main():
         elif action == "libxcb":
             simple_build(
                 client,
-                get_image(client, ROOT, BUILD, "xcb"),
+                get_image(client, ROOT, BUILD, docker_image),
                 action,
                 host_platform=host_platform,
                 target_triple=target_triple,
@@ -1198,7 +1200,7 @@ def main():
         elif action == "tix":
             build_tix(
                 client,
-                get_image(client, ROOT, BUILD, "build"),
+                get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
                 target_triple=target_triple,
                 optimizations=optimizations,
@@ -1218,7 +1220,7 @@ def main():
 
             simple_build(
                 client,
-                get_image(client, ROOT, BUILD, "xcb"),
+                get_image(client, ROOT, BUILD, docker_image),
                 action,
                 host_platform=host_platform,
                 target_triple=target_triple,
@@ -1230,7 +1232,7 @@ def main():
         elif action in ("cpython-3.8", "cpython-3.9", "cpython-3.10"):
             build_cpython(
                 client,
-                get_image(client, ROOT, BUILD, "build"),
+                get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
                 target_triple=target_triple,
                 optimizations=optimizations,
