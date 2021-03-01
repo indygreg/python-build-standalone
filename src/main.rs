@@ -25,6 +25,7 @@ use {
 const RECOGNIZED_TRIPLES: &[&str] = &[
     "aarch64-apple-darwin",
     "aarch64-apple-ios",
+    "armv7-unknown-linux-gnueabihf",
     "arm64-apple-tvos",
     "i686-pc-windows-msvc",
     "i686-unknown-linux-gnu",
@@ -113,6 +114,13 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
 lazy_static! {
     static ref GLIBC_MAX_VERSION: version_compare::Version<'static> =
         version_compare::Version::from("2.19").unwrap();
+
+    static ref ELF_ALLOWED_LIBRARIES_BY_TRIPLE: HashMap<&'static str, Vec<&'static str>> = {
+        [
+            ("armv7-unknown-linux-gnueabihf", vec!["ld-linux-armhf.so.3", "libgcc_s.so.1"]),
+        ].iter().cloned().collect()
+    };
+
     static ref DARWIN_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
         [
             MachOAllowedDylib {
@@ -256,6 +264,7 @@ lazy_static! {
         [
             ("aarch64-apple-darwin", "macosx-11.0-arm64"),
             ("aarch64-apple-ios", "iOS-aarch64"),
+            ("armv7-unknown-linux-gnueabihf", "linux-arm"),
             ("i686-pc-windows-msvc", "win32"),
             ("i686-unknown-linux-gnu", "linux-i686"),
             ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
@@ -277,11 +286,21 @@ fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     }
 }
 
-fn validate_elf(path: &Path, elf: &goblin::elf::Elf, bytes: &[u8]) -> Result<Vec<String>> {
+fn validate_elf(
+    target_triple: &str,
+    path: &Path,
+    elf: &goblin::elf::Elf,
+    bytes: &[u8],
+) -> Result<Vec<String>> {
     let mut errors = vec![];
 
+    let mut allowed_libraries = ELF_ALLOWED_LIBRARIES.to_vec();
+    if let Some(extra) = ELF_ALLOWED_LIBRARIES_BY_TRIPLE.get(target_triple) {
+        allowed_libraries.extend(extra.iter());
+    }
+
     for lib in &elf.libraries {
-        if !ELF_ALLOWED_LIBRARIES.contains(lib) {
+        if !allowed_libraries.contains(lib) {
             errors.push(format!("{} loads illegal library {}", path.display(), lib));
         }
     }
@@ -443,7 +462,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         if let Ok(object) = goblin::Object::parse(&data) {
             match object {
                 goblin::Object::Elf(elf) => {
-                    errors.extend(validate_elf(path.as_ref(), &elf, &data)?);
+                    errors.extend(validate_elf(triple, path.as_ref(), &elf, &data)?);
                 }
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {

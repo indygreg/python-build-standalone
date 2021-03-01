@@ -28,6 +28,9 @@ tar -xf pip-${PIP_VERSION}.tar.gz
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
+  OLD_CC=${CC}
+  unset CC
+
   # When cross-compiling, we need to build a host Python that has working zlib
   # and ctypes extensions, otherwise various things fail. (`make install` fails
   # without zlib and setuptools / pip used by target install fail due to missing
@@ -69,6 +72,8 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   # configure will look for a pythonX.Y executable. Install our host Python
   # at the front of PATH.
   export PATH="${TOOLS_PATH}/pyhost/bin:${PATH}"
+
+  export CC="${OLD_CC}"
 
   popd
   # Nuke and re-pave the source directory out of paranoia.
@@ -583,6 +588,11 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
             ;;
         i686-unknown-linux-gnu)
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
+            ;;
+        armv7-unknown-linux-gnueabihf)
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_buggy_getaddrinfo=no"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"

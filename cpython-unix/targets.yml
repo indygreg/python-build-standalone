@@ -57,6 +57,32 @@ arm64-apple-tvos:
     - zlib
   openssl_target: todo
 
+armv7-unknown-linux-gnueabihf:
+  host_platforms:
+    - linux
+  docker_image_suffix: .cross
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-armv4
+
 i686-unknown-linux-gnu:
   host_platforms:
     - linux
