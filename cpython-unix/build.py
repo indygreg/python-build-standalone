@@ -119,26 +119,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
         else:
             raise Exception("could not find minimum Apple SDK version in cflags")
 
-        if target_triple == "aarch64-apple-darwin":
-            sdk_platform = "macosx"
-        elif target_triple == "aarch64-apple-ios":
-            # TODO arm64e not supported by open source Clang.
-            # TODO add arm7 / arm7s?
-            sdk_platform = "iphoneos"
-        elif target_triple == "arm64-apple-tvos":
-            sdk_platform = "appletvos"
-        elif target_triple == "thumbv7k-apple-watchos":
-            sdk_platform = "watchos"
-        elif target_triple == "x86_64-apple-darwin":
-            sdk_platform = "macosx"
-        elif target_triple == "x86_64-apple-ios":
-            sdk_platform = "iphonesimulator"
-        elif target_triple == "x86_64-apple-tvos":
-            sdk_platform = "appletvsimulator"
-        elif target_triple == "x86_64-apple-watchos":
-            sdk_platform = "watchsimulator"
-        else:
-            raise ValueError("unhandled target triple: %s" % target_triple)
+        sdk_platform = settings["apple_sdk_platform"]
 
         env["TARGET_TRIPLE"] = target_triple
         env["PATH"] = "/usr/bin:/bin"

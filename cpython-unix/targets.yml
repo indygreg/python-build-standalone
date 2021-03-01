@@ -30,6 +30,13 @@
 #
 #    Values will be added to LDFLAGS.
 #
+# apple_sdk_platform
+#    Name of the Apple SDK platform to use when building.
+#
+#    Value is fed into `xcrun --sdk` to locate the Apple SDK.
+#
+#    Required when targeting Apple.
+#
 # openssl_target
 #    Name of OpenSSL platform build target.
 
@@ -45,6 +52,7 @@ aarch64-apple-darwin:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  apple_sdk_platform: macosx
   target_cflags:
     - '-arch'
     - 'arm64'
@@ -71,6 +79,7 @@ aarch64-apple-ios:
   host_platforms:
     - darwin
   needs_toolchain: true
+  apple_sdk_platform: iphoneos
   host_cc: clang
   target_cc: clang
   target_cflags:
@@ -121,6 +130,7 @@ arm64-apple-tvos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  apple_sdk_platform: appletvos
   host_cc: clang
   target_cc: clang
   target_cflags:
@@ -316,6 +326,7 @@ thumb7k-apple-watchos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  apple_sdk_platform: watchos
   host_cc: clang
   target_cc: clang
   target_cflags:
@@ -340,6 +351,7 @@ thumb7k-apple-watchos:
 x86_64-apple-darwin:
   host_platforms:
     - darwin
+  apple_sdk_platform: macosx
   host_cc: clang
   target_cc: clang
   target_cflags:
@@ -368,6 +380,7 @@ x86_64-apple-ios:
   host_platforms:
     - darwin
   needs_toolchain: true
+  apple_sdk_platform: iphonesimulator
   host_cc: clang
   target_cc: clang
   target_cflags:
@@ -390,6 +403,7 @@ x86_64-apple-tvos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  apple_sdk_platform: appletvsimulator
   host_cc: clang
   target_cc: clang
   target_cflags:
@@ -410,6 +424,7 @@ x86_64-apple-watchos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  apple_sdk_platform: watchsimulator
   host_cc: clang
   target_cc: clang
   target_cflags:
