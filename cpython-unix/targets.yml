@@ -381,6 +381,7 @@ x86_64-apple-darwin:
   pythons_supported:
     - 'cpython-3.8'
     - 'cpython-3.9'
+  needs_toolchain: true
   apple_sdk_platform: macosx
   host_cc: clang
   target_cc: clang
