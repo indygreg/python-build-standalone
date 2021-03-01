@@ -17,7 +17,6 @@ use {
         convert::TryInto,
         io::Read,
         iter::FromIterator,
-        ops::Deref,
         path::{Path, PathBuf},
     },
 };
@@ -111,8 +110,38 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "tk86t.dll",
 ];
 
-static GLIBC_MAX_VERSION: Lazy<version_compare::Version<'static>> =
-    Lazy::new(|| version_compare::Version::from("2.19").unwrap());
+static GLIBC_MAX_VERSION_BY_TRIPLE: Lazy<HashMap<&'static str, version_compare::Version<'static>>> =
+    Lazy::new(|| {
+        let mut versions = HashMap::new();
+
+        versions.insert(
+            "aarch64-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "armv7-unknown-linux-gnueabi",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "armv7-unknown-linux-gnueabihf",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "i686-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "x86_64-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        // musl shouldn't link against glibc.
+        versions.insert(
+            "x86_64-unknown-linux-musl",
+            version_compare::Version::from("1").unwrap(),
+        );
+
+        versions
+    });
 
 static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static str>>> =
     Lazy::new(|| {
@@ -342,6 +371,10 @@ fn validate_elf(
         }
     }
 
+    let wanted_glibc_max_version = GLIBC_MAX_VERSION_BY_TRIPLE
+        .get(target_triple)
+        .expect("max glibc version not defined for target triple");
+
     let mut undefined_symbols = tugger_binary_analysis::find_undefined_elf_symbols(&bytes, elf);
     undefined_symbols.sort();
 
@@ -354,7 +387,7 @@ fn validate_elf(
                     let v =
                         version_compare::Version::from(parts[1]).expect("unable to parse version");
 
-                    if &v > GLIBC_MAX_VERSION.deref() {
+                    if &v > wanted_glibc_max_version {
                         errors.push(format!(
                             "{} references too new glibc symbol {:?}",
                             path.display(),
