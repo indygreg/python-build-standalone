@@ -75,39 +75,12 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   esac
 fi
 
-case "${TARGET_TRIPLE}" in
-  aarch64-unknown-linux-gnu)
-    CC_FOR_BUILD=gcc
-    ;;
-  armv7-unknown-linux-gnueabi)
-    CC_FOR_BUILD=gcc
-    ;;
-  armv7-unknown-linux-gnueabihf)
-    CC_FOR_BUILD=gcc
-    ;;
-  mips-unknown-linux-gnu)
-    CC_FOR_BUILD=gcc
-    ;;
-  mipsel-unknown-linux-gnu)
-    CC_FOR_BUILD=gcc
-    ;;
-  mips64el-unknown-linux-gnuabi64)
-    CC_FOR_BUILD=gcc
-    ;;
-  s390x-unknown-linux-gnu)
-    CC_FOR_BUILD=gcc
-    ;;
-  *)
-    CC_FOR_BUILD=clang
-    ;;
-esac
-
 # CC_FOR_BUILD is here because configure doesn't look for `clang` when
 # cross-compiling. So we force it.
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include" \
   CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I/tools/deps/include" \
   LDFLAGS="${EXTRA_TARGET_LDFLAGS}" \
-  CC_FOR_BUILD="${CC_FOR_BUILD}" \
+  CC_FOR_BUILD="${HOST_CC}" \
   CFLAGS_FOR_BUILD="-I/tools/deps/include" \
   CPPFLAGS_FOR_BUILD="-I/tools/deps/include" \
   ./configure \

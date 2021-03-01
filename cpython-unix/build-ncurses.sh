@@ -19,19 +19,10 @@ tar -xf ncurses-${NCURSES_VERSION}.tar.gz
 if [[ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" && "${PYBUILD_PLATFORM}" != "macos" ]]; then
   echo "building host ncurses to provide modern tic for cross-compile"
 
-  OLD_CC=${CC}
-  unset CC
-
-  if [ -e "${TOOLS_PATH}/${TOOLCHAIN}/bin/clang" ]; then
-    export CC="${TOOLS_PATH}/${TOOLCHAIN}/bin/clang"
-  fi
-
   pushd ncurses-${NCURSES_VERSION}
-  ./configure --prefix=${TOOLS_PATH}/host --without-cxx --without-tests --without-manpages --enable-widec
+  CC="${HOST_CC}" ./configure --prefix=${TOOLS_PATH}/host --without-cxx --without-tests --without-manpages --enable-widec
   make -j ${NUM_CPUS}
   make -j ${NUM_CPUS} install
-
-  export CC=${OLD_CC}
 
   popd
 
@@ -61,13 +52,7 @@ CONFIGURE_FLAGS="
 # and this value not being equal, even though using the same binary with
 # different compiler flags is doable!
 if [[ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" && "${PYBUILD_PLATFORM}" != "macos" ]]; then
-  # Look for and use our Clang toolchain by default. If not present, fall
-  # back to likely path to system GCC.
-  if [ -e "${TOOLS_PATH}/${TOOLCHAIN}/bin/clang" ]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-cc=${TOOLS_PATH}/${TOOLCHAIN}/bin/clang"
-  else
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-cc=/usr/bin/x86_64-linux-gnu-gcc"
-  fi
+  CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-cc=$(which "${HOST_CC}")"
 fi
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then

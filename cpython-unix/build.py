@@ -89,6 +89,8 @@ def add_target_env(env, build_platform, target_triple, build_env):
 
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
+    env["HOST_CC"] = settings["host_cc"]
+
     if settings.get("needs_toolchain"):
         if "musl" in target_triple:
             env["CC"] = "musl-clang"

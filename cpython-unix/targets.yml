@@ -12,6 +12,10 @@
 # needs
 #    Packages required to build Python.
 #
+# host_cc
+#    Path to C compiler to use when producing binaries targeting the
+#    current build environment.
+#
 # openssl_target
 #    Name of OpenSSL platform build target.
 
@@ -20,6 +24,7 @@ aarch64-apple-darwin:
   host_platforms:
     - darwin
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bzip2
     - libedit
@@ -38,6 +43,7 @@ aarch64-apple-ios:
   host_platforms:
     - darwin
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bzip2
     - libffi
@@ -50,6 +56,7 @@ aarch64-unknown-linux-gnu:
   host_platforms:
     - linux
   docker_image_suffix: .cross
+  host_cc: /usr/bin/x86_64-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -76,6 +83,7 @@ arm64-apple-tvos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -87,6 +95,7 @@ armv7-unknown-linux-gnueabi:
   host_platforms:
     - linux
   docker_image_suffix: .cross
+  host_cc: /usr/bin/x86_64-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -113,6 +122,7 @@ armv7-unknown-linux-gnueabihf:
   host_platforms:
     - linux
   docker_image_suffix: .cross
+  host_cc: /usr/bin/x86_64-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -139,6 +149,7 @@ i686-unknown-linux-gnu:
   host_platforms:
     - linux
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bdb
     - binutils
@@ -167,6 +178,7 @@ mips-unknown-linux-gnu:
   host_platforms:
     - linux
   docker_image_suffix: .cross
+  host_cc: /usr/bin/x86_64-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -193,6 +205,7 @@ mipsel-unknown-linux-gnu:
   host_platforms:
     - linux
   docker_image_suffix: .cross
+  host_cc: /usr/bin/x86_64-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -219,6 +232,7 @@ s390x-unknown-linux-gnu:
   host_platforms:
     - linux
   docker_image_suffix: .cross
+  host_cc: /usr/bin/x86_64-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -245,6 +259,7 @@ thumb7k-apple-watchos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -255,6 +270,7 @@ thumb7k-apple-watchos:
 x86_64-apple-darwin:
   host_platforms:
     - darwin
+  host_cc: clang
   needs:
     - bzip2
     - libedit
@@ -273,6 +289,7 @@ x86_64-apple-ios:
   host_platforms:
     - darwin
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bzip2
     - libffi
@@ -285,6 +302,7 @@ x86_64-apple-tvos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -295,6 +313,7 @@ x86_64-apple-watchos:
   host_platforms:
     - darwin
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -306,6 +325,7 @@ x86_64-unknown-linux-gnu:
   host_platforms:
     - linux
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bdb
     - binutils
@@ -333,6 +353,7 @@ x86_64-unknown-linux-musl:
   host_platforms:
     - linux
   needs_toolchain: true
+  host_cc: clang
   needs:
     - bdb
     - binutils

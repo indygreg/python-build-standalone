@@ -28,9 +28,6 @@ tar -xf pip-${PIP_VERSION}.tar.gz
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
-  OLD_CC=${CC}
-  unset CC
-
   # When cross-compiling, we need to build a host Python that has working zlib
   # and ctypes extensions, otherwise various things fail. (`make install` fails
   # without zlib and setuptools / pip used by target install fail due to missing
@@ -53,7 +50,7 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
       ;;
   esac
 
-  CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
+  CC="${HOST_CC}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
 
   # When building on macOS 10.15 (and possibly earlier) using the 11.0
   # SDK, the _ctypes extension fails to import due to a missing symbol on
@@ -72,8 +69,6 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   # configure will look for a pythonX.Y executable. Install our host Python
   # at the front of PATH.
   export PATH="${TOOLS_PATH}/pyhost/bin:${PATH}"
-
-  export CC="${OLD_CC}"
 
   popd
   # Nuke and re-pave the source directory out of paranoia.
