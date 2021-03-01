@@ -122,6 +122,9 @@ def add_target_env(env, build_platform, target_triple, build_env):
         sdk_platform = settings["apple_sdk_platform"]
 
         env["TARGET_TRIPLE"] = target_triple
+
+        # We don't have build isolation on macOS. We nerf PATH to prevent
+        # non-system (e.g. Homebrew) executables from being used.
         env["PATH"] = "/usr/bin:/bin"
 
         extra_target_cflags.extend(
