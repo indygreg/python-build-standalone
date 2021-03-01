@@ -22,6 +22,10 @@ if [[ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" && "${PYBUILD_PLATFORM}" != "macos
   OLD_CC=${CC}
   unset CC
 
+  if [ -e "${TOOLS_PATH}/${TOOLCHAIN}/bin/clang" ]; then
+    export CC="${TOOLS_PATH}/${TOOLCHAIN}/bin/clang"
+  fi
+
   pushd ncurses-${NCURSES_VERSION}
   ./configure --prefix=${TOOLS_PATH}/host --without-cxx --without-tests --without-manpages --enable-widec
   make -j ${NUM_CPUS}
