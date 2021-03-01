@@ -30,6 +30,9 @@ const RECOGNIZED_TRIPLES: &[&str] = &[
     "arm64-apple-tvos",
     "i686-pc-windows-msvc",
     "i686-unknown-linux-gnu",
+    "mips-unknown-linux-gnu",
+    "mipsel-unknown-linux-gnu",
+    "mips64el-unknown-linux-gnuabi64",
     "thumbv7k-apple-watchos",
     "x86_64-apple-darwin",
     "x86_64-apple-ios",
@@ -131,6 +134,18 @@ static GLIBC_MAX_VERSION_BY_TRIPLE: Lazy<HashMap<&'static str, version_compare::
             version_compare::Version::from("2.17").unwrap(),
         );
         versions.insert(
+            "mips-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "mipsel-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "mips64el-unknown-linux-gnuabi64",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
             "x86_64-unknown-linux-gnu",
             version_compare::Version::from("2.17").unwrap(),
         );
@@ -155,6 +170,9 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
                 vec!["ld-linux-armhf.so.3", "libgcc_s.so.1"],
             ),
             ("i686-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
+            ("mips-unknown-linux-gnu", vec!["ld.so.1"]),
+            ("mipsel-unknown-linux-gnu", vec!["ld.so.1"]),
+            ("mips64el-unknown-linux-gnuabi64", vec![]),
             ("x86_64-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
         ]
         .iter()
@@ -312,6 +330,9 @@ static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy:
         ("armv7-unknown-linux-gnueabihf", "linux-arm"),
         ("i686-pc-windows-msvc", "win32"),
         ("i686-unknown-linux-gnu", "linux-i686"),
+        ("mips-unknown-linux-gnu", "linux-mips"),
+        ("mipsel-unknown-linux-gnu", "linux-mipsel"),
+        ("mips64el-unknown-linux-gnuabi64", "todo"),
         ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
         ("x86_64-apple-ios", "iOS-x86_64"),
         ("x86_64-pc-windows-msvc", "win-amd64"),
@@ -346,6 +367,9 @@ fn validate_elf(
         "armv7-unknown-linux-gnueabi" => goblin::elf::header::EM_ARM,
         "armv7-unknown-linux-gnueabihf" => goblin::elf::header::EM_ARM,
         "i686-unknown-linux-gnu" => goblin::elf::header::EM_386,
+        "mips-unknown-linux-gnu" => goblin::elf::header::EM_MIPS,
+        "mipsel-unknown-linux-gnu" => goblin::elf::header::EM_MIPS,
+        "mips64el-unknown-linux-gnuabi64" => 0,
         "x86_64-unknown-linux-gnu" => goblin::elf::header::EM_X86_64,
         "x86_64-unknown-linux-musl" => goblin::elf::header::EM_X86_64,
         _ => panic!("unhandled target triple: {}", target_triple),
@@ -375,24 +399,27 @@ fn validate_elf(
         .get(target_triple)
         .expect("max glibc version not defined for target triple");
 
-    let mut undefined_symbols = tugger_binary_analysis::find_undefined_elf_symbols(&bytes, elf);
-    undefined_symbols.sort();
+    // functionality doesn't yet support mips.
+    if !target_triple.starts_with("mips") {
+        let mut undefined_symbols = tugger_binary_analysis::find_undefined_elf_symbols(&bytes, elf);
+        undefined_symbols.sort();
 
-    for symbol in undefined_symbols {
-        if let Some(version) = &symbol.version {
-            let parts: Vec<&str> = version.splitn(2, '_').collect();
+        for symbol in undefined_symbols {
+            if let Some(version) = &symbol.version {
+                let parts: Vec<&str> = version.splitn(2, '_').collect();
 
-            if parts.len() == 2 {
-                if parts[0] == "GLIBC" {
-                    let v =
-                        version_compare::Version::from(parts[1]).expect("unable to parse version");
+                if parts.len() == 2 {
+                    if parts[0] == "GLIBC" {
+                        let v = version_compare::Version::from(parts[1])
+                            .expect("unable to parse version");
 
-                    if &v > wanted_glibc_max_version {
-                        errors.push(format!(
-                            "{} references too new glibc symbol {:?}",
-                            path.display(),
-                            symbol
-                        ))
+                        if &v > wanted_glibc_max_version {
+                            errors.push(format!(
+                                "{} references too new glibc symbol {:?}",
+                                path.display(),
+                                symbol
+                            ))
+                        }
                     }
                 }
             }

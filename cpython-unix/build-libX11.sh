@@ -57,6 +57,15 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
     i686-unknown-linux-gnu)
       EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
       ;;
+    mips-unknown-linux-gnu)
+      EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
+      ;;
+    mipsel-unknown-linux-gnu)
+      EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
+      ;;
+    mips64el-unknown-linux-gnuabi64)
+      EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
+      ;;
     *)
       echo "cross-compiling but malloc(0) override not set; failures possible"
       ;;
@@ -71,6 +80,15 @@ case "${TARGET_TRIPLE}" in
     CC_FOR_BUILD=gcc
     ;;
   armv7-unknown-linux-gnueabihf)
+    CC_FOR_BUILD=gcc
+    ;;
+  mips-unknown-linux-gnu)
+    CC_FOR_BUILD=gcc
+    ;;
+  mipsel-unknown-linux-gnu)
+    CC_FOR_BUILD=gcc
+    ;;
+  mips64el-unknown-linux-gnuabi64)
     CC_FOR_BUILD=gcc
     ;;
   *)

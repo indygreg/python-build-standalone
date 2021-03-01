@@ -163,6 +163,58 @@ i686-unknown-linux-gnu:
     - zlib
   openssl_target: linux-x86-clang
 
+mips-unknown-linux-gnu:
+  host_platforms:
+    - linux
+  docker_image_suffix: .cross
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-mips32
+
+mipsel-unknown-linux-gnu:
+  host_platforms:
+    - linux
+  docker_image_suffix: .cross
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-mips32
+
 thumb7k-apple-watchos:
   host_platforms:
     - darwin
