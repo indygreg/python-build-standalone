@@ -103,28 +103,15 @@ def add_target_env(env, build_platform, target_triple, build_env):
     if build_platform == "linux64":
         env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
 
-        if target_triple == "aarch64-unknown-linux-gnu":
-            env["TARGET_TRIPLE"] = "aarch64-unknown-linux-gnu"
-        elif target_triple == "armv7-unknown-linux-gnueabi":
-            env["TARGET_TRIPLE"] = "armv7-unknown-linux-gnueabi"
-        elif target_triple == "armv7-unknown-linux-gnueabihf":
-            env["TARGET_TRIPLE"] = "armv7-unknown-linux-gnueabihf"
-        elif target_triple == "mips-unknown-linux-gnu":
-            env["TARGET_TRIPLE"] = "mips-unknown-linux-gnu"
-        elif target_triple == "mipsel-unknown-linux-gnu":
-            env["TARGET_TRIPLE"] = "mipsel-unknown-linux-gnu"
-        elif target_triple == "mips64el-unknown-linux-gnuabi64":
-            env["TARGET_TRIPLE"] = "mips64el-unknown-linux-gnuabi64"
-        elif target_triple == "s390x-unknown-linux-gnu":
-            env["TARGET_TRIPLE"] = "s390x-unknown-linux-gnu"
-        elif target_triple in ("x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl"):
+        # TODO should the musl target be normalized?
+        if target_triple == "x86_64-unknown-linux-musl":
             env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
-        elif target_triple == "i686-unknown-linux-gnu":
-            env["TARGET_TRIPLE"] = "i686-unknown-linux-gnu"
+        else:
+            env["TARGET_TRIPLE"] = target_triple
+
+        if target_triple == "i686-unknown-linux-gnu":
             extra_target_cflags.append("-m32")
             extra_target_ldflags.append("-m32")
-        else:
-            raise Exception("unhandled target triple: %s" % target_triple)
 
     if build_platform == "macos":
         machine = platform.machine()
