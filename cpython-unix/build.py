@@ -95,8 +95,8 @@ def add_target_env(env, build_platform, target_triple, build_env):
     env["PYBUILD_PLATFORM"] = build_platform
     env["TOOLS_PATH"] = build_env.tools_path
 
-    extra_target_cflags = []
-    extra_target_ldflags = []
+    extra_target_cflags = list(settings.get("target_cflags", []))
+    extra_target_ldflags = list(settings.get("target_ldflags", []))
     extra_host_cflags = []
     extra_host_ldflags = []
 
@@ -108,10 +108,6 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
         else:
             env["TARGET_TRIPLE"] = target_triple
-
-        if target_triple == "i686-unknown-linux-gnu":
-            extra_target_cflags.append("-m32")
-            extra_target_ldflags.append("-m32")
 
     if build_platform == "macos":
         machine = platform.machine()
@@ -125,7 +121,6 @@ def add_target_env(env, build_platform, target_triple, build_env):
 
         if target_triple == "aarch64-apple-darwin":
             env["TARGET_TRIPLE"] = "aarch64-apple-darwin"
-            arches = ["arm64"]
             sdk_platform = "macosx"
             min_version_flags = [
                 "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_ARM
@@ -135,25 +130,21 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["TARGET_TRIPLE"] = "aarch64-apple-ios"
             # TODO arm64e not supported by open source Clang.
             # TODO add arm7 / arm7s?
-            arches = ["arm64"]
             sdk_platform = "iphoneos"
             min_version_flags = ["-mios-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET]
             env["APPLE_MIN_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
         elif target_triple == "arm64-apple-tvos":
             env["TARGET_TRIPLE"] = "arm64-apple-tvos"
-            arches = ["arm64"]
             sdk_platform = "appletvos"
             min_version_flags = ["-mappletvos-version-min=%s" % TVOS_DEPLOYMENT_TARGET]
             env["APPLE_MIN_DEPLOYMENT_TARGET"] = TVOS_DEPLOYMENT_TARGET
         elif target_triple == "thumbv7k-apple-watchos":
             env["TARGET_TRIPLE"] = "thumbv7k-apple-watchos"
-            arches = ["armv7k"]
             sdk_platform = "watchos"
             min_version_flags = ["-mwatchos-version-min=%s" % WATCHOS_DEPLOYMENT_TARGET]
             env["APPLE_MIN_DEPLOYMENT_TARGET"] = WATCHOS_DEPLOYMENT_TARGET
         elif target_triple == "x86_64-apple-darwin":
             env["TARGET_TRIPLE"] = "x86_64-apple-darwin"
-            arches = ["x86_64"]
             sdk_platform = "macosx"
             min_version_flags = [
                 "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_X86
@@ -161,7 +152,6 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["APPLE_MIN_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_X86
         elif target_triple == "x86_64-apple-ios":
             env["TARGET_TRIPLE"] = "x86_64-apple-ios"
-            arches = ["x86_64"]
             sdk_platform = "iphonesimulator"
             min_version_flags = [
                 "-mios-simulator-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET,
@@ -169,7 +159,6 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["APPLE_MIN_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
         elif target_triple == "x86_64-apple-tvos":
             env["TARGET_TRIPLE"] = "x86_64-apple-tvos"
-            arches = ["x86_64"]
             sdk_platform = "appletvsimulator"
             min_version_flags = [
                 "-mappletvsimulator-version-min=%s" % TVOS_DEPLOYMENT_TARGET
@@ -177,7 +166,6 @@ def add_target_env(env, build_platform, target_triple, build_env):
             env["APPLE_MIN_DEPLOYMENT_TARGET"] = TVOS_DEPLOYMENT_TARGET
         elif target_triple == "x86_64-apple-watchos":
             env["TARGET_TRIPLE"] = "x86_64-apple-watchos"
-            arches = ["x86_64"]
             sdk_platform = "watchsimulator"
             min_version_flags = [
                 "-mwatchsimulator-version-min=%s" % WATCHOS_DEPLOYMENT_TARGET
@@ -202,10 +190,6 @@ def add_target_env(env, build_platform, target_triple, build_env):
                 "-Wno-undef-prefix",
             ]
         )
-
-        for arch in arches:
-            extra_target_cflags.extend(["-arch", arch])
-            extra_target_ldflags.extend(["-arch", arch])
 
         if "APPLE_SDK_PATH" in os.environ:
             sdk_path = os.environ["APPLE_SDK_PATH"]

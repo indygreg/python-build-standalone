@@ -17,9 +17,18 @@
 #    current build environment.
 #
 # target_cc
-#
 #    Path to C compiler to use for building binaries targeting the
 #    target architecture.
+#
+# target_cflags
+#    List of extra compiler flags to use when building for the target.
+#
+#    Values will be added to CPPFLAGS and CFLAGS.
+#
+# target_ldflags
+#    List of extra linker flags to use when building for the target.
+#
+#    Values will be added to LDFLAGS.
 #
 # openssl_target
 #    Name of OpenSSL platform build target.
@@ -31,6 +40,12 @@ aarch64-apple-darwin:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'arm64'
+  target_ldflags:
+    - '-arch'
+    - 'arm64'
   needs:
     - bzip2
     - libedit
@@ -51,6 +66,12 @@ aarch64-apple-ios:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'arm64'
+  target_ldflags:
+    - '-arch'
+    - 'arm64'
   needs:
     - bzip2
     - libffi
@@ -93,6 +114,12 @@ arm64-apple-tvos:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'arm64'
+  target_ldflags:
+    - '-arch'
+    - 'arm64'
   needs:
     - bzip2
     - sqlite
@@ -162,6 +189,10 @@ i686-unknown-linux-gnu:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-m32'
+  target_ldflags:
+    - '-m32'
   needs:
     - bdb
     - binutils
@@ -276,6 +307,12 @@ thumb7k-apple-watchos:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'armv7k'
+  target_ldflags:
+    - '-arch'
+    - 'armv7k'
   needs:
     - bzip2
     - sqlite
@@ -288,6 +325,12 @@ x86_64-apple-darwin:
     - darwin
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'x86_64'
+  target_ldflags:
+    - '-arch'
+    - 'x86_64'
   needs:
     - bzip2
     - libedit
@@ -308,6 +351,12 @@ x86_64-apple-ios:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'x86_64'
+  target_ldflags:
+    - '-arch'
+    - 'x86_64'
   needs:
     - bzip2
     - libffi
@@ -322,6 +371,12 @@ x86_64-apple-tvos:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'x86_64'
+  target_ldflags:
+    - '-arch'
+    - 'x86_64'
   needs:
     - bzip2
     - sqlite
@@ -334,6 +389,12 @@ x86_64-apple-watchos:
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
+  target_cflags:
+    - '-arch'
+    - 'x86_64'
+  target_ldflags:
+    - '-arch'
+    - 'x86_64'
   needs:
     - bzip2
     - sqlite
