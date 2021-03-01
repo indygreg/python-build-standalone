@@ -87,6 +87,14 @@ def install_sccache(build_env):
 def add_target_env(env, build_platform, target_triple, build_env):
     add_env_common(env)
 
+    settings = get_target_settings(TARGETS_CONFIG, target_triple)
+
+    if settings.get("needs_toolchain"):
+        if "musl" in target_triple:
+            env["CC"] = "musl-clang"
+        else:
+            env["CC"] = "clang"
+
     env["PYBUILD_PLATFORM"] = build_platform
     env["TOOLS_PATH"] = build_env.tools_path
 
@@ -293,12 +301,9 @@ def simple_build(
         build_env.copy_file(SUPPORT / ("build-%s.sh" % entry))
 
         env = {
-            "CC": "clang",
             "TOOLCHAIN": "clang-%s" % host_platform,
             "%s_VERSION" % entry.upper().replace("-", "_"): DOWNLOADS[entry]["version"],
         }
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
 
         add_target_env(env, host_platform, target_triple, build_env)
 
@@ -472,13 +477,9 @@ def build_libedit(
         build_env.copy_file(SUPPORT / "build-libedit.sh")
 
         env = {
-            "CC": "clang",
             "TOOLCHAIN": "clang-%s" % host_platform,
             "LIBEDIT_VERSION": DOWNLOADS["libedit"]["version"],
         }
-
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
 
         add_target_env(env, host_platform, target_triple, build_env)
 
@@ -508,13 +509,9 @@ def build_readline(
         build_env.copy_file(SUPPORT / "build-readline.sh")
 
         env = {
-            "CC": "clang",
             "TOOLCHAIN": "clang-%s" % host_platform,
             "READLINE_VERSION": DOWNLOADS["readline"]["version"],
         }
-
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
 
         add_target_env(env, host_platform, target_triple, build_env)
 
@@ -550,15 +547,11 @@ def build_tix(
             build_env.copy_file(p)
 
         env = {
-            "CC": "clang",
             "TOOLCHAIN": "clang-%s" % host_platform,
             "TCL_VERSION": DOWNLOADS["tcl"]["version"],
             "TIX_VERSION": DOWNLOADS["tix"]["version"],
             "TK_VERSION": DOWNLOADS["tk"]["version"],
         }
-
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
 
         add_target_env(env, host_platform, target_triple, build_env)
 
@@ -895,16 +888,12 @@ def build_cpython(
             build_env.copy_file(fh.name, dest_name="Makefile.extra")
 
         env = {
-            "CC": "clang",
             "PIP_VERSION": DOWNLOADS["pip"]["version"],
             "PYTHON_VERSION": entry["version"],
             "PYTHON_MAJMIN_VERSION": ".".join(entry["version"].split(".")[0:2]),
             "SETUPTOOLS_VERSION": DOWNLOADS["setuptools"]["version"],
             "TOOLCHAIN": "clang-%s" % host_platform,
         }
-
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
 
         if optimizations == "debug":
             env["CPYTHON_DEBUG"] = "1"
