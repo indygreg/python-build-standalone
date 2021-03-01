@@ -122,7 +122,12 @@ jobs:
       fail-fast: false
       matrix:
         triple:
+          - 'aarch64-unknown-linux-gnu'
+          - 'armv7-unknown-linux-gnueabi'
+          - 'armv7-unknown-linux-gnueabihf'
           - 'i686-unknown-linux-gnu'
+          - 'mips-unknown-linux-gnu'
+          - 'mipsel-unknown-linux-gnu'
           - 'x86_64-unknown-linux-gnu'
           - 'x86_64-unknown-linux-musl'
         py:
@@ -136,6 +141,27 @@ jobs:
           - 'pgo'
           - 'pgo+lto'
         exclude:
+          # Only CPython 3.9 supported for many cross build targets.
+          - triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.8'
+          - triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+          - triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.8'
+          - triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.10'
+          - triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.8'
+          - triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.10'
+          - triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.8'
+          - triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.10'
+          - triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.8'
+          - triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.10'
           # We don't publish noopt builds for GNU Linux when PGO is available.
           - triple: 'i686-unknown-linux-gnu'
             optimizations: 'noopt'
@@ -145,6 +171,27 @@ jobs:
           - triple: 'x86_64-unknown-linux-musl'
             optimizations: 'pgo'
           - triple: 'x86_64-unknown-linux-musl'
+            optimizations: 'pgo+lto'
+          # PGO doesn't work with cross builds.
+          - triple: 'aarch64-unknown-linux-gnu'
+            optimizations: 'pgo'
+          - triple: 'aarch64-unknown-linux-gnu'
+            optimizations: 'pgo+lto'
+          - triple: 'armv7-unknown-linux-gnueabi'
+            optimizations: 'pgo'
+          - triple: 'armv7-unknown-linux-gnueabi'
+            optimizations: 'pgo+lto'
+          - triple: 'armv7-unknown-linux-gnueabihf'
+            optimizations: 'pgo'
+          - triple: 'armv7-unknown-linux-gnueabihf'
+            optimizations: 'pgo+lto'
+          - triple: 'mips-unknown-linux-gnu'
+            optimizations: 'pgo'
+          - triple: 'mips-unknown-linux-gnu'
+            optimizations: 'pgo+lto'
+          - triple: 'mipsel-unknown-linux-gnu'
+            optimizations: 'pgo'
+          - triple: 'mipsel-unknown-linux-gnu'
             optimizations: 'pgo+lto'
 
     needs:
