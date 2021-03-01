@@ -26,6 +26,11 @@ def get_targets(yaml_path: pathlib.Path):
         return yaml.load(fh, Loader=yaml.SafeLoader)
 
 
+def get_target_settings(yaml_path: pathlib.Path, target: str):
+    """Obtain the settings for a named target."""
+    return get_targets(yaml_path)[target]
+
+
 def supported_targets(yaml_path: pathlib.Path):
     """Obtain a set of named targets that we can build."""
     targets = set()

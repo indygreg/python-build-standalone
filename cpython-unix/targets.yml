@@ -4,6 +4,11 @@
 #    Defines the Python sys.platform value where this configuration
 #    can be built from.
 #
+# needs_toolchain
+#    Whether this build requires the presence of a custom compiled toolchain.
+#    If not defined, it is assumed the toolchain is present in the build
+#    environment already.
+#
 # needs
 #    Packages required to build Python.
 #
@@ -14,6 +19,7 @@
 aarch64-apple-darwin:
   host_platforms:
     - darwin
+  needs_toolchain: true
   needs:
     - bzip2
     - libedit
@@ -31,6 +37,7 @@ aarch64-apple-darwin:
 aarch64-apple-ios:
   host_platforms:
     - darwin
+  needs_toolchain: true
   needs:
     - bzip2
     - libffi
@@ -42,6 +49,7 @@ aarch64-apple-ios:
 arm64-apple-tvos:
   host_platforms:
     - darwin
+  needs_toolchain: true
   needs:
     - bzip2
     - sqlite
@@ -52,6 +60,7 @@ arm64-apple-tvos:
 i686-unknown-linux-gnu:
   host_platforms:
     - linux
+  needs_toolchain: true
   needs:
     - bdb
     - binutils
@@ -79,6 +88,7 @@ i686-unknown-linux-gnu:
 thumb7k-apple-watchos:
   host_platforms:
     - darwin
+  needs_toolchain: true
   needs:
     - bzip2
     - sqlite
@@ -106,6 +116,7 @@ x86_64-apple-darwin:
 x86_64-apple-ios:
   host_platforms:
     - darwin
+  needs_toolchain: true
   needs:
     - bzip2
     - libffi
@@ -117,6 +128,7 @@ x86_64-apple-ios:
 x86_64-apple-tvos:
   host_platforms:
     - darwin
+  needs_toolchain: true
   needs:
     - bzip2
     - sqlite
@@ -126,6 +138,7 @@ x86_64-apple-tvos:
 x86_64-apple-watchos:
   host_platforms:
     - darwin
+  needs_toolchain: true
   needs:
     - bzip2
     - sqlite
@@ -136,6 +149,7 @@ x86_64-apple-watchos:
 x86_64-unknown-linux-gnu:
   host_platforms:
     - linux
+  needs_toolchain: true
   needs:
     - bdb
     - binutils
@@ -162,6 +176,7 @@ x86_64-unknown-linux-gnu:
 x86_64-unknown-linux-musl:
   host_platforms:
     - linux
+  needs_toolchain: true
   needs:
     - bdb
     - binutils

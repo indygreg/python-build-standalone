@@ -29,6 +29,7 @@ from pythonbuild.utils import (
     add_licenses_to_extension_entry,
     download_entry,
     get_targets,
+    get_target_settings,
     target_needs,
     validate_python_json,
     write_package_versions,
@@ -263,6 +264,7 @@ def install_binutils(platform):
 
 
 def simple_build(
+    settings,
     client,
     image,
     entry,
@@ -275,13 +277,14 @@ def simple_build(
     archive = download_entry(entry, DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(
-            BUILD,
-            host_platform,
-            binutils=install_binutils(host_platform),
-            clang=True,
-            musl="musl" in target_triple,
-        )
+        if settings.get("needs_toolchain"):
+            build_env.install_toolchain(
+                BUILD,
+                host_platform,
+                binutils=install_binutils(host_platform),
+                clang=True,
+                musl="musl" in target_triple,
+            )
 
         for a in extra_archives or []:
             build_env.install_artifact_archive(BUILD, a, target_triple, optimizations)
@@ -448,18 +451,19 @@ def build_musl(client, image, host_platform):
 
 
 def build_libedit(
-    client, image, host_platform, target_triple, optimizations, dest_archive
+    settings, client, image, host_platform, target_triple, optimizations, dest_archive
 ):
     libedit_archive = download_entry("libedit", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(
-            BUILD,
-            host_platform,
-            binutils=install_binutils(host_platform),
-            clang=True,
-            musl="musl" in target_triple,
-        )
+        if settings.get("needs_toolchain"):
+            build_env.install_toolchain(
+                BUILD,
+                host_platform,
+                binutils=install_binutils(host_platform),
+                clang=True,
+                musl="musl" in target_triple,
+            )
 
         build_env.install_artifact_archive(
             BUILD, "ncurses", target_triple, optimizations
@@ -483,18 +487,19 @@ def build_libedit(
 
 
 def build_readline(
-    client, image, host_platform, target_triple, optimizations, dest_archive
+    settings, client, image, host_platform, target_triple, optimizations, dest_archive
 ):
     readline_archive = download_entry("readline", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(
-            BUILD,
-            host_platform,
-            binutils=True,
-            clang=True,
-            musl="musl" in target_triple,
-        )
+        if settings.get("needs_toolchain"):
+            build_env.install_toolchain(
+                BUILD,
+                host_platform,
+                binutils=True,
+                clang=True,
+                musl="musl" in target_triple,
+            )
 
         build_env.install_artifact_archive(
             BUILD, "ncurses", target_triple, optimizations
@@ -517,19 +522,22 @@ def build_readline(
         build_env.get_tools_archive(dest_archive, "deps")
 
 
-def build_tix(client, image, host_platform, target_triple, optimizations, dest_archive):
+def build_tix(
+    settings, client, image, host_platform, target_triple, optimizations, dest_archive
+):
     tcl_archive = download_entry("tcl", DOWNLOADS_PATH)
     tk_archive = download_entry("tk", DOWNLOADS_PATH)
     tix_archive = download_entry("tix", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(
-            BUILD,
-            host_platform,
-            binutils=install_binutils(host_platform),
-            clang=True,
-            musl="musl" in target_triple,
-        )
+        if settings.get("needs_toolchain"):
+            build_env.install_toolchain(
+                BUILD,
+                host_platform,
+                binutils=install_binutils(host_platform),
+                clang=True,
+                musl="musl" in target_triple,
+            )
 
         depends = {"tcl", "tk"}
         if host_platform != "macos":
@@ -794,6 +802,7 @@ def get_target_support_file(prefix, python_version, host_platform, target_triple
 
 
 def build_cpython(
+    settings,
     client,
     image,
     host_platform,
@@ -838,13 +847,14 @@ def build_cpython(
     extra_make_content = setup["make_data"]
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(
-            BUILD,
-            host_platform,
-            binutils=install_binutils(host_platform),
-            clang=True,
-            musl="musl" in target_triple,
-        )
+        if settings.get("needs_toolchain"):
+            build_env.install_toolchain(
+                BUILD,
+                host_platform,
+                binutils=install_binutils(host_platform),
+                clang=True,
+                musl="musl" in target_triple,
+            )
 
         packages = target_needs(TARGETS_CONFIG, target_triple)
         # Toolchain packages are handled specially.
@@ -1044,6 +1054,8 @@ def main():
     dest_archive = pathlib.Path(args.dest_archive)
     docker_image = args.docker_image
 
+    settings = get_target_settings(TARGETS_CONFIG, target_triple)
+
     if args.action == "makefiles":
         log_name = "makefiles"
     elif args.action.startswith("image-"):
@@ -1088,6 +1100,7 @@ def main():
 
         elif action == "libedit":
             build_libedit(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
@@ -1098,6 +1111,7 @@ def main():
 
         elif action == "readline":
             build_readline(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
@@ -1130,6 +1144,7 @@ def main():
             "zlib",
         ):
             simple_build(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 action,
@@ -1141,6 +1156,7 @@ def main():
 
         elif action == "libX11":
             simple_build(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 action,
@@ -1164,6 +1180,7 @@ def main():
 
         elif action == "libXau":
             simple_build(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 action,
@@ -1176,6 +1193,7 @@ def main():
 
         elif action == "xcb-proto":
             simple_build(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 action,
@@ -1187,6 +1205,7 @@ def main():
 
         elif action == "libxcb":
             simple_build(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 action,
@@ -1199,6 +1218,7 @@ def main():
 
         elif action == "tix":
             build_tix(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
@@ -1219,6 +1239,7 @@ def main():
                 }
 
             simple_build(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 action,
@@ -1231,6 +1252,7 @@ def main():
 
         elif action in ("cpython-3.8", "cpython-3.9", "cpython-3.10"):
             build_cpython(
+                settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),
                 host_platform=host_platform,
