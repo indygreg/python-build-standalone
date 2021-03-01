@@ -13,6 +13,7 @@ import sys
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.utils import (
     compress_python_archive,
+    get_target_settings,
     release_tag_from_git,
     supported_targets,
 )
@@ -93,6 +94,15 @@ def main():
     args = parser.parse_args()
 
     target_triple = args.target_triple
+
+    settings = get_target_settings(TARGETS_CONFIG, target_triple)
+
+    if args.python not in settings["pythons_supported"]:
+        print(
+            "%s only supports following Pythons: %s"
+            % (target_triple, ", ".join(settings["pythons_supported"]))
+        )
+        return 1
 
     musl = "musl" in target_triple
 

@@ -4,6 +4,9 @@
 #    Defines the Python sys.platform value where this configuration
 #    can be built from.
 #
+# pythons_supported
+#    Python versions we support building.
+#
 # needs_toolchain
 #    Whether this build requires the presence of a custom compiled toolchain.
 #    If not defined, it is assumed the toolchain is present in the build
@@ -49,6 +52,8 @@
 aarch64-apple-darwin:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.9'
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
@@ -78,6 +83,8 @@ aarch64-apple-darwin:
 aarch64-apple-ios:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.9'
   needs_toolchain: true
   apple_sdk_platform: iphoneos
   host_cc: clang
@@ -101,6 +108,8 @@ aarch64-apple-ios:
 aarch64-unknown-linux-gnu:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/aarch64-linux-gnu-gcc
@@ -129,6 +138,8 @@ aarch64-unknown-linux-gnu:
 arm64-apple-tvos:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.9'
   needs_toolchain: true
   apple_sdk_platform: appletvos
   host_cc: clang
@@ -151,6 +162,8 @@ arm64-apple-tvos:
 armv7-unknown-linux-gnueabi:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/arm-linux-gnueabi-gcc
@@ -179,6 +192,8 @@ armv7-unknown-linux-gnueabi:
 armv7-unknown-linux-gnueabihf:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/arm-linux-gnueabihf-gcc
@@ -207,6 +222,10 @@ armv7-unknown-linux-gnueabihf:
 i686-unknown-linux-gnu:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.8'
+    - 'cpython-3.9'
+    - 'cpython-3.10'
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
@@ -241,6 +260,8 @@ i686-unknown-linux-gnu:
 mips-unknown-linux-gnu:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/mips-linux-gnu-gcc
@@ -269,6 +290,8 @@ mips-unknown-linux-gnu:
 mipsel-unknown-linux-gnu:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/mipsel-linux-gnu-gcc
@@ -297,6 +320,8 @@ mipsel-unknown-linux-gnu:
 s390x-unknown-linux-gnu:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/s390x-linux-gnu-gcc
@@ -325,6 +350,8 @@ s390x-unknown-linux-gnu:
 thumb7k-apple-watchos:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.9'
   needs_toolchain: true
   apple_sdk_platform: watchos
   host_cc: clang
@@ -351,6 +378,9 @@ thumb7k-apple-watchos:
 x86_64-apple-darwin:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.8'
+    - 'cpython-3.9'
   apple_sdk_platform: macosx
   host_cc: clang
   target_cc: clang
@@ -379,6 +409,8 @@ x86_64-apple-darwin:
 x86_64-apple-ios:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.9'
   needs_toolchain: true
   apple_sdk_platform: iphonesimulator
   host_cc: clang
@@ -402,6 +434,8 @@ x86_64-apple-ios:
 x86_64-apple-tvos:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.9'
   needs_toolchain: true
   apple_sdk_platform: appletvsimulator
   host_cc: clang
@@ -423,6 +457,8 @@ x86_64-apple-tvos:
 x86_64-apple-watchos:
   host_platforms:
     - darwin
+  pythons_supported:
+    - 'cpython-3.9'
   needs_toolchain: true
   apple_sdk_platform: watchsimulator
   host_cc: clang
@@ -445,6 +481,10 @@ x86_64-apple-watchos:
 x86_64-unknown-linux-gnu:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.8'
+    - 'cpython-3.9'
+    - 'cpython-3.10'
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
@@ -474,6 +514,10 @@ x86_64-unknown-linux-gnu:
 x86_64-unknown-linux-musl:
   host_platforms:
     - linux
+  pythons_supported:
+    - 'cpython-3.8'
+    - 'cpython-3.9'
+    - 'cpython-3.10'
   needs_toolchain: true
   host_cc: clang
   target_cc: musl-clang
