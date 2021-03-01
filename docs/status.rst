@@ -4,8 +4,8 @@
 Project Status
 ==============
 
-There is support for producing 64-bit CPython distributions for Windows,
-macOS, and Linux. All distributions are highly self-contained and have
+There is support for producing CPython distributions for Windows,
+macOS, Linux, and iOS. All distributions are highly self-contained and have
 limited shared library dependencies.
 
 Planned and features include:
@@ -13,8 +13,35 @@ Planned and features include:
 * Static/dynamic linking toggles for dependencies
 * Support for configuring which toolchain/version to use
 * Support for BSDs
-* Support for iOS and/or Android
+* Support for Android
 * Support for Python distributions that aren't CPython
+
+Target Notes
+============
+
+Non-Darwin Apple Targets
+------------------------
+
+Apple targets that aren't Darwin/macOS (iOS, tvOS, watchOS, and corresponding
+simulators) are considered alpha quality. The builds may or may not work. The
+builds haven't been widely tested.
+
+Only Python 3.9 is currently supported.
+
+Non-x86 Linux Targets
+---------------------
+
+Linux targets for non-x86 (not ``i686-*`` or ``x86_64-*``) are considered alpha
+quality.
+
+The Linux cross builds use a different build environment based on Debian
+Stretch (as opposed to Debian Jessie) and they use the cross tools Debian
+packages (as opposed to using a modern Clang built from source).
+
+These builds haven't been widely tested. There are likely several rough
+edges with them.
+
+Only Python 3.9 is currently supported.
 
 Test Failures
 =============

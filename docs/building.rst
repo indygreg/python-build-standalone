@@ -32,6 +32,15 @@ Building a 32-bit x86 Python distribution is also possible::
 
     $ ./build-linux.py --target i686-unknown-linux-gnu
 
+As are various other targets::
+
+    $ ./build-linux.py --target aarch64-unknown-linux-gnu
+    $ ./build-linux.py --target armv7-unknown-linux-gnueabi
+    $ ./build-linux.py --target armv7-unknown-linux-gnueabihf
+    $ ./build-linux.py --target mips-unknown-linux-gnu
+    $ ./build-linux.py --target mipsel-unknown-linux-gnu
+
+
 macOS
 =====
 

@@ -60,7 +60,7 @@ The following shared libraries are referenced:
 * libc.so.6
 * ld-linux-x86-64.so.2
 
-The minimum glibc version required is 2.19. This should make binaries
+The minimum glibc version required is 2.17. This should make binaries
 compatible with the following Linux distributions:
 
 * Fedora 21+
