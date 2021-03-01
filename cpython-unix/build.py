@@ -90,28 +90,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
     env["HOST_CC"] = settings["host_cc"]
-
-    if settings.get("needs_toolchain"):
-        if "musl" in target_triple:
-            env["CC"] = "musl-clang"
-        else:
-            env["CC"] = "clang"
-    elif target_triple == "aarch64-unknown-linux-gnu":
-        env["CC"] = "aarch64-linux-gnu-gcc"
-    elif target_triple == "armv7-unknown-linux-gnueabi":
-        env["CC"] = "arm-linux-gnueabi-gcc"
-    elif target_triple == "armv7-unknown-linux-gnueabihf":
-        env["CC"] = "arm-linux-gnueabihf-gcc"
-    elif target_triple == "mips-unknown-linux-gnu":
-        env["CC"] = "mips-linux-gnu-gcc"
-    elif target_triple == "mipsel-unknown-linux-gnu":
-        env["CC"] = "mipsel-linux-gnu-gcc"
-    elif target_triple == "mips64el-unknown-linux-gnuabi64":
-        env["CC"] = "mips64el-linux-gnuabi64-gcc"
-    elif target_triple == "s390x-unknown-linux-gnu":
-        env["CC"] = "s390x-linux-gnu-gcc"
-    else:
-        raise Exception("unhandled target triple: %s" % target_triple)
+    env["CC"] = settings["target_cc"]
 
     env["PYBUILD_PLATFORM"] = build_platform
     env["TOOLS_PATH"] = build_env.tools_path

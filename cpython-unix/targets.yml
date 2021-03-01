@@ -16,6 +16,11 @@
 #    Path to C compiler to use when producing binaries targeting the
 #    current build environment.
 #
+# target_cc
+#
+#    Path to C compiler to use for building binaries targeting the
+#    target architecture.
+#
 # openssl_target
 #    Name of OpenSSL platform build target.
 
@@ -25,6 +30,7 @@ aarch64-apple-darwin:
     - darwin
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - libedit
@@ -44,6 +50,7 @@ aarch64-apple-ios:
     - darwin
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - libffi
@@ -57,6 +64,7 @@ aarch64-unknown-linux-gnu:
     - linux
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
+  target_cc: /usr/bin/aarch64-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -84,6 +92,7 @@ arm64-apple-tvos:
     - darwin
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -96,6 +105,7 @@ armv7-unknown-linux-gnueabi:
     - linux
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
+  target_cc: /usr/bin/arm-linux-gnueabi-gcc
   needs:
     - bdb
     - binutils
@@ -123,6 +133,7 @@ armv7-unknown-linux-gnueabihf:
     - linux
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
+  target_cc: /usr/bin/arm-linux-gnueabihf-gcc
   needs:
     - bdb
     - binutils
@@ -150,6 +161,7 @@ i686-unknown-linux-gnu:
     - linux
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bdb
     - binutils
@@ -179,6 +191,7 @@ mips-unknown-linux-gnu:
     - linux
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
+  target_cc: /usr/bin/mips-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -206,6 +219,7 @@ mipsel-unknown-linux-gnu:
     - linux
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
+  target_cc: /usr/bin/mipsel-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -233,6 +247,7 @@ s390x-unknown-linux-gnu:
     - linux
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
+  target_cc: /usr/bin/s390x-linux-gnu-gcc
   needs:
     - bdb
     - binutils
@@ -260,6 +275,7 @@ thumb7k-apple-watchos:
     - darwin
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -271,6 +287,7 @@ x86_64-apple-darwin:
   host_platforms:
     - darwin
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - libedit
@@ -290,6 +307,7 @@ x86_64-apple-ios:
     - darwin
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - libffi
@@ -303,6 +321,7 @@ x86_64-apple-tvos:
     - darwin
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -314,6 +333,7 @@ x86_64-apple-watchos:
     - darwin
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bzip2
     - sqlite
@@ -326,6 +346,7 @@ x86_64-unknown-linux-gnu:
     - linux
   needs_toolchain: true
   host_cc: clang
+  target_cc: clang
   needs:
     - bdb
     - binutils
@@ -354,6 +375,7 @@ x86_64-unknown-linux-musl:
     - linux
   needs_toolchain: true
   host_cc: clang
+  target_cc: musl-clang
   needs:
     - bdb
     - binutils
