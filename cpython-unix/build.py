@@ -8,6 +8,7 @@ import json
 import os
 import pathlib
 import platform
+import re
 import subprocess
 import sys
 import tempfile
@@ -41,18 +42,6 @@ BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
 TARGETS_CONFIG = SUPPORT / "targets.yml"
-
-# Target older macOS on x86 for maximum run-time compatibility.
-MACOSX_DEPLOYMENT_TARGET_X86 = "10.9"
-
-# ARM macOS only supports 11.0+, so we can use a newer target.
-MACOSX_DEPLOYMENT_TARGET_ARM = "11.0"
-
-IPHONEOS_DEPLOYMENT_TARGET = "12.3"
-
-TVOS_DEPLOYMENT_TARGET = "12.3"
-
-WATCHOS_DEPLOYMENT_TARGET = "7.0"
 
 
 def install_sccache(build_env):
@@ -119,50 +108,35 @@ def add_target_env(env, build_platform, target_triple, build_env):
         else:
             raise Exception("unhandled macOS machine value: %s" % machine)
 
+        # Sniff out the Apple SDK minimum deployment target from cflags and
+        # export in its own variable. This is used by CPython's configure, as
+        # it doesn't sniff the cflag.
+        for flag in extra_target_cflags:
+            m = re.search("-version-min=(.*)$", flag)
+            if m:
+                env["APPLE_MIN_DEPLOYMENT_TARGET"] = m.group(1)
+                break
+        else:
+            raise Exception("could not find minimum Apple SDK version in cflags")
+
         if target_triple == "aarch64-apple-darwin":
             sdk_platform = "macosx"
-            min_version_flags = [
-                "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_ARM
-            ]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_ARM
         elif target_triple == "aarch64-apple-ios":
             # TODO arm64e not supported by open source Clang.
             # TODO add arm7 / arm7s?
             sdk_platform = "iphoneos"
-            min_version_flags = ["-mios-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
         elif target_triple == "arm64-apple-tvos":
             sdk_platform = "appletvos"
-            min_version_flags = ["-mappletvos-version-min=%s" % TVOS_DEPLOYMENT_TARGET]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = TVOS_DEPLOYMENT_TARGET
         elif target_triple == "thumbv7k-apple-watchos":
             sdk_platform = "watchos"
-            min_version_flags = ["-mwatchos-version-min=%s" % WATCHOS_DEPLOYMENT_TARGET]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = WATCHOS_DEPLOYMENT_TARGET
         elif target_triple == "x86_64-apple-darwin":
             sdk_platform = "macosx"
-            min_version_flags = [
-                "-mmacosx-version-min=%s" % MACOSX_DEPLOYMENT_TARGET_X86
-            ]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = MACOSX_DEPLOYMENT_TARGET_X86
         elif target_triple == "x86_64-apple-ios":
             sdk_platform = "iphonesimulator"
-            min_version_flags = [
-                "-mios-simulator-version-min=%s" % IPHONEOS_DEPLOYMENT_TARGET,
-            ]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = IPHONEOS_DEPLOYMENT_TARGET
         elif target_triple == "x86_64-apple-tvos":
             sdk_platform = "appletvsimulator"
-            min_version_flags = [
-                "-mappletvsimulator-version-min=%s" % TVOS_DEPLOYMENT_TARGET
-            ]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = TVOS_DEPLOYMENT_TARGET
         elif target_triple == "x86_64-apple-watchos":
             sdk_platform = "watchsimulator"
-            min_version_flags = [
-                "-mwatchsimulator-version-min=%s" % WATCHOS_DEPLOYMENT_TARGET
-            ]
-            env["APPLE_MIN_DEPLOYMENT_TARGET"] = WATCHOS_DEPLOYMENT_TARGET
         else:
             raise ValueError("unhandled target triple: %s" % target_triple)
 
@@ -207,8 +181,6 @@ def add_target_env(env, build_platform, target_triple, build_env):
 
         extra_target_cflags.extend(["-isysroot", sdk_path])
         extra_target_ldflags.extend(["-isysroot", sdk_path])
-        extra_target_cflags.extend(min_version_flags)
-        extra_target_ldflags.extend(min_version_flags)
 
         # The host SDK may be for a different platform from the target SDK.
         # Resolve that separately.

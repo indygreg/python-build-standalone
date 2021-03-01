@@ -34,6 +34,11 @@
 #    Name of OpenSSL platform build target.
 
 ---
+
+# Apple silicon macOS.
+#
+# We target compatibility with macOS 11.0+ because Apple silicon only supports
+# 11.0+.
 aarch64-apple-darwin:
   host_platforms:
     - darwin
@@ -43,9 +48,11 @@ aarch64-apple-darwin:
   target_cflags:
     - '-arch'
     - 'arm64'
+    - '-mmacosx-version-min=11.0'
   target_ldflags:
     - '-arch'
     - 'arm64'
+    - '-mmacosx-version-min=11.0'
   needs:
     - bzip2
     - libedit
@@ -69,9 +76,11 @@ aarch64-apple-ios:
   target_cflags:
     - '-arch'
     - 'arm64'
+    - '-mios-version-min=12.3'
   target_ldflags:
     - '-arch'
     - 'arm64'
+    - '-mios-version-min=12.3'
   needs:
     - bzip2
     - libffi
@@ -117,9 +126,11 @@ arm64-apple-tvos:
   target_cflags:
     - '-arch'
     - 'arm64'
+    - '-mappletvos-version-min=12.3'
   target_ldflags:
     - '-arch'
     - 'arm64'
+    - '-mappletvos-version-min=12.3'
   needs:
     - bzip2
     - sqlite
@@ -310,9 +321,11 @@ thumb7k-apple-watchos:
   target_cflags:
     - '-arch'
     - 'armv7k'
+    - '-mwatchos-version-min-7.0'
   target_ldflags:
     - '-arch'
     - 'armv7k'
+    - '-mwatchos-version-min-7.0'
   needs:
     - bzip2
     - sqlite
@@ -320,6 +333,10 @@ thumb7k-apple-watchos:
     - zlib
   openssl_target: todo
 
+# Intel macOS.
+#
+# We target compatibility with macOS 10.9+ for compatibility with older Apple
+# machines.
 x86_64-apple-darwin:
   host_platforms:
     - darwin
@@ -328,9 +345,11 @@ x86_64-apple-darwin:
   target_cflags:
     - '-arch'
     - 'x86_64'
+    - '-mmacosx-version-min=10.9'
   target_ldflags:
     - '-arch'
     - 'x86_64'
+    - '-mmacosx-version-min=10.9'
   needs:
     - bzip2
     - libedit
@@ -354,9 +373,11 @@ x86_64-apple-ios:
   target_cflags:
     - '-arch'
     - 'x86_64'
+    - '-mios-simulator-version-min=12.3'
   target_ldflags:
     - '-arch'
     - 'x86_64'
+    - '-mios-simulator-version-min=12.3'
   needs:
     - bzip2
     - libffi
@@ -374,9 +395,11 @@ x86_64-apple-tvos:
   target_cflags:
     - '-arch'
     - 'x86_64'
+    - '-mappletvsimulator-version-min=12.3'
   target_ldflags:
     - '-arch'
     - 'x86_64'
+    - '-mappletvsimulator-version-min=12.3'
   needs:
     - bzip2
     - sqlite
@@ -392,9 +415,11 @@ x86_64-apple-watchos:
   target_cflags:
     - '-arch'
     - 'x86_64'
+    - '-mwatchsimulator-version-min=7.0'
   target_ldflags:
     - '-arch'
     - 'x86_64'
+    - '-mwatchsimulator-version-min=7.0'
   needs:
     - bzip2
     - sqlite
