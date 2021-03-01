@@ -10,7 +10,7 @@ use {
     anyhow::{anyhow, Context, Result},
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
     goblin::mach::load_command::CommandVariant,
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
     scroll::Pread,
     std::{
         collections::{BTreeSet, HashMap},
@@ -113,19 +113,28 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "tk86t.dll",
 ];
 
-lazy_static! {
-    static ref GLIBC_MAX_VERSION: version_compare::Version<'static> =
-        version_compare::Version::from("2.19").unwrap();
+static GLIBC_MAX_VERSION: Lazy<version_compare::Version<'static>> =
+    Lazy::new(|| version_compare::Version::from("2.19").unwrap());
 
-    static ref ELF_ALLOWED_LIBRARIES_BY_TRIPLE: HashMap<&'static str, Vec<&'static str>> = {
+static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static str>>> =
+    Lazy::new(|| {
         [
-            ("armv7-unknown-linux-gnueabi", vec!["ld-linux.so.3", "libgcc_s.so.1"]),
-            ("armv7-unknown-linux-gnueabihf", vec!["ld-linux-armhf.so.3", "libgcc_s.so.1"]),
-        ].iter().cloned().collect()
-    };
+            (
+                "armv7-unknown-linux-gnueabi",
+                vec!["ld-linux.so.3", "libgcc_s.so.1"],
+            ),
+            (
+                "armv7-unknown-linux-gnueabihf",
+                vec!["ld-linux-armhf.so.3", "libgcc_s.so.1"],
+            ),
+        ]
+        .iter()
+        .cloned()
+        .collect()
+    });
 
-    static ref DARWIN_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
-        [
+static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
+    [
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.8.dylib".to_string(),
                 max_compatibility_version: "3.8.0".try_into().unwrap(),
@@ -230,56 +239,60 @@ lazy_static! {
             },
         ]
         .to_vec()
-    };
-    static ref IOS_ALLOWED_DYLIBS: Vec<MachOAllowedDylib> = {
-        [
-            MachOAllowedDylib {
-                name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
-                max_compatibility_version: "3.9.0".try_into().unwrap(),
-                required: false,
-            },
-            MachOAllowedDylib {
-                name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
-                max_compatibility_version: "3.9.0".try_into().unwrap(),
-                required: false,
-            },
-            // For some reason, CoreFoundation is present in debug/noopt builds but not
-            // LTO builds.
-            MachOAllowedDylib {
-                name: "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation".to_string(),
-                max_compatibility_version: "150.0.0".try_into().unwrap(),
-                required: false,
-            },
-            MachOAllowedDylib {
-                name: "/usr/lib/libSystem.B.dylib".to_string(),
-                max_compatibility_version: "1.0.0".try_into().unwrap(),
-                required: true,
-            },
-            MachOAllowedDylib {
-                name: "/usr/lib/libz.1.dylib".to_string(),
-                max_compatibility_version: "1.0.0".try_into().unwrap(),
-                required: true,
-            },
-        ].to_vec()
-    };
+});
 
-    static ref PLATFORM_TAG_BY_TRIPLE: HashMap<&'static str, &'static str> = {
-        [
-            ("aarch64-apple-darwin", "macosx-11.0-arm64"),
-            ("aarch64-apple-ios", "iOS-aarch64"),
-            ("aarch64-unknown-linux-gnu", "linux-aarch64"),
-            ("armv7-unknown-linux-gnueabi", "linux-arm"),
-            ("armv7-unknown-linux-gnueabihf", "linux-arm"),
-            ("i686-pc-windows-msvc", "win32"),
-            ("i686-unknown-linux-gnu", "linux-i686"),
-            ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
-            ("x86_64-apple-ios", "iOS-x86_64"),
-            ("x86_64-pc-windows-msvc", "win-amd64"),
-            ("x86_64-unknown-linux-gnu", "linux-x86_64"),
-            ("x86_64-unknown-linux-musl", "linux-x86_64"),
-        ].iter().cloned().collect()
-    };
-}
+static IOS_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
+    [
+        MachOAllowedDylib {
+            name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
+            max_compatibility_version: "3.9.0".try_into().unwrap(),
+            required: false,
+        },
+        MachOAllowedDylib {
+            name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
+            max_compatibility_version: "3.9.0".try_into().unwrap(),
+            required: false,
+        },
+        // For some reason, CoreFoundation is present in debug/noopt builds but not
+        // LTO builds.
+        MachOAllowedDylib {
+            name: "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation".to_string(),
+            max_compatibility_version: "150.0.0".try_into().unwrap(),
+            required: false,
+        },
+        MachOAllowedDylib {
+            name: "/usr/lib/libSystem.B.dylib".to_string(),
+            max_compatibility_version: "1.0.0".try_into().unwrap(),
+            required: true,
+        },
+        MachOAllowedDylib {
+            name: "/usr/lib/libz.1.dylib".to_string(),
+            max_compatibility_version: "1.0.0".try_into().unwrap(),
+            required: true,
+        },
+    ]
+    .to_vec()
+});
+
+static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
+    [
+        ("aarch64-apple-darwin", "macosx-11.0-arm64"),
+        ("aarch64-apple-ios", "iOS-aarch64"),
+        ("aarch64-unknown-linux-gnu", "linux-aarch64"),
+        ("armv7-unknown-linux-gnueabi", "linux-arm"),
+        ("armv7-unknown-linux-gnueabihf", "linux-arm"),
+        ("i686-pc-windows-msvc", "win32"),
+        ("i686-unknown-linux-gnu", "linux-i686"),
+        ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
+        ("x86_64-apple-ios", "iOS-x86_64"),
+        ("x86_64-pc-windows-msvc", "win-amd64"),
+        ("x86_64-unknown-linux-gnu", "linux-x86_64"),
+        ("x86_64-unknown-linux-musl", "linux-x86_64"),
+    ]
+    .iter()
+    .cloned()
+    .collect()
+});
 
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     match triple {

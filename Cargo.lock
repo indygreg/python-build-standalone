@@ -158,6 +158,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "once_cell"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10acf907b94fc1b1a152d08ef97e7759650268cf986bf127f387e602b02c7e5a"
+
+[[package]]
 name = "plain"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -179,7 +185,7 @@ dependencies = [
  "anyhow",
  "clap",
  "goblin",
- "lazy_static",
+ "once_cell",
  "scroll",
  "serde",
  "serde_json",
