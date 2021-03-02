@@ -525,6 +525,20 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # as Homebrew or MacPorts. So nerf the check to prevent this.
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=no"
 
+    # When building against an 11.0+ SDK, preadv() and pwritev() are
+    # detected and used, despite only being available in the 11.0+ SDK. This
+    # prevents object files from re-linking when built with older SDKs.
+    # So we disable them. But not in aarch64-apple-darwin, as that target
+    # requires the 11.0 SDK.
+    #
+    # This solution is less than ideal. Modern versions of Python support
+    # weak linking and it should be possible to coerce these functions into
+    # being weakly linked.
+    if [ "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]; then
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_preadv=no"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pwritev=no"
+    fi
+
     if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
         # Python's configure doesn't support cross-compiling on macOS. So we need
         # to explicitly set MACHDEP to avoid busted checks. The code for setting

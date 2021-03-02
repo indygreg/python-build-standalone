@@ -351,6 +351,14 @@ static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy:
     .collect()
 });
 
+/// Symbols that we don't want to appear in mach-o binaries.
+const MACHO_BANNED_SYMBOLS_NON_AARCH64: &[&str] = &[
+    // _readv and _pwritev are introduced when building with the macOS 11 SDK.
+    // If present, they can cause errors re-linking object files. So we ban their
+    // existence.
+    "_preadv", "_pwritev",
+];
+
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     match triple {
         "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.clone(),
@@ -493,6 +501,22 @@ fn validate_macho(
                 }
             }
             _ => {}
+        }
+    }
+
+    if let Some(symbols) = &macho.symbols {
+        for symbol in symbols {
+            let (name, _) = symbol?;
+
+            if target_triple != "aarch64-apple-darwin"
+                && MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name)
+            {
+                errors.push(format!(
+                    "{} references unallowed symbol {}",
+                    path.display(),
+                    name
+                ));
+            }
         }
     }
 
