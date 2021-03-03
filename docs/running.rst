@@ -76,6 +76,11 @@ Linux system.
 Windows
 -------
 
+Windows distributions require Windows 8 or Windows Server 2012 or newer. (The
+official Python distributions support Windows 7 up to Python 3.8 and dropped
+support for Windows 7 with Python 3.9. However, we've decided to drop
+support for Windows 7 from our Windows distributions.)
+
 Windows binaries have a dependency on the Microsoft Visual C++ Redistributable,
 likely from MSVC 2015 (``vcruntime140.dll``). This dependency is not
 provided in the distribution and will need to be provided by downstream
