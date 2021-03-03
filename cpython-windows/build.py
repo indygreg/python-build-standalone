@@ -695,11 +695,7 @@ LIBFFI_PROPS_REMOVE_RULES = b"""
 
 
 def hack_props(
-    td: pathlib.Path,
-    pcbuild_path: pathlib.Path,
-    arch: str,
-    static: bool,
-    building_libffi: bool,
+    td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: bool,
 ):
     # TODO can we pass props into msbuild.exe?
 
@@ -804,7 +800,7 @@ def hack_props(
 
     libffi_props = pcbuild_path / "libffi.props"
 
-    if static and building_libffi:
+    if static:
         # For some reason the built .lib doesn't have the -7 suffix in
         # static build mode. This is possibly a side-effect of CPython's
         # libffi build script not officially supporting static-only builds.
@@ -824,7 +820,6 @@ def hack_project_files(
     cpython_source_path: pathlib.Path,
     build_directory: str,
     static: bool,
-    building_libffi: bool,
     honor_allow_missing_preprocessor: bool,
 ):
     """Hacks Visual Studio project files to work with our build."""
@@ -832,11 +827,7 @@ def hack_project_files(
     pcbuild_path = cpython_source_path / "PCbuild"
 
     hack_props(
-        td,
-        pcbuild_path,
-        build_directory,
-        static=static,
-        building_libffi=building_libffi,
+        td, pcbuild_path, build_directory, static=static,
     )
 
     # Our SQLite directory is named weirdly. This throws off version detection
@@ -907,7 +898,7 @@ def hack_project_files(
     # hack pythoncore as a one-off to add the dependency. Ideally we would
     # handle this when hacking the extension's project. But it is easier to
     # do here.
-    if static and building_libffi:
+    if static:
         libffi_path = td / "libffi" / "libffi.lib"
         try:
             # Python 3.9 version
@@ -1907,7 +1898,7 @@ def build_cpython(
     arch: str,
     profile,
     openssl_archive,
-    libffi_archive=None,
+    libffi_archive,
 ):
     static = "static" in profile
     pgo = "-pgo" in profile
@@ -1965,8 +1956,7 @@ def build_cpython(
             for f in fs:
                 f.result()
 
-        if libffi_archive:
-            extract_tar_to_directory(libffi_archive, td)
+        extract_tar_to_directory(libffi_archive, td)
 
         # We need all the OpenSSL library files in the same directory to appease
         # install rules.
@@ -2006,7 +1996,6 @@ def build_cpython(
             cpython_source_path,
             build_directory,
             static=static,
-            building_libffi=libffi_archive is not None,
             honor_allow_missing_preprocessor=python_entry_name == "cpython-3.8",
         )
         hack_source_files(cpython_source_path, static=static)
