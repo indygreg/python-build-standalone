@@ -47,7 +47,10 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         "allow_missing_preprocessor": True
     },
     "_bz2": {},
-    "_ctypes": {"shared_depends": ["libffi-7"]},
+    "_ctypes": {
+        "shared_depends": ["libffi-7"],
+        "static_depends_no_project": ["libffi"],
+    },
     "_decimal": {},
     "_elementtree": {},
     "_hashlib": {
@@ -775,6 +778,7 @@ def hack_props(
         )
 
         # We need to copy linking settings for dynamic libraries to static libraries.
+        copy_link_to_lib(pcbuild_path / "libffi.props")
         copy_link_to_lib(pcbuild_path / "openssl.props")
 
         # We should look against the static library variants.
@@ -891,32 +895,6 @@ def hack_project_files(
     )
 
     pythoncore_proj = pcbuild_path / "pythoncore.vcxproj"
-
-    # normally the _ctypes extension/project pulls in libffi via
-    # <Link><AdditionalDependencies>. However, as part of converting this
-    # extension to static, we lose the transitive dependency. Here, we
-    # hack pythoncore as a one-off to add the dependency. Ideally we would
-    # handle this when hacking the extension's project. But it is easier to
-    # do here.
-    if static:
-        libffi_path = td / "libffi" / "libffi.lib"
-        try:
-            # Python 3.9 version
-            static_replace_in_file(
-                pythoncore_proj,
-                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>",
-                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;pathcch.lib;"
-                + bytes(libffi_path)
-                + b";%(AdditionalDependencies)</AdditionalDependencies>",
-            )
-        except NoSearchStringError:
-            static_replace_in_file(
-                pythoncore_proj,
-                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>",
-                b"<AdditionalDependencies>version.lib;shlwapi.lib;ws2_32.lib;"
-                + bytes(libffi_path)
-                + b";%(AdditionalDependencies)</AdditionalDependencies>",
-            )
 
     if static:
         for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
@@ -2169,6 +2147,13 @@ def build_cpython(
         for extension, entries in build_info["extensions"].items():
             for record in entries:
                 record["required"] = extension in REQUIRED_EXTENSIONS
+
+        # Copy libffi static library as a one-off.
+        if static:
+            source = td / "libffi" / "libffi.lib"
+            dest = out_dir / "python" / "build" / "lib" / "libffi.lib"
+            log("copying %s to %s" % (source, dest))
+            shutil.copyfile(source, dest)
 
         # Copy OpenSSL libraries as a one-off.
         for lib in ("crypto", "ssl"):

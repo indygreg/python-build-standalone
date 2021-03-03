@@ -359,6 +359,19 @@ const MACHO_BANNED_SYMBOLS_NON_AARCH64: &[&str] = &[
     "_preadv", "_pwritev",
 ];
 
+static WANTED_WINDOWS_STATIC_PATHS: Lazy<BTreeSet<PathBuf>> = Lazy::new(|| {
+    [
+        PathBuf::from("python/build/lib/libffi.lib"),
+        PathBuf::from("python/build/lib/libcrypto_static.lib"),
+        PathBuf::from("python/build/lib/liblzma.lib"),
+        PathBuf::from("python/build/lib/libssl_static.lib"),
+        PathBuf::from("python/build/lib/sqlite3.lib"),
+    ]
+    .iter()
+    .cloned()
+    .collect()
+});
+
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     match triple {
         "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.clone(),
@@ -563,6 +576,7 @@ fn validate_json(json: &PythonJsonMain, triple: &str) -> Result<Vec<String>> {
 fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let mut errors = vec![];
     let mut seen_dylibs = BTreeSet::new();
+    let mut seen_paths = BTreeSet::new();
 
     let fh = std::fs::File::open(&dist_path)
         .with_context(|| format!("unable to open {}", dist_path.display()))?;
@@ -588,6 +602,8 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     for entry in tf.entries()? {
         let mut entry = entry.map_err(|e| anyhow!("failed to iterate over archive: {}", e))?;
         let path = entry.path()?.to_path_buf();
+
+        seen_paths.insert(path.clone());
 
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
@@ -640,6 +656,12 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
 
     for lib in wanted_dylibs.difference(&seen_dylibs) {
         errors.push(format!("required library dependency {} not seen", lib));
+    }
+
+    if triple.contains("-windows-") && dist_path.to_string_lossy().contains("-static-") {
+        for path in WANTED_WINDOWS_STATIC_PATHS.difference(&seen_paths) {
+            errors.push(format!("required path {} not seen", path.display()));
+        }
     }
 
     Ok(errors)
