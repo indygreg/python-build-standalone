@@ -50,7 +50,6 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "libcrypt.so.1",
     "libdl.so.2",
     "libm.so.6",
-    "libnsl.so.1",
     "libpthread.so.0",
     "librt.so.1",
     "libutil.so.1",
@@ -365,6 +364,11 @@ static WANTED_WINDOWS_STATIC_PATHS: Lazy<BTreeSet<PathBuf>> = Lazy::new(|| {
     .collect()
 });
 
+const GLOBALLY_BANNED_EXTENSIONS: &[&str] = &[
+    // Due to linking issues. See comment in cpython.py.
+    "nis",
+];
+
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     match triple {
         "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.clone(),
@@ -568,6 +572,12 @@ fn validate_json(json: &PythonJsonMain, triple: &str) -> Result<Vec<String>> {
             "wanted platform tag {}; got {}",
             wanted_platform_tag, json.python_platform_tag
         ));
+    }
+
+    for extension in json.build_info.extensions.keys() {
+        if GLOBALLY_BANNED_EXTENSIONS.contains(&extension.as_str()) {
+            errors.push(format!("banned extension detected: {}", extension));
+        }
     }
 
     Ok(errors)

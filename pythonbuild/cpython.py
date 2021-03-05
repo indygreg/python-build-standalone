@@ -62,7 +62,16 @@ STATIC_MODULES = {
 }
 
 # Modules we don't (yet) support building.
-UNSUPPORTED_MODULES = set([])
+UNSUPPORTED_MODULES = {
+    # nis (only installable on UNIX platforms) is globally disabled because
+    # it has a dependency on libnsl, which isn't part of the Linux Standard
+    # Base specification. This library has a wonky history where it was once
+    # part of glibc and core system installs but is slowly being phased away
+    # from base installations. There are potential workarounds to adding nis
+    # support. See discussion in
+    # https://github.com/indygreg/python-build-standalone/issues/51.
+    b"nis",
+}
 
 # Packages that define tests.
 STDLIB_TEST_PACKAGES = {
