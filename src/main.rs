@@ -552,6 +552,54 @@ fn validate_pe(path: &Path, pe: &goblin::pe::PE) -> Result<Vec<String>> {
     Ok(errors)
 }
 
+/// Attempt to parse data as an object file and validate it.
+fn validate_possible_object_file(
+    python_major_minor: &str,
+    triple: &str,
+    path: &Path,
+    data: &[u8],
+) -> Result<(Vec<String>, BTreeSet<String>)> {
+    let mut errors = vec![];
+    let mut seen_dylibs = BTreeSet::new();
+
+    if let Ok(object) = goblin::Object::parse(&data) {
+        match object {
+            goblin::Object::Elf(elf) => {
+                errors.extend(validate_elf(
+                    triple,
+                    python_major_minor,
+                    path.as_ref(),
+                    &elf,
+                    &data,
+                )?);
+            }
+            goblin::Object::Mach(mach) => match mach {
+                goblin::mach::Mach::Binary(macho) => {
+                    let (local_errors, local_seen_dylibs) =
+                        validate_macho(triple, path.as_ref(), &macho, &data)?;
+
+                    errors.extend(local_errors);
+                    seen_dylibs.extend(local_seen_dylibs);
+                }
+                goblin::mach::Mach::Fat(_) => {
+                    if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
+                        errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
+                    }
+                }
+            },
+            goblin::Object::PE(pe) => {
+                // We don't care about the wininst-*.exe distutils executables.
+                if !path.to_string_lossy().contains("wininst-") {
+                    errors.extend(validate_pe(path.as_ref(), &pe)?);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    Ok((errors, seen_dylibs))
+}
+
 fn validate_json(json: &PythonJsonMain, triple: &str) -> Result<Vec<String>> {
     let mut errors = vec![];
 
@@ -633,41 +681,33 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
 
-        if let Ok(object) = goblin::Object::parse(&data) {
-            match object {
-                goblin::Object::Elf(elf) => {
-                    errors.extend(validate_elf(
-                        triple,
-                        python_major_minor,
-                        path.as_ref(),
-                        &elf,
-                        &data,
-                    )?);
-                }
-                goblin::Object::Mach(mach) => match mach {
-                    goblin::mach::Mach::Binary(macho) => {
-                        let (local_errors, local_seen_dylibs) =
-                            validate_macho(triple, path.as_ref(), &macho, &data)?;
+        let (local_errors, local_seen_dylibs) =
+            validate_possible_object_file(python_major_minor, &triple, &path, &data)?;
+        errors.extend(local_errors);
+        seen_dylibs.extend(local_seen_dylibs);
 
-                        errors.extend(local_errors);
-                        seen_dylibs.extend(local_seen_dylibs);
-                    }
-                    goblin::mach::Mach::Fat(_) => {
-                        if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
-                            errors
-                                .push(format!("unexpected fat mach-o binary: {}", path.display()));
-                        }
-                    }
-                },
-                goblin::Object::PE(pe) => {
-                    // We don't care about the wininst-*.exe distutils executables.
-                    if path.to_string_lossy().contains("wininst-") {
-                        continue;
-                    }
+        // Descend into archive files (static libraries are archive files and members
+        // are usually object files).
+        if let Ok(archive) = goblin::archive::Archive::parse(&data) {
+            for member in archive.members() {
+                let member_data = archive
+                    .extract(member, &data)
+                    .with_context(|| format!("extracting {} from {}", member, path.display()))?;
 
-                    errors.extend(validate_pe(path.as_ref(), &pe)?);
-                }
-                _ => {}
+                let member_path = path.with_file_name(format!(
+                    "{}:{}",
+                    path.file_name().unwrap().to_string_lossy(),
+                    member
+                ));
+
+                let (local_errors, local_seen_dylibs) = validate_possible_object_file(
+                    python_major_minor,
+                    &triple,
+                    &member_path,
+                    &member_data,
+                )?;
+                errors.extend(local_errors);
+                seen_dylibs.extend(local_seen_dylibs);
             }
         }
 
