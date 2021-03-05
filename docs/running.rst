@@ -54,7 +54,6 @@ The following shared libraries are referenced:
 * libdl.so.2 (required by ctypes extension)
 * libutil.so.1
 * librt.so.1
-* libnsl.so.1 (required by nis extension)
 * libcrypt.so.1 (required by crypt extension)
 * libm.so.6
 * libc.so.6

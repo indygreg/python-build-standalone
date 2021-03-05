@@ -122,6 +122,23 @@ disables the configure check.
 This means that the ``gettext``/``libintl`` features in the Python distribution
 are not available.
 
+libnsl / nis Module
+-------------------
+
+The ``nis`` Python extension module has a dependency on ``libnsl``.
+
+``libnsl`` has historically been in base Linux distribution installations.
+But it is being phased away, with it being an optional install in modern
+versions of Fedora and RHEL.
+
+Because the ``nis`` extension is perceived to be likely unused functionality,
+we've decided to not build it instead of adding complexity to deal with
+the ``libnsl`` dependency. See further discussion in
+https://github.com/indygreg/python-build-standalone/issues/51.
+
+If ``nis`` functionality is important to you, please file a GitHub issue
+to request it.
+
 Upgrading CPython
 =================
 
