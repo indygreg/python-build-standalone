@@ -54,13 +54,6 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "libpthread.so.0",
     "librt.so.1",
     "libutil.so.1",
-    // Our set.
-    "libpython3.8.so.1.0",
-    "libpython3.8d.so.1.0",
-    "libpython3.9.so.1.0",
-    "libpython3.9d.so.1.0",
-    "libpython3.10.so.1.0",
-    "libpython3.10d.so.1.0",
 ];
 
 const PE_ALLOWED_LIBRARIES: &[&str] = &[
@@ -384,6 +377,7 @@ fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
 
 fn validate_elf(
     target_triple: &str,
+    python_major_minor: &str,
     path: &Path,
     elf: &goblin::elf::Elf,
     bytes: &[u8],
@@ -413,13 +407,19 @@ fn validate_elf(
         ));
     }
 
-    let mut allowed_libraries = ELF_ALLOWED_LIBRARIES.to_vec();
+    let mut allowed_libraries = ELF_ALLOWED_LIBRARIES
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<_>>();
     if let Some(extra) = ELF_ALLOWED_LIBRARIES_BY_TRIPLE.get(target_triple) {
-        allowed_libraries.extend(extra.iter());
+        allowed_libraries.extend(extra.iter().map(|x| x.to_string()));
     }
 
+    allowed_libraries.push(format!("libpython{}.so.1.0", python_major_minor));
+    allowed_libraries.push(format!("libpython{}d.so.1.0", python_major_minor));
+
     for lib in &elf.libraries {
-        if !allowed_libraries.contains(lib) {
+        if !allowed_libraries.contains(&lib.to_string()) {
             errors.push(format!("{} loads illegal library {}", path.display(), lib));
         }
     }
@@ -578,6 +578,11 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let mut seen_dylibs = BTreeSet::new();
     let mut seen_paths = BTreeSet::new();
 
+    let dist_filename = dist_path
+        .file_name()
+        .expect("unable to obtain filename")
+        .to_string_lossy();
+
     let fh = std::fs::File::open(&dist_path)
         .with_context(|| format!("unable to open {}", dist_path.display()))?;
 
@@ -595,6 +600,16 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
             )
         })?;
 
+    let python_major_minor = if dist_filename.starts_with("cpython-3.8.") {
+        "3.8"
+    } else if dist_filename.starts_with("cpython-3.9.") {
+        "3.9"
+    } else if dist_filename.starts_with("cpython-3.10.") {
+        "3.10"
+    } else {
+        return Err(anyhow!("could not parse Python version from filename"));
+    };
+
     let reader = std::io::BufReader::new(fh);
     let dctx = zstd::stream::Decoder::new(reader)?;
     let mut tf = tar::Archive::new(dctx);
@@ -611,7 +626,13 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         if let Ok(object) = goblin::Object::parse(&data) {
             match object {
                 goblin::Object::Elf(elf) => {
-                    errors.extend(validate_elf(triple, path.as_ref(), &elf, &data)?);
+                    errors.extend(validate_elf(
+                        triple,
+                        python_major_minor,
+                        path.as_ref(),
+                        &elf,
+                        &data,
+                    )?);
                 }
                 goblin::Object::Mach(mach) => match mach {
                     goblin::mach::Mach::Binary(macho) => {
