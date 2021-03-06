@@ -183,9 +183,18 @@ jobs:
       - name: Build
         run: |
           # Force use of 10.15 SDK on Python 3.8, as it has trouble with macOS 11 SDK.
+          #
+          # There is a bug in the 10.15 SDK in Xcode 11.4.1 through at least 12.1.1 where
+          # the __darwin_check_fd_set_overflow symbol isn't properly API guarded. This
+          # can cause relinking problems. See
+          # https://github.com/indygreg/PyOxidizer/issues/373#issuecomment-791979944 for
+          # the details.
+          #
+          # We work around this by using the 10.15 SDK from Xcode 11.3.1, which doesn't
+          # have the bug.
           if [ "${{ matrix.py }}" = "cpython-3.8" ]; then
-             export APPLE_SDK_PATH=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
-             export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.1.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
+             export APPLE_SDK_PATH=/Applications/Xcode_11.3.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
+             export APPLE_HOST_SDK_PATH=/Applications/Xcode_11.3.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
           else
              export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
 
