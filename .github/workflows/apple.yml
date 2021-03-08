@@ -79,6 +79,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       SCCACHE_BUCKET: 'python-build-standalone-sccache'
       SCCACHE_S3_USE_SSL: '1'
+      SCCACHE_IDLE_TIMEOUT: '0'
     steps:
       - uses: actions/checkout@v2
 
