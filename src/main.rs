@@ -700,7 +700,23 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let dctx = zstd::stream::Decoder::new(reader)?;
     let mut tf = tar::Archive::new(dctx);
 
-    for entry in tf.entries()? {
+    // First entry in archive should be python/PYTHON.json.
+    let mut entries = tf.entries()?;
+
+    let mut entry = entries.next().unwrap()?;
+    if entry.path()?.display().to_string() == "python/PYTHON.json" {
+        let mut data = Vec::new();
+        entry.read_to_end(&mut data)?;
+        let json = parse_python_json(&data).context("parsing PYTHON.json")?;
+        errors.extend(validate_json(&json, triple)?);
+    } else {
+        errors.push(format!(
+            "1st archive entry should be for python/PYTHON.json; got {}",
+            entry.path()?.display()
+        ));
+    }
+
+    for entry in entries {
         let mut entry = entry.map_err(|e| anyhow!("failed to iterate over archive: {}", e))?;
         let path = entry.path()?.to_path_buf();
 
@@ -741,7 +757,6 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
 
         if path == PathBuf::from("python/PYTHON.json") {
             let json = parse_python_json(&data).context("parsing PYTHON.json")?;
-
             errors.extend(validate_json(&json, triple)?);
         }
     }

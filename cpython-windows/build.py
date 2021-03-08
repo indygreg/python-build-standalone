@@ -5,6 +5,7 @@
 
 import argparse
 import concurrent.futures
+import io
 import json
 import os
 import pathlib
@@ -24,6 +25,7 @@ from pythonbuild.utils import (
     extract_tar_to_directory,
     extract_zip_to_directory,
     compress_python_archive,
+    normalize_tar_archive,
     release_tag_from_git,
     validate_python_json,
 )
@@ -2260,8 +2262,19 @@ def build_cpython(
             "cpython-%s-%s-%s.tar" % (entry["version"], target_triple, profile,)
         )
 
+        data = io.BytesIO()
+        create_tar_from_directory(data, td / "out")
+        data.seek(0)
+
+        data = normalize_tar_archive(data)
+
         with dest_path.open("wb") as fh:
-            create_tar_from_directory(fh, td / "out")
+            while True:
+                chunk = data.read(32768)
+                if not chunk:
+                    break
+
+                fh.write(chunk)
 
         return dest_path
 

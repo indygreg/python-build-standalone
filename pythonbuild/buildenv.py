@@ -14,7 +14,12 @@ import tempfile
 from .docker import container_exec, container_get_archive, copy_file_to_container
 from .downloads import DOWNLOADS
 from .logging import log
-from .utils import create_tar_from_directory, exec_and_log, extract_tar_to_directory
+from .utils import (
+    create_tar_from_directory,
+    exec_and_log,
+    extract_tar_to_directory,
+    normalize_tar_archive,
+)
 
 
 class ContainerContext(object):
@@ -107,6 +112,8 @@ class ContainerContext(object):
 
         data = container_get_archive(self.container, p)
         data = io.BytesIO(data)
+
+        data = normalize_tar_archive(data)
 
         if as_tar:
             return tarfile.open(fileobj=data)
@@ -212,8 +219,9 @@ class TempdirContext(object):
 
         data = io.BytesIO()
         create_tar_from_directory(data, p, path_prefix=p.parts[-1])
-
         data.seek(0)
+
+        data = normalize_tar_archive(data)
 
         if as_tar:
             return tarfile.open(fileobj=data)

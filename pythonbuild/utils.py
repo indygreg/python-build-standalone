@@ -4,9 +4,11 @@
 
 import gzip
 import hashlib
+import io
 import multiprocessing
 import os
 import pathlib
+import stat
 import subprocess
 import sys
 import tarfile
@@ -245,6 +247,67 @@ def extract_tar_to_directory(source: pathlib.Path, dest: pathlib.Path):
 def extract_zip_to_directory(source: pathlib.Path, dest: pathlib.Path):
     with zipfile.ZipFile(source, "r") as zf:
         zf.extractall(dest)
+
+
+# 2021-01-01T00:00:00
+DEFAULT_MTIME = 1609488000
+
+
+def normalize_tar_archive(data: io.BytesIO) -> io.BytesIO:
+    """Normalize the contents of a tar archive.
+
+    We want tar archives to be as deterministic as possible. This function will
+    take tar archive data in a buffer and return a new buffer containing a more
+    deterministic tar archive.
+    """
+    members = []
+
+    with tarfile.open(fileobj=data) as tf:
+        for ti in tf:
+            # We don't care about directory entries. Tools can handle this fine.
+            if ti.isdir():
+                continue
+
+            filedata = tf.extractfile(ti)
+            if filedata is not None:
+                filedata = io.BytesIO(filedata.read())
+
+            members.append((ti, filedata))
+
+    # Sort the archive members. We put PYTHON.json first so metadata can
+    # be read without reading the entire archive.
+    def sort_key(v):
+        if v[0].name == "python/PYTHON.json":
+            return 0, v[0].name
+        else:
+            return 1, v[0].name
+
+    members.sort(key=sort_key)
+
+    # Normalize attributes on archive members.
+    for entry in members:
+        ti = entry[0]
+        ti.mtime = DEFAULT_MTIME
+        ti.uid = 0
+        ti.uname = "root"
+        ti.gid = 0
+        ti.gname = "root"
+
+        # Give user/group read/write on all entries.
+        ti.mode |= stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP
+
+        # If user executable, give to group as well.
+        if ti.mode & stat.S_IXUSR:
+            ti.mode |= stat.S_IXGRP
+
+    dest = io.BytesIO()
+    with tarfile.open(fileobj=dest, mode="w") as tf:
+        for (ti, filedata) in members:
+            tf.addfile(ti, filedata)
+
+    dest.seek(0)
+
+    return dest
 
 
 def compress_python_archive(
