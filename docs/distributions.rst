@@ -32,7 +32,7 @@ without having to resort to heuristics.
 The file contains a JSON map. This map has the following keys:
 
 version
-   Version number of the file format. Currently ``6``.
+   Version number of the file format. Currently ``7``.
 
 target_triple
    A target triple defining the platform and architecture of the machine
@@ -278,6 +278,44 @@ python_extension_module_loading
        libraries. e.g. from ``.so`` or ``.pyd`` files.
 
    (Version 5 or above only.)
+
+apple_sdk_canonical_name
+   Optional canonical name of Apple SDK used to build.
+
+   Should only be present for target triples with ``apple`` in them.
+
+   The canonical name can be used to find a copy of this SDK on another
+   machine.
+
+   (Version 7 or above only.)
+
+apple_sdk_platform
+   Optional name of the platform of the Apple SDK used to build.
+
+   Should only be present for target triples with ``apple`` in them.
+
+   e.g. ``macosx``
+
+   (Version 7 or above only.)
+
+apple_sdk_version
+   Optional version of the Apple SDK used to build.
+
+   Should only be present for target triples with ``apple`` in them.
+
+   If relinking build artifacts, ideally this exact SDK version is used.
+   Newer versions will likely work. Older versions or Clang toolchains
+   associated with older versions may not.
+
+   (Version 7 or above only.)
+
+apple_sdk_deployment_target
+   Optional version of the Apple SDK deployment target used to build.
+
+   This effectively establishes a minimum version of the target operating
+   system this binary is purportedly compatible with.
+
+   (Version 7 or above only.)
 
 crt_features
    Describes C Runtime features/requirements for binaries.

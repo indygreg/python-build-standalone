@@ -120,6 +120,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
             raise Exception("could not find minimum Apple SDK version in cflags")
 
         sdk_platform = settings["apple_sdk_platform"]
+        env["APPLE_SDK_PLATFORM"] = sdk_platform
 
         env["TARGET_TRIPLE"] = target_triple
 
@@ -147,6 +148,13 @@ def add_target_env(env, build_platform, target_triple, build_env):
 
         if not os.path.exists(sdk_path):
             raise Exception("macOS SDK path %s does not exist" % sdk_path)
+
+        # Grab the version from the SDK so we can put it in PYTHON.json.
+        sdk_settings_path = pathlib.Path(sdk_path) / "SDKSettings.json"
+        with sdk_settings_path.open("rb") as fh:
+            sdk_settings = json.load(fh)
+            env["APPLE_SDK_VERSION"] = sdk_settings["Version"]
+            env["APPLE_SDK_CANONICAL_NAME"] = sdk_settings["CanonicalName"]
 
         extra_target_cflags.extend(["-isysroot", sdk_path])
         extra_target_ldflags.extend(["-isysroot", sdk_path])
@@ -854,7 +862,7 @@ def build_cpython(
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            "version": "6",
+            "version": "7",
             "target_triple": target_triple,
             "optimizations": optimizations,
             "python_tag": entry["python_tag"],
@@ -889,6 +897,14 @@ def build_cpython(
             "Tix8.4.3",
             "tk8.6",
         ]
+
+        if "-apple" in target_triple:
+            python_info["apple_sdk_platform"] = env["APPLE_SDK_PLATFORM"]
+            python_info["apple_sdk_version"] = env["APPLE_SDK_VERSION"]
+            python_info["apple_sdk_canonical_name"] = env["APPLE_SDK_CANONICAL_NAME"]
+            python_info["apple_sdk_deployment_target"] = env[
+                "APPLE_MIN_DEPLOYMENT_TARGET"
+            ]
 
         # Add metadata derived from built distribution.
         extra_metadata = build_env.get_file("metadata.json")

@@ -57,6 +57,10 @@ pub struct PythonBuildInfo {
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PythonJsonMain {
+    pub apple_sdk_canonical_name: Option<String>,
+    pub apple_sdk_deployment_target: Option<String>,
+    pub apple_sdk_platform: Option<String>,
+    pub apple_sdk_version: Option<String>,
     pub build_info: PythonBuildInfo,
     pub crt_features: Vec<String>,
     pub libpython_link_mode: String,

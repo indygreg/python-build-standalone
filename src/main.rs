@@ -615,11 +615,27 @@ fn validate_possible_object_file(
 fn validate_json(json: &PythonJsonMain, triple: &str) -> Result<Vec<String>> {
     let mut errors = vec![];
 
-    if json.version != "6" {
+    if json.version != "7" {
         errors.push(format!(
-            "expected version 6 in PYTHON.json; got {}",
+            "expected version 7 in PYTHON.json; got {}",
             json.version
         ));
+    }
+
+    // Distributions built with Apple SDKs should have SDK metadata.
+    if triple.contains("-apple-") {
+        if json.apple_sdk_canonical_name.is_none() {
+            errors.push("JSON missing apple_sdk_canonical_name on Apple triple".to_string());
+        }
+        if json.apple_sdk_deployment_target.is_none() {
+            errors.push("JSON missing apple_sdk_deployment_target on Apple triple".to_string());
+        }
+        if json.apple_sdk_platform.is_none() {
+            errors.push("JSON missing apple_sdk_platform on Apple triple".to_string());
+        }
+        if json.apple_sdk_version.is_none() {
+            errors.push("JSON missing apple_sdk_version on Apple triple".to_string());
+        }
     }
 
     let wanted_platform_tag = PLATFORM_TAG_BY_TRIPLE
