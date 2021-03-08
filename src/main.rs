@@ -703,12 +703,16 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     // First entry in archive should be python/PYTHON.json.
     let mut entries = tf.entries()?;
 
+    let mut wanted_python_paths = BTreeSet::new();
+
     let mut entry = entries.next().unwrap()?;
     if entry.path()?.display().to_string() == "python/PYTHON.json" {
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
         let json = parse_python_json(&data).context("parsing PYTHON.json")?;
         errors.extend(validate_json(&json, triple)?);
+
+        wanted_python_paths.extend(json.python_paths.values().map(|x| format!("python/{}", x)));
     } else {
         errors.push(format!(
             "1st archive entry should be for python/PYTHON.json; got {}",
@@ -721,6 +725,18 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         let path = entry.path()?.to_path_buf();
 
         seen_paths.insert(path.clone());
+
+        // If this path starts with a path referenced in wanted_python_paths,
+        // remove the prefix from wanted_python_paths so we don't error on it
+        // later.
+        let removals = wanted_python_paths
+            .iter()
+            .filter(|prefix| path.starts_with(prefix))
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>();
+        for p in removals {
+            wanted_python_paths.remove(&p);
+        }
 
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
@@ -759,6 +775,13 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
             let json = parse_python_json(&data).context("parsing PYTHON.json")?;
             errors.extend(validate_json(&json, triple)?);
         }
+    }
+
+    for path in wanted_python_paths {
+        errors.push(format!(
+            "path prefix {} seen in python_paths does not appear in archive",
+            path
+        ));
     }
 
     let wanted_dylibs = BTreeSet::from_iter(
