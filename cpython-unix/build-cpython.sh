@@ -817,9 +817,28 @@ metadata = {
     "python_config_vars": {k: str(v) for k, v in sysconfig.get_config_vars().items()},
 }
 
+
+# When cross-compiling, we use a host Python to run this script. There are
+# some hacks to get sysconfig to pick up the correct data file. However,
+# these hacks don't work for sysconfig.get_paths() and we get paths to the host
+# Python paths. We work around this by overwriting some variables used for
+# expansion. The Rust validator ensures any paths referenced by python_paths
+# exist, so we don't need to validate here.
 root = os.environ["ROOT"]
-for name, path in sysconfig.get_paths().items():
-    rel = os.path.relpath(path, os.path.join(root, "out", "python"))
+prefix = os.path.join(root, "out", "python")
+
+# These are modified in _PYTHON_BUILD mode. Restore to normal.
+sysconfig._INSTALL_SCHEMES["posix_prefix"]["include"] = "{installed_base}/include/python{py_version_short}{abiflags}"
+sysconfig._INSTALL_SCHEMES["posix_prefix"]["platinclude"] = "{installed_platbase}/include/python{py_version_short}{abiflags}"
+
+sysconfig_vars = dict(sysconfig.get_config_vars())
+sysconfig_vars["base"] = os.path.join(prefix, "install")
+sysconfig_vars["installed_base"] = os.path.join(prefix, "install")
+sysconfig_vars["installed_platbase"] = os.path.join(prefix, "install")
+sysconfig_vars["platbase"] = os.path.join(prefix, "install")
+
+for name, path in sysconfig.get_paths(vars=sysconfig_vars).items():
+    rel = os.path.relpath(path, prefix)
     metadata["python_paths"][name] = rel
 
 with open(sys.argv[1], "w") as fh:
