@@ -840,10 +840,8 @@ find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm 
 
 # Ensure lib-dynload exists, or Python complains on startup.
 LIB_DYNLOAD=${ROOT}/out/python/install/lib/python${PYTHON_MAJMIN_VERSION}/lib-dynload
-if [ ! -d ${LIB_DYNLOAD} ]; then
-  mkdir -p ${LIB_DYNLOAD}
-  touch ${LIB_DYNLOAD}/.empty
-fi
+mkdir -p "${LIB_DYNLOAD}"
+touch "${LIB_DYNLOAD}/.empty"
 
 # Symlink libpython so we don't have 2 copies.
 if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
