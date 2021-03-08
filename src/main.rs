@@ -612,7 +612,7 @@ fn validate_possible_object_file(
     Ok((errors, seen_dylibs))
 }
 
-fn validate_json(json: &PythonJsonMain, triple: &str) -> Result<Vec<String>> {
+fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<Vec<String>> {
     let mut errors = vec![];
 
     if json.version != "7" {
@@ -650,6 +650,16 @@ fn validate_json(json: &PythonJsonMain, triple: &str) -> Result<Vec<String>> {
         ));
     }
 
+    if is_debug
+        && !json
+            .python_config_vars
+            .get("abiflags")
+            .unwrap()
+            .contains('d')
+    {
+        errors.push("abiflags does not contain 'd'".to_string());
+    }
+
     for extension in json.build_info.extensions.keys() {
         if GLOBALLY_BANNED_EXTENSIONS.contains(&extension.as_str()) {
             errors.push(format!("banned extension detected: {}", extension));
@@ -663,6 +673,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let mut errors = vec![];
     let mut seen_dylibs = BTreeSet::new();
     let mut seen_paths = BTreeSet::new();
+    let mut seen_symlink_targets = BTreeSet::new();
 
     let dist_filename = dist_path
         .file_name()
@@ -696,6 +707,8 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         return Err(anyhow!("could not parse Python version from filename"));
     };
 
+    let is_debug = dist_filename.contains("-debug-");
+
     let reader = std::io::BufReader::new(fh);
     let dctx = zstd::stream::Decoder::new(reader)?;
     let mut tf = tar::Archive::new(dctx);
@@ -707,10 +720,12 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
 
     let mut entry = entries.next().unwrap()?;
     if entry.path()?.display().to_string() == "python/PYTHON.json" {
+        seen_paths.insert(entry.path()?.to_path_buf());
+
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
         let json = parse_python_json(&data).context("parsing PYTHON.json")?;
-        errors.extend(validate_json(&json, triple)?);
+        errors.extend(validate_json(&json, triple, is_debug)?);
 
         wanted_python_paths.extend(json.python_paths.values().map(|x| format!("python/{}", x)));
     } else {
@@ -725,6 +740,10 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         let path = entry.path()?.to_path_buf();
 
         seen_paths.insert(path.clone());
+
+        if let Some(link_name) = entry.link_name()? {
+            seen_symlink_targets.insert(path.parent().unwrap().join(link_name));
+        }
 
         // If this path starts with a path referenced in wanted_python_paths,
         // remove the prefix from wanted_python_paths so we don't error on it
@@ -773,7 +792,16 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
 
         if path == PathBuf::from("python/PYTHON.json") {
             let json = parse_python_json(&data).context("parsing PYTHON.json")?;
-            errors.extend(validate_json(&json, triple)?);
+            errors.extend(validate_json(&json, triple, is_debug)?);
+        }
+    }
+
+    for path in seen_symlink_targets {
+        if !seen_paths.contains(&path) {
+            errors.push(format!(
+                "symlink target {} referenced in archive but not found",
+                path.display()
+            ));
         }
     }
 

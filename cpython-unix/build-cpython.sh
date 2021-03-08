@@ -794,6 +794,12 @@ import os
 import sys
 import sysconfig
 
+# When doing cross builds, sysconfig still picks up abiflags from the
+# host Python, which is never built in debug mode. Patch abiflags accordingly.
+if os.environ.get("CPYTHON_DEBUG") and "d" not in sysconfig.get_config_var("abiflags"):
+    sys.abiflags += "d"
+    sysconfig._CONFIG_VARS["abiflags"] += "d"
+
 metadata = {
     "python_abi_tag": sys.abiflags,
     "python_implementation_cache_tag": sys.implementation.cache_tag,
@@ -816,7 +822,6 @@ metadata = {
     "python_stdlib_platform_config": sysconfig.get_config_var("LIBPL").lstrip("/"),
     "python_config_vars": {k: str(v) for k, v in sysconfig.get_config_vars().items()},
 }
-
 
 # When cross-compiling, we use a host Python to run this script. There are
 # some hacks to get sysconfig to pick up the correct data file. However,
@@ -864,11 +869,43 @@ touch "${LIB_DYNLOAD}/.empty"
 
 # Symlink libpython so we don't have 2 copies.
 if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
-    if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-        PYTHON_ARCH="darwin"
-    else
-        PYTHON_ARCH="x86_64-linux-gnu"
-    fi
+    case "${TARGET_TRIPLE}" in
+        aarch64-unknown-linux-gnu)
+            PYTHON_ARCH="aarch64-linux-gnu"
+            ;;
+        # This is too aggressive. But we don't have patches in place for
+        # setting the platform name properly on non-Darwin.
+        *-apple-*)
+            PYTHON_ARCH="darwin"
+            ;;
+        armv7-unknown-linux-gnueabi)
+            PYTHON_ARCH="armv7-linux-gnueabi"
+            ;;
+        armv7-unknown-linux-gnueabihf)
+            PYTHON_ARCH="armv7-linux-gnueabihf"
+            ;;
+        i686-unknown-linux-gnu)
+            PYTHON_ARCH="i386-linux-gnu"
+            ;;
+        mips-unknown-linux-gnu)
+            PYTHON_ARCH="mips-linux-gnu"
+            ;;
+        mipsel-unknown-linux-gnu)
+            PYTHON_ARCH="mipsel-linux-gnu"
+            ;;
+        mips64el-unknown-linux-gnuabi64)
+            PYTHON_ARCH="mips64el-linux-gnuabi64"
+            ;;
+        s390x-unknown-linux-gnu)
+            PYTHON_ARCH="s390x-linux-gnu"
+            ;;
+        x86_64-unknown-linux-*)
+            PYTHON_ARCH="x86_64-linux-gnu"
+            ;;
+        *)
+            echo "unhandled target triple: ${TARGET_TRIPLE}"
+            exit 1
+    esac
 
     LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.a
     ln -sf \
