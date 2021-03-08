@@ -9,6 +9,7 @@ use {
 };
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct LinkEntry {
     pub name: String,
     pub path_static: Option<String>,
@@ -18,6 +19,7 @@ pub struct LinkEntry {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PythonBuildExtensionInfo {
     pub in_core: bool,
     pub init_fn: String,
@@ -33,6 +35,7 @@ pub struct PythonBuildExtensionInfo {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PythonBuildCoreInfo {
     pub objs: Vec<String>,
     pub links: Vec<LinkEntry>,
@@ -41,6 +44,7 @@ pub struct PythonBuildCoreInfo {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PythonBuildInfo {
     pub core: PythonBuildCoreInfo,
     pub extensions: BTreeMap<String, Vec<PythonBuildExtensionInfo>>,
@@ -51,36 +55,38 @@ pub struct PythonBuildInfo {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PythonJsonMain {
-    pub version: String,
-    pub target_triple: String,
+    pub build_info: PythonBuildInfo,
+    pub crt_features: Vec<String>,
+    pub libpython_link_mode: String,
+    pub licenses: Option<Vec<String>>,
+    pub license_path: Option<String>,
     pub optimizations: String,
-    pub python_tag: String,
     pub python_abi_tag: Option<String>,
+    pub python_bytecode_magic_number: String,
     pub python_config_vars: HashMap<String, String>,
-    pub python_platform_tag: String,
+    pub python_exe: String,
+    pub python_extension_module_loading: Vec<String>,
     pub python_implementation_cache_tag: String,
     pub python_implementation_hex_version: u64,
     pub python_implementation_name: String,
     pub python_implementation_version: Vec<String>,
-    pub python_version: String,
     pub python_major_minor_version: String,
-    pub python_paths: HashMap<String, String>,
     pub python_paths_abstract: HashMap<String, String>,
-    pub python_exe: String,
+    pub python_paths: HashMap<String, String>,
+    pub python_platform_tag: String,
+    pub python_stdlib_platform_config: Option<String>,
     pub python_stdlib_test_packages: Vec<String>,
     pub python_suffixes: HashMap<String, Vec<String>>,
-    pub python_bytecode_magic_number: String,
     pub python_symbol_visibility: String,
-    pub python_extension_module_loading: Vec<String>,
-    pub libpython_link_mode: String,
-    pub crt_features: Vec<String>,
+    pub python_tag: String,
+    pub python_version: String,
+    pub target_triple: String,
     pub run_tests: String,
-    pub build_info: PythonBuildInfo,
-    pub licenses: Option<Vec<String>>,
-    pub license_path: Option<String>,
     pub tcl_library_path: Option<String>,
     pub tcl_library_paths: Option<Vec<String>>,
+    pub version: String,
 }
 
 pub fn parse_python_json(json_data: &[u8]) -> Result<PythonJsonMain> {
