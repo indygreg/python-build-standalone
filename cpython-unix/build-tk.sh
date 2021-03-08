@@ -12,7 +12,7 @@ export PKG_CONFIG_PATH=${TOOLS_PATH}/deps/share/pkgconfig:${TOOLS_PATH}/deps/lib
 
 tar -xf tk${TK_VERSION}-src.tar.gz
 
-pushd tk${TK_VERSION}/unix
+pushd tk*/unix
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC"
 LDFLAGS="${EXTRA_TARGET_LDFLAGS}"

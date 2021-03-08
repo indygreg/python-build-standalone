@@ -143,6 +143,21 @@ run time, the ``TCL_LIBRARY`` environment variable is set from within
 the process before the Python interpreter is initialized. This ensures the
 ``.tcl`` files from the Python distribution are used.
 
+.. _quirk_macos_no_tix:
+
+No tix on macOS
+===============
+
+macOS distributions do not contain tix tcl support files. This means that
+``tkinter.tix`` module functionality will likely break at run-time. The
+module will import fine. But attempting to instantiate a ``tkinter.tix.Tk``
+instance or otherwise attempt to run tix tcl files will result in a run-time
+error.
+
+``tkinter.tix`` has been deprecated since Python 3.6 and the official Python
+macOS installers do not ship the tix support files. So this project behaves
+similarly to the official CPython distributions.
+
 .. _quirk_windows_no_pip:
 
 No ``pip.exe`` on Windows

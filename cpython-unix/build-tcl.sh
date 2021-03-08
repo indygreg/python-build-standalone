@@ -17,15 +17,15 @@ patch -p1 << 'EOF'
 diff --git a/unix/Makefile.in b/unix/Makefile.in
 --- a/unix/Makefile.in
 +++ b/unix/Makefile.in
-@@ -1724,7 +1724,7 @@ configure-packages:
- 		  $$i/configure --with-tcl=../.. \
- 		      --with-tclinclude=$(GENERIC_DIR) \
- 		      $(PKG_CFG_ARGS) --libdir=$(PACKAGE_DIR) \
--		      --enable-shared --enable-threads; ) || exit $$?; \
-+		      --enable-shared=no --enable-threads; ) || exit $$?; \
- 	      fi; \
+@@ -1813,7 +1813,7 @@ configure-packages:
+ 			  $$i/configure --with-tcl=../.. \
+ 			      --with-tclinclude=$(GENERIC_DIR) \
+ 			      $(PKG_CFG_ARGS) --libdir=$(PACKAGE_DIR) \
+-			      --enable-shared --enable-threads; ) || exit $$?; \
++			      --enable-shared=no --enable-threads; ) || exit $$?; \
+ 		    fi; \
+ 		fi; \
  	    fi; \
- 	  fi; \
 EOF
 
 # Remove packages we don't care about and can pull in unwanted symbols.

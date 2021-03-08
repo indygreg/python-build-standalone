@@ -256,6 +256,8 @@ PYTHON_DEPENDS := \
     $(if $(NEED_PATCHELF),$(OUTDIR)/patchelf-$(PATCHELF_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_READLINE),$(OUTDIR)/readline-$(READLINE_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_SQLITE),$(OUTDIR)/sqlite-$(SQLITE_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_TCL),$(OUTDIR)/tcl-$(TCL_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_TK),$(OUTDIR)/tk-$(TK_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_TIX),$(OUTDIR)/tix-$(TIX_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_UUID),$(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_XZ),$(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar) \

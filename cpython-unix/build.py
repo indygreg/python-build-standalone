@@ -916,12 +916,15 @@ def build_cpython(
 
         python_info["tcl_library_path"] = "install/lib"
         python_info["tcl_library_paths"] = [
+            "itcl4.2.2",
             "tcl8",
             "tcl8.6",
-            "thread2.8.5",
-            "Tix8.4.3",
+            "thread2.8.7",
             "tk8.6",
         ]
+
+        if "-apple" not in target_triple:
+            python_info["tcl_library_paths"].append("Tix8.4.3")
 
         if "-apple" in target_triple:
             python_info["apple_sdk_platform"] = env["APPLE_SDK_PLATFORM"]

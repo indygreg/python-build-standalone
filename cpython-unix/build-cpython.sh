@@ -1141,9 +1141,13 @@ if [ -d "${TOOLS_PATH}/deps/lib/tcl8" ]; then
     # Copy tcl/tk/tix resources needed by tkinter.
     mkdir ${ROOT}/out/python/install/lib/tcl
     # Keep this list in sync with tcl_library_paths.
-    for source in ${TOOLS_PATH}/deps/lib/{tcl8,tcl8.6,thread2.8.5,Tix8.4.3,tk8.6}; do
+    for source in ${TOOLS_PATH}/deps/lib/{itcl4.2.2,tcl8,tcl8.6,thread2.8.7,tk8.6}; do
         cp -av $source ${ROOT}/out/python/install/lib/
     done
+
+    if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+        cp -av ${TOOLS_PATH}/deps/lib/Tix8.4.3 ${ROOT}/out/python/install/lib/
+    fi
 fi
 
 # config.c defines _PyImport_Inittab and extern references to modules, which

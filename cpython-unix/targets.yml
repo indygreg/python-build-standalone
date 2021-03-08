@@ -88,7 +88,6 @@ aarch64-apple-darwin:
     - sqlite
     - tcl
     - tk
-    - tix
     - uuid
     - xz
     - zlib
@@ -489,7 +488,6 @@ x86_64-apple-darwin:
     - sqlite
     - tcl
     - tk
-    - tix
     - uuid
     - xz
     - zlib
