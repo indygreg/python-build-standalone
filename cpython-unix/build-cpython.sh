@@ -879,10 +879,10 @@ if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
             PYTHON_ARCH="darwin"
             ;;
         armv7-unknown-linux-gnueabi)
-            PYTHON_ARCH="armv7-linux-gnueabi"
+            PYTHON_ARCH="arm-linux-gnueabi"
             ;;
         armv7-unknown-linux-gnueabihf)
-            PYTHON_ARCH="armv7-linux-gnueabihf"
+            PYTHON_ARCH="arm-linux-gnueabihf"
             ;;
         i686-unknown-linux-gnu)
             PYTHON_ARCH="i386-linux-gnu"
