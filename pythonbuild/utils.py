@@ -391,13 +391,29 @@ def add_env_common(env):
     if "CI" in os.environ:
         env["CI"] = "1"
 
-    for k in (
-        # Proxy variables used for sccache remote cache.
-        "AWS_ACCESS_KEY_ID",
-        "AWS_SECRET_ACCESS_KEY",
-        "SCCACHE_BUCKET",
-        "SCCACHE_S3_USE_SSL",
-    ):
+    env_path = os.path.expanduser("~/.python-build-standalone-env")
+    try:
+        with open(env_path, "r") as fh:
+            for line in fh:
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
+
+                key, value = line.split("=", 1)
+
+                print("adding %s from %s" % (key, env_path))
+                env[key] = value
+    except FileNotFoundError:
+        pass
+
+    # Proxy sccache settings.
+    for k, v in os.environ.items():
+        if k.startswith("SCCACHE_"):
+            env[k] = v
+
+    # Proxy cloud provider credentials variables to enable sccache to
+    # use stores in those providers.
+    for k in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"):
         if k in os.environ:
             env[k] = os.environ[k]
 
