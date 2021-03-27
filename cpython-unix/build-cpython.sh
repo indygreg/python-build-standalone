@@ -401,19 +401,19 @@ cp Modules/readline.c Modules/readline-libedit.c
 # using libedit.
 patch -p1 << EOF
 diff --git a/Modules/readline-libedit.c b/Modules/readline-libedit.c
-index 57335fe911..f3e83ff932 100644
+index 1e74f997b0..56a36e26e6 100644
 --- a/Modules/readline-libedit.c
 +++ b/Modules/readline-libedit.c
-@@ -486,7 +486,7 @@ set the word delimiters for completion");
-
+@@ -511,7 +511,7 @@ set the word delimiters for completion");
+ 
  /* _py_free_history_entry: Utility function to free a history entry. */
-
+ 
 -#if defined(RL_READLINE_VERSION) && RL_READLINE_VERSION >= 0x0500
 +#ifndef USE_LIBEDIT
-
+ 
  /* Readline version >= 5.0 introduced a timestamp field into the history entry
     structure; this needs to be freed to avoid a memory leak.  This version of
-@@ -1032,7 +1032,7 @@ flex_complete(const char *text, int start, int end)
+@@ -1055,7 +1055,7 @@ flex_complete(const char *text, int start, int end)
  #ifdef HAVE_RL_COMPLETION_APPEND_CHARACTER
      rl_completion_append_character ='\0';
  #endif
@@ -421,8 +421,16 @@ index 57335fe911..f3e83ff932 100644
 +#ifndef USE_LIBEDIT
      rl_completion_suppress_append = 0;
  #endif
-
-
+ 
+@@ -1241,7 +1241,7 @@ readline_until_enter_or_signal(const char *prompt, int *signal)
+             PyEval_SaveThread();
+             if (s < 0) {
+                 rl_free_line_state();
+-#if defined(RL_READLINE_VERSION) && RL_READLINE_VERSION >= 0x0700
++#ifndef USE_LIBEDIT
+                 rl_callback_sigcleanup();
+ #endif
+                 rl_cleanup_after_signal();
 EOF
 
 # Modules/readline.c has various libedit conditions behind an
