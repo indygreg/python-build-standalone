@@ -51,7 +51,7 @@ def verify_curses():
 def verify_hashlib():
     import hashlib
 
-    assert hashlib.algorithms_available == {
+    wanted_hashes = {
         "blake2b",
         "blake2b512",
         "blake2s",
@@ -83,6 +83,10 @@ def verify_hashlib():
         "sm3",
         "whirlpool",
     }
+
+    missing_hashes = wanted_hashes - hashlib.algorithms_available
+
+    assert not missing_hashes, "missing hashes: %s" % missing_hashes
 
 
 def verify_sqlite():
