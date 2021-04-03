@@ -90,7 +90,9 @@ def verify_hashlib():
 def verify_sqlite():
     import sqlite3
 
-    assert sqlite3.sqlite_version_info == (3, 29, 0)
+    assert sqlite3.sqlite_version_info == (3, 35, 2), "got %r" % (
+        sqlite3.sqlite_version_info,
+    )
 
 
 def verify_ssl():
