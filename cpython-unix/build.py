@@ -979,7 +979,7 @@ def main():
     with log_path.open("wb") as log_fh:
         set_logger(action, log_fh)
         if action == "makefiles":
-            write_triples_makefiles(get_targets(TARGETS_CONFIG), BUILD)
+            write_triples_makefiles(get_targets(TARGETS_CONFIG), BUILD, SUPPORT)
             write_package_versions(BUILD / "versions")
 
         elif action.startswith("image-"):

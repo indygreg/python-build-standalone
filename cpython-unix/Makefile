@@ -249,6 +249,7 @@ $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HE
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) zlib
 
 PYTHON_DEPENDS := \
+    $(PYTHON_SUPPORT_FILES) \
     $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
@@ -264,9 +265,6 @@ PYTHON_DEPENDS := \
     $(if $(NEED_UUID),$(OUTDIR)/uuid-$(UUID_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_XZ),$(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_ZLIB),$(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(HERE)/disabled-static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
-    $(HERE)/required-extensions.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
-    $(HERE)/static-modules.$(PYBUILD_PYTHON_MAJOR_VERSION).$(HOST_PLATFORM) \
     $(NULL)
 
 ALL_PYTHON_DEPENDS = \

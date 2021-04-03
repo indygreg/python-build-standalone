@@ -127,7 +127,9 @@ def write_if_different(p: pathlib.Path, data: bytes):
             fh.write(data)
 
 
-def write_triples_makefiles(targets, dest_dir: pathlib.Path):
+def write_triples_makefiles(
+    targets, dest_dir: pathlib.Path, support_search_dir: pathlib.Path
+):
     """Write out makefiles containing make variable settings derived from config."""
     dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -151,6 +153,18 @@ def write_triples_makefiles(targets, dest_dir: pathlib.Path):
 
                 lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
                 lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
+
+                for support_file in (
+                    "disabled-static-modules",
+                    "required-extensions",
+                    "static-modules",
+                ):
+                    path = get_target_support_file(
+                        support_search_dir, support_file, python, host_platform, triple
+                    )
+                    lines.append(
+                        "PYTHON_SUPPORT_FILES := $(PYTHON_SUPPORT_FILES) %s\n" % path
+                    )
 
                 write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
