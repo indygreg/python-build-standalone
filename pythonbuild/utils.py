@@ -39,7 +39,9 @@ def supported_targets(yaml_path: pathlib.Path):
 
     for target, settings in get_targets(yaml_path).items():
         for platform in settings["host_platforms"]:
-            if sys.platform == platform:
+            if sys.platform == "linux" and platform == "linux64":
+                targets.add(target)
+            elif sys.platform == "darwin" and platform == "macos":
                 targets.add(target)
 
     return targets

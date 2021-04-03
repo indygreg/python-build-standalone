@@ -1,8 +1,7 @@
 # This file defines configurations for each supported build target/triple.
 #
 # host_platform
-#    Defines the Python sys.platform value where this configuration
-#    can be built from.
+#    Defines the platform name where this configuration can be built from.
 #
 # pythons_supported
 #    Python versions we support building.
@@ -51,7 +50,7 @@
 # 11.0+.
 aarch64-apple-darwin:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.9'
   needs_toolchain: true
@@ -92,7 +91,7 @@ aarch64-apple-darwin:
 
 aarch64-apple-ios:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.9'
   needs_toolchain: true
@@ -127,7 +126,7 @@ aarch64-apple-ios:
 
 aarch64-unknown-linux-gnu:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.9'
   docker_image_suffix: .cross
@@ -157,7 +156,7 @@ aarch64-unknown-linux-gnu:
 
 arm64-apple-tvos:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.9'
   needs_toolchain: true
@@ -191,7 +190,7 @@ arm64-apple-tvos:
 
 armv7-unknown-linux-gnueabi:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.9'
   docker_image_suffix: .cross
@@ -221,7 +220,7 @@ armv7-unknown-linux-gnueabi:
 
 armv7-unknown-linux-gnueabihf:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.9'
   docker_image_suffix: .cross
@@ -251,7 +250,7 @@ armv7-unknown-linux-gnueabihf:
 
 i686-unknown-linux-gnu:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.8'
     - '3.9'
@@ -289,7 +288,7 @@ i686-unknown-linux-gnu:
 
 mips-unknown-linux-gnu:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.9'
   docker_image_suffix: .cross
@@ -319,7 +318,7 @@ mips-unknown-linux-gnu:
 
 mipsel-unknown-linux-gnu:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.9'
   docker_image_suffix: .cross
@@ -349,7 +348,7 @@ mipsel-unknown-linux-gnu:
 
 s390x-unknown-linux-gnu:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.9'
   docker_image_suffix: .cross
@@ -379,7 +378,7 @@ s390x-unknown-linux-gnu:
 
 thumb7k-apple-watchos:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.9'
   needs_toolchain: true
@@ -417,7 +416,7 @@ thumb7k-apple-watchos:
 # machines.
 x86_64-apple-darwin:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.8'
     - '3.9'
@@ -459,7 +458,7 @@ x86_64-apple-darwin:
 
 x86_64-apple-ios:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.9'
   needs_toolchain: true
@@ -494,7 +493,7 @@ x86_64-apple-ios:
 
 x86_64-apple-tvos:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.9'
   needs_toolchain: true
@@ -527,7 +526,7 @@ x86_64-apple-tvos:
 
 x86_64-apple-watchos:
   host_platforms:
-    - darwin
+    - macos
   pythons_supported:
     - '3.9'
   needs_toolchain: true
@@ -561,7 +560,7 @@ x86_64-apple-watchos:
 
 x86_64-unknown-linux-gnu:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.8'
     - '3.9'
@@ -594,7 +593,7 @@ x86_64-unknown-linux-gnu:
 
 x86_64-unknown-linux-musl:
   host_platforms:
-    - linux
+    - linux64
   pythons_supported:
     - '3.8'
     - '3.9'
