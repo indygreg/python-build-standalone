@@ -103,7 +103,9 @@ def verify_ssl():
     assert ssl.HAS_TLSv1_2
     assert ssl.HAS_TLSv1_3
 
-    assert ssl.OPENSSL_VERSION_INFO == (1, 1, 1, 3, 15)
+    assert ssl.OPENSSL_VERSION_INFO == (1, 1, 1, 11, 15), "got %r" % (
+        ssl.OPENSSL_VERSION_INFO,
+    )
 
     context = ssl.create_default_context()
 
