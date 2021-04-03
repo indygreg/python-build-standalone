@@ -132,24 +132,27 @@ def write_triples_makefiles(targets, dest_dir: pathlib.Path):
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     for triple, settings in targets.items():
-        for python in settings["pythons_supported"]:
-            makefile_path = dest_dir / ("Makefile.%s.%s" % (triple, python))
+        for host_platform in settings["host_platforms"]:
+            for python in settings["pythons_supported"]:
+                makefile_path = dest_dir / (
+                    "Makefile.%s.%s.%s" % (host_platform, triple, python)
+                )
 
-            lines = []
-            for need in settings.get("needs", []):
-                lines.append("NEED_%s := 1\n" % need.upper())
+                lines = []
+                for need in settings.get("needs", []):
+                    lines.append("NEED_%s := 1\n" % need.upper())
 
-            if "PYBUILD_LIBRESSL" in os.environ:
-                lines.append("NEED_LIBRESSL := 1\n")
-            else:
-                lines.append("NEED_OPENSSL := 1\n")
+                if "PYBUILD_LIBRESSL" in os.environ:
+                    lines.append("NEED_LIBRESSL := 1\n")
+                else:
+                    lines.append("NEED_OPENSSL := 1\n")
 
-            image_suffix = settings.get("docker_image_suffix", "")
+                image_suffix = settings.get("docker_image_suffix", "")
 
-            lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
-            lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
+                lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
+                lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
 
-            write_if_different(makefile_path, "".join(lines).encode("ascii"))
+                write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 
 def write_package_versions(dest_path: pathlib.Path):
