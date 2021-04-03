@@ -40,6 +40,11 @@ def verify_ctypes():
 
     assert ctypes.pythonapi is not None
 
+    # https://bugs.python.org/issue42688
+    @ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p)
+    def error_handler(fif, message):
+        pass
+
 
 def verify_curses():
     import curses
