@@ -31,6 +31,7 @@ from pythonbuild.utils import (
     download_entry,
     get_targets,
     get_target_settings,
+    get_target_support_file,
     target_needs,
     validate_python_json,
     write_package_versions,
@@ -682,7 +683,7 @@ def python_build_info(
         )
 
     with get_target_support_file(
-        "required-extensions", version, platform, target_triple
+        SUPPORT, "required-extensions", version, platform, target_triple
     ).open("r") as fh:
         required_extensions = {l.strip() for l in fh if l.strip()}
 
@@ -697,25 +698,6 @@ def python_build_info(
         bi["core"]["objs"].append(str(p))
 
     return bi
-
-
-def get_target_support_file(prefix, python_version, host_platform, target_triple):
-    candidates = [
-        SUPPORT / ("%s.%s.%s" % (prefix, python_version, target_triple)),
-        SUPPORT / ("%s.%s.%s" % (prefix, python_version, host_platform)),
-    ]
-
-    for path in candidates:
-        if path.exists():
-            return path
-
-    raise Exception(
-        "Could not find support file %s for (%s, %s, %s)",
-        prefix,
-        python_version,
-        host_platform,
-        target_triple,
-    )
 
 
 def build_cpython(
@@ -738,12 +720,12 @@ def build_cpython(
     pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
     with get_target_support_file(
-        "static-modules", version, host_platform, target_triple
+        SUPPORT, "static-modules", version, host_platform, target_triple
     ).open("rb") as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
 
     with get_target_support_file(
-        "disabled-static-modules", version, host_platform, target_triple
+        SUPPORT, "disabled-static-modules", version, host_platform, target_triple
     ).open("rb") as fh:
         disabled_static_modules = {
             l.strip() for l in fh if l.strip() and not l.strip().startswith(b"#")

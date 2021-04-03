@@ -90,6 +90,27 @@ def hash_path(p: pathlib.Path):
     return h.hexdigest()
 
 
+def get_target_support_file(
+    search_dir, prefix, python_version, host_platform, target_triple
+):
+    candidates = [
+        search_dir / ("%s.%s.%s" % (prefix, python_version, target_triple)),
+        search_dir / ("%s.%s.%s" % (prefix, python_version, host_platform)),
+    ]
+
+    for path in candidates:
+        if path.exists():
+            return path
+
+    raise Exception(
+        "Could not find support file %s for (%s, %s, %s)",
+        prefix,
+        python_version,
+        host_platform,
+        target_triple,
+    )
+
+
 def write_if_different(p: pathlib.Path, data: bytes):
     """Write a file if it is missing or its content is different."""
     if p.exists():
