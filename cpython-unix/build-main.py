@@ -97,10 +97,12 @@ def main():
 
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
-    if args.python not in settings["pythons_supported"]:
+    supported_pythons = {"cpython-%s" % p for p in settings["pythons_supported"]}
+
+    if args.python not in supported_pythons:
         print(
             "%s only supports following Pythons: %s"
-            % (target_triple, ", ".join(settings["pythons_supported"]))
+            % (target_triple, ", ".join(supported_pythons))
         )
         return 1
 

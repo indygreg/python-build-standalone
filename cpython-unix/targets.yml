@@ -53,7 +53,7 @@ aarch64-apple-darwin:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
@@ -94,7 +94,7 @@ aarch64-apple-ios:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   needs_toolchain: true
   apple_sdk_platform: iphoneos
   host_cc: clang
@@ -129,7 +129,7 @@ aarch64-unknown-linux-gnu:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/aarch64-linux-gnu-gcc
@@ -159,7 +159,7 @@ arm64-apple-tvos:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   needs_toolchain: true
   apple_sdk_platform: appletvos
   host_cc: clang
@@ -193,7 +193,7 @@ armv7-unknown-linux-gnueabi:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/arm-linux-gnueabi-gcc
@@ -223,7 +223,7 @@ armv7-unknown-linux-gnueabihf:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/arm-linux-gnueabihf-gcc
@@ -253,9 +253,9 @@ i686-unknown-linux-gnu:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.8'
-    - 'cpython-3.9'
-    - 'cpython-3.10'
+    - '3.8'
+    - '3.9'
+    - '3.10'
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
@@ -291,7 +291,7 @@ mips-unknown-linux-gnu:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/mips-linux-gnu-gcc
@@ -321,7 +321,7 @@ mipsel-unknown-linux-gnu:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/mipsel-linux-gnu-gcc
@@ -351,7 +351,7 @@ s390x-unknown-linux-gnu:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   target_cc: /usr/bin/s390x-linux-gnu-gcc
@@ -381,7 +381,7 @@ thumb7k-apple-watchos:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   needs_toolchain: true
   apple_sdk_platform: watchos
   host_cc: clang
@@ -419,8 +419,8 @@ x86_64-apple-darwin:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.8'
-    - 'cpython-3.9'
+    - '3.8'
+    - '3.9'
   needs_toolchain: true
   apple_sdk_platform: macosx
   host_cc: clang
@@ -461,7 +461,7 @@ x86_64-apple-ios:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   needs_toolchain: true
   apple_sdk_platform: iphonesimulator
   host_cc: clang
@@ -496,7 +496,7 @@ x86_64-apple-tvos:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   needs_toolchain: true
   apple_sdk_platform: appletvsimulator
   host_cc: clang
@@ -529,7 +529,7 @@ x86_64-apple-watchos:
   host_platforms:
     - darwin
   pythons_supported:
-    - 'cpython-3.9'
+    - '3.9'
   needs_toolchain: true
   apple_sdk_platform: watchsimulator
   host_cc: clang
@@ -563,9 +563,9 @@ x86_64-unknown-linux-gnu:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.8'
-    - 'cpython-3.9'
-    - 'cpython-3.10'
+    - '3.8'
+    - '3.9'
+    - '3.10'
   needs_toolchain: true
   host_cc: clang
   target_cc: clang
@@ -596,9 +596,9 @@ x86_64-unknown-linux-musl:
   host_platforms:
     - linux
   pythons_supported:
-    - 'cpython-3.8'
-    - 'cpython-3.9'
-    - 'cpython-3.10'
+    - '3.8'
+    - '3.9'
+    - '3.10'
   needs_toolchain: true
   host_cc: clang
   target_cc: musl-clang

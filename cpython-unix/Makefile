@@ -46,7 +46,7 @@ endif
 
 # Always write out settings files.
 $(shell $(RUN_BUILD) placeholder_archive makefiles)
-include $(OUTDIR)/Makefile.$(TARGET_TRIPLE)
+include $(OUTDIR)/Makefile.$(TARGET_TRIPLE).$(PYBUILD_PYTHON_MAJOR_VERSION)
 include $(OUTDIR)/versions/VERSION.*
 
 BASE_TOOLCHAIN_DEPENDS := \
