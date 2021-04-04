@@ -57,7 +57,10 @@ def verify_ctypes():
 
 
 def verify_curses():
-    import curses
+    import curses, os
+
+    if "TERM" not in os.environ:
+        return
 
     curses.initscr()
     curses.endwin()
