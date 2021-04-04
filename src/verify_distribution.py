@@ -43,9 +43,11 @@ class TestPythonInterpreter(unittest.TestCase):
         def error_handler(fif, message):
             pass
 
+    @unittest.skipIf(os.name == "nt", "curses not available on Windows")
     def test_curses_import(self):
         import curses
 
+    @unittest.skipIf(os.name == "nt", "curses not available on Windows")
     @unittest.skipIf("TERM" not in os.environ, "TERM not set")
     def test_curses_interactive(self):
         import curses
