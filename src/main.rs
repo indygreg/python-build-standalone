@@ -857,7 +857,7 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
     let test_file = temp_dir.path().join("verify.py");
     std::fs::write(&test_file, PYTHON_VERIFICATIONS.as_bytes())?;
 
-    eprintln!("  running interpreter tests (output may follow)");
+    eprintln!("  running interpreter tests (output should follow)");
     let output = duct::cmd(&python_exe, &[test_file.display().to_string()])
         .stdout_to_stderr()
         .unchecked()
