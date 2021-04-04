@@ -22,7 +22,7 @@ from pythonbuild.cpython import (
     parse_setup_line,
     STDLIB_TEST_PACKAGES,
 )
-from pythonbuild.docker import build_docker_image, get_image
+from pythonbuild.docker import build_docker_image, get_image, write_dockerfiles
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.logging import log, set_logger
 from pythonbuild.utils import (
@@ -959,7 +959,9 @@ def main():
 
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
-    if args.action == "makefiles":
+    if args.action == "dockerfiles":
+        log_name = "dockerfiles"
+    elif args.action == "makefiles":
         log_name = "makefiles"
     elif args.action.startswith("image-"):
         log_name = "image-%s" % action
@@ -978,12 +980,19 @@ def main():
 
     with log_path.open("wb") as log_fh:
         set_logger(action, log_fh)
-        if action == "makefiles":
+        if action == "dockerfiles":
+            write_dockerfiles(SUPPORT, BUILD)
+        elif action == "makefiles":
             write_triples_makefiles(get_targets(TARGETS_CONFIG), BUILD, SUPPORT)
             write_package_versions(BUILD / "versions")
 
         elif action.startswith("image-"):
-            build_docker_image(client, ROOT, BUILD, action[6:])
+            image_name = action[6:]
+            image_path = BUILD / ("%s.Dockerfile" % image_name)
+            with image_path.open("rb") as fh:
+                image_data = fh.read()
+
+            build_docker_image(client, image_data, BUILD, image_name)
 
         elif action == "binutils":
             build_binutils(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)

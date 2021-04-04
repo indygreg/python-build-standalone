@@ -5,10 +5,6 @@ OUTDIR := $(ROOT)/build
 BUILD := $(HERE)/build.py
 NULL :=
 
-COMMON_DEPENDS := \
-#    $(BUILD) \
-    $(NULL)
-
 ifndef PYBUILD_TARGET_TRIPLE
     $(error PYBUILD_TARGET_TRIPLE not defined)
 endif
@@ -49,6 +45,9 @@ $(shell $(RUN_BUILD) placeholder_archive makefiles)
 include $(OUTDIR)/Makefile.$(HOST_PLATFORM).$(TARGET_TRIPLE).$(PYBUILD_PYTHON_MAJOR_VERSION)
 include $(OUTDIR)/versions/VERSION.*
 
+# Always write out expanded Dockerfiles.
+$(shell $(RUN_BUILD) placeholder_archive dockerfiles)
+
 BASE_TOOLCHAIN_DEPENDS := \
     $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar) \
     $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar) \
@@ -68,7 +67,7 @@ PYTHON_DEP_DEPENDS := \
 default: $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PACKAGE_SUFFIX).tar
 
 ifndef PYBUILD_NO_DOCKER
-$(OUTDIR)/image-%.tar: $(HERE)/%.Dockerfile $(COMMON_DEPENDS)
+$(OUTDIR)/image-%.tar: $(OUTDIR)/%.Dockerfile
 	$(RUN_BUILD) --toolchain image-$*
 endif
 

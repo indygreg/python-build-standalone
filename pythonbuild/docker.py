@@ -13,21 +13,26 @@ import docker
 import jinja2
 
 from .logging import log, log_raw
+from .utils import write_if_different
 
 
-def build_docker_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
+def write_dockerfiles(source_dir: pathlib.Path, dest_dir: pathlib.Path):
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(source_dir)))
+
+    for f in os.listdir(source_dir):
+        if not f.endswith(".Dockerfile"):
+            continue
+
+        tmpl = env.get_template(f)
+        data = tmpl.render()
+
+        write_if_different(dest_dir / f, data.encode("utf-8"))
+
+
+def build_docker_image(client, image_data: bytes, image_dir: pathlib.Path, name):
     image_path = image_dir / ("image-%s" % name)
 
-    env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(str(source_dir / "cpython-unix"))
-    )
-
-    tmpl = env.get_template("%s.Dockerfile" % name)
-    data = tmpl.render()
-
-    return ensure_docker_image(
-        client, io.BytesIO(data.encode("utf")), image_path=image_path
-    )
+    return ensure_docker_image(client, io.BytesIO(image_data), image_path=image_path)
 
 
 def ensure_docker_image(client, fh, image_path=None):
