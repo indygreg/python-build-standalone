@@ -378,6 +378,8 @@ const GLOBALLY_BANNED_EXTENSIONS: &[&str] = &[
     "nis",
 ];
 
+const PYTHON_VERIFICATIONS: &str = include_str!("verify_distribution.py");
+
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     match triple {
         "aarch64-apple-darwin" => DARWIN_ALLOWED_DYLIBS.clone(),
@@ -669,6 +671,16 @@ fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<
     Ok(errors)
 }
 
+fn open_distribution_archive(path: &Path) -> Result<tar::Archive<impl Read>> {
+    let fh =
+        std::fs::File::open(path).with_context(|| format!("unable to open {}", path.display()))?;
+
+    let reader = std::io::BufReader::new(fh);
+    let dctx = zstd::stream::Decoder::new(reader)?;
+
+    Ok(tar::Archive::new(dctx))
+}
+
 fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let mut errors = vec![];
     let mut seen_dylibs = BTreeSet::new();
@@ -679,9 +691,6 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         .file_name()
         .expect("unable to obtain filename")
         .to_string_lossy();
-
-    let fh = std::fs::File::open(&dist_path)
-        .with_context(|| format!("unable to open {}", dist_path.display()))?;
 
     let triple = RECOGNIZED_TRIPLES
         .iter()
@@ -709,9 +718,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
 
     let is_debug = dist_filename.contains("-debug-");
 
-    let reader = std::io::BufReader::new(fh);
-    let dctx = zstd::stream::Decoder::new(reader)?;
-    let mut tf = tar::Archive::new(dctx);
+    let mut tf = open_distribution_archive(&dist_path)?;
 
     // First entry in archive should be python/PYTHON.json.
     let mut entries = tf.entries()?;
@@ -832,19 +839,56 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     Ok(errors)
 }
 
+fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
+    let mut errors = vec![];
+
+    let temp_dir = tempfile::TempDir::new()?;
+
+    let mut tf = open_distribution_archive(dist_path)?;
+
+    tf.unpack(temp_dir.path())?;
+
+    let python_json_path = temp_dir.path().join("python").join("PYTHON.json");
+    let python_json_data = std::fs::read(&python_json_path)?;
+    let python_json = parse_python_json(&python_json_data)?;
+
+    let python_exe = temp_dir.path().join("python").join(python_json.python_exe);
+
+    let test_file = temp_dir.path().join("verify.py");
+    std::fs::write(&test_file, PYTHON_VERIFICATIONS.as_bytes())?;
+
+    eprintln!("  running interpreter tests (output may follow)");
+    let output = duct::cmd(&python_exe, &[test_file.display().to_string()])
+        .stdout_to_stderr()
+        .unchecked()
+        .run()?;
+
+    if !output.status.success() {
+        errors.push("errors running interpreter tests".to_string());
+    }
+
+    Ok(errors)
+}
+
 fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
+    let run = args.is_present("run");
+
     let mut success = true;
 
     for path in args.values_of("path").unwrap() {
         let path = PathBuf::from(path);
         println!("validating {}", path.display());
-        let errors = validate_distribution(&path)?;
+        let mut errors = validate_distribution(&path)?;
+
+        if run {
+            errors.extend(verify_distribution_behavior(&path)?.into_iter());
+        }
 
         if errors.is_empty() {
-            println!("{} OK", path.display());
+            println!("  {} OK", path.display());
         } else {
             for error in errors {
-                println!("error: {}", error);
+                println!("  error: {}", error);
             }
 
             success = false;
@@ -867,6 +911,11 @@ fn main_impl() -> Result<()> {
         .subcommand(
             SubCommand::with_name("validate-distribution")
                 .about("Ensure a distribution archive conforms to standards")
+                .arg(
+                    Arg::with_name("run")
+                        .long("--run")
+                        .help("Run the interpreter to verify behavior"),
+                )
                 .arg(
                     Arg::with_name("path")
                         .help("Path to tar.zst file to validate")

@@ -2,6 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+TERMINFO_DIRS = [
+    "/etc/terminfo",
+    "/lib/terminfo",
+    "/usr/share/terminfo",
+]
+
 
 def verify():
     """Verifies that a built Python distribution behaves as expected."""
@@ -17,6 +23,12 @@ def verify():
     # Need to set TCL_LIBRARY so local tcl/tk files get picked up.
     os.environ["TCL_LIBRARY"] = os.path.join(install_root, "lib", "tcl", "tcl")
 
+    # Need to set TERMINFO_DIRS so terminfo database can be located.
+    if "TERMINFO_DIRS" not in os.environ:
+        terminfo_dirs = [p for p in TERMINFO_DIRS if os.path.exists(p)]
+        if terminfo_dirs:
+            os.environ["TERMINFO_DIRS"] = ":".join(terminfo_dirs)
+
     verify_compression()
     verify_ctypes()
     verify_curses()
@@ -24,8 +36,6 @@ def verify():
     verify_sqlite()
     verify_ssl()
     verify_tkinter()
-
-    print("distribution verified!")
 
 
 def verify_compression():
