@@ -218,7 +218,12 @@ jobs:
       - name: Validate Distribution
         run: |
           chmod +x build/pythonbuild
-          build/pythonbuild validate-distribution dist/*.tar.zst
+
+          if [ "${{matrix.triple }}" = "x86_64-apple-darwin" ]; then
+            EXTRA_ARGS="--run"
+          fi
+
+          build/pythonbuild validate-distribution ${EXTRA_ARGS} dist/*.tar.zst
 
       - name: Upload Distributions
         uses: actions/upload-artifact@v2

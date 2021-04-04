@@ -243,7 +243,12 @@ jobs:
       - name: Validate Distribution
         run: |
           chmod +x build/pythonbuild
-          build/pythonbuild validate-distribution dist/*.tar.zst
+
+          if [[ "${{matrix.triple }}" == x86_64-* ]]; then
+            EXTRA_ARGS="--run"
+          fi
+
+          build/pythonbuild validate-distribution ${EXTRA_ARGS} dist/*.tar.zst
 
       - name: Upload Distribution
         uses: actions/upload-artifact@v2

@@ -85,7 +85,7 @@ jobs:
       - name: Validate Distribution
         run: |
           $Dists = Resolve-Path -Path "dist/*.tar.zst" -Relative
-          .\pythonbuild.exe validate-distribution $Dists
+          .\pythonbuild.exe validate-distribution --run $Dists
 
       - name: Upload Distributions
         uses: actions/upload-artifact@v2
