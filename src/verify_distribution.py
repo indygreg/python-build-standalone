@@ -13,11 +13,23 @@ TERMINFO_DIRS = [
     "/usr/share/terminfo",
 ]
 
+TCL_PATHS = [
+    # POSIX
+    ("lib", "tcl", "tcl"),
+    # Windows.
+    ("tcl",),
+]
+
 HERE = os.path.dirname(sys.executable)
 INSTALL_ROOT = os.path.dirname(HERE)
 
 # Need to set TCL_LIBRARY so local tcl/tk files get picked up.
-os.environ["TCL_LIBRARY"] = os.path.join(INSTALL_ROOT, "lib", "tcl", "tcl")
+for parts in TCL_PATHS:
+    candidate = os.path.join(INSTALL_ROOT, *parts)
+
+    if os.path.exists(candidate):
+        os.environ["TCL_LIBRARY"] = candidate
+        break
 
 # Need to set TERMINFO_DIRS so terminfo database can be located.
 if "TERMINFO_DIRS" not in os.environ:
