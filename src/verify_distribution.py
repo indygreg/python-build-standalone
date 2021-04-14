@@ -121,6 +121,7 @@ class TestPythonInterpreter(unittest.TestCase):
 
         ssl.create_default_context()
 
+    @unittest.skipIf("TCL_LIBRARY" not in os.environ, "TCL_LIBRARY not set")
     @unittest.skipIf("DISPLAY" not in os.environ, "DISPLAY not set")
     def test_tkinter(self):
         import tkinter as tk
