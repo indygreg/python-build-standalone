@@ -80,10 +80,10 @@ DOWNLOADS = {
         "python_tag": "cp310",
     },
     "gcc": {
-        "url": "https://ftp.gnu.org/gnu/gcc/gcc-10.2.0/gcc-10.2.0.tar.xz",
-        "size": 75004144,
-        "sha256": "b8dd4368bb9c7f0b98188317ee0254dd8cc99d1e3a18d0ff146c855fe16c1d8c",
-        "version": "10.2.0",
+        "url": "https://ftp.gnu.org/gnu/gcc/gcc-10.3.0/gcc-10.3.0.tar.xz",
+        "size": 76692288,
+        "sha256": "64f404c1a650f27fc33da242e1f2df54952e3963a49e06e73f6940f3223ac344",
+        "version": "10.3.0",
     },
     "gdbm": {
         "url": "https://ftp.gnu.org/gnu/gdbm/gdbm-1.18.1.tar.gz",
