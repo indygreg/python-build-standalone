@@ -109,6 +109,7 @@ class TestPythonInterpreter(unittest.TestCase):
 
         ssl.create_default_context()
 
+    @unittest.skipIf("DISPLAY" not in os.environ, "DISPLAY not set")
     def test_tkinter(self):
         import tkinter as tk
 
