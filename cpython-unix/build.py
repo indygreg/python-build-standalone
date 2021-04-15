@@ -314,6 +314,7 @@ def build_clang(client, image, host_platform):
     llvm_archive = download_entry("llvm", DOWNLOADS_PATH)
     libcxx_archive = download_entry("libc++", DOWNLOADS_PATH)
     libcxxabi_archive = download_entry("libc++abi", DOWNLOADS_PATH)
+    libunwind_archive = download_entry("libunwind", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
         install_sccache(build_env)
@@ -328,6 +329,7 @@ def build_clang(client, image, host_platform):
             llvm_archive,
             libcxx_archive,
             libcxxabi_archive,
+            libunwind_archive,
         ):
             build_env.copy_file(a)
 
@@ -344,6 +346,7 @@ def build_clang(client, image, host_platform):
             "GCC_VERSION": DOWNLOADS["gcc"]["version"],
             "LIBCXX_VERSION": DOWNLOADS["libc++"]["version"],
             "LIBCXXABI_VERSION": DOWNLOADS["libc++abi"]["version"],
+            "LIBUNWIND_VERSION": DOWNLOADS["libunwind"]["version"],
             "LLD_VERSION": DOWNLOADS["lld"]["version"],
             "LLVM_VERSION": DOWNLOADS["llvm"]["version"],
         }

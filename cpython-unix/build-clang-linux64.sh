@@ -77,6 +77,11 @@ pushd llvm/projects/libcxxabi
 tar --strip-components=1 -xf ${ROOT}/libcxxabi-${LIBCXXABI_VERSION}.src.tar.xz
 popd
 
+mkdir libunwind
+pushd libunwind
+tar --strip-components=1 -xf ${ROOT}/libunwind-${LIBUNWIND_VERSION}.src.tar.xz
+popd
+
 mkdir llvm-objdir
 pushd llvm-objdir
 
