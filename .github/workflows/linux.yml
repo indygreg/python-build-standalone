@@ -122,88 +122,154 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        triple:
-          - 'aarch64-unknown-linux-gnu'
-          - 'armv7-unknown-linux-gnueabi'
-          - 'armv7-unknown-linux-gnueabihf'
-          - 'i686-unknown-linux-gnu'
-          - 'mips-unknown-linux-gnu'
-          - 'mipsel-unknown-linux-gnu'
-          - 's390x-unknown-linux-gnu'
-          - 'x86_64-unknown-linux-gnu'
-          - 'x86_64-unknown-linux-musl'
-        py:
-          - 'cpython-3.8'
-          - 'cpython-3.9'
-          - 'cpython-3.10'
-        optimizations:
-          - 'debug'
-          - 'noopt'
-          - 'lto'
-          - 'pgo'
-          - 'pgo+lto'
-        exclude:
-          # Only CPython 3.9 supported for many cross build targets.
-          - triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.8'
-          - triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.10'
-          - triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.8'
-          - triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.10'
-          - triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.8'
-          - triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.10'
-          - triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.8'
-          - triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.10'
-          - triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.8'
-          - triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.10'
-          - triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.8'
-          - triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.10'
-          # We don't publish noopt builds for GNU Linux when PGO is available.
-          - triple: 'i686-unknown-linux-gnu'
+        build:
+          # Cross-compiles can't do PGO and require Python 3.9.
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.9'
             optimizations: 'noopt'
-          - triple: 'x86_64-unknown-linux-gnu'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # Cross-compiles can't do PGO and require Python 3.9.
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.9'
             optimizations: 'noopt'
-          # PGO doesn't work with musl libc.
-          - triple: 'x86_64-unknown-linux-musl'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # Cross-compiles can't do PGO and require Python 3.9.
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # We don't publish noopt builds when PGO is available.
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.8'
+            optimizations: 'debug'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.8'
+            optimizations: 'lto'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.8'
             optimizations: 'pgo'
-          - triple: 'x86_64-unknown-linux-musl'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.8'
             optimizations: 'pgo+lto'
-          # PGO doesn't work with cross builds.
-          - triple: 'aarch64-unknown-linux-gnu'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.9'
             optimizations: 'pgo'
-          - triple: 'aarch64-unknown-linux-gnu'
-            optimizations: 'pgo+lto'
-          - triple: 'armv7-unknown-linux-gnueabi'
-            optimizations: 'pgo'
-          - triple: 'armv7-unknown-linux-gnueabi'
-            optimizations: 'pgo+lto'
-          - triple: 'armv7-unknown-linux-gnueabihf'
-            optimizations: 'pgo'
-          - triple: 'armv7-unknown-linux-gnueabihf'
-            optimizations: 'pgo+lto'
-          - triple: 'mips-unknown-linux-gnu'
-            optimizations: 'pgo'
-          - triple: 'mips-unknown-linux-gnu'
-            optimizations: 'pgo+lto'
-          - triple: 'mipsel-unknown-linux-gnu'
-            optimizations: 'pgo'
-          - triple: 'mipsel-unknown-linux-gnu'
-            optimizations: 'pgo+lto'
-          - triple: 's390x-unknown-linux-gnu'
-            optimizations: 'pgo'
-          - triple: 's390x-unknown-linux-gnu'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.9'
             optimizations: 'pgo+lto'
 
+          # Cross-compiles can't do PGO and require Python 3.9.
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # Cross-compiles can't do PGO and require Python 3.9.
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # Cross-compiles can't do PGO and require Python 3.9.
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # We don't publish noopt builds when PGO is available.
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.8'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.8'
+            optimizations: 'lto'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.8'
+            optimizations: 'pgo'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.8'
+            optimizations: 'pgo+lto'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'pgo'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'pgo+lto'
+
+          # Python 3.10 is just spot coverage for now.
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'pgo+lto'
+
+          # musl doesn't support PGO.
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.8'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.8'
+            optimizations: 'noopt'
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.8'
+            optimizations: 'lto'
+          - target_triple: 'x86_64-unknown-linux-musl'
+
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
     needs:
       - pythonbuild
       - toolchain
@@ -232,13 +298,13 @@ jobs:
 
       - name: Build
         run: |
-          if [ "${{ matrix.triple }}" = "x86_64-unknown-linux-musl" ]; then
+          if [ "${{ matrix.build.target_triple }}" = "x86_64-unknown-linux-musl" ]; then
             EXTRA_ARGS=--libressl
           else
             EXTRA_ARGS=
           fi
 
-          ./build-linux.py --skip-toolchain --target-triple ${{ matrix.triple }} --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }} ${EXTRA_ARGS}
+          ./build-linux.py --skip-toolchain --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }} ${EXTRA_ARGS}
 
       - name: Validate Distribution
         run: |
@@ -248,5 +314,5 @@ jobs:
       - name: Upload Distribution
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.py }}-${{ matrix.triple }}
+          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
           path: dist/*

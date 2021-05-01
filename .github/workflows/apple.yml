@@ -116,45 +116,72 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        triple:
-          - 'aarch64-apple-darwin'
-          - 'aarch64-apple-ios'
-          - 'x86_64-apple-darwin'
-          - 'x86_64-apple-ios'
-        py:
-          - 'cpython-3.8'
-          - 'cpython-3.9'
-        optimizations:
-          - 'debug'
-          - 'noopt'
-          - 'lto'
-          - 'pgo'
-          - 'pgo+lto'
-        exclude:
-          # Cross-compiling only supported by CPython 3.9+.
-          - triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.8'
-          - triple: 'aarch64-apple-ios'
-            py: 'cpython-3.8'
-          - triple: 'x86_64-apple-ios'
-            py: 'cpython-3.8'
-          # PGO doesn't work when cross-compiling. Goal with following
-          # rules is to disable PGO when cross-compiling and disable noopt
-          # for host builds (since PGO is superior).
-          - triple: 'aarch64-apple-darwin'
-            optimizations: 'pgo'
-          - triple: 'aarch64-apple-darwin'
-            optimizations: 'pgo+lto'
-          - triple: 'aarch64-apple-ios'
-            optimizations: 'pgo'
-          - triple: 'aarch64-apple-ios'
-            optimizations: 'pgo+lto'
-          - triple: 'x86_64-apple-darwin'
+        build:
+          # macOS on Apple hardware. Can't do PGO because GitHub Apple hardware
+          # is Intel. Can't do Python 3.8 because we don't support cross-compiling
+          # until 3.9.
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.9'
             optimizations: 'noopt'
-          - triple: 'x86_64-apple-ios'
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # macOS on Intel hardware. This is pretty straightforward. We exclude
+          # noopt because it doesn't provide any compelling advantages over PGO
+          # or LTO builds.
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.8'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.8'
+            optimizations: 'lto'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.8'
             optimizations: 'pgo'
-          - triple: 'x86_64-apple-ios'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.8'
             optimizations: 'pgo+lto'
+
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.9'
+            optimizations: 'pgo'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.9'
+            optimizations: 'pgo+lto'
+
+          # iOS targeting mobile hardware. Can't do PGO during cross-compiles.
+          # Can't cross-compile until Python 3.9.
+          - target_triple: 'aarch64-apple-ios'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'aarch64-apple-ios'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 'aarch64-apple-ios'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          # iOS targeting simulator. Can't do PGO during cross-compiles.
+          # Can't cross-compile until Python 3.9.
+          - target_triple: 'x86_64-apple-ios'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-apple-ios'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 'x86_64-apple-ios'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
     needs:
       - pythonbuild
       - toolchain
@@ -193,33 +220,33 @@ jobs:
           #
           # We work around this by using the 10.15 SDK from Xcode 11.3.1, which doesn't
           # have the bug.
-          if [ "${{ matrix.py }}" = "cpython-3.8" ]; then
+          if [ "${{ matrix.build.py }}" = "cpython-3.8" ]; then
              export APPLE_SDK_PATH=/Applications/Xcode_11.3.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
              export APPLE_HOST_SDK_PATH=/Applications/Xcode_11.3.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk
           else
              export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
 
-             if [ "${{ matrix.triple }}" = "aarch64-apple-darwin" ]; then
+             if [ "${{ matrix.build.target_triple }}" = "aarch64-apple-darwin" ]; then
                export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
-             elif [ "${{ matrix.triple }}" = "aarch64-apple-ios" ]; then
+             elif [ "${{ matrix.build.target_triple }}" = "aarch64-apple-ios" ]; then
                export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.4.sdk
-             elif [ "${{ matrix.triple }}" = "x86_64-apple-darwin" ]; then
+             elif [ "${{ matrix.build.target_triple }}" = "x86_64-apple-darwin" ]; then
                export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
-             elif [ "${{ matrix.triple }}" = "x86_64-apple-ios" ]; then
+             elif [ "${{ matrix.build.target_triple }}" = "x86_64-apple-ios" ]; then
                export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator14.4.sdk
              else
-               echo "unhandled target triple: ${{ matrix.triple }}"
+               echo "unhandled target triple: ${{ matrix.build.target_triple }}"
                exit 1
              fi
           fi
 
-          ./build-macos.py --skip-toolchain --target-triple ${{ matrix.triple }} --python ${{ matrix.py }} --optimizations ${{ matrix.optimizations }}
+          ./build-macos.py --skip-toolchain --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
       - name: Validate Distribution
         run: |
           chmod +x build/pythonbuild
 
-          if [ "${{matrix.triple }}" = "x86_64-apple-darwin" ]; then
+          if [ "${{matrix.build.target_triple }}" = "x86_64-apple-darwin" ]; then
             EXTRA_ARGS="--run"
           fi
 
@@ -228,5 +255,5 @@ jobs:
       - name: Upload Distributions
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.py }}-${{ matrix.triple }}
+          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
           path: dist/*
