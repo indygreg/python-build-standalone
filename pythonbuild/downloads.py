@@ -230,6 +230,7 @@ DOWNLOADS = {
         "sha256": "617decc6ea09889fb08ede330917a00b16809b8db88c29c31bfbb49cbf88ecc3",
         "version": "1.0.3",
     },
+    # We seem to have problems building newer MPFR in Debian Jessie.
     "mpfr": {
         "url": "https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.6.tar.xz",
         "size": 1133672,
