@@ -293,12 +293,6 @@ DOWNLOADS = {
         "licenses": ["GPL-3.0"],
         "license_file": "LICENSE.readline.txt",
     },
-    "rust": {
-        "url": "https://static.rust-lang.org/dist/rust-1.30.1-x86_64-unknown-linux-gnu.tar.gz",
-        "size": 236997689,
-        "sha256": "a01a493ed8946fc1c15f63e74fc53299b26ebf705938b4d04a388a746dfdbf9e",
-        "version": "1.30.1",
-    },
     "setuptools": {
         "url": "https://files.pythonhosted.org/packages/f6/e9/19af16328705915233299f6f1f02db95899fb00c75ac9da4757aa1e5d1de/setuptools-56.0.0.tar.gz",
         "size": 2054762,
