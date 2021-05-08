@@ -328,6 +328,19 @@ def normalize_tar_archive(data: io.BytesIO) -> io.BytesIO:
     # Normalize attributes on archive members.
     for entry in members:
         ti = entry[0]
+
+        # The pax headers attribute takes priority over the other named
+        # attributes. To minimize potential for our assigns to no-op, we
+        # clear out the pax headers. We can't reset all the pax headers,
+        # as this would nullify symlinks.
+        for a in ("mtime", "uid", "uname", "gid", "gname"):
+            try:
+                ti.pax_headers.__delattr__(a)
+            except AttributeError:
+                pass
+
+        ti.pax_headers = {}
+
         ti.mtime = DEFAULT_MTIME
         ti.uid = 0
         ti.uname = "root"
