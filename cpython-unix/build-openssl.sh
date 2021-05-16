@@ -14,7 +14,14 @@ tar -xf openssl-${OPENSSL_VERSION}.tar.gz
 pushd openssl-${OPENSSL_VERSION}
 
 # Otherwise it gets set to /tools/deps/ssl by default.
-EXTRA_FLAGS="--openssldir=/etc/ssl"
+case "${TARGET_TRIPLE}" in
+    *apple*)
+        EXTRA_FLAGS="--openssldir=/private/etc/ssl"
+        ;;
+    *)
+        EXTRA_FLAGS="--openssldir=/etc/ssl"
+        ;;
+esac
 
 # musl is missing support for various primitives.
 # TODO disable secure memory is a bit scary. We should look into a proper
