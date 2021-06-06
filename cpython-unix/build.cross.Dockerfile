@@ -31,12 +31,13 @@ RUN apt-get update
 
 # Host building.
 RUN apt-get install \
+    bzip2 \
     gcc \
+    g++ \
     libc6-dev \
     libffi-dev \
     make \
     patch \
-    patchelf \
     perl \
     pkg-config \
     tar \

@@ -80,6 +80,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
     env["HOST_CC"] = settings["host_cc"]
+    env["HOST_CXX"] = settings["host_cxx"]
     env["CC"] = settings["target_cc"]
 
     env["PYBUILD_PLATFORM"] = build_platform
@@ -206,6 +207,7 @@ def simple_build(
     optimizations,
     dest_archive,
     extra_archives=None,
+    tools_path="deps",
 ):
     archive = download_entry(entry, DOWNLOADS_PATH)
 
@@ -238,7 +240,7 @@ def simple_build(
 
         build_env.run("build-%s.sh" % entry, environment=env)
 
-        build_env.get_tools_archive(dest_archive, "deps")
+        build_env.get_tools_archive(dest_archive, tools_path)
 
 
 def build_binutils(client, image, host_platform):
@@ -1047,6 +1049,7 @@ def main():
             "libressl",
             "ncurses",
             "openssl",
+            "patchelf",
             "sqlite",
             "tcl",
             "uuid",
@@ -1058,6 +1061,8 @@ def main():
             "xz",
             "zlib",
         ):
+            tools_path = "host" if action == "patchelf" else "deps"
+
             simple_build(
                 settings,
                 client,
@@ -1067,6 +1072,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                tools_path=tools_path,
             )
 
         elif action == "libX11":
