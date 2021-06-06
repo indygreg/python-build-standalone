@@ -1,4 +1,6 @@
 docker
 jinja2
 PyYAML
+# Undeclared dependency in docker 5.0 package.
+six
 zstandard
