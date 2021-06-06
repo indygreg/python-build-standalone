@@ -883,50 +883,50 @@ mkdir -p "${LIB_DYNLOAD}"
 touch "${LIB_DYNLOAD}/.empty"
 
 # Symlink libpython so we don't have 2 copies.
+case "${TARGET_TRIPLE}" in
+aarch64-unknown-linux-gnu)
+    PYTHON_ARCH="aarch64-linux-gnu"
+    ;;
+# This is too aggressive. But we don't have patches in place for
+# setting the platform name properly on non-Darwin.
+*-apple-*)
+    PYTHON_ARCH="darwin"
+    ;;
+armv7-unknown-linux-gnueabi)
+    PYTHON_ARCH="arm-linux-gnueabi"
+    ;;
+armv7-unknown-linux-gnueabihf)
+    PYTHON_ARCH="arm-linux-gnueabihf"
+    ;;
+i686-unknown-linux-gnu)
+    PYTHON_ARCH="i386-linux-gnu"
+    ;;
+mips-unknown-linux-gnu)
+    PYTHON_ARCH="mips-linux-gnu"
+    ;;
+mipsel-unknown-linux-gnu)
+    PYTHON_ARCH="mipsel-linux-gnu"
+    ;;
+mips64el-unknown-linux-gnuabi64)
+    PYTHON_ARCH="mips64el-linux-gnuabi64"
+    ;;
+s390x-unknown-linux-gnu)
+    PYTHON_ARCH="s390x-linux-gnu"
+    ;;
+x86_64-unknown-linux-*)
+    PYTHON_ARCH="x86_64-linux-gnu"
+    ;;
+*)
+    echo "unhandled target triple: ${TARGET_TRIPLE}"
+    exit 1
+esac
+
+LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.a
+ln -sf \
+    python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}-${PYTHON_ARCH}/${LIBPYTHON} \
+    ${ROOT}/out/python/install/lib/${LIBPYTHON}
+
 if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
-    case "${TARGET_TRIPLE}" in
-        aarch64-unknown-linux-gnu)
-            PYTHON_ARCH="aarch64-linux-gnu"
-            ;;
-        # This is too aggressive. But we don't have patches in place for
-        # setting the platform name properly on non-Darwin.
-        *-apple-*)
-            PYTHON_ARCH="darwin"
-            ;;
-        armv7-unknown-linux-gnueabi)
-            PYTHON_ARCH="arm-linux-gnueabi"
-            ;;
-        armv7-unknown-linux-gnueabihf)
-            PYTHON_ARCH="arm-linux-gnueabihf"
-            ;;
-        i686-unknown-linux-gnu)
-            PYTHON_ARCH="i386-linux-gnu"
-            ;;
-        mips-unknown-linux-gnu)
-            PYTHON_ARCH="mips-linux-gnu"
-            ;;
-        mipsel-unknown-linux-gnu)
-            PYTHON_ARCH="mipsel-linux-gnu"
-            ;;
-        mips64el-unknown-linux-gnuabi64)
-            PYTHON_ARCH="mips64el-linux-gnuabi64"
-            ;;
-        s390x-unknown-linux-gnu)
-            PYTHON_ARCH="s390x-linux-gnu"
-            ;;
-        x86_64-unknown-linux-*)
-            PYTHON_ARCH="x86_64-linux-gnu"
-            ;;
-        *)
-            echo "unhandled target triple: ${TARGET_TRIPLE}"
-            exit 1
-    esac
-
-    LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.a
-    ln -sf \
-        python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}-${PYTHON_ARCH}/${LIBPYTHON} \
-        ${ROOT}/out/python/install/lib/${LIBPYTHON}
-
     # Ditto for Python executable.
     ln -sf \
         python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX} \
