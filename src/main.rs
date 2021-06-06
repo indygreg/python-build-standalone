@@ -430,8 +430,14 @@ fn validate_elf(
         allowed_libraries.extend(extra.iter().map(|x| x.to_string()));
     }
 
-    allowed_libraries.push(format!("libpython{}.so.1.0", python_major_minor));
-    allowed_libraries.push(format!("libpython{}d.so.1.0", python_major_minor));
+    allowed_libraries.push(format!(
+        "$ORIGIN/../lib/libpython{}.so.1.0",
+        python_major_minor
+    ));
+    allowed_libraries.push(format!(
+        "$ORIGIN/../lib/libpython{}d.so.1.0",
+        python_major_minor
+    ));
 
     for lib in &elf.libraries {
         if !allowed_libraries.contains(&lib.to_string()) {
