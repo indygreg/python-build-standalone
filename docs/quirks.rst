@@ -4,27 +4,6 @@
 Behavior Quirks
 ===============
 
-.. _quirk_shebangs:
-
-Bad Shebangs in Python Scripts
-==============================
-
-Various Python scripts under ``install/bin/`` (e.g. ``pip``) have
-shebangs looking like ``#!/build/out/python/install/bin/python3``.
-This ``/build/out/`` directory is where the distribution is built
-from. Python is writing out shebangs for Python scripts with
-that absolute path.
-
-To work around this issue, you can mass rewrite the shebangs to
-point the directory where the distribution is extracted/installed
-to. Here is a sample shell one-liner to get you started::
-
-   $ find install/bin/ -type f -exec sed -i '1 s/^#!.*python.*/#!.\/python3/' {} \;
-
-Alternatively, you can sometimes execute ``python3 -m <module>``
-to get equivalent functionality to what the installed script would
-do. e.g. to run pip, ``python3 -m pip ...``.
-
 .. _quirk_backspace_key:
 
 Backscape Key Doesn't work in Python REPL

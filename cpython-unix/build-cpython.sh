@@ -933,6 +933,50 @@ if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then
         ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
 fi
 
+if [ ! -f ${ROOT}/out/python/install/bin/python3 ]; then
+    echo "python3 executable does not exist"
+    exit 1
+fi
+
+# Fixup shebangs in Python scripts to reference the local python interpreter.
+cat > ${ROOT}/fix_shebangs.py << EOF
+import os
+import sys
+
+ROOT = sys.argv[1]
+
+for f in sorted(os.listdir(ROOT)):
+    full = os.path.join(ROOT, f)
+
+    if os.path.islink(full) or not os.path.isfile(full):
+        continue
+
+    with open(full, "rb") as fh:
+        initial = fh.read(64)
+
+    if not initial.startswith(b"#!"):
+        continue
+
+    print("rewriting shebang in %s" % full)
+
+    lines = []
+
+    with open(full, "rb") as fh:
+        next(fh)
+
+        lines.extend([
+            b"#!/bin/sh\n",
+            b'"exec" "\$(dirname \$0)/python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}" "\$0" "\$@"\n',
+        ])
+
+        lines.extend(fh)
+
+    with open(full, "wb") as fh:
+        fh.write(b"".join(lines))
+EOF
+
+${BUILD_PYTHON} ${ROOT}/fix_shebangs.py ${ROOT}/out/python/install/bin
+
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
 for d in Modules Objects Parser Parser/pegen Programs Python; do
