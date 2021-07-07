@@ -62,6 +62,7 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     --sharedstatedir=/usr/com
     --with-terminfo-dirs=/usr/share/terminfo
     --with-default-terminfo-dir=/usr/share/terminfo
+    --with-abi-version=5
     --disable-db-install
   "
 fi
