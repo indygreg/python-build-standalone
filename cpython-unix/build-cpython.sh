@@ -443,7 +443,7 @@ mv tmp Modules/readline-libedit.c
 # Modules/_hashopenssl.c redefines some libcrypto symbols on Python 3.9 and
 # this makes the linker unhappy. So rename the symbols to work around.
 # https://bugs.python.org/issue41949.
-if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
     patch -p1 <<EOF
 diff --git a/Modules/_hashopenssl.c b/Modules/_hashopenssl.c
 index adc8653773..fc9070fc21 100644
