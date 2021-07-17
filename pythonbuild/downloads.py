@@ -301,10 +301,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.readline.txt",
     },
     "setuptools": {
-        "url": "https://files.pythonhosted.org/packages/71/a0/96ab4813ede181fa6c5d01c951dbf156b7d126f7589d0efa3f7861ce7a67/setuptools-56.1.0.tar.gz",
-        "size": 2109659,
-        "sha256": "7d9b5609ebda3db0f2e7c6d2fba807e9bd653e3a3a93ce3426b2b68260193a77",
-        "version": "56.1.0",
+        "url": "https://files.pythonhosted.org/packages/1d/32/94680de1e9153e4fd9d15f82a919c732a046a851b2ccd0c5b05f4ece346b/setuptools-57.2.0.tar.gz",
+        "size": 2144114,
+        "sha256": "a7e88b9bbaece494162d697d19525c567ab60c85dd7e2fd90cb7dfe8d8129a62",
+        "version": "57.2.0",
     },
     "sqlite": {
         "url": "https://www.sqlite.org/2021/sqlite-autoconf-3350500.tar.gz",
