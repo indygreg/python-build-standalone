@@ -82,9 +82,7 @@ aarch64-apple-darwin:
     - '-mmacosx-version-min=11.0'
   needs:
     - bzip2
-    - libedit
     - libffi
-    - ncurses
     - sqlite
     - tcl
     - tk
@@ -467,9 +465,7 @@ x86_64-apple-darwin:
     - '-mmacosx-version-min=10.9'
   needs:
     - bzip2
-    - libedit
     - libffi
-    - ncurses
     - sqlite
     - tcl
     - tk
