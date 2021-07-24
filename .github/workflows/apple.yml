@@ -257,3 +257,32 @@ jobs:
         with:
           name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
           path: dist/*
+
+  install-only:
+    needs:
+      - build
+    runs-on: 'ubuntu-20.04'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Download Python
+        uses: actions/download-artifact@v2
+        with:
+          name: cpython-3.9-x86_64-apple-darwin
+
+      - name: Repack Distribution
+        run: |
+          ./prune-distribution.py cpython-*-pgo+lto-*
+
+      - name: Upload Distribution
+        uses: actions/upload-artifact@v2
+        with:
+          name: cpython-install-only
+          path: cpython-*.tar.gz
