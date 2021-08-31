@@ -286,9 +286,9 @@ DOWNLOADS = {
         "version": "0.12",
     },
     "pip": {
-        "url": "https://files.pythonhosted.org/packages/52/e1/06c018197d8151383f66ebf6979d951995cf495629fc54149491f5d157d0/pip-21.2.4.tar.gz",
-        "size": 1564487,
-        "sha256": "0eb8a1516c3d138ae8689c0c1a60fde7143310832f9dc77e11d8a4bc62de193b",
+        "url": "https://files.pythonhosted.org/packages/ca/31/b88ef447d595963c01060998cb329251648acf4a067721b0452c45527eb8/pip-21.2.4-py3-none-any.whl",
+        "size": 1555100,
+        "sha256": "fa9ebb85d3fd607617c0c44aca302b1b45d87f9c2a1649b46c26167ca4296323",
         "version": "21.2.4",
     },
     "readline": {
@@ -301,9 +301,9 @@ DOWNLOADS = {
         "license_file": "LICENSE.readline.txt",
     },
     "setuptools": {
-        "url": "https://files.pythonhosted.org/packages/db/e2/c0ced9ccffb61432305665c22842ea120c0f649eec47ecf2a45c596707c4/setuptools-57.4.0.tar.gz",
-        "size": 2141309,
-        "sha256": "6bac238ffdf24e8806c61440e755192470352850f3419a52f26ffe0a1a64f465",
+        "url": "https://files.pythonhosted.org/packages/bd/25/5bdf7f1adeebd4e3fa76b2e2f045ae53ee208e40a4231ad0f0c3007e4353/setuptools-57.4.0-py3-none-any.whl",
+        "size": 819017,
+        "sha256": "a49230977aa6cfb9d933614d2f7b79036e9945c4cdd7583163f4e920b83418d6",
         "version": "57.4.0",
     },
     "sqlite": {

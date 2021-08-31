@@ -1909,8 +1909,8 @@ def build_cpython(
 
     python_version = entry["version"]
 
-    setuptools_archive = download_entry("setuptools", BUILD)
-    pip_archive = download_entry("pip", BUILD)
+    setuptools_wheel = download_entry("setuptools", BUILD)
+    pip_wheel = download_entry("pip", BUILD)
 
     if arch == "amd64":
         build_platform = "x64"
@@ -1930,8 +1930,6 @@ def build_cpython(
                 python_archive,
                 bzip2_archive,
                 openssl_archive,
-                pip_archive,
-                setuptools_archive,
                 sqlite_archive,
                 tk_bin_archive,
                 xz_archive,
@@ -2113,16 +2111,30 @@ def build_cpython(
             args, pcbuild_path, os.environ,
         )
 
-        # Install setuptools and pip.
+        # Install pip and setuptools.
         exec_and_log(
-            [str(install_dir / "python.exe"), "setup.py", "install"],
-            str(td / ("setuptools-%s" % DOWNLOADS["setuptools"]["version"])),
+            [
+                str(install_dir / "python.exe"),
+                str(pip_wheel / "pip"),
+                "install",
+                "--no-cache-dir",
+                "--no-index",
+                str(pip_wheel),
+            ],
+            td,
             os.environ,
         )
 
         exec_and_log(
-            [str(install_dir / "python.exe"), "setup.py", "install"],
-            str(td / ("pip-%s" % DOWNLOADS["pip"]["version"])),
+            [
+                str(install_dir / "python.exe"),
+                str(pip_wheel / "pip"),
+                "install",
+                "--no-cache-dir",
+                "--no-index",
+                str(setuptools_wheel),
+            ],
+            td,
             os.environ,
         )
 

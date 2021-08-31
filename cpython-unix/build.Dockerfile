@@ -23,4 +23,5 @@ RUN apt-get install \
     tar \
     xz-utils \
     unzip \
+    zip \
     zlib1g-dev

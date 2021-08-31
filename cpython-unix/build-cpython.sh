@@ -20,8 +20,74 @@ export LLVM_PROFDATA=${TOOLS_PATH}/${TOOLCHAIN}/bin/llvm-profdata
 find ${TOOLS_PATH}/deps -name '*.so*' -exec rm {} \;
 
 tar -xf Python-${PYTHON_VERSION}.tar.xz
-tar -xf setuptools-${SETUPTOOLS_VERSION}.tar.gz
-tar -xf pip-${PIP_VERSION}.tar.gz
+
+PIP_WHEEL="${ROOT}/pip-${PIP_VERSION}-py3-none-any.whl"
+SETUPTOOLS_WHEEL="${ROOT}/setuptools-${SETUPTOOLS_VERSION}-py3-none-any.whl"
+
+chmod 644 "${PIP_WHEEL}"
+chmod 644 "${SETUPTOOLS_WHEEL}"
+
+# pip and setuptools don't properly handle the case where the current executable
+# isn't dynamic. This is tracked by https://github.com/pypa/pip/issues/6543.
+# We need to patch both.
+#
+# Ideally we'd do this later in the build. However, since we use the pip
+# wheel to bootstrap itself, we need to patch the wheel before it is used.
+#
+# Wheels are zip files. So we simply unzip, patch, and rezip.
+mkdir pip-tmp
+pushd pip-tmp
+unzip "${PIP_WHEEL}"
+
+patch -p1 <<EOF
+diff --git a/pip/_internal/utils/glibc.py b/pip/_internal/utils/glibc.py
+index 819979d80..4ae91e364 100644
+--- a/pip/_internal/utils/glibc.py
++++ b/pip/_internal/utils/glibc.py
+@@ -47,7 +47,10 @@ def glibc_version_string_ctypes():
+     # manpage says, "If filename is NULL, then the returned handle is for the
+     # main program". This way we can let the linker do the work to figure out
+     # which libc our process is actually using.
+-    process_namespace = ctypes.CDLL(None)
++    try:
++        process_namespace = ctypes.CDLL(None)
++    except OSError:
++        return None
+     try:
+         gnu_get_libc_version = process_namespace.gnu_get_libc_version
+     except AttributeError:
+EOF
+
+zip -r "${PIP_WHEEL}" *
+popd
+rm -rf pip-tmp
+
+mkdir setuptools-tmp
+pushd setuptools-tmp
+unzip "${SETUPTOOLS_WHEEL}"
+
+patch -p1 <<EOF
+diff --git a/setuptools/_vendor/packaging/tags.py b/setuptools/_vendor/packaging/tags.py
+index 9064910b..c541e648 100644
+--- a/setuptools/_vendor/packaging/tags.py
++++ b/setuptools/_vendor/packaging/tags.py
+@@ -475,7 +475,10 @@ def _glibc_version_string_ctypes():
+     # which libc our process is actually using.
+     #
+     # Note: typeshed is wrong here so we are ignoring this line.
+-    process_namespace = ctypes.CDLL(None)  # type: ignore
++    try:
++        process_namespace = ctypes.CDLL(None)  # type: ignore
++    except OSError:
++        return None
+     try:
+         gnu_get_libc_version = process_namespace.gnu_get_libc_version
+     except AttributeError:
+EOF
+
+zip -r "${SETUPTOOLS_WHEEL}" *
+popd
+rm -rf setuptools-tmp
 
 # If we are cross-compiling, we need to build a host Python to use during
 # the build.
@@ -50,7 +116,9 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
       ;;
   esac
 
-  CC="${HOST_CC}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
+  CC="${HOST_CC}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure \
+    --prefix "${TOOLS_PATH}/pyhost" \
+    --without-ensurepip
 
   make -j "${NUM_CPUS}" install
 
@@ -770,63 +838,17 @@ if [ "${PYBUILD_SHARED}" = "1" ]; then
     fi
 fi
 
-# Install pip so we can patch it to work with non-dynamic executables
-# and work around https://github.com/pypa/pip/issues/6543. But pip's bundled
-# setuptools has the same bug! So we need to install a patched version.
-pushd ${ROOT}/setuptools-${SETUPTOOLS_VERSION}
-patch -p1 <<EOF
-diff --git a/setuptools/_vendor/packaging/tags.py b/setuptools/_vendor/packaging/tags.py
-index 9064910b..c541e648 100644
---- a/setuptools/_vendor/packaging/tags.py
-+++ b/setuptools/_vendor/packaging/tags.py
-@@ -475,7 +475,10 @@ def _glibc_version_string_ctypes():
-     # which libc our process is actually using.
-     #
-     # Note: typeshed is wrong here so we are ignoring this line.
--    process_namespace = ctypes.CDLL(None)  # type: ignore
-+    try:
-+        process_namespace = ctypes.CDLL(None)  # type: ignore
-+    except OSError:
-+        return None
-     try:
-         gnu_get_libc_version = process_namespace.gnu_get_libc_version
-     except AttributeError:
-EOF
+# Install setuptools and pip as they are common tools that should be in any
+# Python distribution.
+#
+# We disabled ensurepip because we insist on providing our own pip and don't
+# want the final product to possibly be contaminated by another version.
+#
+# It is possible for the Python interpreter to run wheels directly. So we
+# simply use our pip to install self. Kinda crazy, but it works!
 
-${BUILD_PYTHON} setup.py install
-popd
-
-pushd ${ROOT}/pip-${PIP_VERSION}
-
-# pip 21 shipped DOS line endings. https://github.com/pypa/pip/issues/9638.
-# Let's fix that.
-if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    find . -name '*.py' -exec perl -i -pe 's/\r\n$/\n/g' {} \;
-else
-    find . -name '*.py' -exec sed -i 's/\r$//g' {} \;
-fi
-
-patch -p1 <<EOF
-diff --git a/src/pip/_internal/utils/glibc.py b/src/pip/_internal/utils/glibc.py
-index 819979d80..4ae91e364 100644
---- a/src/pip/_internal/utils/glibc.py
-+++ b/src/pip/_internal/utils/glibc.py
-@@ -47,7 +47,10 @@ def glibc_version_string_ctypes():
-     # manpage says, "If filename is NULL, then the returned handle is for the
-     # main program". This way we can let the linker do the work to figure out
-     # which libc our process is actually using.
--    process_namespace = ctypes.CDLL(None)
-+    try:
-+        process_namespace = ctypes.CDLL(None)
-+    except OSError:
-+        return None
-     try:
-         gnu_get_libc_version = process_namespace.gnu_get_libc_version
-     except AttributeError:
-EOF
-
-${BUILD_PYTHON} setup.py install
-popd
+${BUILD_PYTHON} "${PIP_WHEEL}/pip" install --prefix="${ROOT}/out/python/install" --no-cache-dir --no-index "${PIP_WHEEL}"
+${BUILD_PYTHON} "${PIP_WHEEL}/pip" install --prefix="${ROOT}/out/python/install" --no-cache-dir --no-index "${SETUPTOOLS_WHEEL}"
 
 # Emit metadata to be used in PYTHON.json.
 cat > ${ROOT}/generate_metadata.py << EOF
