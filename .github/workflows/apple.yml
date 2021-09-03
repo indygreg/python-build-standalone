@@ -7,7 +7,7 @@ jobs:
   # We need to build our own sccache until e6326bc8a20ee06af37e16a3a7a14e3374c66c66
   # is in a released version.
   sccache:
-    runs-on: 'macos-10.15'
+    runs-on: 'macos-11'
     steps:
       - uses: actions-rs/toolchain@v1
         with:
@@ -41,7 +41,7 @@ jobs:
           path: target/release/sccache
 
   pythonbuild:
-    runs-on: 'macos-10.15'
+    runs-on: 'macos-11'
     steps:
       - uses: actions/checkout@v2
 
@@ -73,7 +73,7 @@ jobs:
   toolchain:
     needs:
       - sccache
-    runs-on: 'macos-10.15'
+    runs-on: 'macos-11'
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -185,7 +185,7 @@ jobs:
     needs:
       - pythonbuild
       - toolchain
-    runs-on: 'macos-10.15'
+    runs-on: 'macos-11'
     steps:
       - uses: actions/checkout@v2
         with:
@@ -210,16 +210,16 @@ jobs:
 
       - name: Build
         run: |
-          export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+          export APPLE_HOST_SDK_PATH=/Applications/Xcode_12.5.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk
 
           if [ "${{ matrix.build.target_triple }}" = "aarch64-apple-darwin" ]; then
-            export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+            export APPLE_SDK_PATH=/Applications/Xcode_12.5.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk
           elif [ "${{ matrix.build.target_triple }}" = "aarch64-apple-ios" ]; then
-            export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.4.sdk
+            export APPLE_SDK_PATH=/Applications/Xcode_12.5.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.5.sdk
           elif [ "${{ matrix.build.target_triple }}" = "x86_64-apple-darwin" ]; then
-            export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+            export APPLE_SDK_PATH=/Applications/Xcode_12.5.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.3.sdk
           elif [ "${{ matrix.build.target_triple }}" = "x86_64-apple-ios" ]; then
-            export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator14.4.sdk
+            export APPLE_SDK_PATH=/Applications/Xcode_12.5.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator14.5.sdk
           else
             echo "unhandled target triple: ${{ matrix.build.target_triple }}"
             exit 1
