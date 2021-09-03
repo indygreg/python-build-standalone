@@ -52,18 +52,6 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
 
   CC="${HOST_CC}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure --prefix "${TOOLS_PATH}/pyhost"
 
-  # When building on macOS 10.15 (and possibly earlier) using the 11.0
-  # SDK, the _ctypes extension fails to import due to a missing symbol on
-  # _dyld_shared_cache_contains_path. The cause of this is unclear.
-  # But the missing _ctypes extension causes problems later in the
-  # build.
-  #
-  # We work around this by disabling the feature, which isn't required
-  # for our host builds.
-  if [[ "${PYBUILD_PLATFORM}" = "macos" ]]; then
-    sed -i "" "s/#define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH 1//g" pyconfig.h || true
-  fi
-
   make -j "${NUM_CPUS}" install
 
   # configure will look for a pythonX.Y executable. Install our host Python
@@ -360,6 +348,47 @@ diff --git a/Makefile.pre.in b/Makefile.pre.in
 EOF
     fi
 fi
+
+# The macOS code for sniffing for _dyld_shared_cache_contains_path is a bit buggy
+# and doesn't support all our building scenarios. We replace it with something
+# more reasonable. This patch likely isn't generally appropriate. But since we
+# guarantee we're building with a 11.0+ SDK, it should be safe.
+patch -p1 << "EOF"
+diff --git a/Modules/_ctypes/callproc.c b/Modules/_ctypes/callproc.c
+index b0f1e0bd04..80e81fe65c 100644
+--- a/Modules/_ctypes/callproc.c
++++ b/Modules/_ctypes/callproc.c
+@@ -1450,29 +1450,8 @@ copy_com_pointer(PyObject *self, PyObject *args)
+ }
+ #else
+ #ifdef __APPLE__
+-#ifdef HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH
+ #define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
+     __builtin_available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, *)
+-#else
+-// Support the deprecated case of compiling on an older macOS version
+-static void *libsystem_b_handle;
+-static bool (*_dyld_shared_cache_contains_path)(const char *path);
+-
+-__attribute__((constructor)) void load_dyld_shared_cache_contains_path(void) {
+-    libsystem_b_handle = dlopen("/usr/lib/libSystem.B.dylib", RTLD_LAZY);
+-    if (libsystem_b_handle != NULL) {
+-        _dyld_shared_cache_contains_path = dlsym(libsystem_b_handle, "_dyld_shared_cache_contains_path");
+-    }
+-}
+-
+-__attribute__((destructor)) void unload_dyld_shared_cache_contains_path(void) {
+-    if (libsystem_b_handle != NULL) {
+-        dlclose(libsystem_b_handle);
+-    }
+-}
+-#define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
+-    _dyld_shared_cache_contains_path != NULL
+-#endif
+
+ static PyObject *py_dyld_shared_cache_contains_path(PyObject *self, PyObject *args)
+ {
+EOF
 
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.
