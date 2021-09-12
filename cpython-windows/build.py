@@ -1869,15 +1869,16 @@ def collect_python_build_artifacts(
         {"name": "shlwapi", "system": True},
         {"name": "version", "system": True},
         {"name": "ws2_32", "system": True},
-        # pathcch is Windows 8+ only. Python 3.9 dropped support for Windows 7.
-        # So this dependency is technically incorrect on Python 3.8.
-        {"name": "pathcch", "system": True},
         # In addition to the ones explicitly in the project, there are some
         # implicit link libraries not present. We list those as well.
         {"name": "Ole32", "system": True},
         {"name": "OleAut32", "system": True},
         {"name": "User32", "system": True},
     ]
+
+    # pathcch is required on 3.9+ and its presence drops support for Windows 7.
+    if python_majmin != "3.8":
+        res["core"]["links"].append({"name": "pathcch", "system": True})
 
     # Copy files for extensions into their own directories.
     for ext in sorted(extension_projects):
