@@ -351,15 +351,6 @@ const MACHO_BANNED_SYMBOLS_NON_AARCH64: &[&str] = &[
     "_preadv", "_pwritev",
 ];
 
-const MACHO_BANNED_SYMBOLS_NON_AARCH64_PYTHON_38: &[&str] = &[
-    // This symbol was improperly introduced into the 10.15 SDK and wasn't
-    // guarded by availability checks. Users in the wild have problems linking
-    // against a modern macOS SDK. So to keep compatibility with the non-buggy
-    // 10.15 SDK, we prevent the presence of this symbol.
-    // See https://github.com/indygreg/PyOxidizer/issues/373 for more.
-    "___darwin_check_fd_set_overflow",
-];
-
 static WANTED_WINDOWS_STATIC_PATHS: Lazy<BTreeSet<PathBuf>> = Lazy::new(|| {
     [
         PathBuf::from("python/build/lib/libffi.lib"),
@@ -544,9 +535,7 @@ fn validate_macho(
             let (name, _) = symbol?;
 
             if target_triple != "aarch64-apple-darwin"
-                && (MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name)
-                    || (python_major_minor == "3.8"
-                        && MACHO_BANNED_SYMBOLS_NON_AARCH64_PYTHON_38.contains(&name)))
+                && (MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name))
             {
                 errors.push(format!(
                     "{} references unallowed symbol {}",
