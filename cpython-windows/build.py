@@ -1322,6 +1322,10 @@ def run_msbuild(
         "/property:IncludeTests=%s" % ("false" if static else "true"),
         "/property:OverrideVersion=%s" % python_version,
         "/property:IncludeCTypes=true",
+        # We pin the Windows 10 SDK version to make builds more deterministic.
+        # This can also work around known incompatibilities with the Windows 11
+        # SDK as of at least CPython 3.9.7.
+        "/property:DefaultWindowsSDKVersion=10.0.20348.0",
     ]
 
     exec_and_log(args, str(pcbuild_path), os.environ)
