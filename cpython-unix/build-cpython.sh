@@ -24,9 +24,6 @@ tar -xf Python-${PYTHON_VERSION}.tar.xz
 PIP_WHEEL="${ROOT}/pip-${PIP_VERSION}-py3-none-any.whl"
 SETUPTOOLS_WHEEL="${ROOT}/setuptools-${SETUPTOOLS_VERSION}-py3-none-any.whl"
 
-chmod 644 "${PIP_WHEEL}"
-chmod 644 "${SETUPTOOLS_WHEEL}"
-
 # pip and setuptools don't properly handle the case where the current executable
 # isn't dynamic. This is tracked by https://github.com/pypa/pip/issues/6543.
 # We need to patch both.
@@ -38,6 +35,7 @@ chmod 644 "${SETUPTOOLS_WHEEL}"
 mkdir pip-tmp
 pushd pip-tmp
 unzip "${PIP_WHEEL}"
+rm -f "${PIP_WHEEL}"
 
 patch -p1 <<EOF
 diff --git a/pip/_internal/utils/glibc.py b/pip/_internal/utils/glibc.py
@@ -65,6 +63,7 @@ rm -rf pip-tmp
 mkdir setuptools-tmp
 pushd setuptools-tmp
 unzip "${SETUPTOOLS_WHEEL}"
+rm -f "${SETUPTOOLS_WHEEL}"
 
 patch -p1 <<EOF
 diff --git a/setuptools/_vendor/packaging/tags.py b/setuptools/_vendor/packaging/tags.py
