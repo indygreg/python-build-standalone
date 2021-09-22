@@ -1550,6 +1550,22 @@ def build_libffi(
                 b"--build=$BUILD --host=$HOST --disable-shared;",
             )
 
+            # Remove references to copying .dll and .pdb files.
+            try:
+                static_replace_in_file(
+                    prepare_libffi,
+                    b"copy %ARTIFACTS%\.libs\libffi-*.dll %_LIBFFI_OUT% || exit /B 1",
+                    b"",
+                )
+                static_replace_in_file(
+                    prepare_libffi,
+                    b"copy %ARTIFACTS%\.libs\libffi-*.lib %_LIBFFI_OUT% || exit /B 1",
+                    b"",
+                )
+            except NoSearchStringError:
+                # This patch is only needed on CPython 3.9+.
+                pass
+
         env = dict(os.environ)
         env["LIBFFI_SOURCE"] = str(ffi_source_path)
         env["VCVARSALL"] = str(find_vcvarsall_path())
