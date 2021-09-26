@@ -2408,13 +2408,11 @@ def main():
         default="static-noopt",
         help="How to compile Python",
     )
-    parser.add_argument("--sh", help="Path to sh.exe in a cygwin or mingw installation")
+    parser.add_argument(
+        "--sh", required=True, help="Path to sh.exe in a cygwin or mingw installation"
+    )
 
     args = parser.parse_args()
-
-    if args.python in ("cpython-3.8", "cpython-3.9") and not args.sh:
-        print("--sh required when building Python 3.8+")
-        return 1
 
     log_path = BUILD / "build.log"
 
