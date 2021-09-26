@@ -13,24 +13,6 @@ tar -xf gdbm-${GDBM_VERSION}.tar.gz
 
 pushd gdbm-${GDBM_VERSION}
 
-# Patch to work with -fno-common, which LLVM 11 enabled.
-patch -p1 <<EOF
-diff --git a/src/parseopt.c b/src/parseopt.c
-index a7b504f..1f6b561 100644
---- a/src/parseopt.c
-+++ b/src/parseopt.c
-@@ -255,8 +255,6 @@ print_option_descr (const char *descr, size_t lmargin, size_t rmargin)
- }
- 
- char *parseopt_program_name;
--char *parseopt_program_doc;
--char *parseopt_program_args;
- const char *program_bug_address = "<" PACKAGE_BUGREPORT ">";
- void (*parseopt_help_hook) (FILE *stream);
- 
-EOF
-
-
 # CPython setup.py looks for libgdbm_compat and gdbm-ndbm.h,
 # which require --enable-libgdbm-compat.
 CLFAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ./configure \
