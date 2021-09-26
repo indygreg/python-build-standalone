@@ -2154,6 +2154,21 @@ def build_cpython(
             os.environ,
         )
 
+        # The executables in the Scripts/ directory don't work because they reference
+        # python.dll in the wrong path. You can run these via e.g. `python.exe -m pip`.
+        # So just delete them for now.
+        for filename in sorted(os.listdir(install_dir / "Scripts")):
+            assert filename.startswith("pip") and filename.endswith(".exe")
+            p = install_dir / "Scripts" / filename
+            log("removing non-functional executable: %s" % p)
+            os.unlink(p)
+
+        # But this leaves the Scripts directory empty, which we don't want. So
+        # create a placeholder file to ensure the directory is created on archive
+        # extract.
+        with (install_dir / "Scripts" / ".empty").open("ab"):
+            pass
+
         # Now copy the build artifacts into the output directory.
         build_info = collect_python_build_artifacts(
             pcbuild_path,

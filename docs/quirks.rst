@@ -143,6 +143,20 @@ run time, the ``TCL_LIBRARY`` environment variable is set from within
 the process before the Python interpreter is initialized. This ensures the
 ``.tcl`` files from the Python distribution are used.
 
+.. _quirk_windows_no_pip:
+
+No ``pip.exe`` on Windows
+=========================
+
+The Windows distributions have ``pip`` installed however no ``Scripts/pip.exe``,
+``Scripts/pip3.exe``, and ``Scripts/pipX.Y.exe`` files are provided because
+the way these executables are built isn't portable. (It might be possible to
+change how these are built to make them portable.)
+
+To use pip, run ``python.exe -m pip``. (It is generally a best practice to
+invoke pip via ``python -m pip`` on all platforms so you can be explicit
+about the ``python`` executable that pip uses.)
+
 .. _quirk_macos_linking:
 
 Linking Static Library on macOS
