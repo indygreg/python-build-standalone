@@ -887,6 +887,17 @@ def hack_project_files(
         br'<ClInclude Include="$(lzmaDir)windows\vs2017\config.h" />',
     )
 
+    # Our logic for rewriting extension projects gets confused by _sqlite.vcxproj not
+    # having a `<PreprocessorDefinitions>` line in 3.10+. So adjust that.
+    try:
+        static_replace_in_file(
+            pcbuild_path / "_sqlite3.vcxproj",
+            br"<AdditionalIncludeDirectories>$(sqlite3Dir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>",
+            b"<AdditionalIncludeDirectories>$(sqlite3Dir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\r\n      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>",
+        )
+    except NoSearchStringError:
+        pass
+
     # Our custom OpenSSL build has applink.c in a different location
     # from the binary OpenSSL distribution. Update it.
     ssl_proj = pcbuild_path / "_ssl.vcxproj"
@@ -1710,6 +1721,7 @@ def collect_python_build_artifacts(
         "_testinternalcapi",
         "_testmultiphase",
         "xxlimited",
+        "xxlimited_35",
     }
 
     other_projects = {"pythoncore"}
@@ -2398,7 +2410,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--python",
-        choices={"cpython-3.8", "cpython-3.9"},
+        choices={"cpython-3.8", "cpython-3.9", "cpython-3.10"},
         default="cpython-3.9",
         help="Python distribution to build",
     )

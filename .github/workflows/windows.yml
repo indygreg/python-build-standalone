@@ -41,6 +41,7 @@ jobs:
         py:
           - 'cpython-3.8'
           - 'cpython-3.9'
+          - 'cpython-3.10'
         vcvars:
           - 'vcvars32.bat'
           - 'vcvars64.bat'
@@ -94,6 +95,12 @@ jobs:
           path: dist/*
 
   install-only:
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '3.9'
+          - '3.10'
     needs:
       - build
     runs-on: 'ubuntu-20.04'
@@ -110,7 +117,7 @@ jobs:
       - name: Download Python
         uses: actions/download-artifact@v2
         with:
-          name: cpython-3.9-vcvars64.bat
+          name: 'cpython-${{ matrix.version }}-vcvars64.bat'
 
       - name: Repack Distribution
         run: |
@@ -119,5 +126,5 @@ jobs:
       - name: Upload Distribution
         uses: actions/upload-artifact@v2
         with:
-          name: cpython-install-only
+          name: 'cpython-install-only-${{ matrix.version }}'
           path: cpython-*.tar.gz
