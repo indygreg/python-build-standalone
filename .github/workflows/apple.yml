@@ -130,6 +130,16 @@ jobs:
             py: 'cpython-3.9'
             optimizations: 'lto'
 
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+
           # macOS on Intel hardware. This is pretty straightforward. We exclude
           # noopt because it doesn't provide any compelling advantages over PGO
           # or LTO builds.
@@ -157,6 +167,19 @@ jobs:
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             py: 'cpython-3.9'
+            optimizations: 'pgo+lto'
+
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.10'
+            optimizations: 'pgo'
+          - target_triple: 'x86_64-apple-darwin'
+            py: 'cpython-3.10'
             optimizations: 'pgo+lto'
 
           # iOS targeting mobile hardware. Can't do PGO during cross-compiles.
@@ -244,6 +267,12 @@ jobs:
           path: dist/*
 
   install-only:
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '3.9'
+          - '3.10'
     needs:
       - build
     runs-on: 'ubuntu-20.04'
@@ -260,7 +289,7 @@ jobs:
       - name: Download Python
         uses: actions/download-artifact@v2
         with:
-          name: cpython-3.9-x86_64-apple-darwin
+          name: 'cpython-${{ matrix.version }}-x86_64-apple-darwin'
 
       - name: Repack Distribution
         run: |
@@ -269,5 +298,5 @@ jobs:
       - name: Upload Distribution
         uses: actions/upload-artifact@v2
         with:
-          name: cpython-install-only
+          name: 'cpython-${{ matrix.version }}-install-only'
           path: cpython-*.tar.gz

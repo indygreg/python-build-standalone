@@ -201,6 +201,16 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
                 required: false,
             },
             MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.10.dylib".to_string(),
+                max_compatibility_version: "3.10.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.10d.dylib".to_string(),
+                max_compatibility_version: "3.10.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
                 name: "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit".to_string(),
                 max_compatibility_version: "45.0.0".try_into().unwrap(),
                 required: true,
@@ -296,6 +306,16 @@ static IOS_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
         MachOAllowedDylib {
             name: "@executable_path/../lib/libpython3.9d.dylib".to_string(),
             max_compatibility_version: "3.9.0".try_into().unwrap(),
+            required: false,
+        },
+        MachOAllowedDylib {
+            name: "@executable_path/../lib/libpython3.10.dylib".to_string(),
+            max_compatibility_version: "3.10.0".try_into().unwrap(),
+            required: false,
+        },
+        MachOAllowedDylib {
+            name: "@executable_path/../lib/libpython3.10d.dylib".to_string(),
+            max_compatibility_version: "3.10.0".try_into().unwrap(),
             required: false,
         },
         // For some reason, CoreFoundation is present in debug/noopt builds but not

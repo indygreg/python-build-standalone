@@ -57,6 +57,7 @@ aarch64-apple-darwin:
     - macos
   pythons_supported:
     - '3.9'
+    - '3.10'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -451,6 +452,7 @@ x86_64-apple-darwin:
   pythons_supported:
     - '3.8'
     - '3.9'
+    - '3.10'
   needs_toolchain: true
   apple_sdk_platform: macosx
   host_cc: clang
