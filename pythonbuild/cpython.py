@@ -168,6 +168,7 @@ def derive_setup_local(
     if debug:
         # Doesn't work in debug builds.
         disabled.add(b"xxlimited")
+        disabled.add(b"xxlimited_35")
 
     with tarfile.open(str(cpython_source_archive)) as tf:
         # Setup.dist removed in Python 3.8.
