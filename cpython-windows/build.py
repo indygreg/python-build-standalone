@@ -1184,8 +1184,45 @@ else:
     pythonapi = PyDLL(None)
 """
 
+SYSMODULE_WINVER_SEARCH = b"""
+#ifdef MS_COREDLL
+    SET_SYS("dllhandle", PyLong_FromVoidPtr(PyWin_DLLhModule));
+    SET_SYS_FROM_STRING("winver", PyWin_DLLVersionString);
+#endif
+"""
 
-def hack_source_files(source_path: pathlib.Path, static: bool):
+SYSMODULE_WINVER_REPLACE = b"""
+#ifdef MS_COREDLL
+    SET_SYS("dllhandle", PyLong_FromVoidPtr(PyWin_DLLhModule));
+    SET_SYS_FROM_STRING("winver", PyWin_DLLVersionString);
+#else
+    SET_SYS_FROM_STRING("winver", "%s");
+#endif
+"""
+
+SYSMODULE_WINVER_SEARCH_38 = b"""
+#ifdef MS_COREDLL
+    SET_SYS_FROM_STRING("dllhandle",
+                        PyLong_FromVoidPtr(PyWin_DLLhModule));
+    SET_SYS_FROM_STRING("winver",
+                        PyUnicode_FromString(PyWin_DLLVersionString));
+#endif
+"""
+
+
+SYSMODULE_WINVER_REPLACE_38 = b"""
+#ifdef MS_COREDLL
+    SET_SYS_FROM_STRING("dllhandle",
+                        PyLong_FromVoidPtr(PyWin_DLLhModule));
+    SET_SYS_FROM_STRING("winver",
+                        PyUnicode_FromString(PyWin_DLLVersionString));
+#else
+    SET_SYS_FROM_STRING("winver", PyUnicode_FromString("%s"));
+#endif
+"""
+
+
+def hack_source_files(source_path: pathlib.Path, static: bool, python_version: str):
     """Apply source modifications to make things work."""
 
     # The PyAPI_FUNC, PyAPI_DATA, and PyMODINIT_FUNC macros define symbol
@@ -1285,6 +1322,24 @@ def hack_source_files(source_path: pathlib.Path, static: bool):
             CTYPES_INIT_REPLACE.strip(),
             b"pythonapi = PyDLL(_sys.executable)",
         )
+
+    # The `sys` module only populates `sys.winver` if MS_COREDLL is defined,
+    # which it isn't in static builds. We know what the version should be, so
+    # we go ahead and set it.
+    if static:
+        # Source changed in 3.10.
+        try:
+            static_replace_in_file(
+                source_path / "Python" / "sysmodule.c",
+                SYSMODULE_WINVER_SEARCH,
+                SYSMODULE_WINVER_REPLACE % python_version[0:3].encode("ascii"),
+            )
+        except NoSearchStringError:
+            static_replace_in_file(
+                source_path / "Python" / "sysmodule.c",
+                SYSMODULE_WINVER_SEARCH_38,
+                SYSMODULE_WINVER_REPLACE_38 % python_version[0:3].encode("ascii"),
+            )
 
     # Producing statically linked binaries invalidates assumptions in the
     # layout tool. Update the tool accordingly.
@@ -1999,7 +2054,9 @@ def build_cpython(
             static=static,
             honor_allow_missing_preprocessor=python_entry_name == "cpython-3.8",
         )
-        hack_source_files(cpython_source_path, static=static)
+        hack_source_files(
+            cpython_source_path, static=static, python_version=python_version
+        )
 
         if pgo:
             run_msbuild(
