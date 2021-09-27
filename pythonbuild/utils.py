@@ -4,6 +4,7 @@
 
 import gzip
 import hashlib
+import http.client
 import io
 import multiprocessing
 import os
@@ -243,13 +244,19 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
 
     tmp = path.with_name("%s.tmp" % path.name)
 
-    try:
-        with tmp.open("wb") as fh:
-            for chunk in secure_download_stream(url, size, sha256):
-                fh.write(chunk)
-    except IntegrityError:
-        tmp.unlink()
-        raise
+    for _ in range(5):
+        try:
+            try:
+                with tmp.open("wb") as fh:
+                    for chunk in secure_download_stream(url, size, sha256):
+                        fh.write(chunk)
+
+                break
+            except IntegrityError:
+                tmp.unlink()
+                raise
+        except http.client.HTTPException as e:
+            print("HTTP exception; retrying: %s" % e)
 
     tmp.rename(path)
     print("successfully downloaded %s" % url)
