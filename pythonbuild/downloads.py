@@ -155,6 +155,7 @@ DOWNLOADS = {
         "licenses": ["BSD-3-Clause"],
         "license_file": "LICENSE.libedit.txt",
     },
+    # libffi 3.4 has trouble building with musl due to Linux headers wonkiness.
     "libffi": {
         "url": "https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz",
         "size": 1305466,
