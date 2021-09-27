@@ -536,27 +536,6 @@ EOF
 sed s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c > tmp
 mv tmp Modules/readline-libedit.c
 
-# Modules/_hashopenssl.c redefines some libcrypto symbols on Python 3.9 and
-# this makes the linker unhappy. So rename the symbols to work around.
-# https://bugs.python.org/issue41949.
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
-    patch -p1 <<EOF
-diff --git a/Modules/_hashopenssl.c b/Modules/_hashopenssl.c
-index adc8653773..fc9070fc21 100644
---- a/Modules/_hashopenssl.c
-+++ b/Modules/_hashopenssl.c
-@@ -32,7 +32,7 @@
- #  error "OPENSSL_THREADS is not defined, Python requires thread-safe OpenSSL"
- #endif
-
--#if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined(LIBRESSL_VERSION_NUMBER)
-+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
- /* OpenSSL < 1.1.0 */
- #define EVP_MD_CTX_new EVP_MD_CTX_create
- #define EVP_MD_CTX_free EVP_MD_CTX_destroy
-EOF
-fi
-
 # iOS doesn't have system(). Teach posixmodule.c about that.
 if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
     patch -p1 <<EOF

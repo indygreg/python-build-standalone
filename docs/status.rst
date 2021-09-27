@@ -96,27 +96,6 @@ This test fails on Windows::
 
     ----------------------------------------------------------------------
 
-``test_ssl``
-------------
-
-Known failing on: Linux
-
-When building against LibreSSL instead of OpenSSL, ``test_ssl`` fails
-in the following manner::
-
-    ======================================================================
-    FAIL: test_openssl_version (test.test_ssl.BasicSocketTests)
-    ----------------------------------------------------------------------
-    Traceback (most recent call last):
-      File "/tmp/tmpinhxfy8t/python/install/lib/python3.7/test/test_ssl.py", line 573, in test_openssl_version
-        (s, t, hex(n)))
-    AssertionError: False is not true : ('LibreSSL 3.0.2', (2, 0, 0, 0, 0), '0x20000000')
-
-    ----------------------------------------------------------------------
-
-This seems to be the test assuming the existence of OpenSSL and not
-coping with LibreSSl. This failure seems pretty benign.
-
 ``test_subprocess``
 -------------------
 

@@ -171,15 +171,6 @@ DOWNLOADS = {
         "sha256": "f8f7ca635fa54bcaef372fd5fd9028f394992a743d73453088fcadc1dbf3a704",
         "version": "0.1",
     },
-    "libressl": {
-        "url": "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-3.3.3.tar.gz",
-        "size": 3848064,
-        "sha256": "a471565b36ccd1a70d0bd7d37c6e95c43a26a62829b487d9d2cdebfe58be3066",
-        "version": "3.3.3",
-        "library_names": ["crypto", "ssl"],
-        "licenses": ["OpenSSL"],
-        "license_file": "LICENSE.libressl.txt",
-    },
     "libunwind": {
         "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/libunwind-12.0.1.src.tar.xz",
         "size": 98348,

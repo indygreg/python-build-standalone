@@ -499,7 +499,6 @@ def python_build_info(
     config_c_in,
     setup_dist,
     setup_local,
-    libressl=False,
 ):
     """Obtain build metadata for the Python distribution."""
 
@@ -626,12 +625,7 @@ def python_build_info(
             "variant": d["variant"],
         }
 
-        if libressl:
-            ignore_keys = {"openssl"}
-        else:
-            ignore_keys = {"libressl"}
-
-        add_licenses_to_extension_entry(entry, ignore_keys=ignore_keys)
+        add_licenses_to_extension_entry(entry)
 
         bi["extensions"].setdefault(extension, []).append(entry)
 
@@ -713,7 +707,6 @@ def build_cpython(
     target_triple,
     optimizations,
     dest_archive,
-    libressl=False,
     version=None,
 ):
     """Build CPython in a Docker image'"""
@@ -867,7 +860,6 @@ def build_cpython(
                 config_c_in,
                 setup_dist_content,
                 setup_local_content,
-                libressl=libressl,
             ),
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
@@ -1046,7 +1038,6 @@ def main():
             "kbproto",
             "libffi",
             "libpthread-stubs",
-            "libressl",
             "ncurses",
             "openssl",
             "patchelf",
@@ -1180,7 +1171,6 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
-                libressl="PYBUILD_LIBRESSL" in os.environ,
                 version=action.split("-")[1],
             )
 

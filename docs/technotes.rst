@@ -82,19 +82,6 @@ against a ``libncurses`` built ourselves. The ``readline`` extension
 module variant is the default, as Python compiles against ``readline``
 by default.
 
-OpenSSL / LibreSSL
-------------------
-
-By default we compile with OpenSSL. We have some support for compiling
-against LibreSSL.
-
-LibreSSL is currently required for musl libc builds because
-https://github.com/openssl/openssl/commit/38023b87f037f4b832c236dfce2a76272be08763
-broke OpenSSL in our build environment. Projects like Alpine Linux appear
-to still be able to build OpenSSL 1.1.1c. It requires certain headers
-to be in place though. When we tried to work around this, it turned out to
-be easier to compile with LibreSSL than with OpenSSL.
-
 gettext / locale Module
 -----------------------
 

@@ -58,10 +58,6 @@ def main():
         default="noopt",
         help="Optimizations to apply when compiling Python",
     )
-
-    parser.add_argument(
-        "--libressl", action="store_true", help="Build LibreSSL instead of OpenSSL"
-    )
     parser.add_argument(
         "--python",
         choices={"cpython-3.8", "cpython-3.9", "cpython-3.10"},
@@ -113,8 +109,6 @@ def main():
     env["PYBUILD_HOST_PLATFORM"] = host_platform
     env["PYBUILD_TARGET_TRIPLE"] = target_triple
     env["PYBUILD_OPTIMIZATIONS"] = args.optimizations
-    if args.libressl or musl:
-        env["PYBUILD_LIBRESSL"] = "1"
     if musl:
         env["PYBUILD_MUSL"] = "1"
     if args.break_on_failure:

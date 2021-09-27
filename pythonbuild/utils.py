@@ -52,14 +52,7 @@ def target_needs(yaml_path: pathlib.Path, target: str):
     """Obtain the dependencies needed to build the specified target."""
     settings = get_targets(yaml_path)[target]
 
-    needs = set(settings["needs"])
-
-    if "PYBUILD_LIBRESSL" in os.environ:
-        needs.add("libressl")
-    else:
-        needs.add("openssl")
-
-    return needs
+    return set(settings["needs"])
 
 
 def release_tag_from_git():
@@ -144,11 +137,6 @@ def write_triples_makefiles(
                 lines = []
                 for need in settings.get("needs", []):
                     lines.append("NEED_%s := 1\n" % need.upper())
-
-                if "PYBUILD_LIBRESSL" in os.environ:
-                    lines.append("NEED_LIBRESSL := 1\n")
-                else:
-                    lines.append("NEED_OPENSSL := 1\n")
 
                 image_suffix = settings.get("docker_image_suffix", "")
 
@@ -431,7 +419,7 @@ def prune_distribution_archive(source_path: pathlib.Path):
     print("wrote %s" % dest_path)
 
 
-def add_licenses_to_extension_entry(entry, ignore_keys=None):
+def add_licenses_to_extension_entry(entry):
     """Add licenses keys to a ``extensions`` entry for JSON distribution info."""
 
     have_licenses = False
@@ -447,9 +435,6 @@ def add_licenses_to_extension_entry(entry, ignore_keys=None):
             have_local_link = True
 
         for key, value in DOWNLOADS.items():
-            if ignore_keys and key in ignore_keys:
-                continue
-
             if name not in value.get("library_names", []):
                 continue
 

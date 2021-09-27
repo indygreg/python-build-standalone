@@ -83,6 +83,7 @@ aarch64-apple-darwin:
   needs:
     - bzip2
     - libffi
+    - openssl
     - sqlite
     - tcl
     - tk
@@ -123,6 +124,7 @@ aarch64-apple-ios:
   needs:
     - bzip2
     - libffi
+    - openssl
     - sqlite
     - xz
     - zlib
@@ -148,6 +150,7 @@ aarch64-unknown-linux-gnu:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -190,6 +193,7 @@ arm64-apple-tvos:
     - '-mappletvos-version-min=12.3'
   needs:
     - bzip2
+    - openssl
     - sqlite
     - xz
     - zlib
@@ -215,6 +219,7 @@ armv7-unknown-linux-gnueabi:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -247,6 +252,7 @@ armv7-unknown-linux-gnueabihf:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -287,6 +293,7 @@ i686-unknown-linux-gnu:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -319,6 +326,7 @@ mips-unknown-linux-gnu:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -351,6 +359,7 @@ mipsel-unknown-linux-gnu:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -383,6 +392,7 @@ s390x-unknown-linux-gnu:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -425,6 +435,7 @@ thumb7k-apple-watchos:
     - '-mwatchos-version-min-7.0'
   needs:
     - bzip2
+    - openssl
     - sqlite
     - xz
     - zlib
@@ -466,6 +477,7 @@ x86_64-apple-darwin:
   needs:
     - bzip2
     - libffi
+    - openssl
     - sqlite
     - tcl
     - tk
@@ -506,6 +518,7 @@ x86_64-apple-ios:
   needs:
     - bzip2
     - libffi
+    - openssl
     - sqlite
     - xz
     - zlib
@@ -541,6 +554,7 @@ x86_64-apple-tvos:
     - '-mappletvsimulator-version-min=12.3'
   needs:
     - bzip2
+    - openssl
     - sqlite
     - xz
   openssl_target: todo
@@ -575,6 +589,7 @@ x86_64-apple-watchos:
     - '-mwatchsimulator-version-min=7.0'
   needs:
     - bzip2
+    - openssl
     - sqlite
     - xz
     - zlib
@@ -603,6 +618,7 @@ x86_64-unknown-linux-gnu:
     - libXau
     - libxcb
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -639,6 +655,7 @@ x86_64-unknown-linux-musl:
     - libxcb
     - musl
     - ncurses
+    - openssl
     - patchelf
     - readline
     - sqlite
@@ -649,4 +666,4 @@ x86_64-unknown-linux-musl:
     - xorgproto
     - xz
     - zlib
-  openssl_target: unsupported
+  openssl_target: linux-x86_64

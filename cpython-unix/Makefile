@@ -184,9 +184,6 @@ LIBEDIT_DEPENDS = \
 $(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBEDIT_DEPENDS)
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libedit
 
-$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libressl.sh
-	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libressl
-
 $(OUTDIR)/patchelf-$(PATCHELF_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-patchelf.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) patchelf
 
@@ -258,7 +255,6 @@ PYTHON_DEPENDS := \
     $(if $(NEED_GETTEXT),$(OUTDIR)/gettext-$(GETTEXT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBFFI),$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(if $(NEED_LIBRESSL),$(OUTDIR)/libressl-$(LIBRESSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_NCURSES),$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_PATCHELF),$(OUTDIR)/patchelf-$(PATCHELF_VERSION)-$(PACKAGE_SUFFIX).tar) \

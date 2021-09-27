@@ -298,13 +298,7 @@ jobs:
 
       - name: Build
         run: |
-          if [ "${{ matrix.build.target_triple }}" = "x86_64-unknown-linux-musl" ]; then
-            EXTRA_ARGS=--libressl
-          else
-            EXTRA_ARGS=
-          fi
-
-          ./build-linux.py --skip-toolchain --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }} ${EXTRA_ARGS}
+          ./build-linux.py --skip-toolchain --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
       - name: Validate Distribution
         run: |
