@@ -136,6 +136,7 @@ aarch64-unknown-linux-gnu:
     - linux64
   pythons_supported:
     - '3.9'
+    - '3.10'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -205,6 +206,7 @@ armv7-unknown-linux-gnueabi:
     - linux64
   pythons_supported:
     - '3.9'
+    - '3.10'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -238,6 +240,7 @@ armv7-unknown-linux-gnueabihf:
     - linux64
   pythons_supported:
     - '3.9'
+    - '3.10'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -312,6 +315,7 @@ mips-unknown-linux-gnu:
     - linux64
   pythons_supported:
     - '3.9'
+    - '3.10'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -345,6 +349,7 @@ mipsel-unknown-linux-gnu:
     - linux64
   pythons_supported:
     - '3.9'
+    - '3.10'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -378,6 +383,7 @@ s390x-unknown-linux-gnu:
     - linux64
   pythons_supported:
     - '3.9'
+    - '3.10'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++

@@ -134,6 +134,16 @@ jobs:
             py: 'cpython-3.9'
             optimizations: 'lto'
 
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'armv7-unknown-linux-gnueabi'
             py: 'cpython-3.9'
@@ -145,6 +155,16 @@ jobs:
             py: 'cpython-3.9'
             optimizations: 'lto'
 
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'armv7-unknown-linux-gnueabihf'
             py: 'cpython-3.9'
@@ -154,6 +174,16 @@ jobs:
             optimizations: 'noopt'
           - target_triple: 'armv7-unknown-linux-gnueabihf'
             py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.10'
             optimizations: 'lto'
 
           # We don't publish noopt builds when PGO is available.
@@ -169,6 +199,7 @@ jobs:
           - target_triple: 'i686-unknown-linux-gnu'
             py: 'cpython-3.8'
             optimizations: 'pgo+lto'
+
           - target_triple: 'i686-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'debug'
@@ -182,6 +213,19 @@ jobs:
             py: 'cpython-3.9'
             optimizations: 'pgo+lto'
 
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'pgo'
+          - target_triple: 'i686-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'pgo+lto'
+
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'mips-unknown-linux-gnu'
             py: 'cpython-3.9'
@@ -191,6 +235,16 @@ jobs:
             optimizations: 'noopt'
           - target_triple: 'mips-unknown-linux-gnu'
             py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.10'
             optimizations: 'lto'
 
           # Cross-compiles can't do PGO and require Python 3.9.
@@ -204,6 +258,16 @@ jobs:
             py: 'cpython-3.9'
             optimizations: 'lto'
 
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 's390x-unknown-linux-gnu'
             py: 'cpython-3.9'
@@ -213,6 +277,16 @@ jobs:
             optimizations: 'noopt'
           - target_triple: 's390x-unknown-linux-gnu'
             py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.10'
             optimizations: 'lto'
 
           # We don't publish noopt builds when PGO is available.
@@ -228,8 +302,8 @@ jobs:
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.8'
             optimizations: 'pgo+lto'
-          - target_triple: 'x86_64-unknown-linux-gnu'
 
+          - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'debug'
           - target_triple: 'x86_64-unknown-linux-gnu'
@@ -242,10 +316,15 @@ jobs:
             py: 'cpython-3.9'
             optimizations: 'pgo+lto'
 
-          # Python 3.10 is just spot coverage for now.
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'debug'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'pgo'
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'pgo+lto'
@@ -260,8 +339,8 @@ jobs:
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.8'
             optimizations: 'lto'
-          - target_triple: 'x86_64-unknown-linux-musl'
 
+          - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'debug'
           - target_triple: 'x86_64-unknown-linux-musl'
@@ -270,6 +349,17 @@ jobs:
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'lto'
+
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'x86_64-unknown-linux-musl'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+
     needs:
       - pythonbuild
       - toolchain
@@ -312,6 +402,12 @@ jobs:
           path: dist/*
 
   install-only:
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '3.9'
+          - '3.10'
     needs:
       - build
     runs-on: 'ubuntu-20.04'
@@ -328,7 +424,7 @@ jobs:
       - name: Download Python
         uses: actions/download-artifact@v2
         with:
-          name: cpython-3.9-x86_64-unknown-linux-gnu
+          name: 'cpython-${{ matrix.version }}-x86_64-unknown-linux-gnu'
 
       - name: Repack Distribution
         run: |
@@ -337,5 +433,5 @@ jobs:
       - name: Upload Distribution
         uses: actions/upload-artifact@v2
         with:
-          name: cpython-install-only
+          name: 'cpython-${{ matrix.version }}-install-only'
           path: cpython-*.tar.gz
