@@ -493,24 +493,22 @@ diff --git a/Lib/ctypes/__init__.py b/Lib/ctypes/__init__.py
  if _os.name == "nt":
 EOF
 
-# libedit on non-macOS requires various hacks because readline.c assumes
-# libedit is only used on macOS and its readline/libedit detection code
-# makes various assumptions about the macOS environment.
+# CPython 3.10 added proper support for building against libedit outside of
+# macOS. On older versions, we need to patch readline.c and distribute
+# multiple extension module variants.
 #
 # USE_LIBEDIT comes from our static-modules file.
-#
-# TODO make upstream patches to readline.c to properly support libedit
-# on other platforms.
-cp Modules/readline.c Modules/readline-libedit.c
+if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
+    cp Modules/readline.c Modules/readline-libedit.c
 
-# readline.c assumes that a modern readline API version has a free_history_entry().
-# but libedit does not. Change the #ifdef accordingly.
-#
-# Similarly, we invoke configure using readline, which sets
-# HAVE_RL_COMPLETION_SUPPRESS_APPEND improperly. So hack that. This is a bug
-# in our build system, as we should probably be invoking configure again when
-# using libedit.
-patch -p1 << EOF
+    # readline.c assumes that a modern readline API version has a free_history_entry().
+    # but libedit does not. Change the #ifdef accordingly.
+    #
+    # Similarly, we invoke configure using readline, which sets
+    # HAVE_RL_COMPLETION_SUPPRESS_APPEND improperly. So hack that. This is a bug
+    # in our build system, as we should probably be invoking configure again when
+    # using libedit.
+    patch -p1 << EOF
 diff --git a/Modules/readline-libedit.c b/Modules/readline-libedit.c
 index 1e74f997b0..56a36e26e6 100644
 --- a/Modules/readline-libedit.c
@@ -543,6 +541,7 @@ index 1e74f997b0..56a36e26e6 100644
  #endif
                  rl_cleanup_after_signal();
 EOF
+fi
 
 # iOS doesn't have system(). Teach posixmodule.c about that.
 if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
@@ -572,12 +571,25 @@ fi
 # So we need to set both.
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
 LDFLAGS="${EXTRA_TARGET_LDFLAGS} -L${TOOLS_PATH}/deps/lib"
+EXTRA_CONFIGURE_FLAGS=
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include/uuid"
 
     # Prevent using symbols not supported by current macOS SDK target.
     CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"
+fi
+
+# CPython 3.10 introduced proper support for libedit on all platforms. Link against
+# libedit by default because it isn't GPL.
+#
+# Ideally we wouldn't need to adjust global compiler and linker flags. But configure
+# performs detection of readline features and sets some preprocessor defines accordingly.
+# So we define these accordingly.
+if [[ "${PYBUILD_PLATFORM}" != "macos" && "${PYTHON_MAJMIN_VERSION}" != "3.8" && "${PYTHON_MAJMIN_VERSION}" != "3.9" ]]; then
+    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/libedit/include"
+    LDFLAGS="${LDFLAGS} -L${TOOLS_PATH}/deps/libedit/lib"
+    EXTRA_CONFIGURE_FLAGS="${EXTRA_CONFIGURE_FLAGS} --with-readline=editline"
 fi
 
 CPPFLAGS=$CFLAGS
@@ -587,7 +599,8 @@ CONFIGURE_FLAGS="
     --host=${TARGET_TRIPLE}
     --prefix=/install
     --with-openssl=${TOOLS_PATH}/deps
-    --without-ensurepip"
+    --without-ensurepip
+    ${EXTRA_CONFIGURE_FLAGS}"
 
 if [ "${CC}" = "musl-clang" ]; then
     CFLAGS="${CFLAGS} -static"

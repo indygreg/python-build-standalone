@@ -71,16 +71,19 @@ distribute because end-users often want software to respect their
 terminal databases. But for that to work, ``ncurses`` needs to be compiled
 in a way that respects the user's environment.
 
-On macOS, we statically link a ``libedit`` we compile ourselves. We
-dynamically link against ``libncurses``, which is provided by the
-system, typically in ``/usr/lib``.
+On macOS, we use the system ``libedit`` and ``libncurses``, which is
+typically provided in ``/usr/lib``.
 
-On Linux, we produce ``readline`` extension module variants compiled
-against both ``libreadline`` and ``libedit``, which are statically linked
-against libraries built ourselves. These libraries each statically link
-against a ``libncurses`` built ourselves. The ``readline`` extension
-module variant is the default, as Python compiles against ``readline``
-by default.
+On Linux, Python 3.10+ distributions have a ``readline`` extension
+module compiled and statically linked against ``libedit`` and
+``libncurses``, both of which we be build ourselves.
+
+On Linux, older Python versions produce ``readline`` extension module
+variants compiled against both ``libreadline`` and ``libedit``, which
+are statically linked against libraries built ourselves. These libraries
+each statically link against a ``libncurses`` built ourselves. The
+``readline`` extension module variant is the default, as Python compiles
+against ``readline`` by default.
 
 gettext / locale Module
 -----------------------

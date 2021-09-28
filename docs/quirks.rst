@@ -208,3 +208,19 @@ build/version of Clang is supported. Use at your own risk.
 
 See https://jonnyzzz.com/blog/2018/06/05/link-error-2/ and
 https://jonnyzzz.com/blog/2018/06/13/link-error-3/ for more on this topic.
+
+.. _quirk_linux_libedit:
+
+Use of ``libedit`` on Linux
+===========================
+
+Python 3.10+ Linux distributions link against ``libedit`` (as opposed to
+``readline``) by default, as ``libedit`` is supported on 3.10+ outside of
+macOS.
+
+Most Python builds on Linux will link against ``readline`` because ``readline``
+is the dominant library on Linux.
+
+Some functionality may behave subtly differently as a result of our choice
+to link ``libedit`` by default. (We choose ``libedit`` by default to
+avoid GPL licensing requirements of ``readline``.)
