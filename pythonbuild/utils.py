@@ -56,8 +56,9 @@ def target_needs(yaml_path: pathlib.Path, target: str, python_version: str):
     needs = set(settings["needs"])
 
     # We only ship libedit linked readline extension on 3.10+ to avoid a GPL
-    # dependency.
+    # dependency. Ditto for gdbm.
     if not python_version.startswith(("3.8", "3.9")):
+        needs.discard("gdbm")
         needs.discard("readline")
 
     return needs

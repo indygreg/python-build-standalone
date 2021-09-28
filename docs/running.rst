@@ -92,7 +92,10 @@ Python and its various dependencies are governed by varied software use
 licenses. This impacts the rights and requirements of downstream consumers.
 
 Most licenses are fairly permissive. Notable exceptions to this are GDBM and
-readline, which are both licensed under GPL Version 3.
+readline, which are both licensed under GPL Version 3. Python 3.10 and
+newer distributions do not link against GDBM and readline and are not
+GPL encumbered. Older Python distributions may link against these libraries
+and may be subject to the GPL.
 
 **It is important to understand the licensing requirements when integrating
 the output of this project into derived works.** To help with this, the

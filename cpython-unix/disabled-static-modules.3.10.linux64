@@ -1,0 +1,2 @@
+# We don't support GDBM because it is GPL v3.
+_gdbm
