@@ -712,6 +712,7 @@ def build_cpython(
     """Build CPython in a Docker image'"""
     entry_name = "cpython-%s" % version
     entry = DOWNLOADS[entry_name]
+    python_version = entry["version"]
 
     python_archive = download_entry(entry_name, DOWNLOADS_PATH)
     setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
@@ -732,7 +733,7 @@ def build_cpython(
     setup = derive_setup_local(
         static_modules_lines,
         python_archive,
-        python_version=entry["version"],
+        python_version=python_version,
         musl="musl" in target_triple,
         debug=optimizations == "debug",
         disabled=disabled_static_modules,
