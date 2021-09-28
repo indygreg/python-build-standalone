@@ -94,15 +94,6 @@ DOWNLOADS = {
         "licenses": ["GPL-3.0-or-later"],
         "license_file": "LICENSE.gdbm.txt",
     },
-    "gettext": {
-        "url": "https://ftp.gnu.org/pub/gnu/gettext/gettext-0.21.tar.gz",
-        "size": 24181849,
-        "sha256": "c77d0da3102aec9c07f43671e60611ebff89a996ef159497ce8e59d075786b12",
-        "version": "0.21",
-        "library_names": ["intl", "textstyle"],
-        "licenses": ["GPL-3.0-or-later"],
-        "license_file": "LICENSE.gettext.txt",
-    },
     # gmp 6.2 does not build on wheezy.
     "gmp": {
         "url": "https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz",

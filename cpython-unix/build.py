@@ -1034,7 +1034,6 @@ def main():
             "bdb",
             "bzip2",
             "gdbm",
-            "gettext",
             "inputproto",
             "kbproto",
             "libffi",
