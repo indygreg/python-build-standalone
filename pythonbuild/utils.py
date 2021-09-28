@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tarfile
 import zipfile
+import urllib.error
 import urllib.request
 
 import yaml
@@ -245,6 +246,10 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
                 raise
         except http.client.HTTPException as e:
             print("HTTP exception; retrying: %s" % e)
+        except urllib.error.URLError as e:
+            print("urllib error; retrying: %s" % e)
+    else:
+        raise Exception("download failed after multiple retries")
 
     tmp.rename(path)
     print("successfully downloaded %s" % url)
