@@ -544,13 +544,6 @@ index 1e74f997b0..56a36e26e6 100644
                  rl_cleanup_after_signal();
 EOF
 
-# Modules/readline.c has various libedit conditions behind an
-# ``#ifdef __APPLE__`` instead of a more specific feature flag. All
-# occurrences of __APPLE__ in that file are related to libedit. So we
-# just replace the content.
-sed s/__APPLE__/USE_LIBEDIT/g Modules/readline-libedit.c > tmp
-mv tmp Modules/readline-libedit.c
-
 # iOS doesn't have system(). Teach posixmodule.c about that.
 if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
     patch -p1 <<EOF
