@@ -1025,7 +1025,7 @@ for d in Modules Objects Parser Parser/pegen Programs Python; do
 done
 
 # Also copy extension variant metadata files.
-if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+if compgen -G "Modules/VARIANT-*.data" > /dev/null; then
     cp -av Modules/VARIANT-*.data ${ROOT}/out/python/build/Modules/
 fi
 
