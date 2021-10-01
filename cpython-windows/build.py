@@ -1442,6 +1442,9 @@ def build_openssl_for_arch(
     elif arch == "amd64":
         configure = "VC-WIN64A"
         prefix = "64"
+    elif arch == "arm64":
+        configure = "VC-WIN64-ARM"
+        prefix = "arm64" # ???
     else:
         print("invalid architecture: %s" % arch)
         sys.exit(1)
@@ -2001,6 +2004,9 @@ def build_cpython(
     elif arch == "x86":
         build_platform = "win32"
         build_directory = "win32"
+    elif arch == "arm64":
+        build_platform = "arm64"
+        build_directory = "arm64"
     else:
         raise ValueError("unhandled arch: %s" % arch)
 
@@ -2434,6 +2440,9 @@ def main():
         if os.environ.get("Platform") == "x86":
             target_triple = "i686-pc-windows-msvc"
             arch = "x86"
+        elif os.environ.get("Platform") == "arm64":
+            target_triple = "aarch64-pc-windows-msvc"
+            arch = "arm64"
         else:
             target_triple = "x86_64-pc-windows-msvc"
             arch = "amd64"
