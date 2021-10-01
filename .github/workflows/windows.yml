@@ -43,8 +43,9 @@ jobs:
           - 'cpython-3.9'
           - 'cpython-3.10'
         vcvars:
-          - 'vcvars32.bat'
+          - 'vcvarsamd64_x86.bat'
           - 'vcvars64.bat'
+          - 'vcvarsamd64_arm64.bat'
         profile:
           - 'static-noopt'
           - 'shared-pgo'
