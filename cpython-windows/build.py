@@ -1448,8 +1448,7 @@ def build_openssl_for_arch(
         configure = "VC-WIN64-ARM"
         prefix = "arm64" # TODO check it ???
     else:
-        print("invalid architecture: %s" % arch)
-        sys.exit(1)
+        raise Exception("unhandled architecture: %s" % arch)
 
     # The official CPython OpenSSL builds hack ms/uplink.c to change the
     # ``GetModuleHandle(NULL)`` invocation to load things from _ssl.pyd
@@ -1549,7 +1548,7 @@ def build_openssl(
                 jom_archive=jom_archive,
             )
         else:
-            raise ValueError("unhandled arch: %s" % arch)
+            raise Exception("unhandled architecture: %s" % arch)
 
         install = td / "out"
 
@@ -1660,9 +1659,14 @@ def build_libffi(
         if arch == "x86":
             args.append("-x86")
             artifacts_path = ffi_source_path / "i686-pc-cygwin"
-        else:
+        elif arch == "arm64":
+            args.append("-arm64")
+            artifacts_path = ffi_source_path / "aarch64-w64-cygwin"
+        elif arch == "amd64":
             args.append("-x64")
             artifacts_path = ffi_source_path / "x86_64-w64-cygwin"
+        else:
+            raise Exception("unhandled architecture: %s" % arch)
 
         subprocess.run(args, env=env, check=True)
 
@@ -2024,7 +2028,7 @@ def build_cpython(
         build_platform = "arm64"
         build_directory = "arm64"
     else:
-        raise ValueError("unhandled arch: %s" % arch)
+        raise Exception("unhandled architecture: %s" % arch)
 
     with tempfile.TemporaryDirectory(prefix="python-build-") as td:
         td = pathlib.Path(td)
@@ -2051,7 +2055,7 @@ def build_cpython(
         # We need all the OpenSSL library files in the same directory to appease
         # install rules.
         if not static:
-            openssl_arch = {"amd64": "amd64", "x86": "win32"}[arch]
+            openssl_arch = {"amd64": "amd64", "x86": "win32"}[arch] # TODO
             openssl_root = td / "openssl" / openssl_arch
             openssl_bin_path = openssl_root / "bin"
             openssl_lib_path = openssl_root / "lib"
@@ -2459,9 +2463,11 @@ def main():
         elif os.environ.get("Platform") == "arm64":
             target_triple = "aarch64-pc-windows-msvc"
             arch = "arm64"
-        else:
+        elif os.environ.get("Platform") == "x64":
             target_triple = "x86_64-pc-windows-msvc"
             arch = "amd64"
+        else:
+            raise Exception("unhandled architecture: %s" % os.environ.get("Platform"))
 
         # TODO need better dependency checking.
         openssl_archive = BUILD / ("openssl-%s-%s.tar" % (target_triple, args.profile))
