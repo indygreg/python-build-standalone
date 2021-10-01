@@ -794,6 +794,8 @@ def hack_props(
             suffix = b"x64"
         elif arch == "win32":
             suffix = None
+        elif arch == "arm64":
+            suffix = b"arm64" # TODO check it
         else:
             raise Exception("unhandled architecture: %s" % arch)
 
@@ -1444,7 +1446,7 @@ def build_openssl_for_arch(
         prefix = "64"
     elif arch == "arm64":
         configure = "VC-WIN64-ARM"
-        prefix = "arm64" # ???
+        prefix = "arm64" # TODO check it ???
     else:
         print("invalid architecture: %s" % arch)
         sys.exit(1)
