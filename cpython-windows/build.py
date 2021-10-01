@@ -1555,6 +1555,8 @@ def build_openssl(
 
         if arch == "x86":
             shutil.copytree(root_32 / "install" / "32", install / "openssl" / "win32")
+        elif arch == "arm64":
+            shutil.copytree(root_arm64 / "install" / "arm64", install / "openssl" / "arm64")
         else:
             shutil.copytree(root_64 / "install" / "64", install / "openssl" / "amd64")
 
