@@ -1513,6 +1513,7 @@ def build_openssl(
 
         root_32 = td / "x86"
         root_64 = td / "x64"
+        root_arm64 = td / "arm64"
 
         if arch == "x86":
             root_32.mkdir()
@@ -1533,6 +1534,17 @@ def build_openssl(
                 openssl_archive,
                 nasm_archive,
                 root_64,
+                profile,
+                jom_archive=jom_archive,
+            )
+        elif arch == "arm64":
+            root_64.mkdir()
+            build_openssl_for_arch(
+                perl_path,
+                "arm64",
+                openssl_archive,
+                nasm_archive,
+                root_arm64,
                 profile,
                 jom_archive=jom_archive,
             )
