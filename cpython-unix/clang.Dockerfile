@@ -2,8 +2,9 @@
 RUN apt-get install \
     libc6-dev \
     libc6-dev:i386 \
+    libffi-dev \
+    make \
     patch \
-    python3 \
     tar \
     xz-utils \
     unzip \

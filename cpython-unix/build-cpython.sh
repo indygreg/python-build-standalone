@@ -93,6 +93,25 @@ rm -rf setuptools-tmp
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
+  # Same patch as below. See comment there.
+  if [ "${CC}" = "clang" ]; then
+    patch -p1 <<"EOF"
+diff --git a/configure b/configure
+index 7cad0e2f98..50212236c4 100755
+--- a/configure
++++ b/configure
+@@ -5196,7 +5196,7 @@ $as_echo "$as_me:
+ fi
+
+
+-MULTIARCH=$($CC --print-multiarch 2>/dev/null)
++MULTIARCH=
+
+
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the platform triplet based on compiler characteristics" >&5
+EOF
+  fi
+
   # When cross-compiling, we need to build a host Python that has working zlib
   # and ctypes extensions, otherwise various things fail. (`make install` fails
   # without zlib and setuptools / pip used by target install fail due to missing
@@ -306,6 +325,27 @@ index 1252335472..33c11fbade 100755
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LDLIBRARY" >&5
  $as_echo "$LDLIBRARY" >&6; }
  
+EOF
+fi
+
+# Clang 13 actually prints something with --print-multiarch, confusing CPython's
+# configure. This is reported as https://bugs.python.org/issue45405. We nerf the
+# check since we know what we're doing.
+if [ "${CC}" = "clang" ]; then
+    patch -p1 <<"EOF"
+diff --git a/configure b/configure
+index 7cad0e2f98..50212236c4 100755
+--- a/configure
++++ b/configure
+@@ -5196,7 +5196,7 @@ $as_echo "$as_me:
+ fi
+ 
+ 
+-MULTIARCH=$($CC --print-multiarch 2>/dev/null)
++MULTIARCH=
+ 
+ 
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the platform triplet based on compiler characteristics" >&5
 EOF
 fi
 

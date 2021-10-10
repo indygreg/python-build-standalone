@@ -47,6 +47,28 @@ mv ninja /tools/extra/bin/
 
 export PATH=/tools/extra/bin:/tools/host/bin:$PATH
 
+EXTRA_FLAGS=
+
+if [ -x "${SCCACHE}" ]; then
+  "${SCCACHE}" --start-server
+  EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"
+fi
+
+if [ -n "${CI}" ]; then
+  NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
+else
+  NUM_JOBS=${NUM_CPUS}
+fi
+
+# clang requires a modern Python to build.
+tar -xf Python-${PYTHON_VERSION}.tar.xz
+pushd "Python-${PYTHON_VERSION}"
+CC="${HOST_CC}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure \
+  --prefix /tools/host \
+  --without-ensurepip
+make -j "${NUM_CPUS}" install
+popd
+
 mkdir llvm
 pushd llvm
 tar --strip-components=1 -xf ${ROOT}/llvm-${LLVM_VERSION}.src.tar.xz
@@ -84,19 +106,6 @@ popd
 
 mkdir llvm-objdir
 pushd llvm-objdir
-
-EXTRA_FLAGS=
-
-if [ -x "${SCCACHE}" ]; then
-  "${SCCACHE}" --start-server
-  EXTRA_FLAGS="${EXTRA_FLAGS} -DCMAKE_C_COMPILER_LAUNCHER=${SCCACHE} -DCMAKE_CXX_COMPILER_LAUNCHER=${SCCACHE}"
-fi
-
-if [ -n "${CI}" ]; then
-  NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
-else
-  NUM_JOBS=${NUM_CPUS}
-fi
 
 # Stage 1: Build with GCC.
 mkdir stage1
