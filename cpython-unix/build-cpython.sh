@@ -115,7 +115,7 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
       ;;
   esac
 
-  CC="${HOST_CC}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure \
+  CC="${HOST_CC}" CXX="${HOST_CXX}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure \
     --prefix "${TOOLS_PATH}/pyhost" \
     --without-ensurepip
 
