@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+mod github;
 mod json;
 mod macho;
 
@@ -926,6 +927,44 @@ fn main_impl() -> Result<()> {
         .author("Gregory Szorc <gregory.szorc@gmail.com>")
         .about("Perform tasks related to building Python distributions")
         .subcommand(
+            SubCommand::with_name("fetch-release-distributions")
+                .about("Fetch builds from GitHub Actions that are release artifacts")
+                .arg(
+                    Arg::with_name("token")
+                        .long("--token")
+                        .required(true)
+                        .takes_value(true)
+                        .help("GitHub API token"),
+                )
+                .arg(
+                    Arg::with_name("commit")
+                        .long("--commit")
+                        .takes_value(true)
+                        .help("Git commit whose artifacts to fetch"),
+                )
+                .arg(
+                    Arg::with_name("dest")
+                        .long("dest")
+                        .required(true)
+                        .takes_value(true)
+                        .help("Destination directory"),
+                )
+                .arg(
+                    Arg::with_name("organization")
+                        .long("--org")
+                        .takes_value(true)
+                        .default_value("indygreg")
+                        .help("GitHub organization"),
+                )
+                .arg(
+                    Arg::with_name("repo")
+                        .long("--repo")
+                        .takes_value(true)
+                        .default_value("python-build-standalone")
+                        .help("GitHub repository name"),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("validate-distribution")
                 .about("Ensure a distribution archive conforms to standards")
                 .arg(
@@ -943,6 +982,14 @@ fn main_impl() -> Result<()> {
         .get_matches();
 
     match matches.subcommand() {
+        ("fetch-release-distributions", Some(args)) => {
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(crate::github::command_fetch_release_distributions(args))
+        }
+
         ("validate-distribution", Some(args)) => command_validate_distribution(args),
         _ => Err(anyhow!("invalid sub-command")),
     }
