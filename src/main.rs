@@ -963,6 +963,59 @@ fn main_impl() -> Result<()> {
                     .help("GitHub repository name"),
             ),
     );
+
+    let app = app.subcommand(
+        SubCommand::with_name("upload-release-distributions")
+            .about("Upload release distributions to a GitHub release")
+            .arg(
+                Arg::with_name("token")
+                    .long("--token")
+                    .required(true)
+                    .takes_value(true)
+                    .help("GitHub API token"),
+            )
+            .arg(
+                Arg::with_name("dist")
+                    .long("--dist")
+                    .required(true)
+                    .takes_value(true)
+                    .help("Directory with release artifacts"),
+            )
+            .arg(
+                Arg::with_name("datetime")
+                    .long("--datetime")
+                    .required(true)
+                    .takes_value(true)
+                    .help("Date/time tag associated with builds"),
+            )
+            .arg(
+                Arg::with_name("tag")
+                    .long("--tag")
+                    .required(true)
+                    .takes_value(true)
+                    .help("Release tag"),
+            )
+            .arg(
+                Arg::with_name("ignore_missing")
+                    .long("--ignore-missing")
+                    .help("Continue even if there are missing artifacts"),
+            )
+            .arg(
+                Arg::with_name("organization")
+                    .long("--org")
+                    .takes_value(true)
+                    .default_value("indygreg")
+                    .help("GitHub organization"),
+            )
+            .arg(
+                Arg::with_name("repo")
+                    .long("--repo")
+                    .takes_value(true)
+                    .default_value("python-build-standalone")
+                    .help("GitHub repository name"),
+            ),
+    );
+
     let app = app.subcommand(
         SubCommand::with_name("validate-distribution")
             .about("Ensure a distribution archive conforms to standards")
@@ -989,7 +1042,13 @@ fn main_impl() -> Result<()> {
                 .unwrap()
                 .block_on(crate::github::command_fetch_release_distributions(args))
         }
-
+        ("upload-release-distributions", Some(args)) => {
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(crate::github::command_upload_release_distributions(args))
+        }
         ("validate-distribution", Some(args)) => command_validate_distribution(args),
         _ => Err(anyhow!("invalid sub-command")),
     }

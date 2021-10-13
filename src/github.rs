@@ -8,12 +8,16 @@ use {
     octocrab::OctocrabBuilder,
     once_cell::sync::Lazy,
     serde::Deserialize,
-    std::{collections::HashMap, io::Read, path::PathBuf},
+    std::{
+        collections::{BTreeMap, BTreeSet},
+        io::Read,
+        path::PathBuf,
+    },
     zip::ZipArchive,
 };
 
-static SUFFIXES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static str>>> = Lazy::new(|| {
-    let mut h = HashMap::new();
+static SUFFIXES_BY_TRIPLE: Lazy<BTreeMap<&'static str, Vec<&'static str>>> = Lazy::new(|| {
+    let mut h = BTreeMap::new();
 
     // macOS.
     let macos_suffixes = vec!["debug", "lto", "pgo", "pgo+lto", "install_only"];
@@ -163,6 +167,118 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Resul
             } else {
                 println!("{} does not match any registered release triples", name);
             }
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn command_upload_release_distributions(args: &ArgMatches<'_>) -> Result<()> {
+    let dist_dir = PathBuf::from(args.value_of("dist").expect("dist should be specified"));
+    let datetime = args
+        .value_of("datetime")
+        .expect("datetime should be specified");
+    let tag = args.value_of("tag").expect("tag should be specified");
+    let ignore_missing = args.is_present("ignore_missing");
+    let token = args
+        .value_of("token")
+        .expect("token should be specified")
+        .to_string();
+    let organization = args
+        .value_of("organization")
+        .expect("organization should be specified");
+    let repo = args.value_of("repo").expect("repo should be specified");
+
+    let mut filenames = std::fs::read_dir(&dist_dir)?
+        .into_iter()
+        .map(|x| {
+            let path = x?.path();
+            let filename = path
+                .file_name()
+                .ok_or_else(|| anyhow!("unable to resolve file name"))?;
+
+            Ok(filename.to_string_lossy().to_string())
+        })
+        .collect::<Result<Vec<_>>>()?;
+    filenames.sort();
+
+    let filenames = filenames
+        .into_iter()
+        .filter(|x| x.contains(datetime) && x.starts_with("cpython-"))
+        .collect::<BTreeSet<_>>();
+
+    let mut python_versions = BTreeSet::new();
+    for filename in &filenames {
+        let parts = filename.split('-').collect::<Vec<_>>();
+        python_versions.insert(parts[1]);
+    }
+
+    let mut wanted_filenames = BTreeSet::new();
+    for version in python_versions {
+        for (triple, suffixes) in SUFFIXES_BY_TRIPLE.iter() {
+            for suffix in suffixes {
+                let extension = if suffix.contains("install_only") {
+                    "tar.gz"
+                } else {
+                    "tar.zst"
+                };
+
+                wanted_filenames.insert(format!(
+                    "cpython-{}-{}-{}-{}.{}",
+                    version, triple, suffix, datetime, extension
+                ));
+            }
+        }
+    }
+
+    let missing = wanted_filenames.difference(&filenames).collect::<Vec<_>>();
+    for f in &missing {
+        println!("missing release artifact: {}", f);
+    }
+    if !missing.is_empty() && !ignore_missing {
+        return Err(anyhow!("missing release artifacts"));
+    }
+
+    let client = OctocrabBuilder::new().personal_token(token).build()?;
+    let repo = client.repos(organization, repo);
+    let releases = repo.releases();
+
+    let release = if let Ok(release) = releases.get_by_tag(tag).await {
+        release
+    } else {
+        return Err(anyhow!(
+            "release {} does not exist; create it via GitHub web UI",
+            tag
+        ));
+    };
+
+    for filename in wanted_filenames.intersection(&filenames) {
+        let path = dist_dir.join(filename);
+        let file_data = std::fs::read(&path)?;
+
+        let mut url = release.upload_url.clone();
+        let path = url.path().to_string();
+
+        if let Some(path) = path.strip_suffix("%7B") {
+            url.set_path(path);
+        }
+
+        url.query_pairs_mut()
+            .clear()
+            .append_pair("name", filename.as_str());
+
+        println!("uploading {} to {}", filename, url);
+
+        let request = client
+            .request_builder(url, reqwest::Method::POST)
+            .header("Content-Length", file_data.len())
+            .header("Content-Type", "application/x-tar")
+            .body(file_data);
+
+        let response = client.execute(request).await?;
+
+        if !response.status().is_success() {
+            return Err(anyhow!("HTTP {}", response.status()));
         }
     }
 
