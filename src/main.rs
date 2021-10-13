@@ -921,65 +921,66 @@ fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
 }
 
 fn main_impl() -> Result<()> {
-    let matches = App::new("Python Build")
+    let app = App::new("Python Build")
         .setting(AppSettings::ArgRequiredElseHelp)
         .version("0.1")
         .author("Gregory Szorc <gregory.szorc@gmail.com>")
-        .about("Perform tasks related to building Python distributions")
-        .subcommand(
-            SubCommand::with_name("fetch-release-distributions")
-                .about("Fetch builds from GitHub Actions that are release artifacts")
-                .arg(
-                    Arg::with_name("token")
-                        .long("--token")
-                        .required(true)
-                        .takes_value(true)
-                        .help("GitHub API token"),
-                )
-                .arg(
-                    Arg::with_name("commit")
-                        .long("--commit")
-                        .takes_value(true)
-                        .help("Git commit whose artifacts to fetch"),
-                )
-                .arg(
-                    Arg::with_name("dest")
-                        .long("dest")
-                        .required(true)
-                        .takes_value(true)
-                        .help("Destination directory"),
-                )
-                .arg(
-                    Arg::with_name("organization")
-                        .long("--org")
-                        .takes_value(true)
-                        .default_value("indygreg")
-                        .help("GitHub organization"),
-                )
-                .arg(
-                    Arg::with_name("repo")
-                        .long("--repo")
-                        .takes_value(true)
-                        .default_value("python-build-standalone")
-                        .help("GitHub repository name"),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("validate-distribution")
-                .about("Ensure a distribution archive conforms to standards")
-                .arg(
-                    Arg::with_name("run")
-                        .long("--run")
-                        .help("Run the interpreter to verify behavior"),
-                )
-                .arg(
-                    Arg::with_name("path")
-                        .help("Path to tar.zst file to validate")
-                        .multiple(true)
-                        .required(true),
-                ),
-        )
-        .get_matches();
+        .about("Perform tasks related to building Python distributions");
+    let app = app.subcommand(
+        SubCommand::with_name("fetch-release-distributions")
+            .about("Fetch builds from GitHub Actions that are release artifacts")
+            .arg(
+                Arg::with_name("token")
+                    .long("--token")
+                    .required(true)
+                    .takes_value(true)
+                    .help("GitHub API token"),
+            )
+            .arg(
+                Arg::with_name("commit")
+                    .long("--commit")
+                    .takes_value(true)
+                    .help("Git commit whose artifacts to fetch"),
+            )
+            .arg(
+                Arg::with_name("dest")
+                    .long("dest")
+                    .required(true)
+                    .takes_value(true)
+                    .help("Destination directory"),
+            )
+            .arg(
+                Arg::with_name("organization")
+                    .long("--org")
+                    .takes_value(true)
+                    .default_value("indygreg")
+                    .help("GitHub organization"),
+            )
+            .arg(
+                Arg::with_name("repo")
+                    .long("--repo")
+                    .takes_value(true)
+                    .default_value("python-build-standalone")
+                    .help("GitHub repository name"),
+            ),
+    );
+    let app = app.subcommand(
+        SubCommand::with_name("validate-distribution")
+            .about("Ensure a distribution archive conforms to standards")
+            .arg(
+                Arg::with_name("run")
+                    .long("--run")
+                    .help("Run the interpreter to verify behavior"),
+            )
+            .arg(
+                Arg::with_name("path")
+                    .help("Path to tar.zst file to validate")
+                    .multiple(true)
+                    .required(true),
+            ),
+    );
+
+    let matches = app.get_matches();
 
     match matches.subcommand() {
         ("fetch-release-distributions", Some(args)) => {
