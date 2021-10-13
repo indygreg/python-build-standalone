@@ -494,7 +494,6 @@ fn validate_elf(
 }
 
 fn validate_macho(
-    python_major_minor: &str,
     target_triple: &str,
     path: &Path,
     macho: &goblin::mach::MachO,
@@ -608,7 +607,7 @@ fn validate_possible_object_file(
             goblin::Object::Mach(mach) => match mach {
                 goblin::mach::Mach::Binary(macho) => {
                     let (local_errors, local_seen_dylibs) =
-                        validate_macho(python_major_minor, triple, path.as_ref(), &macho, &data)?;
+                        validate_macho(triple, path.as_ref(), &macho, &data)?;
 
                     errors.extend(local_errors);
                     seen_dylibs.extend(local_seen_dylibs);
