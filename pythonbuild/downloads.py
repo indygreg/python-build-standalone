@@ -102,13 +102,13 @@ DOWNLOADS = {
         "version": "6.1.2",
     },
     "inputproto": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/inputproto-2.3.2.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/inputproto-2.3.2.tar.gz",
         "size": 244334,
         "sha256": "10eaadd531f38f7c92ab59ef0708ca195caf3164a75c4ed99f0c04f2913f6ef3",
         "version": "2.3.2",
     },
     "isl": {
-        "url": "ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
+        "url": "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
         "size": 1658291,
         "sha256": "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b",
         "version": "0.18",
@@ -120,7 +120,7 @@ DOWNLOADS = {
         "version": "1.1.3",
     },
     "kbproto": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/kbproto-1.0.7.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/kbproto-1.0.7.tar.gz",
         "size": 325858,
         "sha256": "828cb275b91268b1a3ea950d5c0c5eb076c678fdf005d517411f89cc8c3bb416",
         "version": "1.0.7",
@@ -157,7 +157,7 @@ DOWNLOADS = {
         "license_file": "LICENSE.libffi.txt",
     },
     "libpthread-stubs": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/lib/libpthread-stubs-0.1.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/lib/libpthread-stubs-0.1.tar.gz",
         "size": 301448,
         "sha256": "f8f7ca635fa54bcaef372fd5fd9028f394992a743d73453088fcadc1dbf3a704",
         "version": "0.1",
@@ -169,7 +169,7 @@ DOWNLOADS = {
         "version": "12.0.1",
     },
     "libX11": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/lib/libX11-1.6.8.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/lib/libX11-1.6.8.tar.gz",
         "size": 3144482,
         "sha256": "69d1a27cba722dca897198a23fa8d3cad3ec0c715e00205ea4398ec68a4258a5",
         "version": "1.6.8",
@@ -349,7 +349,7 @@ DOWNLOADS = {
         "license_file": "LICENSE.libuuid.txt",
     },
     "x11-util-macros": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/util/util-macros-1.19.2.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/util/util-macros-1.19.2.tar.gz",
         "size": 103001,
         "sha256": "9225c45c3de60faf971979a55a5536f3562baa4b6f02246c23e98ac0c09a75b7",
         "version": "1.19.2",
@@ -361,25 +361,25 @@ DOWNLOADS = {
         "version": "1.13",
     },
     "xextproto": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/xextproto-7.3.0.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/xextproto-7.3.0.tar.gz",
         "size": 290814,
         "sha256": "1b1bcdf91221e78c6c33738667a57bd9aaa63d5953174ad8ed9929296741c9f5",
         "version": "7.3.0",
     },
     "xorgproto": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/xorgproto-2019.1.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/xorgproto-2019.1.tar.gz",
         "size": 1119813,
         "sha256": "38ad1d8316515785d53c5162b4b7022918e03c11d72a5bd9df0a176607f42bca",
         "version": "2019.1",
     },
     "xproto": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/xproto-7.0.31.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/proto/xproto-7.0.31.tar.gz",
         "size": 367979,
         "sha256": "6d755eaae27b45c5cc75529a12855fed5de5969b367ed05003944cf901ed43c7",
         "version": "7.0.31",
     },
     "xtrans": {
-        "url": "ftp://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/lib/xtrans-1.4.0.tar.gz",
+        "url": "https://mirror.csclub.uwaterloo.ca/x.org/pub/current/src/lib/xtrans-1.4.0.tar.gz",
         "size": 225941,
         "sha256": "48ed850ce772fef1b44ca23639b0a57e38884045ed2cbb18ab137ef33ec713f9",
         "version": "1.4.0",
