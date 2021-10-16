@@ -75,13 +75,13 @@ jobs:
       # don't get compiled properly.
       - name: Bootstrap Python environment
         run: |
-          py.exe build-windows.py --help
+          py.exe -3.9 build-windows.py --help
 
       - name: Build
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ matrix.vcvars }}"
-          py.exe build-windows.py --python ${{ matrix.py }} --sh c:\tools\cygwin\bin\sh.exe --profile ${{ matrix.profile }}
+          py.exe -3.9 build-windows.py --python ${{ matrix.py }} --sh c:\tools\cygwin\bin\sh.exe --profile ${{ matrix.profile }}
 
       - name: Validate Distribution
         run: |
