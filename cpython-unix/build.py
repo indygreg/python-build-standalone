@@ -44,6 +44,10 @@ DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
 TARGETS_CONFIG = SUPPORT / "targets.yml"
 
+LINUX_ALLOW_SYSTEM_LIBRARIES = {"c", "crypt", "dl", "m", "pthread", "rt", "util"}
+MACOS_ALLOW_SYSTEM_LIBRARIES = {"dl", "m", "pthread"}
+MACOS_ALLOW_FRAMEWORKS = {"CoreFoundation"}
+
 
 def install_sccache(build_env):
     """Attempt to install sccache into the build environment.
@@ -258,7 +262,8 @@ def build_binutils(client, image, host_platform):
         add_env_common(env)
 
         build_env.run(
-            "build-binutils.sh", environment=env,
+            "build-binutils.sh",
+            environment=env,
         )
 
         build_env.get_tools_archive(
@@ -499,6 +504,7 @@ def python_build_info(
     config_c_in,
     setup_dist,
     setup_local,
+    extra_metadata,
 ):
     """Obtain build metadata for the Python distribution."""
 
@@ -544,6 +550,42 @@ def python_build_info(
         raise Exception("unsupported platform: %s" % platform)
 
     bi["object_file_format"] = object_file_format
+
+    # Add in core linking annotations.
+    libs = extra_metadata["python_config_vars"].get("LIBS", "").split()
+    skip = False
+    for i, lib in enumerate(libs):
+        if skip:
+            skip = False
+            continue
+
+        if lib.startswith("-l"):
+            lib = lib[2:]
+
+            if platform == "linux64" and lib not in LINUX_ALLOW_SYSTEM_LIBRARIES:
+                raise Exception("unexpected library in LIBS (%s): %s" % (libs, lib))
+            elif platform == "macos" and lib not in MACOS_ALLOW_SYSTEM_LIBRARIES:
+                raise Exception("unexpected library in LIBS (%s): %s" % (libs, lib))
+
+            log("adding core system link library: %s" % lib)
+            bi["core"]["links"].append(
+                {
+                    "name": lib,
+                    "system": True,
+                }
+            )
+        elif lib == "-framework":
+            skip = True
+            framework = libs[i + 1]
+            if framework not in MACOS_ALLOW_FRAMEWORKS:
+                raise Exception(
+                    "unexpected framework in LIBS (%s): %s" % (libs, framework)
+                )
+
+            log("adding core link framework: %s" % framework)
+            bi["core"]["links"].append({"name": framework, "framework": True})
+        else:
+            raise Exception("unknown word in LIBS (%s): %s" % (libs, lib))
 
     # Object files for the core distribution are found by walking the
     # build artifacts.
@@ -838,6 +880,8 @@ def build_cpython(
         else:
             raise ValueError("unhandled platform: %s" % host_platform)
 
+        extra_metadata = json.loads(build_env.get_file("metadata.json"))
+
         # Create PYTHON.json file describing this distribution.
         python_info = {
             "version": "7",
@@ -861,6 +905,7 @@ def build_cpython(
                 config_c_in,
                 setup_dist_content,
                 setup_local_content,
+                extra_metadata,
             ),
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
@@ -884,8 +929,7 @@ def build_cpython(
             ]
 
         # Add metadata derived from built distribution.
-        extra_metadata = build_env.get_file("metadata.json")
-        python_info.update(json.loads(extra_metadata))
+        python_info.update(extra_metadata)
 
         validate_python_json(python_info)
 
