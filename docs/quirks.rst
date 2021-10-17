@@ -225,6 +225,29 @@ Some functionality may behave subtly differently as a result of our choice
 to link ``libedit`` by default. (We choose ``libedit`` by default to
 avoid GPL licensing requirements of ``readline``.)
 
+Static Linking of musl libc Prevents Extension Module Library Loading
+=====================================================================
+
+Our musl libc linked Linux builds link musl libc statically and the resulting
+binaries are completely static and don't have any external dependencies.
+
+Due to how Linux/ELF works, a static/non-dynamic binary cannot call
+``dlopen()`` and therefore it cannot load shared library based Python
+extension modules (``.so`` based extension modules). This significantly
+limits the utility of these Python distributions. (If you want to use
+additional extension modules you can use the build artifacts in the
+distributions to construct a new ``libpython`` with the additional
+extension modules configured as builtin extension modules.)
+
+Another consequence of statically linking musl libc is that our musl
+distributions aren't compatible with
+`PEP 656 <https://www.python.org/dev/peps/pep-0656/>`_. PEP 656
+stipulates that Python and extension modules are linked against a
+dynamic musl. This is what you'll find in Alpine Linux, for example.
+
+See https://github.com/indygreg/python-build-standalone/issues/86 for
+a tracking issue to improve the state of musl distributions.
+
 .. _quirk_linux_libx11:
 
 Static Linking of ``libX11`` / Incompatibility with PyQt on Linux
