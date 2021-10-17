@@ -93,7 +93,7 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     // Our libraries.
     "libcrypto-1_1.dll",
     "libcrypto-1_1-x64.dll",
-    "libffi-7.dll",
+    "libffi-8.dll",
     "libssl-1_1.dll",
     "libssl-1_1-x64.dll",
     "python3.dll",

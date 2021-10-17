@@ -50,7 +50,7 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     },
     "_bz2": {},
     "_ctypes": {
-        "shared_depends": ["libffi-7"],
+        "shared_depends": ["libffi-8"],
         "static_depends_no_project": ["libffi"],
     },
     "_decimal": {},
@@ -812,13 +812,28 @@ def hack_props(
 
     libffi_props = pcbuild_path / "libffi.props"
 
+    # Always use libffi-8 / 3.4.2. (Python <= 3.11 use libffi-7 by default.)
+    try:
+        static_replace_in_file(
+            libffi_props,
+            br"""<_LIBFFIDLL Include="$(libffiOutDir)\libffi-7.dll" />""",
+            br"""<_LIBFFIDLL Include="$(libffiOutDir)\libffi-8.dll" />""",
+        )
+        static_replace_in_file(
+            libffi_props,
+            br"<AdditionalDependencies>libffi-7.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+            br"<AdditionalDependencies>libffi-8.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+        )
+    except NoSearchStringError:
+        pass
+
     if static:
-        # For some reason the built .lib doesn't have the -7 suffix in
+        # For some reason the built .lib doesn't have the -8 suffix in
         # static build mode. This is possibly a side-effect of CPython's
         # libffi build script not officially supporting static-only builds.
         static_replace_in_file(
             libffi_props,
-            b"<AdditionalDependencies>libffi-7.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+            b"<AdditionalDependencies>libffi-8.lib;%(AdditionalDependencies)</AdditionalDependencies>",
             b"<AdditionalDependencies>libffi.lib;%(AdditionalDependencies)</AdditionalDependencies>",
         )
 
@@ -1593,7 +1608,7 @@ def build_libffi(
                 "-c",
                 "core.autocrlf=input",
                 "checkout",
-                "ed22026f39b37f892ded95d7b30e77dfb5126334",
+                "16fad4855b3d8c03b5910e405ff3a04395b39a98",
             ],
             cwd=ffi_source_path,
             check=True,
