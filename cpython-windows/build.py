@@ -75,7 +75,10 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
         "shared_depends_win32": ["libcrypto-1_1", "libssl-1_1"],
         "static_depends_no_project": ["libcrypto_static", "libssl_static"],
     },
-    "_tkinter": {"ignore_static": True, "shared_depends": ["tcl86t", "tk86t"],},
+    "_tkinter": {
+        "ignore_static": True,
+        "shared_depends": ["tcl86t", "tk86t"],
+    },
     "_queue": {},
     "_uuid": {"ignore_missing": True},
     "_zoneinfo": {"ignore_missing": True},
@@ -700,7 +703,10 @@ LIBFFI_PROPS_REMOVE_RULES = b"""
 
 
 def hack_props(
-    td: pathlib.Path, pcbuild_path: pathlib.Path, arch: str, static: bool,
+    td: pathlib.Path,
+    pcbuild_path: pathlib.Path,
+    arch: str,
+    static: bool,
 ):
     # TODO can we pass props into msbuild.exe?
 
@@ -833,7 +839,10 @@ def hack_project_files(
     pcbuild_path = cpython_source_path / "PCbuild"
 
     hack_props(
-        td, pcbuild_path, build_directory, static=static,
+        td,
+        pcbuild_path,
+        build_directory,
+        static=static,
     )
 
     # Our SQLite directory is named weirdly. This throws off version detection
@@ -1467,7 +1476,10 @@ def build_openssl_for_arch(
             "--prefix=/%s" % prefix,
         ],
         source_root,
-        {**env, "CFLAGS": env.get("CFLAGS", "") + " /FS",},
+        {
+            **env,
+            "CFLAGS": env.get("CFLAGS", "") + " /FS",
+        },
     )
 
     if "static" in profile:
@@ -2193,7 +2205,9 @@ def build_cpython(
             args.extend(["--include-idle", "--include-stable", "--include-tcltk"])
 
         exec_and_log(
-            args, pcbuild_path, os.environ,
+            args,
+            pcbuild_path,
+            os.environ,
         )
 
         # Install pip and setuptools.
@@ -2375,7 +2389,12 @@ def build_cpython(
             json.dump(python_info, fh, sort_keys=True, indent=4)
 
         dest_path = BUILD / (
-            "cpython-%s-%s-%s.tar" % (entry["version"], target_triple, profile,)
+            "cpython-%s-%s-%s.tar"
+            % (
+                entry["version"],
+                target_triple,
+                profile,
+            )
         )
 
         data = io.BytesIO()
@@ -2473,7 +2492,9 @@ def main():
             release_tag = release_tag_from_git()
 
         compress_python_archive(
-            tar_path, DIST, "%s-%s" % (tar_path.stem, release_tag),
+            tar_path,
+            DIST,
+            "%s-%s" % (tar_path.stem, release_tag),
         )
 
 
