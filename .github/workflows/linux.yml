@@ -12,7 +12,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt update
-          sudo apt install -y --no-install-recommends musl-tools
+          sudo apt install -y --no-install-recommends libssl-dev musl-tools pkg-config
 
       - uses: actions-rs/toolchain@v1
         id: install-rust
@@ -49,6 +49,11 @@ jobs:
   pythonbuild:
     runs-on: 'ubuntu-20.04'
     steps:
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y --no-install-recommends libssl-dev pkg-config
+
       - uses: actions/checkout@v2
 
       - name: Install Rust
