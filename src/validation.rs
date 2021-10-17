@@ -362,6 +362,11 @@ static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy:
     .collect()
 });
 
+const ELF_BANNED_SYMBOLS: &[&str] = &[
+    // Deprecated as of glibc 2.34 in favor of sched_yield.
+    "pthread_yield",
+];
+
 /// Symbols that we don't want to appear in mach-o binaries.
 const MACHO_BANNED_SYMBOLS_NON_AARCH64: &[&str] = &[
     // _readv and _pwritev are introduced when building with the macOS 11 SDK.
@@ -524,6 +529,14 @@ fn validate_elf(
         undefined_symbols.sort();
 
         for symbol in undefined_symbols {
+            if ELF_BANNED_SYMBOLS.contains(&symbol.symbol.as_str()) {
+                errors.push(format!(
+                    "{} defines banned ELF symbol {}",
+                    path.display(),
+                    symbol.symbol,
+                ));
+            }
+
             if let Some(version) = &symbol.version {
                 let parts: Vec<&str> = version.splitn(2, '_').collect();
 

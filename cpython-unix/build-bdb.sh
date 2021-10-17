@@ -13,12 +13,19 @@ tar -xf db-${BDB_VERSION}.tar.gz
 
 pushd db-${BDB_VERSION}/build_unix
 
+CONFIGURE_FLAGS="--enable-dbm --disable-shared"
+
+# configure looks for pthread_yield(), which was dropped from glibc 2.34.
+# Its replacement is sched_yield(). Fortunately, bdb's source code will fall
+# back to sched_yield() if pthread_yield() isn't available. So we just lie
+# to configure and tell it pthread_yield() isn't available.
+CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pthread_yield=no"
+
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ../dist/configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
-    --enable-dbm \
-    --disable-shared
+    ${CONFIGURE_FLAGS}
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
