@@ -401,12 +401,29 @@ fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
 }
 
 fn validate_elf(
+    json: &PythonJsonMain,
     target_triple: &str,
     python_major_minor: &str,
     path: &Path,
     elf: &goblin::elf::Elf,
     bytes: &[u8],
 ) -> Result<Vec<String>> {
+    let mut system_links = BTreeSet::new();
+    for link in &json.build_info.core.links {
+        if link.system.unwrap_or_default() {
+            system_links.insert(link.name.as_str());
+        }
+    }
+    for extension in json.build_info.extensions.values() {
+        for variant in extension {
+            for link in &variant.links {
+                if link.system.unwrap_or_default() {
+                    system_links.insert(link.name.as_str());
+                }
+            }
+        }
+    }
+
     let mut errors = vec![];
 
     let wanted_cpu_type = match target_triple {
@@ -452,6 +469,48 @@ fn validate_elf(
     for lib in &elf.libraries {
         if !allowed_libraries.contains(&lib.to_string()) {
             errors.push(format!("{} loads illegal library {}", path.display(), lib));
+        }
+
+        // Most linked libraries should have an annotation in the JSON metadata.
+        let requires_annotation = !lib.contains("libpython")
+            && !lib.starts_with("ld-linux")
+            && !lib.starts_with("ld64.so")
+            && !lib.starts_with("ld.so")
+            && !lib.starts_with("libc.so")
+            && !lib.starts_with("libgcc_s.so");
+
+        if requires_annotation {
+            if lib.starts_with("lib") {
+                if let Some(index) = lib.rfind(".so") {
+                    let lib_name = &lib[3..index];
+
+                    // There should be a system links entry for this library in the JSON
+                    // metadata.
+                    //
+                    // Nominally we would look at where this ELF came from and make sure
+                    // the annotation is present in its section (e.g. core or extension).
+                    // But this is more work.
+                    if !system_links.contains(lib_name) {
+                        errors.push(format!(
+                            "{} library load of {} does not have system link build annotation",
+                            path.display(),
+                            lib
+                        ));
+                    }
+                } else {
+                    errors.push(format!(
+                        "{} library load of {} does not have .so extension",
+                        path.display(),
+                        lib
+                    ));
+                }
+            } else {
+                errors.push(format!(
+                    "{} library load of {} does not begin with lib",
+                    path.display(),
+                    lib
+                ));
+            }
         }
     }
 
@@ -581,6 +640,7 @@ fn validate_pe(path: &Path, pe: &goblin::pe::PE) -> Result<Vec<String>> {
 
 /// Attempt to parse data as an object file and validate it.
 fn validate_possible_object_file(
+    json: &PythonJsonMain,
     python_major_minor: &str,
     triple: &str,
     path: &Path,
@@ -593,6 +653,7 @@ fn validate_possible_object_file(
         match object {
             goblin::Object::Elf(elf) => {
                 errors.extend(validate_elf(
+                    json,
                     triple,
                     python_major_minor,
                     path.as_ref(),
@@ -727,6 +788,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     let mut entries = tf.entries()?;
 
     let mut wanted_python_paths = BTreeSet::new();
+    let mut json = None;
 
     let mut entry = entries.next().unwrap()?;
     if entry.path()?.display().to_string() == "python/PYTHON.json" {
@@ -734,10 +796,16 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
 
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
-        let json = parse_python_json(&data).context("parsing PYTHON.json")?;
-        errors.extend(validate_json(&json, triple, is_debug)?);
+        json = Some(parse_python_json(&data).context("parsing PYTHON.json")?);
+        errors.extend(validate_json(json.as_ref().unwrap(), triple, is_debug)?);
 
-        wanted_python_paths.extend(json.python_paths.values().map(|x| format!("python/{}", x)));
+        wanted_python_paths.extend(
+            json.as_ref()
+                .unwrap()
+                .python_paths
+                .values()
+                .map(|x| format!("python/{}", x)),
+        );
     } else {
         errors.push(format!(
             "1st archive entry should be for python/PYTHON.json; got {}",
@@ -770,8 +838,13 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
 
-        let (local_errors, local_seen_dylibs) =
-            validate_possible_object_file(python_major_minor, &triple, &path, &data)?;
+        let (local_errors, local_seen_dylibs) = validate_possible_object_file(
+            json.as_ref().unwrap(),
+            python_major_minor,
+            &triple,
+            &path,
+            &data,
+        )?;
         errors.extend(local_errors);
         seen_dylibs.extend(local_seen_dylibs);
 
@@ -790,6 +863,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                 ));
 
                 let (local_errors, local_seen_dylibs) = validate_possible_object_file(
+                    json.as_ref().unwrap(),
                     python_major_minor,
                     &triple,
                     &member_path,
@@ -801,8 +875,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         }
 
         if path == PathBuf::from("python/PYTHON.json") {
-            let json = parse_python_json(&data).context("parsing PYTHON.json")?;
-            errors.extend(validate_json(&json, triple, is_debug)?);
+            errors.push("python/PYTHON.json seen twice".to_string());
         }
     }
 
