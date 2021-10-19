@@ -905,6 +905,23 @@ if os.environ.get("CPYTHON_DEBUG") and "d" not in sysconfig.get_config_var("abif
     sys.abiflags += "d"
     sysconfig._CONFIG_VARS["abiflags"] += "d"
 
+# importlib.machinery.EXTENSION_SUFFIXES picks up its value from #define in C
+# code. When we're doing a cross-build, the C code is the build machine, not
+# the host/target and is wrong. The logic here essentially reimplements the
+# logic for _PyImport_DynLoadFiletab in dynload_shlib.c, which is what
+# importlib.machinery.EXTENSION_SUFFIXES ultimately calls into.
+extension_suffixes = [".%s.so" % sysconfig.get_config_var("SOABI")]
+
+alt_soabi = sysconfig.get_config_var("ALT_SOABI")
+if alt_soabi:
+    # The value can be double quoted for some reason.
+    extension_suffixes.append(".%s.so" % alt_soabi.strip('"'))
+
+# Always version 3 in Python 3.
+extension_suffixes.append(".abi3.so")
+
+extension_suffixes.append(".so")
+
 metadata = {
     "python_abi_tag": sys.abiflags,
     "python_implementation_cache_tag": sys.implementation.cache_tag,
@@ -915,7 +932,7 @@ metadata = {
     "python_suffixes": {
         "bytecode": importlib.machinery.BYTECODE_SUFFIXES,
         "debug_bytecode": importlib.machinery.DEBUG_BYTECODE_SUFFIXES,
-        "extension": importlib.machinery.EXTENSION_SUFFIXES,
+        "extension": extension_suffixes,
         "optimized_bytecode": importlib.machinery.OPTIMIZED_BYTECODE_SUFFIXES,
         "source": importlib.machinery.SOURCE_SUFFIXES,
     },
