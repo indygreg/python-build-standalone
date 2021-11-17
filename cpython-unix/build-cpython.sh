@@ -60,34 +60,6 @@ zip -r "${PIP_WHEEL}" *
 popd
 rm -rf pip-tmp
 
-mkdir setuptools-tmp
-pushd setuptools-tmp
-unzip "${SETUPTOOLS_WHEEL}"
-rm -f "${SETUPTOOLS_WHEEL}"
-
-patch -p1 <<EOF
-diff --git a/setuptools/_vendor/packaging/tags.py b/setuptools/_vendor/packaging/tags.py
-index 9064910b..c541e648 100644
---- a/setuptools/_vendor/packaging/tags.py
-+++ b/setuptools/_vendor/packaging/tags.py
-@@ -475,7 +475,10 @@ def _glibc_version_string_ctypes():
-     # which libc our process is actually using.
-     #
-     # Note: typeshed is wrong here so we are ignoring this line.
--    process_namespace = ctypes.CDLL(None)  # type: ignore
-+    try:
-+        process_namespace = ctypes.CDLL(None)  # type: ignore
-+    except OSError:
-+        return None
-     try:
-         gnu_get_libc_version = process_namespace.gnu_get_libc_version
-     except AttributeError:
-EOF
-
-zip -r "${SETUPTOOLS_WHEEL}" *
-popd
-rm -rf setuptools-tmp
-
 # If we are cross-compiling, we need to build a host Python to use during
 # the build.
 if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
