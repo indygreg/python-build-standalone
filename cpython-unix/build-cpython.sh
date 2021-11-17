@@ -95,7 +95,27 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
 
   # Same patch as below. See comment there.
   if [ "${CC}" = "clang" ]; then
-    patch -p1 <<"EOF"
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+      patch -p1 <<"EOF"
+diff --git a/configure b/configure
+index 33ecb16f71..7f21822d97 100755
+--- a/configure
++++ b/configure
+@@ -5354,10 +5354,7 @@ $as_echo "none" >&6; }
+ fi
+ rm -f conftest.c conftest.out
+
+-if test x$PLATFORM_TRIPLET != xdarwin; then
+-  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+-fi
+-
++MULTIARCH=
+
+ if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
+   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
+EOF
+    else
+      patch -p1 <<"EOF"
 diff --git a/configure b/configure
 index 7cad0e2f98..50212236c4 100755
 --- a/configure
@@ -110,6 +130,7 @@ index 7cad0e2f98..50212236c4 100755
 
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the platform triplet based on compiler characteristics" >&5
 EOF
+    fi
   fi
 
   # When cross-compiling, we need to build a host Python that has working zlib
@@ -332,7 +353,27 @@ fi
 # configure. This is reported as https://bugs.python.org/issue45405. We nerf the
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
-    patch -p1 <<"EOF"
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+        patch -p1 <<"EOF"
+diff --git a/configure b/configure
+index 33ecb16f71..7f21822d97 100755
+--- a/configure
++++ b/configure
+@@ -5354,10 +5354,7 @@ $as_echo "none" >&6; }
+ fi
+ rm -f conftest.c conftest.out
+ 
+-if test x$PLATFORM_TRIPLET != xdarwin; then
+-  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+-fi
+-
++MULTIARCH=
+ 
+ if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
+   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
+EOF
+    else
+        patch -p1 <<"EOF"
 diff --git a/configure b/configure
 index 7cad0e2f98..50212236c4 100755
 --- a/configure
@@ -347,6 +388,7 @@ index 7cad0e2f98..50212236c4 100755
  
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the platform triplet based on compiler characteristics" >&5
 EOF
+    fi
 fi
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
