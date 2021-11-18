@@ -70,6 +70,7 @@ DOWNLOADS = {
         "license_file": "LICENSE.cpython.txt",
         "python_tag": "cp39",
     },
+    # TODO remember to update windows shlwapi link annotation when we upgrade to 3.10.1.
     "cpython-3.10": {
         "url": "https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tar.xz",
         "size": 18726176,
