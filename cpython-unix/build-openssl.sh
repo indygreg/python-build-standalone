@@ -40,4 +40,4 @@ EXTRA_FLAGS="${EXTRA_FLAGS} ${EXTRA_TARGET_CFLAGS}"
 /usr/bin/perl ./Configure --prefix=/tools/deps ${OPENSSL_TARGET} no-shared no-tests ${EXTRA_FLAGS}
 
 make -j ${NUM_CPUS}
-make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
+make -j ${NUM_CPUS} install_sw install_ssldirs DESTDIR=${ROOT}/out
