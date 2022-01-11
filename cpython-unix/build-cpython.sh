@@ -67,7 +67,7 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
 
   # Same patch as below. See comment there.
   if [ "${CC}" = "clang" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ] || [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
       patch -p1 <<"EOF"
 diff --git a/configure b/configure
 index 33ecb16f71..7f21822d97 100755
@@ -325,7 +325,7 @@ fi
 # configure. This is reported as https://bugs.python.org/issue45405. We nerf the
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ] || [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
         patch -p1 <<"EOF"
 diff --git a/configure b/configure
 index 33ecb16f71..7f21822d97 100755
