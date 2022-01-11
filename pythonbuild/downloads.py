@@ -72,10 +72,10 @@ DOWNLOADS = {
     },
     # TODO remember to update windows shlwapi link annotation when we upgrade to 3.10.1.
     "cpython-3.10": {
-        "url": "https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tar.xz",
-        "size": 18726176,
-        "sha256": "5a99f8e7a6a11a7b98b4e75e0d1303d3832cada5534068f69c7b6222a7b1b002",
-        "version": "3.10.0",
+        "url": "https://www.python.org/ftp/python/3.10.1/Python-3.10.1.tar.xz",
+        "size": 18775460,
+        "sha256": "a7f1265b6e1a5de1ec5c3ec7019ab53413469934758311e9d240c46e5ae6e177",
+        "version": "3.10.1",
         "licenses": ["Python-2.0", "CNRI-Python"],
         "license_file": "LICENSE.cpython.txt",
         "python_tag": "cp310",
