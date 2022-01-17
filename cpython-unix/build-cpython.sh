@@ -67,24 +67,35 @@ if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
 
   # Same patch as below. See comment there.
   if [ "${CC}" = "clang" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+    if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
       patch -p1 <<"EOF"
 diff --git a/configure b/configure
-index 33ecb16f71..7f21822d97 100755
+index d078887b2f..78654eed29 100755
 --- a/configure
 +++ b/configure
-@@ -5354,10 +5354,7 @@ $as_echo "none" >&6; }
+@@ -5366,20 +5366,7 @@ $as_echo "none" >&6; }
  fi
  rm -f conftest.c conftest.out
 
--if test x$PLATFORM_TRIPLET != xdarwin; then
--  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
--fi
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch" >&5
+-$as_echo_n "checking for multiarch... " >&6; }
+-case $ac_sys_system in #(
+-  Darwin*) :
+-    MULTIARCH="" ;; #(
+-  FreeBSD*) :
+-    MULTIARCH="" ;; #(
+-  *) :
+-    MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+- ;;
+-esac
 -
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $MULTIARCH" >&5
+-$as_echo "$MULTIARCH" >&6; }
 +MULTIARCH=
 
  if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
    if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
+
 EOF
     else
       patch -p1 <<"EOF"
@@ -325,24 +336,35 @@ fi
 # configure. This is reported as https://bugs.python.org/issue45405. We nerf the
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+    if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
         patch -p1 <<"EOF"
 diff --git a/configure b/configure
-index 33ecb16f71..7f21822d97 100755
+index d078887b2f..78654eed29 100755
 --- a/configure
 +++ b/configure
-@@ -5354,10 +5354,7 @@ $as_echo "none" >&6; }
+@@ -5366,20 +5366,7 @@ $as_echo "none" >&6; }
  fi
  rm -f conftest.c conftest.out
- 
--if test x$PLATFORM_TRIPLET != xdarwin; then
--  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
--fi
+
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch" >&5
+-$as_echo_n "checking for multiarch... " >&6; }
+-case $ac_sys_system in #(
+-  Darwin*) :
+-    MULTIARCH="" ;; #(
+-  FreeBSD*) :
+-    MULTIARCH="" ;; #(
+-  *) :
+-    MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+- ;;
+-esac
 -
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $MULTIARCH" >&5
+-$as_echo "$MULTIARCH" >&6; }
 +MULTIARCH=
- 
+
  if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
    if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
+
 EOF
     else
         patch -p1 <<"EOF"
