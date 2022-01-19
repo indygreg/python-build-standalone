@@ -128,8 +128,8 @@ EOF
   # Adding /usr paths on Linux is a bit funky. This is a side-effect or our
   # custom Clang purposefully omitting default system search paths to help
   # prevent unwanted dependencies from sneaking in.
-  case "${TARGET_TRIPLE}" in
-    i686-unknown-linux-gnu)
+  case "${BUILD_TRIPLE}" in
+    x86_64-unknown-linux-gnu)
       EXTRA_HOST_CFLAGS="${EXTRA_HOST_CFLAGS} -I/usr/include/x86_64-linux-gnu"
       EXTRA_HOST_CPPFLAGS="${EXTRA_HOST_CPPFLAGS} -I/usr/include/x86_64-linux-gnu"
       EXTRA_HOST_LDFLAGS="${EXTRA_HOST_LDFLAGS} -L/usr/lib/x86_64-linux-gnu"
