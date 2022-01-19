@@ -99,10 +99,14 @@ def add_target_env(env, build_platform, target_triple, build_env):
         env["BUILD_TRIPLE"] = "x86_64-unknown-linux-gnu"
 
         # TODO should the musl target be normalized?
-        if target_triple == "x86_64-unknown-linux-musl":
-            env["TARGET_TRIPLE"] = "x86_64-unknown-linux-gnu"
-        else:
-            env["TARGET_TRIPLE"] = target_triple
+        env["TARGET_TRIPLE"] = target_triple.replace(
+            "-unknown-linux-musl", "-unknown-linux-gnu"
+        )
+
+        if env["BUILD_TRIPLE"] != target_triple or target_triple.endswith(
+            "-unknown-linux-musl"
+        ):
+            env["CROSS_COMPILING"] = "1"
 
     if build_platform == "macos":
         machine = platform.machine()
@@ -129,6 +133,9 @@ def add_target_env(env, build_platform, target_triple, build_env):
         env["APPLE_SDK_PLATFORM"] = sdk_platform
 
         env["TARGET_TRIPLE"] = target_triple
+
+        if env["BUILD_TRIPLE"] != env["TARGET_TRIPLE"]:
+            env["CROSS_COMPILING"] = "1"
 
         # We don't have build isolation on macOS. We nerf PATH to prevent
         # non-system (e.g. Homebrew) executables from being used.

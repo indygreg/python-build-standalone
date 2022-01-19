@@ -43,7 +43,7 @@ fi
 
 # configure doesn't support cross-compiling in malloc(0) returns null test.
 # So we have to force a value.
-if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+if [ -n "${CROSS_COMPILING}" ]; then
   case "${TARGET_TRIPLE}" in
     aarch64-unknown-linux-gnu)
       EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"

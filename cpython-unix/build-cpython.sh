@@ -62,7 +62,7 @@ rm -rf pip-tmp
 
 # If we are cross-compiling, we need to build a host Python to use during
 # the build.
-if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+if [ -n "${CROSS_COMPILING}" ]; then
   pushd "Python-${PYTHON_VERSION}"
 
   # Same patch as below. See comment there.
@@ -312,7 +312,7 @@ fi
 
 # Configure nerfs RUNSHARED when cross-compiling, which prevents i386 PGO from
 # running from an x86_64 environment. Undo that, as we can run i386 from x86_64.
-if [[ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" && "${TARGET_TRIPLE}" = "i686-unknown-linux-gnu" ]]; then
+if [[ -n "${CROSS_COMPILING}" && "${TARGET_TRIPLE}" = "i686-unknown-linux-gnu" ]]; then
     patch -p1 << "EOF"
 diff --git a/configure b/configure
 index 1252335472..33c11fbade 100755
@@ -719,7 +719,7 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pwritev=no"
     fi
 
-    if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+    if [ -n "${CROSS_COMPILING}" ]; then
         # Python's configure doesn't support cross-compiling on macOS. So we need
         # to explicitly set MACHDEP to avoid busted checks. The code for setting
         # MACHDEP also sets ac_sys_system/ac_sys_release, so we have to set
@@ -764,7 +764,7 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     export MACOSX_DEPLOYMENT_TARGET="${APPLE_MIN_DEPLOYMENT_TARGET}"
 fi
 
-if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+if [ -n "${CROSS_COMPILING}" ]; then
     # configure doesn't like a handful of scenarios when cross-compiling.
     #
     # getaddrinfo buggy test fails for some reason. So we short-circuit it.
@@ -851,7 +851,7 @@ fi
 # we have the Makefile emit a script which sets some environment
 # variables that force the invoked Python to pick up the configuration
 # of the target Python but invoke the host binary.
-if [ "${BUILD_TRIPLE}" != "${TARGET_TRIPLE}" ]; then
+if [ -n "${CROSS_COMPILING}" ]; then
     make write-python-for-build
     BUILD_PYTHON=$(pwd)/python-for-build
 else
