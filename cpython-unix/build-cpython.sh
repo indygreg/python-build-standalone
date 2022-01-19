@@ -339,9 +339,9 @@ index 2d379feb4b..3eb8dbe9ea 100755
 EOF
 fi
 
-# Configure nerfs RUNSHARED when cross-compiling, which prevents i386 PGO from
-# running from an x86_64 environment. Undo that, as we can run i386 from x86_64.
-if [[ -n "${CROSS_COMPILING}" && "${TARGET_TRIPLE}" = "i686-unknown-linux-gnu" ]]; then
+# Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
+# we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
+if [ -n "${CROSS_COMPILING}" ]; then
     patch -p1 << "EOF"
 diff --git a/configure b/configure
 index 1252335472..33c11fbade 100755
