@@ -161,6 +161,35 @@ cat Makefile.extra
 
 pushd Python-${PYTHON_VERSION}
 
+# configure assumes cross compiling when host != target and doesn't provide a way to
+# override. Our target triple normalization may lead configure into thinking we
+# aren't cross-compiling when we are. So force a static "yes" value when our
+# build system says we are cross-compiling.
+if [ -n "${CROSS_COMPILING}" ]; then
+  patch -p1 <<"EOF"
+diff --git a/configure b/configure
+index d078887b2f..8f1ea07cd8 100755
+--- a/configure
++++ b/configure
+@@ -1329,14 +1329,7 @@ build=$build_alias
+ host=$host_alias
+ target=$target_alias
+
+-# FIXME: To remove some day.
+-if test "x$host_alias" != x; then
+-  if test "x$build_alias" = x; then
+-    cross_compiling=maybe
+-  elif test "x$build_alias" != "x$host_alias"; then
+-    cross_compiling=yes
+-  fi
+-fi
++cross_compiling=yes
+
+ ac_tool_prefix=
+ test -n "$host_alias" && ac_tool_prefix=$host_alias-
+EOF
+fi
+
 # configure doesn't support cross-compiling on Apple. Teach it.
 patch -p1 << "EOF"
 diff --git a/configure b/configure
