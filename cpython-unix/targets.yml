@@ -637,6 +637,120 @@ x86_64-unknown-linux-gnu:
     - zlib
   openssl_target: linux-x86_64
 
+x86_64_v2-unknown-linux-gnu:
+  host_platforms:
+    - linux64
+  pythons_supported:
+    - '3.8'
+    - '3.9'
+    - '3.10'
+  needs_toolchain: true
+  host_cc: clang
+  host_cxx: clang++
+  target_cc: clang
+  target_cflags:
+    - '-march=x86-64-v2'
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - openssl
+    - patchelf
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-x86_64
+
+x86_64_v3-unknown-linux-gnu:
+  host_platforms:
+    - linux64
+  pythons_supported:
+    - '3.8'
+    - '3.9'
+    - '3.10'
+  needs_toolchain: true
+  host_cc: clang
+  host_cxx: clang++
+  target_cc: clang
+  target_cflags:
+    - '-march=x86-64-v3'
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - openssl
+    - patchelf
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-x86_64
+
+x86_64_v4-unknown-linux-gnu:
+  host_platforms:
+    - linux64
+  pythons_supported:
+    - '3.8'
+    - '3.9'
+    - '3.10'
+  needs_toolchain: true
+  host_cc: clang
+  host_cxx: clang++
+  target_cc: clang
+  target_cflags:
+    - '-march=x86-64-v4'
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - ncurses
+    - openssl
+    - patchelf
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-x86_64
+
 x86_64-unknown-linux-musl:
   host_platforms:
     - linux64
@@ -648,6 +762,123 @@ x86_64-unknown-linux-musl:
   host_cc: clang
   host_cxx: clang++
   target_cc: musl-clang
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - musl
+    - ncurses
+    - openssl
+    - patchelf
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-x86_64
+
+x86_64_v2-unknown-linux-musl:
+  host_platforms:
+    - linux64
+  pythons_supported:
+    - '3.8'
+    - '3.9'
+    - '3.10'
+  needs_toolchain: true
+  host_cc: clang
+  host_cxx: clang++
+  target_cc: musl-clang
+  target_cflags:
+    - '-march=x86-64-v2'
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - musl
+    - ncurses
+    - openssl
+    - patchelf
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-x86_64
+
+x86_64_v3-unknown-linux-musl:
+  host_platforms:
+    - linux64
+  pythons_supported:
+    - '3.8'
+    - '3.9'
+    - '3.10'
+  needs_toolchain: true
+  host_cc: clang
+  host_cxx: clang++
+  target_cc: musl-clang
+  target_cflags:
+    - '-march=x86-64-v3'
+  needs:
+    - bdb
+    - binutils
+    - bzip2
+    - gcc
+    - gdbm
+    - libedit
+    - libffi
+    - libX11
+    - libXau
+    - libxcb
+    - musl
+    - ncurses
+    - openssl
+    - patchelf
+    - readline
+    - sqlite
+    - tcl
+    - tk
+    - tix
+    - uuid
+    - xorgproto
+    - xz
+    - zlib
+  openssl_target: linux-x86_64
+
+x86_64_v4-unknown-linux-musl:
+  host_platforms:
+    - linux64
+  pythons_supported:
+    - '3.8'
+    - '3.9'
+    - '3.10'
+  needs_toolchain: true
+  host_cc: clang
+  host_cxx: clang++
+  target_cc: musl-clang
+  target_cflags:
+    - '-march=x86-64-v4'
   needs:
     - bdb
     - binutils

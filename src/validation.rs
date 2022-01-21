@@ -38,7 +38,13 @@ const RECOGNIZED_TRIPLES: &[&str] = &[
     "x86_64-apple-watchos",
     "x86_64-pc-windows-msvc",
     "x86_64-unknown-linux-gnu",
+    "x86_64_v2-unknown-linux-gnu",
+    "x86_64_v3-unknown-linux-gnu",
+    "x86_64_v4-unknown-linux-gnu",
     "x86_64-unknown-linux-musl",
+    "x86_64_v2-unknown-linux-musl",
+    "x86_64_v3-unknown-linux-musl",
+    "x86_64_v4-unknown-linux-musl",
 ];
 
 const ELF_ALLOWED_LIBRARIES: &[&str] = &[
@@ -145,9 +151,34 @@ static GLIBC_MAX_VERSION_BY_TRIPLE: Lazy<HashMap<&'static str, version_compare::
             "x86_64-unknown-linux-gnu",
             version_compare::Version::from("2.17").unwrap(),
         );
+        versions.insert(
+            "x86_64_v2-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "x86_64_v3-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
+            "x86_64_v4-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+
         // musl shouldn't link against glibc.
         versions.insert(
             "x86_64-unknown-linux-musl",
+            version_compare::Version::from("1").unwrap(),
+        );
+        versions.insert(
+            "x86_64_v2-unknown-linux-musl",
+            version_compare::Version::from("1").unwrap(),
+        );
+        versions.insert(
+            "x86_64_v3-unknown-linux-musl",
+            version_compare::Version::from("1").unwrap(),
+        );
+        versions.insert(
+            "x86_64_v4-unknown-linux-musl",
             version_compare::Version::from("1").unwrap(),
         );
 
@@ -171,6 +202,9 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
             ("mips64el-unknown-linux-gnuabi64", vec![]),
             ("s390x-unknown-linux-gnu", vec!["ld64.so.1"]),
             ("x86_64-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
+            ("x86_64_v2-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
+            ("x86_64_v3-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
+            ("x86_64_v4-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
         ]
         .iter()
         .cloned()
@@ -355,7 +389,13 @@ static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy:
         ("x86_64-apple-ios", "iOS-x86_64"),
         ("x86_64-pc-windows-msvc", "win-amd64"),
         ("x86_64-unknown-linux-gnu", "linux-x86_64"),
+        ("x86_64_v2-unknown-linux-gnu", "linux-x86_64"),
+        ("x86_64_v3-unknown-linux-gnu", "linux-x86_64"),
+        ("x86_64_v4-unknown-linux-gnu", "linux-x86_64"),
         ("x86_64-unknown-linux-musl", "linux-x86_64"),
+        ("x86_64_v2-unknown-linux-musl", "linux-x86_64"),
+        ("x86_64_v3-unknown-linux-musl", "linux-x86_64"),
+        ("x86_64_v4-unknown-linux-musl", "linux-x86_64"),
     ]
     .iter()
     .cloned()
@@ -441,7 +481,13 @@ fn validate_elf(
         "mips64el-unknown-linux-gnuabi64" => 0,
         "s390x-unknown-linux-gnu" => goblin::elf::header::EM_S390,
         "x86_64-unknown-linux-gnu" => goblin::elf::header::EM_X86_64,
+        "x86_64_v2-unknown-linux-gnu" => goblin::elf::header::EM_X86_64,
+        "x86_64_v3-unknown-linux-gnu" => goblin::elf::header::EM_X86_64,
+        "x86_64_v4-unknown-linux-gnu" => goblin::elf::header::EM_X86_64,
         "x86_64-unknown-linux-musl" => goblin::elf::header::EM_X86_64,
+        "x86_64_v2-unknown-linux-musl" => goblin::elf::header::EM_X86_64,
+        "x86_64_v3-unknown-linux-musl" => goblin::elf::header::EM_X86_64,
+        "x86_64_v4-unknown-linux-musl" => goblin::elf::header::EM_X86_64,
         _ => panic!("unhandled target triple: {}", target_triple),
     };
 
