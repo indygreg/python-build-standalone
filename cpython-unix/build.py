@@ -294,6 +294,7 @@ def build_gcc(client, image, host_platform):
             build_env.copy_file(a)
 
         build_env.copy_file(toolchain_archive_path("binutils", host_platform))
+        build_env.copy_file(SUPPORT / "sccache-wrapper.sh")
         build_env.copy_file(SUPPORT / "build-gcc.sh")
 
         env = {

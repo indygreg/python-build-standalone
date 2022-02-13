@@ -7,11 +7,16 @@ set -ex
 
 cd /build
 
-ROOT=$(pwd)
-SCCACHE="${ROOT}/sccache"
-
 tar -C /tools -xf /build/binutils-${BINUTILS_VERSION}-linux64.tar
 export PATH=/tools/host/bin:$PATH
+
+HAVE_SCCACHE=
+
+if [ -x sccache ]; then
+  HAVE_SCCACHE=1
+  mv sccache /tools/host/bin/
+  cp sccache-wrapper.sh /tools/host/bin/
+fi
 
 tar -xf gcc-${GCC_VERSION}.tar.xz
 tar -xf gmp-${GMP_VERSION}.tar.xz
@@ -26,10 +31,11 @@ ln -sf ../mpc-${MPC_VERSION} mpc
 ln -sf ../mpfr-${MPFR_VERSION} mpfr
 popd
 
-if [ -x "${SCCACHE}" ]; then
-  "${SCCACHE}" --start-server
-  export CC="${SCCACHE} /usr/bin/gcc"
-  export CXX="${SCCACHE} /usr/bin/g++"
+if [ -n "${HAVE_SCCACHE}" ]; then
+  sccache --start-server
+  export CC="sccache /usr/bin/gcc"
+  export CXX="sccache /usr/bin/g++"
+  export STAGE_CC_WRAPPER=sccache-wrapper.sh
 fi
 
 mkdir gcc-objdir
@@ -51,3 +57,5 @@ pushd gcc-objdir
 make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out
 popd
+
+sccache -s
