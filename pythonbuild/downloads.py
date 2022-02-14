@@ -284,10 +284,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.readline.txt",
     },
     "setuptools": {
-        "url": "https://files.pythonhosted.org/packages/eb/53/0dd4c7960579da8be13fa9b2c2591643d37f323e3d79f8bc8b1b6c8e6217/setuptools-60.5.0-py3-none-any.whl",
-        "size": 958959,
-        "sha256": "68eb94073fc486091447fcb0501efd6560a0e5a1839ba249e5ff3c4c93f05f90",
-        "version": "60.5.0",
+        "url": "https://files.pythonhosted.org/packages/ad/65/7b98718c0ecebbdae5a5251fffc43dd3800ff3d1a6f7cc1aa09cfbcf17a5/setuptools-60.8.2-py3-none-any.whl",
+        "size": 1060226,
+        "sha256": "43a5575eea6d3459789316e1596a3d2a0d215260cacf4189508112f35c9a145b",
+        "version": "60.8.2",
     },
     "sqlite": {
         "url": "https://www.sqlite.org/2022/sqlite-autoconf-3370200.tar.gz",
