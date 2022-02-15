@@ -58,4 +58,7 @@ make -j `nproc`
 make -j `nproc` install DESTDIR=/build/out
 popd
 
-sccache -s
+if [ -n "${HAVE_SCCACHE}" ]; then
+  sccache -s
+fi
+
