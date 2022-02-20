@@ -38,7 +38,13 @@ static SUFFIXES_BY_TRIPLE: Lazy<BTreeMap<&'static str, Vec<&'static str>>> = Laz
     h.insert("i686-unknown-linux-gnu", linux_suffixes_pgo.clone());
 
     h.insert("x86_64-unknown-linux-gnu", linux_suffixes_pgo.clone());
+    h.insert("x86_64_v2-unknown-linux-gnu", linux_suffixes_pgo.clone());
+    h.insert("x86_64_v3-unknown-linux-gnu", linux_suffixes_pgo.clone());
+    h.insert("x86_64_v4-unknown-linux-gnu", linux_suffixes_nopgo.clone());
     h.insert("x86_64-unknown-linux-musl", linux_suffixes_nopgo.clone());
+    h.insert("x86_64_v2-unknown-linux-musl", linux_suffixes_nopgo.clone());
+    h.insert("x86_64_v3-unknown-linux-musl", linux_suffixes_nopgo.clone());
+    h.insert("x86_64_v4-unknown-linux-musl", linux_suffixes_nopgo.clone());
 
     h
 });
