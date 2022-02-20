@@ -213,8 +213,8 @@ def derive_setup_local(
 
             dest_lines.append(line)
 
-    RE_DEFINE = re.compile(br"-D[^=]+=[^\s]+")
-    RE_VARIANT = re.compile(br"VARIANT=([^\s]+)\s")
+    RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
+    RE_VARIANT = re.compile(rb"VARIANT=([^\s]+)\s")
 
     seen_variants = set()
 

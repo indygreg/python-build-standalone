@@ -769,8 +769,8 @@ def hack_props(
 
     static_replace_in_file(
         tcltkprops_path,
-        br"<tcltkDir>$(ExternalsDir)tcltk-$(TclMajorVersion).$(TclMinorVersion).$(TclPatchLevel).$(TclRevision)\$(ArchName)\</tcltkDir>",
-        br"<tcltkDir>%s\$(ArchName)\</tcltkDir>" % tcltk_path,
+        rb"<tcltkDir>$(ExternalsDir)tcltk-$(TclMajorVersion).$(TclMinorVersion).$(TclPatchLevel).$(TclRevision)\$(ArchName)\</tcltkDir>",
+        rb"<tcltkDir>%s\$(ArchName)\</tcltkDir>" % tcltk_path,
     )
 
     # We want to statically link against OpenSSL. This requires using our own
@@ -816,13 +816,13 @@ def hack_props(
     try:
         static_replace_in_file(
             libffi_props,
-            br"""<_LIBFFIDLL Include="$(libffiOutDir)\libffi-7.dll" />""",
-            br"""<_LIBFFIDLL Include="$(libffiOutDir)\libffi-8.dll" />""",
+            rb"""<_LIBFFIDLL Include="$(libffiOutDir)\libffi-7.dll" />""",
+            rb"""<_LIBFFIDLL Include="$(libffiOutDir)\libffi-8.dll" />""",
         )
         static_replace_in_file(
             libffi_props,
-            br"<AdditionalDependencies>libffi-7.lib;%(AdditionalDependencies)</AdditionalDependencies>",
-            br"<AdditionalDependencies>libffi-8.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+            rb"<AdditionalDependencies>libffi-7.lib;%(AdditionalDependencies)</AdditionalDependencies>",
+            rb"<AdditionalDependencies>libffi-8.lib;%(AdditionalDependencies)</AdditionalDependencies>",
         )
     except NoSearchStringError:
         pass
@@ -867,33 +867,33 @@ def hack_project_files(
     sqlite3_path = pcbuild_path / "sqlite3.vcxproj"
     static_replace_in_file(
         sqlite3_path,
-        br"<_SqliteVersion>$([System.Text.RegularExpressions.Regex]::Match(`$(sqlite3Dir)`, `((\d+)\.(\d+)\.(\d+)\.(\d+))\\?$`).Groups)</_SqliteVersion>",
-        br"<_SqliteVersion>%s</_SqliteVersion>" % sqlite3_version,
+        rb"<_SqliteVersion>$([System.Text.RegularExpressions.Regex]::Match(`$(sqlite3Dir)`, `((\d+)\.(\d+)\.(\d+)\.(\d+))\\?$`).Groups)</_SqliteVersion>",
+        rb"<_SqliteVersion>%s</_SqliteVersion>" % sqlite3_version,
     )
     static_replace_in_file(
         sqlite3_path,
-        br"<SqliteVersion>$(_SqliteVersion.Split(`;`)[1])</SqliteVersion>",
-        br"<SqliteVersion>%s</SqliteVersion>" % sqlite3_version,
+        rb"<SqliteVersion>$(_SqliteVersion.Split(`;`)[1])</SqliteVersion>",
+        rb"<SqliteVersion>%s</SqliteVersion>" % sqlite3_version,
     )
     static_replace_in_file(
         sqlite3_path,
-        br"<SqliteMajorVersion>$(_SqliteVersion.Split(`;`)[2])</SqliteMajorVersion>",
-        br"<SqliteMajorVersion>%s</SqliteMajorVersion>" % sqlite3_version_parts[0],
+        rb"<SqliteMajorVersion>$(_SqliteVersion.Split(`;`)[2])</SqliteMajorVersion>",
+        rb"<SqliteMajorVersion>%s</SqliteMajorVersion>" % sqlite3_version_parts[0],
     )
     static_replace_in_file(
         sqlite3_path,
-        br"<SqliteMinorVersion>$(_SqliteVersion.Split(`;`)[3])</SqliteMinorVersion>",
-        br"<SqliteMinorVersion>%s</SqliteMinorVersion>" % sqlite3_version_parts[1],
+        rb"<SqliteMinorVersion>$(_SqliteVersion.Split(`;`)[3])</SqliteMinorVersion>",
+        rb"<SqliteMinorVersion>%s</SqliteMinorVersion>" % sqlite3_version_parts[1],
     )
     static_replace_in_file(
         sqlite3_path,
-        br"<SqliteMicroVersion>$(_SqliteVersion.Split(`;`)[4])</SqliteMicroVersion>",
-        br"<SqliteMicroVersion>%s</SqliteMicroVersion>" % sqlite3_version_parts[2],
+        rb"<SqliteMicroVersion>$(_SqliteVersion.Split(`;`)[4])</SqliteMicroVersion>",
+        rb"<SqliteMicroVersion>%s</SqliteMicroVersion>" % sqlite3_version_parts[2],
     )
     static_replace_in_file(
         sqlite3_path,
-        br"<SqlitePatchVersion>$(_SqliteVersion.Split(`;`)[5])</SqlitePatchVersion>",
-        br"<SqlitePatchVersion>%s</SqlitePatchVersion>" % sqlite3_version_parts[3],
+        rb"<SqlitePatchVersion>$(_SqliteVersion.Split(`;`)[5])</SqlitePatchVersion>",
+        rb"<SqlitePatchVersion>%s</SqlitePatchVersion>" % sqlite3_version_parts[3],
     )
 
     # Our version of the xz sources is newer than what's in cpython-source-deps
@@ -902,13 +902,13 @@ def hack_project_files(
     liblzma_path = pcbuild_path / "liblzma.vcxproj"
     static_replace_in_file(
         liblzma_path,
-        br"$(lzmaDir)windows;$(lzmaDir)src/liblzma/common;",
-        br"$(lzmaDir)windows\vs2017;$(lzmaDir)src/liblzma/common;",
+        rb"$(lzmaDir)windows;$(lzmaDir)src/liblzma/common;",
+        rb"$(lzmaDir)windows\vs2017;$(lzmaDir)src/liblzma/common;",
     )
     static_replace_in_file(
         liblzma_path,
-        br'<ClInclude Include="$(lzmaDir)windows\config.h" />',
-        br'<ClInclude Include="$(lzmaDir)windows\vs2017\config.h" />',
+        rb'<ClInclude Include="$(lzmaDir)windows\config.h" />',
+        rb'<ClInclude Include="$(lzmaDir)windows\vs2017\config.h" />',
     )
 
     # Our logic for rewriting extension projects gets confused by _sqlite.vcxproj not
@@ -916,7 +916,7 @@ def hack_project_files(
     try:
         static_replace_in_file(
             pcbuild_path / "_sqlite3.vcxproj",
-            br"<AdditionalIncludeDirectories>$(sqlite3Dir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>",
+            rb"<AdditionalIncludeDirectories>$(sqlite3Dir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>",
             b"<AdditionalIncludeDirectories>$(sqlite3Dir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>\r\n      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>",
         )
     except NoSearchStringError:
@@ -927,8 +927,8 @@ def hack_project_files(
     ssl_proj = pcbuild_path / "_ssl.vcxproj"
     static_replace_in_file(
         ssl_proj,
-        br'<ClCompile Include="$(opensslIncludeDir)\applink.c">',
-        br'<ClCompile Include="$(opensslIncludeDir)\openssl\applink.c">',
+        rb'<ClCompile Include="$(opensslIncludeDir)\applink.c">',
+        rb'<ClCompile Include="$(opensslIncludeDir)\openssl\applink.c">',
     )
 
     pythoncore_proj = pcbuild_path / "pythoncore.vcxproj"
