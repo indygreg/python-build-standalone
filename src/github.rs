@@ -6,9 +6,8 @@ use {
     anyhow::{anyhow, Result},
     clap::ArgMatches,
     futures::StreamExt,
-    octocrab::{Octocrab, OctocrabBuilder},
+    octocrab::{models::workflows::WorkflowListArtifact, Octocrab, OctocrabBuilder},
     once_cell::sync::Lazy,
-    serde::Deserialize,
     std::{
         collections::{BTreeMap, BTreeSet},
         io::Read,
@@ -50,30 +49,10 @@ static SUFFIXES_BY_TRIPLE: Lazy<BTreeMap<&'static str, Vec<&'static str>>> = Laz
     h
 });
 
-#[derive(Clone, Debug, Deserialize)]
-struct Artifact {
-    archive_download_url: String,
-    created_at: String,
-    expired: bool,
-    expires_at: String,
-    id: u64,
-    name: String,
-    node_id: String,
-    size_in_bytes: u64,
-    updated_at: String,
-    url: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-struct Artifacts {
-    artifacts: Vec<Artifact>,
-    total_count: u64,
-}
-
-async fn fetch_artifact(client: &Octocrab, artifact: Artifact) -> Result<bytes::Bytes> {
+async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Result<bytes::Bytes> {
     println!("downloading {}", artifact.name);
     let res = client
-        .execute(client.request_builder(&artifact.archive_download_url, reqwest::Method::GET))
+        .execute(client.request_builder(artifact.archive_download_url, reqwest::Method::GET))
         .await?;
 
     Ok(res.bytes().await?)
@@ -125,17 +104,19 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Resul
     let mut fs = vec![];
 
     for run in runs {
-        let res = client
-            .execute(client.request_builder(run.artifacts_url, reqwest::Method::GET))
+        let page = client
+            .actions()
+            .list_workflow_run_artifacts(org, repo, run.id)
+            .send()
             .await?;
 
-        if !res.status().is_success() {
-            return Err(anyhow!("non-HTTP 200 fetching artifacts"));
-        }
+        let artifacts = client
+            .all_pages::<octocrab::models::workflows::WorkflowListArtifact>(
+                page.value.expect("untagged request should have page"),
+            )
+            .await?;
 
-        let artifacts: Artifacts = res.json().await?;
-
-        for artifact in artifacts.artifacts {
+        for artifact in artifacts {
             if matches!(
                 artifact.name.as_str(),
                 "pythonbuild" | "sccache" | "toolchain"
