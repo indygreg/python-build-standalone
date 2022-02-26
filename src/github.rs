@@ -5,6 +5,7 @@
 use {
     anyhow::{anyhow, Result},
     clap::ArgMatches,
+    futures::StreamExt,
     octocrab::OctocrabBuilder,
     once_cell::sync::Lazy,
     serde::Deserialize,
@@ -144,7 +145,9 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Resul
         }
     }
 
-    for res in futures::future::join_all(fs).await {
+    let mut buffered = futures::stream::iter(fs).buffer_unordered(4);
+
+    while let Some(res) = buffered.next().await {
         let data = res?;
 
         let mut za = ZipArchive::new(std::io::Cursor::new(data))?;
