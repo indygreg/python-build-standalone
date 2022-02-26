@@ -8,6 +8,8 @@ use {once_cell::sync::Lazy, std::collections::BTreeMap};
 pub struct TripleRelease {
     /// Build suffixes to release.
     pub suffixes: Vec<&'static str>,
+    /// Build suffix to use for the `install_only` artifact.
+    pub install_only_suffix: &'static str,
 }
 
 pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::new(|| {
@@ -19,12 +21,14 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         "aarch64-apple-darwin",
         TripleRelease {
             suffixes: macos_suffixes.clone(),
+            install_only_suffix: "pgo+lto",
         },
     );
     h.insert(
         "x86_64-apple-darwin",
         TripleRelease {
             suffixes: macos_suffixes,
+            install_only_suffix: "pgo+lto",
         },
     );
 
@@ -34,12 +38,14 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         "i686-pc-windows-msvc",
         TripleRelease {
             suffixes: windows_suffixes.clone(),
+            install_only_suffix: "shared-pgo",
         },
     );
     h.insert(
         "x86_64-pc-windows-msvc",
         TripleRelease {
             suffixes: windows_suffixes,
+            install_only_suffix: "shared-pgo",
         },
     );
 
@@ -51,6 +57,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         "aarch64-unknown-linux-gnu",
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
+            install_only_suffix: "lto",
         },
     );
 
@@ -58,6 +65,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         "i686-unknown-linux-gnu",
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
+            install_only_suffix: "pgo+lto",
         },
     );
 
@@ -65,48 +73,56 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         "x86_64-unknown-linux-gnu",
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
+            install_only_suffix: "pgo+lto",
         },
     );
     h.insert(
         "x86_64_v2-unknown-linux-gnu",
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
+            install_only_suffix: "pgo+lto",
         },
     );
     h.insert(
         "x86_64_v3-unknown-linux-gnu",
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
+            install_only_suffix: "pgo+lto",
         },
     );
     h.insert(
         "x86_64_v4-unknown-linux-gnu",
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
+            install_only_suffix: "lto",
         },
     );
     h.insert(
         "x86_64-unknown-linux-musl",
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
+            install_only_suffix: "lto",
         },
     );
     h.insert(
         "x86_64_v2-unknown-linux-musl",
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
+            install_only_suffix: "lto",
         },
     );
     h.insert(
         "x86_64_v3-unknown-linux-musl",
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
+            install_only_suffix: "lto",
         },
     );
     h.insert(
         "x86_64_v4-unknown-linux-musl",
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
+            install_only_suffix: "lto",
         },
     );
 
