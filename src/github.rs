@@ -6,7 +6,7 @@ use {
     anyhow::{anyhow, Result},
     clap::ArgMatches,
     futures::StreamExt,
-    octocrab::OctocrabBuilder,
+    octocrab::{Octocrab, OctocrabBuilder},
     once_cell::sync::Lazy,
     serde::Deserialize,
     std::{
@@ -68,6 +68,15 @@ struct Artifact {
 struct Artifacts {
     artifacts: Vec<Artifact>,
     total_count: u64,
+}
+
+async fn fetch_artifact(client: &Octocrab, artifact: Artifact) -> Result<bytes::Bytes> {
+    println!("downloading {}", artifact.name);
+    let res = client
+        .execute(client.request_builder(&artifact.archive_download_url, reqwest::Method::GET))
+        .await?;
+
+    Ok(res.bytes().await?)
 }
 
 pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Result<()> {
@@ -134,14 +143,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Resul
                 continue;
             }
 
-            println!("downloading {}", artifact.name);
-            let res = client
-                .execute(
-                    client.request_builder(artifact.archive_download_url, reqwest::Method::GET),
-                )
-                .await?;
-
-            fs.push(res.bytes());
+            fs.push(fetch_artifact(&client, artifact));
         }
     }
 
