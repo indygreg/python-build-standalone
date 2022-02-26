@@ -3,51 +3,14 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
+    crate::release::SUFFIXES_BY_TRIPLE,
     anyhow::{anyhow, Result},
     clap::ArgMatches,
     futures::StreamExt,
     octocrab::{models::workflows::WorkflowListArtifact, Octocrab, OctocrabBuilder},
-    once_cell::sync::Lazy,
-    std::{
-        collections::{BTreeMap, BTreeSet},
-        io::Read,
-        path::PathBuf,
-    },
+    std::{collections::BTreeSet, io::Read, path::PathBuf},
     zip::ZipArchive,
 };
-
-static SUFFIXES_BY_TRIPLE: Lazy<BTreeMap<&'static str, Vec<&'static str>>> = Lazy::new(|| {
-    let mut h = BTreeMap::new();
-
-    // macOS.
-    let macos_suffixes = vec!["debug", "lto", "pgo", "pgo+lto", "install_only"];
-    h.insert("aarch64-apple-darwin", macos_suffixes.clone());
-    h.insert("x86_64-apple-darwin", macos_suffixes);
-
-    // Windows.
-    let windows_suffixes = vec!["shared-pgo", "static-noopt", "shared-install_only"];
-    h.insert("i686-pc-windows-msvc", windows_suffixes.clone());
-    h.insert("x86_64-pc-windows-msvc", windows_suffixes);
-
-    // Linux.
-    let linux_suffixes_pgo = vec!["debug", "lto", "pgo", "pgo+lto", "install_only"];
-    let linux_suffixes_nopgo = vec!["debug", "lto", "noopt", "install_only"];
-
-    h.insert("aarch64-unknown-linux-gnu", linux_suffixes_nopgo.clone());
-
-    h.insert("i686-unknown-linux-gnu", linux_suffixes_pgo.clone());
-
-    h.insert("x86_64-unknown-linux-gnu", linux_suffixes_pgo.clone());
-    h.insert("x86_64_v2-unknown-linux-gnu", linux_suffixes_pgo.clone());
-    h.insert("x86_64_v3-unknown-linux-gnu", linux_suffixes_pgo.clone());
-    h.insert("x86_64_v4-unknown-linux-gnu", linux_suffixes_nopgo.clone());
-    h.insert("x86_64-unknown-linux-musl", linux_suffixes_nopgo.clone());
-    h.insert("x86_64_v2-unknown-linux-musl", linux_suffixes_nopgo.clone());
-    h.insert("x86_64_v3-unknown-linux-musl", linux_suffixes_nopgo.clone());
-    h.insert("x86_64_v4-unknown-linux-musl", linux_suffixes_nopgo.clone());
-
-    h
-});
 
 async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Result<bytes::Bytes> {
     println!("downloading {}", artifact.name);

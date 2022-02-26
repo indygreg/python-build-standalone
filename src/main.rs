@@ -5,6 +5,7 @@
 mod github;
 mod json;
 mod macho;
+mod release;
 mod validation;
 
 use {
