@@ -269,6 +269,11 @@ pub async fn command_upload_release_distributions(args: &ArgMatches<'_>) -> Resu
 
         let response = client.execute(request).await?;
 
+        if response.status() == 422 {
+            println!("HTTP 422 when uploading {}; ignoring", filename);
+            continue;
+        }
+
         if !response.status().is_success() {
             return Err(anyhow!("HTTP {}", response.status()));
         }
