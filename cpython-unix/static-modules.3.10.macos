@@ -34,7 +34,7 @@ _testimportmultiple _testimportmultiple.c
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 _testmultiphase _testmultiphase.c
 # CoreFoundation isn't a directory dependency but is a dependency of libtcl and libtk.
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -ltcl8.6 -ltk8.6
+_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -framework QuartzCore -ltcl8.6 -ltk8.6
 _uuid _uuidmodule.c -luuid
 _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c

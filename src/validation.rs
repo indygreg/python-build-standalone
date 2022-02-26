@@ -291,6 +291,11 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
                 required: true,
             },
             MachOAllowedDylib {
+                name: "/System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore".to_string(),
+                max_compatibility_version: "1.2.0".try_into().unwrap(),
+                required: true,
+            },
+            MachOAllowedDylib {
                 name: "/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration".to_string(),
                 max_compatibility_version: "1.0.0".try_into().unwrap(),
                 required: true,

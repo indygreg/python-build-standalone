@@ -29,7 +29,7 @@ _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 _sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -lsqlite3
 _ssl _ssl.c -lssl -lcrypto
 # CoreFoundation isn't a directory dependency but is a dependency of libtcl and libtk.
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -ltcl8.6 -ltk8.6
+_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -framework QuartzCore -ltcl8.6 -ltk8.6
 _uuid _uuidmodule.c -luuid
 pyexpat pyexpat.c expat/xmlparse.c expat/xmlrole.c expat/xmltok.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
 readline readline.c -ledit -lncurses
