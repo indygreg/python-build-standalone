@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
-    crate::release::SUFFIXES_BY_TRIPLE,
+    crate::release::RELEASE_TRIPLES,
     anyhow::{anyhow, Result},
     clap::ArgMatches,
     futures::StreamExt,
@@ -102,14 +102,14 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Resul
 
             let name = zf.name().to_string();
 
-            if let Some(suffixes) = SUFFIXES_BY_TRIPLE.iter().find_map(|(triple, suffixes)| {
+            if let Some(release) = RELEASE_TRIPLES.iter().find_map(|(triple, release)| {
                 if name.contains(triple) {
-                    Some(suffixes)
+                    Some(release)
                 } else {
                     None
                 }
             }) {
-                if suffixes.iter().any(|suffix| name.contains(suffix)) {
+                if release.suffixes.iter().any(|suffix| name.contains(suffix)) {
                     let dest_path = dest_dir.join(&name);
                     let mut buf = vec![];
                     zf.read_to_end(&mut buf)?;
@@ -170,8 +170,8 @@ pub async fn command_upload_release_distributions(args: &ArgMatches<'_>) -> Resu
 
     let mut wanted_filenames = BTreeSet::new();
     for version in python_versions {
-        for (triple, suffixes) in SUFFIXES_BY_TRIPLE.iter() {
-            for suffix in suffixes {
+        for (triple, release) in RELEASE_TRIPLES.iter() {
+            for suffix in &release.suffixes {
                 let extension = if suffix.contains("install_only") {
                     "tar.gz"
                 } else {

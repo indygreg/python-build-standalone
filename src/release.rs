@@ -4,35 +4,111 @@
 
 use {once_cell::sync::Lazy, std::collections::BTreeMap};
 
-pub static SUFFIXES_BY_TRIPLE: Lazy<BTreeMap<&'static str, Vec<&'static str>>> = Lazy::new(|| {
+/// Describes a release for a given target triple.
+pub struct TripleRelease {
+    /// Build suffixes to release.
+    pub suffixes: Vec<&'static str>,
+}
+
+pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::new(|| {
     let mut h = BTreeMap::new();
 
     // macOS.
     let macos_suffixes = vec!["debug", "lto", "pgo", "pgo+lto", "install_only"];
-    h.insert("aarch64-apple-darwin", macos_suffixes.clone());
-    h.insert("x86_64-apple-darwin", macos_suffixes);
+    h.insert(
+        "aarch64-apple-darwin",
+        TripleRelease {
+            suffixes: macos_suffixes.clone(),
+        },
+    );
+    h.insert(
+        "x86_64-apple-darwin",
+        TripleRelease {
+            suffixes: macos_suffixes,
+        },
+    );
 
     // Windows.
     let windows_suffixes = vec!["shared-pgo", "static-noopt", "shared-install_only"];
-    h.insert("i686-pc-windows-msvc", windows_suffixes.clone());
-    h.insert("x86_64-pc-windows-msvc", windows_suffixes);
+    h.insert(
+        "i686-pc-windows-msvc",
+        TripleRelease {
+            suffixes: windows_suffixes.clone(),
+        },
+    );
+    h.insert(
+        "x86_64-pc-windows-msvc",
+        TripleRelease {
+            suffixes: windows_suffixes,
+        },
+    );
 
     // Linux.
     let linux_suffixes_pgo = vec!["debug", "lto", "pgo", "pgo+lto", "install_only"];
     let linux_suffixes_nopgo = vec!["debug", "lto", "noopt", "install_only"];
 
-    h.insert("aarch64-unknown-linux-gnu", linux_suffixes_nopgo.clone());
+    h.insert(
+        "aarch64-unknown-linux-gnu",
+        TripleRelease {
+            suffixes: linux_suffixes_nopgo.clone(),
+        },
+    );
 
-    h.insert("i686-unknown-linux-gnu", linux_suffixes_pgo.clone());
+    h.insert(
+        "i686-unknown-linux-gnu",
+        TripleRelease {
+            suffixes: linux_suffixes_pgo.clone(),
+        },
+    );
 
-    h.insert("x86_64-unknown-linux-gnu", linux_suffixes_pgo.clone());
-    h.insert("x86_64_v2-unknown-linux-gnu", linux_suffixes_pgo.clone());
-    h.insert("x86_64_v3-unknown-linux-gnu", linux_suffixes_pgo.clone());
-    h.insert("x86_64_v4-unknown-linux-gnu", linux_suffixes_nopgo.clone());
-    h.insert("x86_64-unknown-linux-musl", linux_suffixes_nopgo.clone());
-    h.insert("x86_64_v2-unknown-linux-musl", linux_suffixes_nopgo.clone());
-    h.insert("x86_64_v3-unknown-linux-musl", linux_suffixes_nopgo.clone());
-    h.insert("x86_64_v4-unknown-linux-musl", linux_suffixes_nopgo.clone());
+    h.insert(
+        "x86_64-unknown-linux-gnu",
+        TripleRelease {
+            suffixes: linux_suffixes_pgo.clone(),
+        },
+    );
+    h.insert(
+        "x86_64_v2-unknown-linux-gnu",
+        TripleRelease {
+            suffixes: linux_suffixes_pgo.clone(),
+        },
+    );
+    h.insert(
+        "x86_64_v3-unknown-linux-gnu",
+        TripleRelease {
+            suffixes: linux_suffixes_pgo.clone(),
+        },
+    );
+    h.insert(
+        "x86_64_v4-unknown-linux-gnu",
+        TripleRelease {
+            suffixes: linux_suffixes_nopgo.clone(),
+        },
+    );
+    h.insert(
+        "x86_64-unknown-linux-musl",
+        TripleRelease {
+            suffixes: linux_suffixes_nopgo.clone(),
+        },
+    );
+    h.insert(
+        "x86_64_v2-unknown-linux-musl",
+        TripleRelease {
+            suffixes: linux_suffixes_nopgo.clone(),
+        },
+    );
+    h.insert(
+        "x86_64_v3-unknown-linux-musl",
+        TripleRelease {
+            suffixes: linux_suffixes_nopgo.clone(),
+        },
+    );
+    h.insert(
+        "x86_64_v4-unknown-linux-musl",
+        TripleRelease {
+            suffixes: linux_suffixes_nopgo.clone(),
+        },
+    );
 
     h
 });
