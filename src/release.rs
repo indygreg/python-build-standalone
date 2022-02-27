@@ -24,7 +24,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     let mut h = BTreeMap::new();
 
     // macOS.
-    let macos_suffixes = vec!["debug", "lto", "pgo", "pgo+lto", "install_only"];
+    let macos_suffixes = vec!["debug", "lto", "pgo", "pgo+lto"];
     h.insert(
         "aarch64-apple-darwin",
         TripleRelease {
@@ -41,7 +41,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     );
 
     // Windows.
-    let windows_suffixes = vec!["shared-pgo", "static-noopt", "shared-install_only"];
+    let windows_suffixes = vec!["shared-pgo", "static-noopt"];
     h.insert(
         "i686-pc-windows-msvc",
         TripleRelease {
@@ -58,8 +58,8 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     );
 
     // Linux.
-    let linux_suffixes_pgo = vec!["debug", "lto", "pgo", "pgo+lto", "install_only"];
-    let linux_suffixes_nopgo = vec!["debug", "lto", "noopt", "install_only"];
+    let linux_suffixes_pgo = vec!["debug", "lto", "pgo", "pgo+lto"];
+    let linux_suffixes_nopgo = vec!["debug", "lto", "noopt"];
 
     h.insert(
         "aarch64-unknown-linux-gnu",

@@ -206,17 +206,16 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     for version in python_versions {
         for (triple, release) in RELEASE_TRIPLES.iter() {
             for suffix in &release.suffixes {
-                let extension = if suffix.contains("install_only") {
-                    "tar.gz"
-                } else {
-                    "tar.zst"
-                };
-
                 wanted_filenames.insert(format!(
-                    "cpython-{}-{}-{}-{}.{}",
-                    version, triple, suffix, datetime, extension
+                    "cpython-{}-{}-{}-{}.tar.zst",
+                    version, triple, suffix, datetime
                 ));
             }
+
+            wanted_filenames.insert(format!(
+                "cpython-{}-{}-install_only-{}.tar.gz",
+                version, triple, datetime
+            ));
         }
     }
 
