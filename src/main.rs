@@ -70,6 +70,17 @@ fn main_impl() -> Result<()> {
     );
 
     let app = app.subcommand(
+        Command::new("convert-install-only")
+            .about("Convert a .tar.zst archive to an install_only tar.gz archive")
+            .arg(
+                Arg::new("path")
+                    .required(true)
+                    .takes_value(true)
+                    .help("Path of archive to convert"),
+            ),
+    );
+
+    let app = app.subcommand(
         Command::new("upload-release-distributions")
             .about("Upload release distributions to a GitHub release")
             .arg(
@@ -141,6 +152,15 @@ fn main_impl() -> Result<()> {
     let matches = app.get_matches();
 
     match matches.subcommand() {
+        Some(("convert-install-only", args)) => {
+            let path = args.value_of("path").expect("path argument is required");
+
+            let dest_path =
+                crate::release::produce_install_only(std::path::PathBuf::from(path).as_path())?;
+            println!("wrote {}", dest_path.display());
+
+            Ok(())
+        }
         Some(("fetch-release-distributions", args)) => {
             tokio::runtime::Builder::new_current_thread()
                 .enable_all()
