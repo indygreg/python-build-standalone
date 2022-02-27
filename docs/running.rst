@@ -4,10 +4,55 @@
 Running Distributions
 =====================
 
+Obtaining Distributions
+=======================
+
+Pre-built distributions are published as releases on GitHub at
+https://github.com/indygreg/python-build-standalone/releases.
+Simply go to that page and find the latest release along with
+its release notes.
+
+Published distributions vary by their:
+
+* Python version
+* Target machine architecture
+* Build configuration
+* Archive flavor
+
+The Python version is hopefully pretty obvious.
+
+The target machine architecture defines the CPU type and operating
+system the distribution runs on. We use LLVM target triples.
+
+The build configuration denotes how Python and its dependencies were built.
+Common configurations include:
+
+``pgo+lto``
+   Profile guided optimization and link-time optimization. These should be
+   the fastest distributions since they have the most build-time
+   optimizations.
+
+``pgo``
+   Profile guided optimization.
+
+``lto``
+   Link-time optimization.
+
+``noopt``
+   A regular optimized build without PGO or LTO.
+
+``debug``
+   A debug build. No optimizations.
+
+The archive flavor denotes the content in the archive. See
+:ref:`distributions` for more. Casual users will likely want to use the
+``install_only`` archive, as most users do not need the build artifacts
+present in the ``full`` archive.
+
 Extracting Distributions
 ========================
 
-Distributions are defined as zstandard-compressed tarballs.
+Distributions are defined as zstandard or gzip compressed tarballs.
 
 Modern versions of ``tar`` support zstandard and you can extract
 like any normal archive::

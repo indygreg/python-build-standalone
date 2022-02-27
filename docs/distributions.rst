@@ -4,11 +4,17 @@
 Distribution Archives
 =====================
 
-The output of a build is referred to as a Python *distribution*.
+This project produces tarball archives containing Python distributions.
 
-A distribution is a zstandard-compressed tar file. All paths inside the
-tar archive are prefixed with ``python/``. Within the ``python/`` directory
-are the following well-known paths:
+Full Archive
+============
+
+The canonical output of this project's build system are ``.tar.zst``
+(zstandard compressed tarballs) files.
+
+All files within the tar are prefixed with ``python/``.
+
+Within the ``python/`` directory are the following well-known paths:
 
 PYTHON.json
    Machine readable file describing this Python distribution.
@@ -22,7 +28,7 @@ The ``PYTHON.json`` file should be read to determine where specific entities
 are located within the archive.
 
 PYTHON.json File
-================
+----------------
 
 The ``PYTHON.json`` file describes the Python distribution in a machine
 readable manner. This file is meant to be opened by downstream consumers
@@ -572,3 +578,23 @@ system
 
    System libraries are typically passed into the linker by name only and
    found using default library search paths.
+
+Install Only Archive
+====================
+
+At release time, this project produces tar files containing just the
+Python installation, without the ``PYTHON.json`` or build files from
+the full ``.tar.zst`` archives. These are referred to as *install only*
+archives.
+
+An *install only* archive is created by taking a ``.tar.zst`` and
+rewriting ``python/install/*`` to ``python/*``. All files not under
+``python/install/*`` are not carried forward to the *install only*
+archive.
+
+The fastest available build for a given target is used for the *install
+only* archive. Builds are generally preferred in the following order:
+``pgo+lto``, ``pgo``, ``lto``, ``noopt``.
+
+For maximum compatibility, gzipped compressed versions of the
+*install only* archives are made available.
