@@ -12,6 +12,7 @@ use {
         Octocrab, OctocrabBuilder,
     },
     rayon::prelude::*,
+    sha2::{Digest, Sha256},
     std::{
         collections::{BTreeMap, BTreeSet},
         io::Read,
@@ -327,6 +328,8 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         ));
     };
 
+    let mut digests = BTreeMap::new();
+
     for (source, dest) in wanted_filenames {
         if !filenames.contains(&source) {
             continue;
@@ -334,8 +337,30 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
 
         let file_data = std::fs::read(dist_dir.join(&source))?;
 
+        let mut digest = Sha256::new();
+        digest.update(&file_data);
+
+        digests.insert(dest.clone(), hex::encode(digest.finalize()));
+
         upload_release_artifact(&client, &release, &dest, file_data, dry_run).await?;
     }
+
+    let shasums = digests
+        .iter()
+        .map(|(filename, digest)| format!("{}  {}\n", digest, filename))
+        .collect::<Vec<_>>()
+        .join("");
+
+    std::fs::write(dist_dir.join("SHA256SUMS"), shasums.as_bytes())?;
+
+    upload_release_artifact(
+        &client,
+        &release,
+        "SHA256SUMS",
+        shasums.into_bytes(),
+        dry_run,
+    )
+    .await?;
 
     Ok(())
 }
