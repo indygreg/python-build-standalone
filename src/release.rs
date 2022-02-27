@@ -46,20 +46,38 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     );
 
     // Windows.
-    let windows_suffixes = vec!["shared-pgo", "static-noopt"];
+
+    // The -shared and -static parts of the triple are a lie. But the code
+    // handles it fine.
     h.insert(
-        "i686-pc-windows-msvc",
+        "i686-pc-windows-msvc-shared",
         TripleRelease {
-            suffixes: windows_suffixes.clone(),
-            install_only_suffix: "shared-pgo",
+            suffixes: vec!["pgo"],
+            install_only_suffix: "pgo",
             python_version_requirement: None,
         },
     );
     h.insert(
-        "x86_64-pc-windows-msvc",
+        "i686-pc-windows-msvc-static",
         TripleRelease {
-            suffixes: windows_suffixes,
-            install_only_suffix: "shared-pgo",
+            suffixes: vec!["noopt"],
+            install_only_suffix: "noopt",
+            python_version_requirement: None,
+        },
+    );
+    h.insert(
+        "x86_64-pc-windows-msvc-shared",
+        TripleRelease {
+            suffixes: vec!["pgo"],
+            install_only_suffix: "pgo",
+            python_version_requirement: None,
+        },
+    );
+    h.insert(
+        "x86_64-pc-windows-msvc-static",
+        TripleRelease {
+            suffixes: vec!["noopt"],
+            install_only_suffix: "noopt",
             python_version_requirement: None,
         },
     );
