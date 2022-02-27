@@ -240,7 +240,10 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
                         "cpython-{}-{}-{}-{}.tar.zst",
                         version, triple, suffix, datetime
                     ),
-                    format!("cpython-{}+{}-{}-{}.tar.zst", version, tag, triple, suffix),
+                    format!(
+                        "cpython-{}+{}-{}-{}-full.tar.zst",
+                        version, tag, triple, suffix
+                    ),
                 );
             }
 
