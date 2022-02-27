@@ -398,40 +398,6 @@ def compress_python_archive(
     return dest_path
 
 
-def prune_distribution_archive(source_path: pathlib.Path):
-    """Prunes a full Python distribution archive into one with just a Python install."""
-    name_parts = source_path.name.split("-")
-    name_parts[-2] = "install_only"
-
-    dest_path = source_path.with_name("-".join(name_parts)).with_suffix(".gz")
-
-    with source_path.open("rb") as ifh, tarfile.open(dest_path, "w:gz") as otf:
-        dctx = zstandard.ZstdDecompressor()
-        with dctx.stream_reader(ifh) as tar_reader:
-            with tarfile.open(fileobj=tar_reader, mode="r|") as itf:
-                for member in itf:
-                    if not member.name.startswith("python/install/"):
-                        continue
-
-                    member.name = "python/%s" % member.name[len("python/install/") :]
-
-                    if member.pax_headers.get("path"):
-                        member.pax_headers["path"] = (
-                            "python/%s"
-                            % member.pax_headers["path"][len("python/install/") :]
-                        )
-
-                    if member.issym():
-                        data = None
-                    else:
-                        data = itf.extractfile(member)
-
-                    print("adding %s" % member.name)
-                    otf.addfile(member, data)
-
-    print("wrote %s" % dest_path)
-
-
 def add_licenses_to_extension_entry(entry):
     """Add licenses keys to a ``extensions`` entry for JSON distribution info."""
 

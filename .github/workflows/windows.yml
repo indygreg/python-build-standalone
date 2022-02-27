@@ -93,38 +93,3 @@ jobs:
         with:
           name: ${{ matrix.py }}-${{ matrix.vcvars }}
           path: dist/*
-
-  install-only:
-    strategy:
-      fail-fast: false
-      matrix:
-        version:
-          - '3.9'
-          - '3.10'
-    needs:
-      - build
-    runs-on: 'ubuntu-20.04'
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Download Python
-        uses: actions/download-artifact@v2
-        with:
-          name: 'cpython-${{ matrix.version }}-vcvars64.bat'
-
-      - name: Repack Distribution
-        run: |
-          ./prune-distribution.py cpython-*-pgo-*
-
-      - name: Upload Distribution
-        uses: actions/upload-artifact@v2
-        with:
-          name: 'cpython-install-only-${{ matrix.version }}'
-          path: cpython-*.tar.gz
