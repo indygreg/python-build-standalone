@@ -189,6 +189,7 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         .value_of("organization")
         .expect("organization should be specified");
     let repo = args.value_of("repo").expect("repo should be specified");
+    let dry_run = args.is_present("dry_run");
 
     let mut filenames = std::fs::read_dir(&dist_dir)?
         .into_iter()
@@ -286,6 +287,10 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
             .header("Content-Length", file_data.len())
             .header("Content-Type", "application/x-tar")
             .body(file_data);
+
+        if dry_run {
+            continue;
+        }
 
         let response = client.execute(request).await?;
 

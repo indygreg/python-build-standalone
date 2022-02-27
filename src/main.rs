@@ -105,6 +105,11 @@ fn main_impl() -> Result<()> {
                     .help("Date/time tag associated with builds"),
             )
             .arg(
+                Arg::new("dry_run")
+                    .short('n')
+                    .help("Dry run mode; do not actually upload"),
+            )
+            .arg(
                 Arg::new("tag")
                     .long("--tag")
                     .required(true)
