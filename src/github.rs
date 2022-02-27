@@ -9,7 +9,11 @@ use {
     futures::StreamExt,
     octocrab::{models::workflows::WorkflowListArtifact, Octocrab, OctocrabBuilder},
     rayon::prelude::*,
-    std::{collections::BTreeSet, io::Read, path::PathBuf},
+    std::{
+        collections::{BTreeMap, BTreeSet},
+        io::Read,
+        path::PathBuf,
+    },
     zip::ZipArchive,
 };
 
@@ -220,7 +224,7 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         python_versions.insert(parts[1]);
     }
 
-    let mut wanted_filenames = BTreeSet::new();
+    let mut wanted_filenames = BTreeMap::new();
     for version in python_versions {
         for (triple, release) in RELEASE_TRIPLES.iter() {
             if let Some(req) = &release.python_version_requirement {
@@ -231,20 +235,30 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
             }
 
             for suffix in &release.suffixes {
-                wanted_filenames.insert(format!(
-                    "cpython-{}-{}-{}-{}.tar.zst",
-                    version, triple, suffix, datetime
-                ));
+                wanted_filenames.insert(
+                    format!(
+                        "cpython-{}-{}-{}-{}.tar.zst",
+                        version, triple, suffix, datetime
+                    ),
+                    format!("cpython-{}+{}-{}-{}.tar.zst", version, tag, triple, suffix),
+                );
             }
 
-            wanted_filenames.insert(format!(
-                "cpython-{}-{}-install_only-{}.tar.gz",
-                version, triple, datetime
-            ));
+            wanted_filenames.insert(
+                format!(
+                    "cpython-{}-{}-install_only-{}.tar.gz",
+                    version, triple, datetime
+                ),
+                format!("cpython-{}+{}-{}-install_only.tar.gz", version, tag, triple),
+            );
         }
     }
 
-    let missing = wanted_filenames.difference(&filenames).collect::<Vec<_>>();
+    let missing = wanted_filenames
+        .keys()
+        .filter(|x| !filenames.contains(*x))
+        .collect::<Vec<_>>();
+
     for f in &missing {
         println!("missing release artifact: {}", f);
     }
@@ -265,13 +279,17 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         ));
     };
 
-    for filename in wanted_filenames.intersection(&filenames) {
-        if release.assets.iter().any(|asset| &asset.name == filename) {
-            println!("release asset {} already present; skipping", filename);
+    for (source, dest) in wanted_filenames {
+        if !filenames.contains(&source) {
             continue;
         }
 
-        let path = dist_dir.join(filename);
+        if release.assets.iter().any(|asset| asset.name == dest) {
+            println!("release asset {} already present; skipping", dest);
+            continue;
+        }
+
+        let path = dist_dir.join(&source);
         let file_data = std::fs::read(&path)?;
 
         let mut url = release.upload_url.clone();
@@ -283,9 +301,9 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
 
         url.query_pairs_mut()
             .clear()
-            .append_pair("name", filename.as_str());
+            .append_pair("name", dest.as_str());
 
-        println!("uploading {} to {}", filename, url);
+        println!("uploading {} to {}", source, url);
 
         let request = client
             .request_builder(url, reqwest::Method::POST)
