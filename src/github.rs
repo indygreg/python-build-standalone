@@ -8,6 +8,7 @@ use {
     clap::ArgMatches,
     futures::StreamExt,
     octocrab::{models::workflows::WorkflowListArtifact, Octocrab, OctocrabBuilder},
+    rayon::prelude::*,
     std::{collections::BTreeSet, io::Read, path::PathBuf},
     zip::ZipArchive,
 };
@@ -152,24 +153,28 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
         }
     }
 
-    for path in install_paths {
-        println!(
-            "producing install_only archive from {}",
-            path.file_name()
-                .expect("should have file name")
-                .to_string_lossy()
-        );
+    install_paths
+        .par_iter()
+        .try_for_each(|path| -> Result<()> {
+            println!(
+                "producing install_only archive from {}",
+                path.file_name()
+                    .expect("should have file name")
+                    .to_string_lossy()
+            );
 
-        let dest_path = produce_install_only(&path)?;
+            let dest_path = produce_install_only(&path)?;
 
-        println!(
-            "releasing {}",
-            dest_path
-                .file_name()
-                .expect("should have file name")
-                .to_string_lossy()
-        );
-    }
+            println!(
+                "releasing {}",
+                dest_path
+                    .file_name()
+                    .expect("should have file name")
+                    .to_string_lossy()
+            );
+
+            Ok(())
+        })?;
 
     Ok(())
 }
