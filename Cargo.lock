@@ -893,6 +893,7 @@ dependencies = [
  "bytes",
  "clap",
  "duct",
+ "flate2",
  "futures",
  "goblin",
  "octocrab",

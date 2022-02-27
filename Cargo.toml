@@ -9,6 +9,7 @@ anyhow = "1"
 bytes = "1.1"
 clap = "2"
 duct = "0"
+flate2 = "1"
 futures = "0"
 goblin = "0"
 octocrab = { version = "0", features = ["rustls"] }

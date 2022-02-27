@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
-    crate::release::RELEASE_TRIPLES,
+    crate::release::{produce_install_only, RELEASE_TRIPLES},
     anyhow::{anyhow, Result},
     clap::ArgMatches,
     futures::StreamExt,
@@ -102,22 +102,56 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Resul
 
             let name = zf.name().to_string();
 
-            if let Some(release) = RELEASE_TRIPLES.iter().find_map(|(triple, release)| {
+            if let Some((triple, release)) = RELEASE_TRIPLES.iter().find_map(|(triple, release)| {
                 if name.contains(triple) {
-                    Some(release)
+                    Some((triple, release))
                 } else {
                     None
                 }
             }) {
-                if release.suffixes.iter().any(|suffix| name.contains(suffix)) {
-                    let dest_path = dest_dir.join(&name);
-                    let mut buf = vec![];
-                    zf.read_to_end(&mut buf)?;
-                    std::fs::write(&dest_path, &buf)?;
-
-                    println!("releasing {}", name);
+                let stripped_name = if let Some(s) = name.strip_suffix(".tar.zst") {
+                    s
                 } else {
+                    println!("{} not a .tar.zst artifact", name);
+                    continue;
+                };
+
+                let stripped_name = &stripped_name[0..stripped_name.len() - "-YYYYMMDDTHHMM".len()];
+
+                let triple_start = stripped_name
+                    .find(triple)
+                    .expect("validated triple presence above");
+
+                let build_suffix = &stripped_name[triple_start + triple.len() + 1..];
+
+                if !release
+                    .suffixes
+                    .iter()
+                    .any(|suffix| build_suffix == *suffix)
+                {
                     println!("{} not a release artifact for triple", name);
+                    continue;
+                }
+
+                let dest_path = dest_dir.join(&name);
+                let mut buf = vec![];
+                zf.read_to_end(&mut buf)?;
+                std::fs::write(&dest_path, &buf)?;
+
+                println!("releasing {}", name);
+
+                if build_suffix == release.install_only_suffix {
+                    println!("producing install_only archive from {}", name);
+
+                    let dest_path = produce_install_only(&dest_path)?;
+
+                    println!(
+                        "releasing {}",
+                        dest_path
+                            .file_name()
+                            .expect("should have file name")
+                            .to_string_lossy()
+                    );
                 }
             } else {
                 println!("{} does not match any registered release triples", name);

@@ -2,7 +2,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use {once_cell::sync::Lazy, std::collections::BTreeMap};
+use {
+    anyhow::Result,
+    once_cell::sync::Lazy,
+    std::{
+        collections::BTreeMap,
+        io::{BufRead, Read, Write},
+        path::{Path, PathBuf},
+    },
+};
 
 /// Describes a release for a given target triple.
 pub struct TripleRelease {
@@ -128,3 +136,64 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
 
     h
 });
+
+/// Convert a .tar.zst archive to an install only .tar.gz archive.
+pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Result<W> {
+    let dctx = zstd::stream::Decoder::new(reader)?;
+
+    let mut tar_in = tar::Archive::new(dctx);
+
+    let writer = flate2::write::GzEncoder::new(writer, flate2::Compression::default());
+
+    let mut builder = tar::Builder::new(writer);
+
+    for entry in tar_in.entries()? {
+        let mut entry = entry?;
+
+        if !entry.path_bytes().starts_with(b"python/install/") {
+            continue;
+        }
+
+        let mut data = vec![];
+        entry.read_to_end(&mut data)?;
+
+        let path = entry.path()?;
+        let new_path = PathBuf::from("python").join(path.strip_prefix("python/install/")?);
+
+        let mut header = entry.header().clone();
+        header.set_path(&new_path)?;
+        header.set_cksum();
+
+        builder.append(&header, std::io::Cursor::new(data))?;
+    }
+
+    Ok(builder.into_inner()?.finish()?)
+}
+
+pub fn produce_install_only(tar_zst_path: &Path) -> Result<PathBuf> {
+    let buf = std::fs::read(tar_zst_path)?;
+
+    let gz_data = convert_to_install_only(std::io::Cursor::new(buf), std::io::Cursor::new(vec![]))?
+        .into_inner();
+
+    let filename = tar_zst_path
+        .file_name()
+        .expect("should have filename")
+        .to_string_lossy();
+
+    let mut name_parts = filename
+        .split('-')
+        .map(|x| x.to_string())
+        .collect::<Vec<_>>();
+    let parts_len = name_parts.len();
+
+    name_parts[parts_len - 2] = "install_only".to_string();
+
+    let install_only_name = name_parts.join("-");
+    let install_only_name = install_only_name.replace(".tar.zst", ".tar.gz");
+
+    let dest_path = tar_zst_path.with_file_name(install_only_name);
+    std::fs::write(&dest_path, &gz_data)?;
+
+    Ok(dest_path)
+}
