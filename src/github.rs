@@ -7,7 +7,10 @@ use {
     anyhow::{anyhow, Result},
     clap::ArgMatches,
     futures::StreamExt,
-    octocrab::{models::workflows::WorkflowListArtifact, Octocrab, OctocrabBuilder},
+    octocrab::{
+        models::{repos::Release, workflows::WorkflowListArtifact},
+        Octocrab, OctocrabBuilder,
+    },
     rayon::prelude::*,
     std::{
         collections::{BTreeMap, BTreeSet},
@@ -24,6 +27,48 @@ async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Re
         .await?;
 
     Ok(res.bytes().await?)
+}
+
+async fn upload_release_artifact(
+    client: &Octocrab,
+    release: &Release,
+    filename: &str,
+    data: Vec<u8>,
+    dry_run: bool,
+) -> Result<()> {
+    if release.assets.iter().any(|asset| asset.name == filename) {
+        println!("release asset {} already present; skipping", filename);
+        return Ok(());
+    }
+
+    let mut url = release.upload_url.clone();
+    let path = url.path().to_string();
+
+    if let Some(path) = path.strip_suffix("%7B") {
+        url.set_path(path);
+    }
+
+    url.query_pairs_mut().clear().append_pair("name", filename);
+
+    println!("uploading to {}", url);
+
+    let request = client
+        .request_builder(url, reqwest::Method::POST)
+        .header("Content-Length", data.len())
+        .header("Content-Type", "application/x-tar")
+        .body(data);
+
+    if dry_run {
+        return Ok(());
+    }
+
+    let response = client.execute(request).await?;
+
+    if !response.status().is_success() {
+        return Err(anyhow!("HTTP {}", response.status()));
+    }
+
+    Ok(())
 }
 
 pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()> {
@@ -287,42 +332,9 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
             continue;
         }
 
-        if release.assets.iter().any(|asset| asset.name == dest) {
-            println!("release asset {} already present; skipping", dest);
-            continue;
-        }
+        let file_data = std::fs::read(dist_dir.join(&source))?;
 
-        let path = dist_dir.join(&source);
-        let file_data = std::fs::read(&path)?;
-
-        let mut url = release.upload_url.clone();
-        let path = url.path().to_string();
-
-        if let Some(path) = path.strip_suffix("%7B") {
-            url.set_path(path);
-        }
-
-        url.query_pairs_mut()
-            .clear()
-            .append_pair("name", dest.as_str());
-
-        println!("uploading {} to {}", source, url);
-
-        let request = client
-            .request_builder(url, reqwest::Method::POST)
-            .header("Content-Length", file_data.len())
-            .header("Content-Type", "application/x-tar")
-            .body(file_data);
-
-        if dry_run {
-            continue;
-        }
-
-        let response = client.execute(request).await?;
-
-        if !response.status().is_success() {
-            return Err(anyhow!("HTTP {}", response.status()));
-        }
+        upload_release_artifact(&client, &release, &dest, file_data, dry_run).await?;
     }
 
     Ok(())
