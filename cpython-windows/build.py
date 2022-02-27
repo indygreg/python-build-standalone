@@ -1876,11 +1876,11 @@ def collect_python_build_artifacts(
     ]
 
     # pathcch is required on 3.9+ and its presence drops support for Windows 7.
-    if python_majmin != "3.8":
+    if python_majmin != "38":
         res["core"]["links"].append({"name": "pathcch", "system": True})
 
     # shlwapi was dropped from 3.9.9+.
-    if python_majmin == "3.8":
+    if python_majmin == "38":
         res["core"]["links"].append({"name": "shlwapi", "system": True})
 
     # Copy files for extensions into their own directories.
