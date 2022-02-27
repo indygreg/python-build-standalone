@@ -83,7 +83,8 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
             if matches!(
                 artifact.name.as_str(),
                 "pythonbuild" | "sccache" | "toolchain"
-            ) {
+            ) || artifact.name.contains("install-only")
+            {
                 continue;
             }
 
