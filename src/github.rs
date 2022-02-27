@@ -94,6 +94,8 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
 
     let mut buffered = futures::stream::iter(fs).buffer_unordered(4);
 
+    let mut install_paths = vec![];
+
     while let Some(res) = buffered.next().await {
         let data = res?;
 
@@ -142,22 +144,31 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                 println!("releasing {}", name);
 
                 if build_suffix == release.install_only_suffix {
-                    println!("producing install_only archive from {}", name);
-
-                    let dest_path = produce_install_only(&dest_path)?;
-
-                    println!(
-                        "releasing {}",
-                        dest_path
-                            .file_name()
-                            .expect("should have file name")
-                            .to_string_lossy()
-                    );
+                    install_paths.push(dest_path);
                 }
             } else {
                 println!("{} does not match any registered release triples", name);
             }
         }
+    }
+
+    for path in install_paths {
+        println!(
+            "producing install_only archive from {}",
+            path.file_name()
+                .expect("should have file name")
+                .to_string_lossy()
+        );
+
+        let dest_path = produce_install_only(&path)?;
+
+        println!(
+            "releasing {}",
+            dest_path
+                .file_name()
+                .expect("should have file name")
+                .to_string_lossy()
+        );
     }
 
     Ok(())
