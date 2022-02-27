@@ -340,9 +340,19 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         let mut digest = Sha256::new();
         digest.update(&file_data);
 
-        digests.insert(dest.clone(), hex::encode(digest.finalize()));
+        let digest = hex::encode(digest.finalize());
+
+        digests.insert(dest.clone(), digest.clone());
 
         upload_release_artifact(&client, &release, &dest, file_data, dry_run).await?;
+        upload_release_artifact(
+            &client,
+            &release,
+            &format!("{}.sha256", dest),
+            format!("{}\n", digest).into_bytes(),
+            dry_run,
+        )
+        .await?;
     }
 
     let shasums = digests
