@@ -5,6 +5,7 @@
 use {
     anyhow::Result,
     once_cell::sync::Lazy,
+    semver::VersionReq,
     std::{
         collections::BTreeMap,
         io::{BufRead, Read, Write},
@@ -18,6 +19,8 @@ pub struct TripleRelease {
     pub suffixes: Vec<&'static str>,
     /// Build suffix to use for the `install_only` artifact.
     pub install_only_suffix: &'static str,
+    /// Minimum Python version this triple is released for.
+    pub python_version_requirement: Option<VersionReq>,
 }
 
 pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::new(|| {
@@ -30,6 +33,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: macos_suffixes.clone(),
             install_only_suffix: "pgo+lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
     h.insert(
@@ -37,6 +41,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: macos_suffixes,
             install_only_suffix: "pgo+lto",
+            python_version_requirement: None,
         },
     );
 
@@ -47,6 +52,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: windows_suffixes.clone(),
             install_only_suffix: "shared-pgo",
+            python_version_requirement: None,
         },
     );
     h.insert(
@@ -54,6 +60,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: windows_suffixes,
             install_only_suffix: "shared-pgo",
+            python_version_requirement: None,
         },
     );
 
@@ -66,6 +73,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
 
@@ -74,6 +82,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
             install_only_suffix: "pgo+lto",
+            python_version_requirement: None,
         },
     );
 
@@ -82,6 +91,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
             install_only_suffix: "pgo+lto",
+            python_version_requirement: None,
         },
     );
     h.insert(
@@ -89,6 +99,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
             install_only_suffix: "pgo+lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
     h.insert(
@@ -96,6 +107,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
             install_only_suffix: "pgo+lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
     h.insert(
@@ -103,6 +115,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
     h.insert(
@@ -110,6 +123,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
+            python_version_requirement: None,
         },
     );
     h.insert(
@@ -117,6 +131,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
     h.insert(
@@ -124,6 +139,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
     h.insert(
@@ -131,6 +147,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
 

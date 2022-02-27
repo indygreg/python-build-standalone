@@ -205,6 +205,13 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     let mut wanted_filenames = BTreeSet::new();
     for version in python_versions {
         for (triple, release) in RELEASE_TRIPLES.iter() {
+            if let Some(req) = &release.python_version_requirement {
+                let python_version = semver::Version::parse(version)?;
+                if !req.matches(&python_version) {
+                    continue;
+                }
+            }
+
             for suffix in &release.suffixes {
                 wanted_filenames.insert(format!(
                     "cpython-{}-{}-{}-{}.tar.zst",

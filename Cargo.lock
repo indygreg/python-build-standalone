@@ -900,6 +900,7 @@ dependencies = [
  "once_cell",
  "reqwest",
  "scroll 0.11.0",
+ "semver",
  "serde",
  "serde_json",
  "tar",
@@ -1110,6 +1111,12 @@ dependencies = [
  "core-foundation-sys",
  "libc",
 ]
+
+[[package]]
+name = "semver"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4a3381e03edd24287172047536f20cabde766e2cd3e65e6b00fb3af51c4f38d"
 
 [[package]]
 name = "serde"
