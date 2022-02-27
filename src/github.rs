@@ -21,7 +21,7 @@ async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Re
     Ok(res.bytes().await?)
 }
 
-pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Result<()> {
+pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()> {
     let dest_dir = PathBuf::from(args.value_of("dest").expect("dest directory should be set"));
     let org = args
         .value_of("organization")
@@ -162,7 +162,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches<'_>) -> Resul
     Ok(())
 }
 
-pub async fn command_upload_release_distributions(args: &ArgMatches<'_>) -> Result<()> {
+pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<()> {
     let dist_dir = PathBuf::from(args.value_of("dist").expect("dist should be specified"));
     let datetime = args
         .value_of("datetime")

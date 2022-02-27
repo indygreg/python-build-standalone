@@ -10,7 +10,7 @@ mod validation;
 
 use {
     anyhow::{anyhow, Context, Result},
-    clap::{App, AppSettings, Arg, SubCommand},
+    clap::{Arg, Command},
     std::{io::Read, path::Path},
 };
 
@@ -25,43 +25,43 @@ pub fn open_distribution_archive(path: &Path) -> Result<tar::Archive<impl Read>>
 }
 
 fn main_impl() -> Result<()> {
-    let app = App::new("Python Build")
-        .setting(AppSettings::ArgRequiredElseHelp)
+    let app = Command::new("Python Build")
+        .arg_required_else_help(true)
         .version("0.1")
         .author("Gregory Szorc <gregory.szorc@gmail.com>")
         .about("Perform tasks related to building Python distributions");
     let app = app.subcommand(
-        SubCommand::with_name("fetch-release-distributions")
+        Command::new("fetch-release-distributions")
             .about("Fetch builds from GitHub Actions that are release artifacts")
             .arg(
-                Arg::with_name("token")
+                Arg::new("token")
                     .long("--token")
                     .required(true)
                     .takes_value(true)
                     .help("GitHub API token"),
             )
             .arg(
-                Arg::with_name("commit")
+                Arg::new("commit")
                     .long("--commit")
                     .takes_value(true)
                     .help("Git commit whose artifacts to fetch"),
             )
             .arg(
-                Arg::with_name("dest")
+                Arg::new("dest")
                     .long("dest")
                     .required(true)
                     .takes_value(true)
                     .help("Destination directory"),
             )
             .arg(
-                Arg::with_name("organization")
+                Arg::new("organization")
                     .long("--org")
                     .takes_value(true)
                     .default_value("indygreg")
                     .help("GitHub organization"),
             )
             .arg(
-                Arg::with_name("repo")
+                Arg::new("repo")
                     .long("--repo")
                     .takes_value(true)
                     .default_value("python-build-standalone")
@@ -70,50 +70,50 @@ fn main_impl() -> Result<()> {
     );
 
     let app = app.subcommand(
-        SubCommand::with_name("upload-release-distributions")
+        Command::new("upload-release-distributions")
             .about("Upload release distributions to a GitHub release")
             .arg(
-                Arg::with_name("token")
+                Arg::new("token")
                     .long("--token")
                     .required(true)
                     .takes_value(true)
                     .help("GitHub API token"),
             )
             .arg(
-                Arg::with_name("dist")
+                Arg::new("dist")
                     .long("--dist")
                     .required(true)
                     .takes_value(true)
                     .help("Directory with release artifacts"),
             )
             .arg(
-                Arg::with_name("datetime")
+                Arg::new("datetime")
                     .long("--datetime")
                     .required(true)
                     .takes_value(true)
                     .help("Date/time tag associated with builds"),
             )
             .arg(
-                Arg::with_name("tag")
+                Arg::new("tag")
                     .long("--tag")
                     .required(true)
                     .takes_value(true)
                     .help("Release tag"),
             )
             .arg(
-                Arg::with_name("ignore_missing")
+                Arg::new("ignore_missing")
                     .long("--ignore-missing")
                     .help("Continue even if there are missing artifacts"),
             )
             .arg(
-                Arg::with_name("organization")
+                Arg::new("organization")
                     .long("--org")
                     .takes_value(true)
                     .default_value("indygreg")
                     .help("GitHub organization"),
             )
             .arg(
-                Arg::with_name("repo")
+                Arg::new("repo")
                     .long("--repo")
                     .takes_value(true)
                     .default_value("python-build-standalone")
@@ -122,17 +122,18 @@ fn main_impl() -> Result<()> {
     );
 
     let app = app.subcommand(
-        SubCommand::with_name("validate-distribution")
+        Command::new("validate-distribution")
             .about("Ensure a distribution archive conforms to standards")
             .arg(
-                Arg::with_name("run")
+                Arg::new("run")
                     .long("--run")
                     .help("Run the interpreter to verify behavior"),
             )
             .arg(
-                Arg::with_name("path")
+                Arg::new("path")
                     .help("Path to tar.zst file to validate")
-                    .multiple(true)
+                    .multiple_occurrences(true)
+                    .multiple_values(true)
                     .required(true),
             ),
     );
@@ -140,21 +141,21 @@ fn main_impl() -> Result<()> {
     let matches = app.get_matches();
 
     match matches.subcommand() {
-        ("fetch-release-distributions", Some(args)) => {
+        Some(("fetch-release-distributions", args)) => {
             tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
                 .unwrap()
                 .block_on(crate::github::command_fetch_release_distributions(args))
         }
-        ("upload-release-distributions", Some(args)) => {
+        Some(("upload-release-distributions", args)) => {
             tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
                 .unwrap()
                 .block_on(crate::github::command_upload_release_distributions(args))
         }
-        ("validate-distribution", Some(args)) => {
+        Some(("validate-distribution", args)) => {
             crate::validation::command_validate_distribution(args)
         }
         _ => Err(anyhow!("invalid sub-command")),

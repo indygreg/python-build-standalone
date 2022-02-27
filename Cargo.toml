@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1"
 bytes = "1.1"
-clap = "2"
+clap = "3"
 duct = "0"
 flate2 = "1"
 futures = "0"
