@@ -2,7 +2,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: '13 15 * * *'
+    - cron: '13 11 * * *'
 jobs:
   pythonbuild:
     runs-on: 'windows-2019'
