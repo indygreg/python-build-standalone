@@ -118,8 +118,17 @@ jobs:
       matrix:
         build:
           # macOS on Apple hardware. Can't do PGO because GitHub Apple hardware
-          # is Intel. Can't do Python 3.8 because we don't support cross-compiling
-          # until 3.9.
+          # is Intel.
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.8'
+            optimizations: 'debug'
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.8'
+            optimizations: 'noopt'
+          - target_triple: 'aarch64-apple-darwin'
+            py: 'cpython-3.8'
+            optimizations: 'lto'
+
           - target_triple: 'aarch64-apple-darwin'
             py: 'cpython-3.9'
             optimizations: 'debug'

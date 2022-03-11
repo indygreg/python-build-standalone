@@ -1,0 +1,20 @@
+# We don't support GDBM because it is GPL v3.
+_gdbm
+# Not available on macOS.
+nis
+# Not available on macOS.
+ossaudiodev
+# Not available on macOS.
+spwd
+
+# Ideally this would only be disabled while cross-compiling. We can't build it
+# as a built-in extension via static-modules. And when letting setup.py build
+# it, it builds for the host architecture during cross-builds, which upsets
+# our validation script when it screens for the target machine type of
+# binaries. So just disable it.
+_testcapi
+
+# Similar story as _testcapi. The extension exists to test the limited API,
+# which we don't really care about. Statically building it runs into problems
+# and cross-compiling emits wrong machine type when built via setup.py.
+xxlimited

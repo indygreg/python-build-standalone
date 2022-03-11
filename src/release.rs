@@ -33,7 +33,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: macos_suffixes.clone(),
             install_only_suffix: "pgo+lto",
-            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
+            python_version_requirement: None,
         },
     );
     h.insert(
