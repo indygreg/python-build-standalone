@@ -100,18 +100,21 @@ EOF
     else
       patch -p1 <<"EOF"
 diff --git a/configure b/configure
-index 7cad0e2f98..50212236c4 100755
+index c091865aff..0aeea8cedb 100755
 --- a/configure
 +++ b/configure
-@@ -5196,7 +5196,7 @@ $as_echo "$as_me:
+@@ -5318,10 +5318,7 @@ $as_echo "none" >&6; }
  fi
+ rm -f conftest.c conftest.out
 
-
--MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+-if test x$PLATFORM_TRIPLET != xdarwin; then
+-  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+-fi
+-
 +MULTIARCH=
 
-
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the platform triplet based on compiler characteristics" >&5
+ if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
+   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
 EOF
     fi
   fi
@@ -398,18 +401,21 @@ EOF
     else
         patch -p1 <<"EOF"
 diff --git a/configure b/configure
-index 7cad0e2f98..50212236c4 100755
+index c091865aff..0aeea8cedb 100755
 --- a/configure
 +++ b/configure
-@@ -5196,7 +5196,7 @@ $as_echo "$as_me:
+@@ -5318,10 +5318,7 @@ $as_echo "none" >&6; }
  fi
- 
- 
--MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+ rm -f conftest.c conftest.out
+
+-if test x$PLATFORM_TRIPLET != xdarwin; then
+-  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
+-fi
+-
 +MULTIARCH=
- 
- 
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the platform triplet based on compiler characteristics" >&5
+
+ if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
+   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
 EOF
     fi
 fi
