@@ -14,7 +14,7 @@ use {
     rayon::prelude::*,
     sha2::{Digest, Sha256},
     std::{
-        collections::{BTreeMap, BTreeSet},
+        collections::{BTreeMap, BTreeSet, HashMap},
         io::Read,
         path::PathBuf,
     },
@@ -89,12 +89,18 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
 
     let workflows = client.workflows(org, repo);
 
+    let mut workflow_names = HashMap::new();
+
     let workflow_ids = workflows
         .list()
         .send()
         .await?
         .into_iter()
-        .map(|wf| wf.id)
+        .map(|wf| {
+            workflow_names.insert(wf.id.clone(), wf.name);
+
+            wf.id
+        })
         .collect::<Vec<_>>();
 
     let mut runs: Vec<octocrab::models::workflows::Run> = vec![];
@@ -111,7 +117,14 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                 .find(|run| {
                     run.head_sha == args.value_of("commit").expect("commit should be defined")
                 })
-                .ok_or_else(|| anyhow!("could not find workflow run for commit"))?,
+                .ok_or_else(|| {
+                    anyhow!(
+                        "could not find workflow run for commit for workflow {}",
+                        workflow_names
+                            .get(&workflow_id)
+                            .expect("should have workflow name")
+                    )
+                })?,
         );
     }
 
