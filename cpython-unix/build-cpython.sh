@@ -754,16 +754,40 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # as Homebrew or MacPorts. So nerf the check to prevent this.
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=no"
 
-    # When building against an 11.0+ SDK, preadv() and pwritev() are
-    # detected and used, despite only being available in the 11.0+ SDK. This
-    # prevents object files from re-linking when built with older SDKs.
-    # So we disable them. But not in aarch64-apple-darwin, as that target
-    # requires the 11.0 SDK.
+    # Newer versions of macos often introduce new symbols at the XNU layer. However,
+    # this is done in a way that is difficult to detect by dependencies which use
+    # `autoconf`, because the "tester" file compiled in a `configure` script is not
+    # sensitive to the macos availability macros unless the function is included.
+    # Sadly, this means that building Python using a recent version of the SDK will
+    # cause it to mistakenly expect symbols to be there on older versions of macos.
+    #
+    # To make sure we don't break at run-time on older versions of macos we prevent
+    # object files from re-linking when built with older SDKs, by disabling them if
+    # the deployment target is lower than the OS version that introduced the symbol.
     #
     # This solution is less than ideal. Modern versions of Python support
     # weak linking and it should be possible to coerce these functions into
     # being weakly linked.
-    if [ "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]; then
+    IFS='.' read -ra version_components <<< "$APPLE_MIN_DEPLOYMENT_TARGET"
+    major_version="${version_components[0]}"
+    minor_version="${version_components[1]}"
+
+    # Symbols added in macos 10.12
+    if [ $major_version -eq "10" ] && [ $minor_version -lt "12" ]; then
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_clock_settime=no"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_clock_gettime=no"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_clock_getres=no"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_getentropy=no"
+    fi
+
+    # Symbols added in macos 10.13
+    if [ $major_version -eq "10" ] && [ $minor_version -lt "13" ]; then
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_utimensat=no"
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_futimens=no"
+    fi
+
+    # Symbols added in macos 11
+    if [ $major_version -lt "11" ]; then
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_preadv=no"
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pwritev=no"
     fi
@@ -785,6 +809,10 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_clock_settime=no"
             # getentropy() not available on iOS.
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_getentropy=no"
+            # preadv() not available on iOS.
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_preadv=no"
+            # pwritev() not available on iOS.
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pwritev=no"
         elif [ "${TARGET_TRIPLE}" = "x86_64-apple-darwin" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} MACHDEP=darwin"
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_sys_system=Darwin"
@@ -797,6 +825,10 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_clock_settime=no"
             # getentropy() not available on iOS.
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_getentropy=no"
+            # preadv() not available on iOS.
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_preadv=no"
+            # pwritev() not available on iOS.
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pwritev=no"
         else
             echo "unsupported target triple: ${TARGET_TRIPLE}"
             exit 1
