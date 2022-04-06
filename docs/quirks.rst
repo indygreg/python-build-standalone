@@ -6,7 +6,7 @@ Behavior Quirks
 
 .. _quirk_backspace_key:
 
-Backscape Key Doesn't work in Python REPL
+Backspace Key Doesn't work in Python REPL
 =========================================
 
 If you attempt to run ``python`` and the backspace key doesn't
