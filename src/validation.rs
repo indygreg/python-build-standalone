@@ -8,7 +8,10 @@ use {
     clap::ArgMatches,
     object::{
         macho::{MachHeader32, MachHeader64},
-        read::macho::{LoadCommandVariant, MachHeader, Nlist},
+        read::{
+            macho::{LoadCommandVariant, MachHeader, Nlist},
+            pe::{ImageNtHeaders, PeFile, PeFile32, PeFile64},
+        },
         Endianness, FileKind,
     },
     once_cell::sync::Lazy,
@@ -698,12 +701,27 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     Ok((errors, seen_dylibs))
 }
 
-fn validate_pe(path: &Path, pe: &goblin::pe::PE) -> Result<Vec<String>> {
+fn validate_pe<'data, Pe: ImageNtHeaders>(
+    path: &Path,
+    pe: &PeFile<'data, Pe, &'data [u8]>,
+) -> Result<Vec<String>> {
+    // We don't care about the wininst-*.exe distutils executables.
+    if path.to_string_lossy().contains("wininst-") {
+        return Ok(vec![]);
+    }
+
     let mut errors = vec![];
 
-    for lib in &pe.libraries {
-        if !PE_ALLOWED_LIBRARIES.contains(lib) {
-            errors.push(format!("{} loads illegal library {}", path.display(), lib));
+    if let Some(import_table) = pe.import_table()? {
+        let mut descriptors = import_table.descriptors()?;
+
+        while let Some(descriptor) = descriptors.next()? {
+            let lib = import_table.name(descriptor.name.get(object::LittleEndian))?;
+            let lib = String::from_utf8(lib.to_vec())?;
+
+            if !PE_ALLOWED_LIBRARIES.contains(&lib.as_str()) {
+                errors.push(format!("{} loads illegal library {}", path.display(), lib));
+            }
         }
     }
 
@@ -746,6 +764,14 @@ fn validate_possible_object_file(
                     errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
                 }
             }
+            FileKind::Pe32 => {
+                let file = PeFile32::parse(data)?;
+                errors.extend(validate_pe(path.as_ref(), &file)?);
+            }
+            FileKind::Pe64 => {
+                let file = PeFile64::parse(data)?;
+                errors.extend(validate_pe(path.as_ref(), &file)?);
+            }
             _ => {}
         }
     }
@@ -761,15 +787,6 @@ fn validate_possible_object_file(
                     &elf,
                     &data,
                 )?);
-            }
-            goblin::Object::Mach(_) => {
-                // Mach-O files handled above.
-            }
-            goblin::Object::PE(pe) => {
-                // We don't care about the wininst-*.exe distutils executables.
-                if !path.to_string_lossy().contains("wininst-") {
-                    errors.extend(validate_pe(path.as_ref(), &pe)?);
-                }
             }
             _ => {}
         }
