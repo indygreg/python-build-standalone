@@ -6,9 +6,12 @@ use {
     crate::{json::*, macho::*},
     anyhow::{anyhow, Context, Result},
     clap::ArgMatches,
-    goblin::mach::load_command::CommandVariant,
+    object::{
+        macho::{MachHeader32, MachHeader64},
+        read::macho::{LoadCommandVariant, MachHeader, Nlist},
+        Endianness, FileKind,
+    },
     once_cell::sync::Lazy,
-    scroll::Pread,
     std::{
         collections::{BTreeSet, HashMap},
         convert::TryInto,
@@ -612,46 +615,48 @@ fn validate_elf(
     Ok(errors)
 }
 
-fn validate_macho(
+fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     target_triple: &str,
     path: &Path,
-    macho: &goblin::mach::MachO,
+    header: &Mach,
     bytes: &[u8],
 ) -> Result<(Vec<String>, Vec<String>)> {
+    let endian = header.endian()?;
+
     let mut errors = vec![];
     let mut seen_dylibs = vec![];
 
     let wanted_cpu_type = match target_triple {
-        "aarch64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_ARM64,
-        "aarch64-apple-ios" => goblin::mach::cputype::CPU_TYPE_ARM64,
-        "x86_64-apple-darwin" => goblin::mach::cputype::CPU_TYPE_X86_64,
-        "x86_64-apple-ios" => goblin::mach::cputype::CPU_TYPE_X86_64,
+        "aarch64-apple-darwin" => object::macho::CPU_TYPE_ARM64,
+        "aarch64-apple-ios" => object::macho::CPU_TYPE_ARM64,
+        "x86_64-apple-darwin" => object::macho::CPU_TYPE_X86_64,
+        "x86_64-apple-ios" => object::macho::CPU_TYPE_X86_64,
         _ => return Err(anyhow!("unhandled target triple: {}", target_triple)),
     };
 
-    if macho.header.cputype() != wanted_cpu_type {
+    if header.cputype(endian) != wanted_cpu_type {
         errors.push(format!(
             "{} has incorrect CPU type; got {}, wanted {}",
             path.display(),
-            macho.header.cputype(),
+            header.cputype(endian),
             wanted_cpu_type
         ));
     }
 
-    for load_command in &macho.load_commands {
-        match load_command.command {
-            CommandVariant::LoadDylib(command)
-            | CommandVariant::LoadUpwardDylib(command)
-            | CommandVariant::ReexportDylib(command)
-            | CommandVariant::LoadWeakDylib(command)
-            | CommandVariant::LazyLoadDylib(command) => {
-                let lib = bytes.pread::<&str>(load_command.offset + command.dylib.name as usize)?;
+    let mut load_commands = header.load_commands(endian, bytes, 0)?;
+
+    while let Some(load_command) = load_commands.next()? {
+        match load_command.variant()? {
+            LoadCommandVariant::Dylib(command) => {
+                let raw_string = load_command.string(endian, command.dylib.name.clone())?;
+                let lib = String::from_utf8(raw_string.to_vec())?;
 
                 let allowed = allowed_dylibs_for_triple(target_triple);
 
                 if let Some(entry) = allowed.iter().find(|l| l.name == lib) {
                     let load_version =
-                        MachOPackedVersion::from(command.dylib.compatibility_version);
+                        MachOPackedVersion::from(command.dylib.compatibility_version.get(endian));
+
                     if load_version > entry.max_compatibility_version {
                         errors.push(format!(
                             "{} loads too new version of {}; got {}, max allowed {}",
@@ -667,23 +672,26 @@ fn validate_macho(
                     errors.push(format!("{} loads illegal library {}", path.display(), lib));
                 }
             }
-            _ => {}
-        }
-    }
+            LoadCommandVariant::Symtab(symtab) => {
+                let table = symtab.symbols::<Mach, _>(endian, bytes)?;
+                let strings = table.strings();
 
-    if let Some(symbols) = &macho.symbols {
-        for symbol in symbols {
-            let (name, _) = symbol?;
+                for symbol in table.iter() {
+                    let name = symbol.name(endian, strings)?;
+                    let name = String::from_utf8(name.to_vec())?;
 
-            if target_triple != "aarch64-apple-darwin"
-                && (MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name))
-            {
-                errors.push(format!(
-                    "{} references unallowed symbol {}",
-                    path.display(),
-                    name
-                ));
+                    if target_triple != "aarch64-apple-darwin"
+                        && MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name.as_str())
+                    {
+                        errors.push(format!(
+                            "{} references unallowed symbol {}",
+                            path.display(),
+                            name
+                        ));
+                    }
+                }
             }
+            _ => {}
         }
     }
 
@@ -713,6 +721,35 @@ fn validate_possible_object_file(
     let mut errors = vec![];
     let mut seen_dylibs = BTreeSet::new();
 
+    if let Ok(kind) = FileKind::parse(data) {
+        match kind {
+            FileKind::MachO32 => {
+                let header = MachHeader32::parse(data, 0)?;
+
+                let (local_errors, local_seen_dylibs) =
+                    validate_macho(triple, path.as_ref(), header, &data)?;
+
+                errors.extend(local_errors);
+                seen_dylibs.extend(local_seen_dylibs);
+            }
+            FileKind::MachO64 => {
+                let header = MachHeader64::parse(data, 0)?;
+
+                let (local_errors, local_seen_dylibs) =
+                    validate_macho(triple, path.as_ref(), header, &data)?;
+
+                errors.extend(local_errors);
+                seen_dylibs.extend(local_seen_dylibs);
+            }
+            FileKind::MachOFat32 | FileKind::MachOFat64 => {
+                if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
+                    errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
+                }
+            }
+            _ => {}
+        }
+    }
+
     if let Ok(object) = goblin::Object::parse(&data) {
         match object {
             goblin::Object::Elf(elf) => {
@@ -725,20 +762,9 @@ fn validate_possible_object_file(
                     &data,
                 )?);
             }
-            goblin::Object::Mach(mach) => match mach {
-                goblin::mach::Mach::Binary(macho) => {
-                    let (local_errors, local_seen_dylibs) =
-                        validate_macho(triple, path.as_ref(), &macho, &data)?;
-
-                    errors.extend(local_errors);
-                    seen_dylibs.extend(local_seen_dylibs);
-                }
-                goblin::mach::Mach::Fat(_) => {
-                    if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
-                        errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
-                    }
-                }
-            },
+            goblin::Object::Mach(_) => {
+                // Mach-O files handled above.
+            }
             goblin::Object::PE(pe) => {
                 // We don't care about the wininst-*.exe distutils executables.
                 if !path.to_string_lossy().contains("wininst-") {

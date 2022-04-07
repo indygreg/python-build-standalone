@@ -13,6 +13,7 @@ flate2 = "1"
 futures = "0"
 goblin = "0"
 hex = "0"
+object = "0.28"
 octocrab = { version = "0", features = ["rustls"] }
 once_cell = "1"
 rayon = "1"

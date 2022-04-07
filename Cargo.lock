@@ -68,7 +68,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "miniz_oxide",
- "object",
+ "object 0.27.1",
  "rustc-demangle",
 ]
 
@@ -879,6 +879,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "object"
+version = "0.28.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40bec70ba014595f99f7aa110b84331ffe1ee9aece7fe6f387cc7e3ecda4d456"
+dependencies = [
+ "flate2",
+ "memchr",
+]
+
+[[package]]
 name = "octocrab"
 version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1020,6 +1030,7 @@ dependencies = [
  "futures",
  "goblin",
  "hex",
+ "object 0.28.3",
  "octocrab",
  "once_cell",
  "rayon",
