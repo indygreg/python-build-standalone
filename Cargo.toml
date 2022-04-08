@@ -29,8 +29,3 @@ tokio = "1"
 version-compare = "0"
 zip = "0"
 zstd = "0"
-
-[dependencies.tugger-binary-analysis]
-version = "0.4.0-pre"
-git = "https://github.com/indygreg/PyOxidizer.git"
-rev = "15b9f3913acf9e0f460cebbeb039f1d57c9d291d"

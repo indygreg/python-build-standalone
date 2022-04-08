@@ -7,12 +7,14 @@ use {
     anyhow::{anyhow, Context, Result},
     clap::ArgMatches,
     object::{
+        elf::{FileHeader32, FileHeader64},
         macho::{MachHeader32, MachHeader64},
         read::{
+            elf::{Dyn, FileHeader, SectionHeader, Sym},
             macho::{LoadCommandVariant, MachHeader, Nlist},
             pe::{ImageNtHeaders, PeFile, PeFile32, PeFile64},
         },
-        Endianness, FileKind,
+        Endianness, FileKind, SectionIndex,
     },
     once_cell::sync::Lazy,
     std::{
@@ -456,13 +458,13 @@ fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     }
 }
 
-fn validate_elf(
+fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
     json: &PythonJsonMain,
     target_triple: &str,
     python_major_minor: &str,
     path: &Path,
-    elf: &goblin::elf::Elf,
-    bytes: &[u8],
+    elf: &Elf,
+    data: &[u8],
 ) -> Result<Vec<String>> {
     let mut system_links = BTreeSet::new();
     for link in &json.build_info.core.links {
@@ -502,12 +504,14 @@ fn validate_elf(
         _ => panic!("unhandled target triple: {}", target_triple),
     };
 
-    if elf.header.e_machine != wanted_cpu_type {
+    let endian = elf.endian()?;
+
+    if elf.e_machine(endian) != wanted_cpu_type {
         errors.push(format!(
             "invalid ELF machine type in {}; wanted {}, got {}",
             path.display(),
             wanted_cpu_type,
-            elf.header.e_machine
+            elf.e_machine(endian),
         ));
     }
 
@@ -528,86 +532,126 @@ fn validate_elf(
         python_major_minor
     ));
 
-    for lib in &elf.libraries {
-        if !allowed_libraries.contains(&lib.to_string()) {
-            errors.push(format!("{} loads illegal library {}", path.display(), lib));
-        }
-
-        // Most linked libraries should have an annotation in the JSON metadata.
-        let requires_annotation = !lib.contains("libpython")
-            && !lib.starts_with("ld-linux")
-            && !lib.starts_with("ld64.so")
-            && !lib.starts_with("ld.so")
-            && !lib.starts_with("libc.so")
-            && !lib.starts_with("libgcc_s.so");
-
-        if requires_annotation {
-            if lib.starts_with("lib") {
-                if let Some(index) = lib.rfind(".so") {
-                    let lib_name = &lib[3..index];
-
-                    // There should be a system links entry for this library in the JSON
-                    // metadata.
-                    //
-                    // Nominally we would look at where this ELF came from and make sure
-                    // the annotation is present in its section (e.g. core or extension).
-                    // But this is more work.
-                    if !system_links.contains(lib_name) {
-                        errors.push(format!(
-                            "{} library load of {} does not have system link build annotation",
-                            path.display(),
-                            lib
-                        ));
-                    }
-                } else {
-                    errors.push(format!(
-                        "{} library load of {} does not have .so extension",
-                        path.display(),
-                        lib
-                    ));
-                }
-            } else {
-                errors.push(format!(
-                    "{} library load of {} does not begin with lib",
-                    path.display(),
-                    lib
-                ));
-            }
-        }
-    }
-
     let wanted_glibc_max_version = GLIBC_MAX_VERSION_BY_TRIPLE
         .get(target_triple)
         .expect("max glibc version not defined for target triple");
 
-    // functionality doesn't yet support mips.
-    if !target_triple.starts_with("mips") && !target_triple.starts_with("s390x-") {
-        let mut undefined_symbols = tugger_binary_analysis::find_undefined_elf_symbols(&bytes, elf);
-        undefined_symbols.sort();
+    let sections = elf.sections(endian, data)?;
 
-        for symbol in undefined_symbols {
-            if ELF_BANNED_SYMBOLS.contains(&symbol.symbol.as_str()) {
-                errors.push(format!(
-                    "{} defines banned ELF symbol {}",
-                    path.display(),
-                    symbol.symbol,
-                ));
-            }
+    let versions = sections.versions(endian, data)?;
 
-            if let Some(version) = &symbol.version {
-                let parts: Vec<&str> = version.splitn(2, '_').collect();
+    for (section_index, section) in sections.iter().enumerate() {
+        // Dynamic sections defined needed libraries, which we validate.
+        if let Some((entries, index)) = section.dynamic(endian, data)? {
+            let strings = sections.strings(endian, data, index).unwrap_or_default();
 
-                if parts.len() == 2 {
-                    if parts[0] == "GLIBC" {
-                        let v = version_compare::Version::from(parts[1])
-                            .expect("unable to parse version");
+            for entry in entries {
+                if entry.tag32(endian) == Some(object::elf::DT_NEEDED) {
+                    let lib = entry.string(endian, strings)?;
+                    let lib = String::from_utf8(lib.to_vec())?;
 
-                        if &v > wanted_glibc_max_version {
+                    if !allowed_libraries.contains(&lib.to_string()) {
+                        errors.push(format!("{} loads illegal library {}", path.display(), lib));
+                    }
+
+                    // Most linked libraries should have an annotation in the JSON metadata.
+                    let requires_annotation = !lib.contains("libpython")
+                        && !lib.starts_with("ld-linux")
+                        && !lib.starts_with("ld64.so")
+                        && !lib.starts_with("ld.so")
+                        && !lib.starts_with("libc.so")
+                        && !lib.starts_with("libgcc_s.so");
+
+                    if requires_annotation {
+                        if lib.starts_with("lib") {
+                            if let Some(index) = lib.rfind(".so") {
+                                let lib_name = &lib[3..index];
+
+                                // There should be a system links entry for this library in the JSON
+                                // metadata.
+                                //
+                                // Nominally we would look at where this ELF came from and make sure
+                                // the annotation is present in its section (e.g. core or extension).
+                                // But this is more work.
+                                if !system_links.contains(lib_name) {
+                                    errors.push(format!(
+                            "{} library load of {} does not have system link build annotation",
+                            path.display(),
+                            lib
+                        ));
+                                }
+                            } else {
+                                errors.push(format!(
+                                    "{} library load of {} does not have .so extension",
+                                    path.display(),
+                                    lib
+                                ));
+                            }
+                        } else {
                             errors.push(format!(
-                                "{} references too new glibc symbol {:?}",
+                                "{} library load of {} does not begin with lib",
                                 path.display(),
-                                symbol
-                            ))
+                                lib
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+        if let Some(symbols) =
+            section.symbols(endian, data, &sections, SectionIndex(section_index))?
+        {
+            let strings = symbols.strings();
+
+            for (symbol_index, symbol) in symbols.iter().enumerate() {
+                let name = String::from_utf8_lossy(symbol.name(endian, strings)?);
+
+                // If symbol versions are defined and we're in the .dynsym section, there should
+                // be version info for every symbol.
+                let version_version = if section.sh_type(endian) == object::elf::SHT_DYNSYM {
+                    if let Some(versions) = &versions {
+                        let version_index = versions.version_index(endian, symbol_index);
+
+                        if let Some(version) = versions.version(version_index)? {
+                            let version = String::from_utf8_lossy(version.name()).to_string();
+
+                            Some(version)
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
+                if symbol.is_undefined(endian) {
+                    if ELF_BANNED_SYMBOLS.contains(&name.as_ref()) {
+                        errors.push(format!(
+                            "{} defines banned ELF symbol {}",
+                            path.display(),
+                            name,
+                        ));
+                    }
+
+                    if let Some(version) = version_version {
+                        let parts: Vec<&str> = version.splitn(2, '_').collect();
+
+                        if parts.len() == 2 {
+                            if parts[0] == "GLIBC" {
+                                let v = version_compare::Version::from(parts[1])
+                                    .expect("unable to parse version");
+
+                                if &v > wanted_glibc_max_version {
+                                    errors.push(format!(
+                                        "{} references too new glibc symbol {:?}",
+                                        path.display(),
+                                        name
+                                    ));
+                                }
+                            }
                         }
                     }
                 }
@@ -741,6 +785,30 @@ fn validate_possible_object_file(
 
     if let Ok(kind) = FileKind::parse(data) {
         match kind {
+            FileKind::Elf32 => {
+                let header = FileHeader32::parse(data)?;
+
+                errors.extend(validate_elf(
+                    json,
+                    triple,
+                    python_major_minor,
+                    path.as_ref(),
+                    header,
+                    &data,
+                )?);
+            }
+            FileKind::Elf64 => {
+                let header = FileHeader64::parse(data)?;
+
+                errors.extend(validate_elf(
+                    json,
+                    triple,
+                    python_major_minor,
+                    path.as_ref(),
+                    header,
+                    &data,
+                )?);
+            }
             FileKind::MachO32 => {
                 let header = MachHeader32::parse(data, 0)?;
 
@@ -771,22 +839,6 @@ fn validate_possible_object_file(
             FileKind::Pe64 => {
                 let file = PeFile64::parse(data)?;
                 errors.extend(validate_pe(path.as_ref(), &file)?);
-            }
-            _ => {}
-        }
-    }
-
-    if let Ok(object) = goblin::Object::parse(&data) {
-        match object {
-            goblin::Object::Elf(elf) => {
-                errors.extend(validate_elf(
-                    json,
-                    triple,
-                    python_major_minor,
-                    path.as_ref(),
-                    &elf,
-                    &data,
-                )?);
             }
             _ => {}
         }
