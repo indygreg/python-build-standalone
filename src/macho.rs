@@ -150,8 +150,55 @@ impl TbdMetadata {
 
         let mut res = Self::default();
 
+        let process_export_v12 =
+            |res: &mut Self, export: text_stub_library::yaml::TbdVersion12ExportSection| {
+                for arch in export.archs {
+                    res.symbols
+                        .entry(format!("{}-macos", arch.clone()))
+                        .or_default()
+                        .extend(
+                            export
+                                .symbols
+                                .iter()
+                                .cloned()
+                                .chain(
+                                    export
+                                        .objc_classes
+                                        .iter()
+                                        .map(|cls| format!("_OBJC_CLASS_${}", cls)),
+                                )
+                                .chain(
+                                    export
+                                        .objc_classes
+                                        .iter()
+                                        .map(|cls| format!("_OBJC_METACLASS_${}", cls)),
+                                ),
+                        );
+
+                    res.weak_symbols
+                        .entry(format!("{}-macos", arch.clone()))
+                        .or_default()
+                        .extend(export.weak_def_symbols.iter().cloned());
+
+                    res.re_export_paths
+                        .entry(format!("{}-macos", arch.clone()))
+                        .or_default()
+                        .extend(export.re_exports.iter().cloned());
+                }
+            };
+
         for record in text_stub_library::parse_str(&data)? {
             match record {
+                TbdVersionedRecord::V1(record) => {
+                    for export in record.exports {
+                        process_export_v12(&mut res, export);
+                    }
+                }
+                TbdVersionedRecord::V2(record) => {
+                    for export in record.exports {
+                        process_export_v12(&mut res, export);
+                    }
+                }
                 TbdVersionedRecord::V3(record) => {
                     for export in record.exports {
                         for arch in export.archs {
@@ -230,11 +277,6 @@ impl TbdMetadata {
                         }
                     }
                 }
-                _ => {
-                    // We don't appear to see version 1 and 2 files in the SDKs we target. So
-                    // ignore them.
-                    panic!("unexpected TBD version seen");
-                }
             }
         }
 
@@ -294,7 +336,6 @@ impl IndexedSdks {
         let path = path.as_ref();
 
         Ok(Self {
-            // TODO this only collects SDKs with SDKSettings.json.
             sdks: find_sdks_in_directory(path)?,
         })
     }
@@ -349,6 +390,11 @@ impl IndexedSdks {
                 let tbd_relative_path = tbd_relative_path(lib)?;
 
                 for sdk in &sdks {
+                    // The 10.9 SDK doesn't have TBDs. So skip it for now.
+                    if sdk.version == "10.9" {
+                        continue;
+                    }
+
                     let tbd_path = sdk.path.join(&tbd_relative_path);
 
                     if tbd_path.exists() {
