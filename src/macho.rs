@@ -4,7 +4,12 @@
 
 use {
     anyhow::anyhow,
-    std::{convert::TryFrom, str::FromStr},
+    std::{
+        collections::{BTreeMap, BTreeSet},
+        convert::TryFrom,
+        path::PathBuf,
+        str::FromStr,
+    },
 };
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
@@ -61,4 +66,44 @@ pub struct MachOAllowedDylib {
 
     /// Whether the loading of this dylib must be present in the distribution.
     pub required: bool,
+}
+
+/// Holds required symbols defined in a library.
+#[derive(Clone, Debug, Default)]
+pub struct LibrarySymbols {
+    /// Symbol name -> source paths that require them.
+    symbols: BTreeMap<String, BTreeSet<PathBuf>>,
+}
+
+/// Holds required symbols, indexed by library.
+#[derive(Clone, Debug, Default)]
+pub struct RequiredSymbols {
+    libraries: BTreeMap<String, LibrarySymbols>,
+}
+
+impl RequiredSymbols {
+    /// Register a required symbol.
+    ///
+    /// `library` is the library that `symbol` is defined in. And `path` is the path needing
+    /// this symbol.
+    pub fn insert(&mut self, library: impl ToString, symbol: impl ToString, path: PathBuf) {
+        self.libraries
+            .entry(library.to_string())
+            .or_default()
+            .symbols
+            .entry(symbol.to_string())
+            .or_default()
+            .insert(path);
+    }
+
+    /// Merge the contents of another instance into this one.
+    pub fn merge(&mut self, other: Self) {
+        for (library, symbols) in other.libraries {
+            let entry = self.libraries.entry(library).or_default();
+
+            for (name, paths) in symbols.symbols {
+                entry.symbols.entry(name).or_default().extend(paths);
+            }
+        }
+    }
 }

@@ -465,6 +465,12 @@ struct ValidationContext {
 
     /// Dynamic libraries required to be loaded.
     seen_dylibs: BTreeSet<String>,
+
+    /// Undefined Mach-O symbols that are required / non-weak.
+    macho_undefined_symbols_strong: RequiredSymbols,
+
+    /// Undefined Mach-O symbols that are weakly referenced.
+    macho_undefined_symbols_weak: RequiredSymbols,
 }
 
 impl ValidationContext {
@@ -472,6 +478,10 @@ impl ValidationContext {
     pub fn merge(&mut self, other: Self) {
         self.errors.extend(other.errors);
         self.seen_dylibs.extend(other.seen_dylibs);
+        self.macho_undefined_symbols_strong
+            .merge(other.macho_undefined_symbols_strong);
+        self.macho_undefined_symbols_weak
+            .merge(other.macho_undefined_symbols_weak);
     }
 }
 
@@ -682,6 +692,13 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
     Ok(())
 }
 
+#[derive(Debug)]
+struct MachOSymbol {
+    name: String,
+    library_ordinal: u8,
+    weak: bool,
+}
+
 fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     context: &mut ValidationContext,
     target_triple: &str,
@@ -710,11 +727,16 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
 
     let mut load_commands = header.load_commands(endian, bytes, 0)?;
 
+    let mut dylib_names = vec![];
+    let mut undefined_symbols = vec![];
+
     while let Some(load_command) = load_commands.next()? {
         match load_command.variant()? {
             LoadCommandVariant::Dylib(command) => {
                 let raw_string = load_command.string(endian, command.dylib.name.clone())?;
                 let lib = String::from_utf8(raw_string.to_vec())?;
+
+                dylib_names.push(lib.clone());
 
                 let allowed = allowed_dylibs_for_triple(target_triple);
 
@@ -749,18 +771,51 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                     let name = symbol.name(endian, strings)?;
                     let name = String::from_utf8(name.to_vec())?;
 
-                    if target_triple != "aarch64-apple-darwin"
-                        && MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name.as_str())
-                    {
-                        context.errors.push(format!(
-                            "{} references unallowed symbol {}",
-                            path.display(),
-                            name
-                        ));
+                    if symbol.is_undefined() {
+                        undefined_symbols.push(MachOSymbol {
+                            name: name.clone(),
+                            library_ordinal: symbol.library_ordinal(endian),
+                            weak: symbol.n_desc(endian) & (object::macho::N_WEAK_REF) != 0,
+                        });
+
+                        if target_triple != "aarch64-apple-darwin"
+                            && MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name.as_str())
+                        {
+                            context.errors.push(format!(
+                                "{} references unallowed symbol {}",
+                                path.display(),
+                                name
+                            ));
+                        }
                     }
                 }
             }
             _ => {}
+        }
+    }
+
+    // Don't perform undefined symbol analysis for object files because the object file
+    // in isolation lacks context.
+    if header.filetype(endian) != object::macho::MH_OBJECT {
+        for symbol in undefined_symbols {
+            // Assume undefined symbols provided by current library will resolve.
+            if symbol.library_ordinal == object::macho::SELF_LIBRARY_ORDINAL {
+                continue;
+            }
+
+            if symbol.library_ordinal < object::macho::MAX_LIBRARY_ORDINAL {
+                let lib = dylib_names
+                    .get(symbol.library_ordinal as usize - 1)
+                    .ok_or_else(|| anyhow!("unable to resolve symbol's library name"))?;
+
+                let symbols = if symbol.weak {
+                    &mut context.macho_undefined_symbols_weak
+                } else {
+                    &mut context.macho_undefined_symbols_strong
+                };
+
+                symbols.insert(lib, symbol.name, path.to_path_buf());
+            }
         }
     }
 
