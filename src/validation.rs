@@ -458,14 +458,24 @@ fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
     }
 }
 
+#[derive(Clone, Default)]
+struct ValidationContext {
+    /// Collected errors.
+    errors: Vec<String>,
+
+    /// Dynamic libraries required to be loaded.
+    seen_dylibs: BTreeSet<String>,
+}
+
 fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
+    context: &mut ValidationContext,
     json: &PythonJsonMain,
     target_triple: &str,
     python_major_minor: &str,
     path: &Path,
     elf: &Elf,
     data: &[u8],
-) -> Result<Vec<String>> {
+) -> Result<()> {
     let mut system_links = BTreeSet::new();
     for link in &json.build_info.core.links {
         if link.system.unwrap_or_default() {
@@ -481,8 +491,6 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
             }
         }
     }
-
-    let mut errors = vec![];
 
     let wanted_cpu_type = match target_triple {
         "aarch64-unknown-linux-gnu" => object::elf::EM_AARCH64,
@@ -507,7 +515,7 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
     let endian = elf.endian()?;
 
     if elf.e_machine(endian) != wanted_cpu_type {
-        errors.push(format!(
+        context.errors.push(format!(
             "invalid ELF machine type in {}; wanted {}, got {}",
             path.display(),
             wanted_cpu_type,
@@ -551,7 +559,11 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
                     let lib = String::from_utf8(lib.to_vec())?;
 
                     if !allowed_libraries.contains(&lib.to_string()) {
-                        errors.push(format!("{} loads illegal library {}", path.display(), lib));
+                        context.errors.push(format!(
+                            "{} loads illegal library {}",
+                            path.display(),
+                            lib
+                        ));
                     }
 
                     // Most linked libraries should have an annotation in the JSON metadata.
@@ -574,21 +586,21 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
                                 // the annotation is present in its section (e.g. core or extension).
                                 // But this is more work.
                                 if !system_links.contains(lib_name) {
-                                    errors.push(format!(
+                                    context.errors.push(format!(
                             "{} library load of {} does not have system link build annotation",
                             path.display(),
                             lib
                         ));
                                 }
                             } else {
-                                errors.push(format!(
+                                context.errors.push(format!(
                                     "{} library load of {} does not have .so extension",
                                     path.display(),
                                     lib
                                 ));
                             }
                         } else {
-                            errors.push(format!(
+                            context.errors.push(format!(
                                 "{} library load of {} does not begin with lib",
                                 path.display(),
                                 lib
@@ -629,7 +641,7 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
 
                 if symbol.is_undefined(endian) {
                     if ELF_BANNED_SYMBOLS.contains(&name.as_ref()) {
-                        errors.push(format!(
+                        context.errors.push(format!(
                             "{} defines banned ELF symbol {}",
                             path.display(),
                             name,
@@ -645,7 +657,7 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
                                     .expect("unable to parse version");
 
                                 if &v > wanted_glibc_max_version {
-                                    errors.push(format!(
+                                    context.errors.push(format!(
                                         "{} references too new glibc symbol {:?}",
                                         path.display(),
                                         name
@@ -659,19 +671,17 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
         }
     }
 
-    Ok(errors)
+    Ok(())
 }
 
 fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
+    context: &mut ValidationContext,
     target_triple: &str,
     path: &Path,
     header: &Mach,
     bytes: &[u8],
-) -> Result<(Vec<String>, Vec<String>)> {
+) -> Result<()> {
     let endian = header.endian()?;
-
-    let mut errors = vec![];
-    let mut seen_dylibs = vec![];
 
     let wanted_cpu_type = match target_triple {
         "aarch64-apple-darwin" => object::macho::CPU_TYPE_ARM64,
@@ -682,7 +692,7 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     };
 
     if header.cputype(endian) != wanted_cpu_type {
-        errors.push(format!(
+        context.errors.push(format!(
             "{} has incorrect CPU type; got {}, wanted {}",
             path.display(),
             header.cputype(endian),
@@ -705,7 +715,7 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                         MachOPackedVersion::from(command.dylib.compatibility_version.get(endian));
 
                     if load_version > entry.max_compatibility_version {
-                        errors.push(format!(
+                        context.errors.push(format!(
                             "{} loads too new version of {}; got {}, max allowed {}",
                             path.display(),
                             lib,
@@ -714,9 +724,13 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                         ));
                     }
 
-                    seen_dylibs.push(lib.to_string());
+                    context.seen_dylibs.insert(lib.to_string());
                 } else {
-                    errors.push(format!("{} loads illegal library {}", path.display(), lib));
+                    context.errors.push(format!(
+                        "{} loads illegal library {}",
+                        path.display(),
+                        lib
+                    ));
                 }
             }
             LoadCommandVariant::Symtab(symtab) => {
@@ -730,7 +744,7 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                     if target_triple != "aarch64-apple-darwin"
                         && MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name.as_str())
                     {
-                        errors.push(format!(
+                        context.errors.push(format!(
                             "{} references unallowed symbol {}",
                             path.display(),
                             name
@@ -742,19 +756,18 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
         }
     }
 
-    Ok((errors, seen_dylibs))
+    Ok(())
 }
 
 fn validate_pe<'data, Pe: ImageNtHeaders>(
+    context: &mut ValidationContext,
     path: &Path,
     pe: &PeFile<'data, Pe, &'data [u8]>,
-) -> Result<Vec<String>> {
+) -> Result<()> {
     // We don't care about the wininst-*.exe distutils executables.
     if path.to_string_lossy().contains("wininst-") {
-        return Ok(vec![]);
+        return Ok(());
     }
-
-    let mut errors = vec![];
 
     if let Some(import_table) = pe.import_table()? {
         let mut descriptors = import_table.descriptors()?;
@@ -764,12 +777,14 @@ fn validate_pe<'data, Pe: ImageNtHeaders>(
             let lib = String::from_utf8(lib.to_vec())?;
 
             if !PE_ALLOWED_LIBRARIES.contains(&lib.as_str()) {
-                errors.push(format!("{} loads illegal library {}", path.display(), lib));
+                context
+                    .errors
+                    .push(format!("{} loads illegal library {}", path.display(), lib));
             }
         }
     }
 
-    Ok(errors)
+    Ok(())
 }
 
 /// Attempt to parse data as an object file and validate it.
@@ -779,72 +794,67 @@ fn validate_possible_object_file(
     triple: &str,
     path: &Path,
     data: &[u8],
-) -> Result<(Vec<String>, BTreeSet<String>)> {
-    let mut errors = vec![];
-    let mut seen_dylibs = BTreeSet::new();
+) -> Result<ValidationContext> {
+    let mut context = ValidationContext::default();
 
     if let Ok(kind) = FileKind::parse(data) {
         match kind {
             FileKind::Elf32 => {
                 let header = FileHeader32::parse(data)?;
 
-                errors.extend(validate_elf(
+                validate_elf(
+                    &mut context,
                     json,
                     triple,
                     python_major_minor,
                     path.as_ref(),
                     header,
                     &data,
-                )?);
+                )?;
             }
             FileKind::Elf64 => {
                 let header = FileHeader64::parse(data)?;
 
-                errors.extend(validate_elf(
+                validate_elf(
+                    &mut context,
                     json,
                     triple,
                     python_major_minor,
                     path.as_ref(),
                     header,
                     &data,
-                )?);
+                )?;
             }
             FileKind::MachO32 => {
                 let header = MachHeader32::parse(data, 0)?;
 
-                let (local_errors, local_seen_dylibs) =
-                    validate_macho(triple, path.as_ref(), header, &data)?;
-
-                errors.extend(local_errors);
-                seen_dylibs.extend(local_seen_dylibs);
+                validate_macho(&mut context, triple, path.as_ref(), header, &data)?;
             }
             FileKind::MachO64 => {
                 let header = MachHeader64::parse(data, 0)?;
 
-                let (local_errors, local_seen_dylibs) =
-                    validate_macho(triple, path.as_ref(), header, &data)?;
-
-                errors.extend(local_errors);
-                seen_dylibs.extend(local_seen_dylibs);
+                validate_macho(&mut context, triple, path.as_ref(), header, &data)?;
             }
             FileKind::MachOFat32 | FileKind::MachOFat64 => {
                 if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {
-                    errors.push(format!("unexpected fat mach-o binary: {}", path.display()));
+                    context
+                        .errors
+                        .push(format!("unexpected fat mach-o binary: {}", path.display()));
                 }
             }
             FileKind::Pe32 => {
                 let file = PeFile32::parse(data)?;
-                errors.extend(validate_pe(path.as_ref(), &file)?);
+                validate_pe(&mut context, path.as_ref(), &file)?;
             }
             FileKind::Pe64 => {
                 let file = PeFile64::parse(data)?;
-                errors.extend(validate_pe(path.as_ref(), &file)?);
+                validate_pe(&mut context, path.as_ref(), &file)?;
             }
             _ => {}
         }
     }
 
-    Ok((errors, seen_dylibs))
+    Ok(context)
 }
 
 fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<Vec<String>> {
@@ -997,15 +1007,15 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
 
-        let (local_errors, local_seen_dylibs) = validate_possible_object_file(
+        let context = validate_possible_object_file(
             json.as_ref().unwrap(),
             python_major_minor,
             &triple,
             &path,
             &data,
         )?;
-        errors.extend(local_errors);
-        seen_dylibs.extend(local_seen_dylibs);
+        errors.extend(context.errors);
+        seen_dylibs.extend(context.seen_dylibs);
 
         // Descend into archive files (static libraries are archive files and members
         // are usually object files).
@@ -1021,15 +1031,15 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                     member
                 ));
 
-                let (local_errors, local_seen_dylibs) = validate_possible_object_file(
+                let context = validate_possible_object_file(
                     json.as_ref().unwrap(),
                     python_major_minor,
                     &triple,
                     &member_path,
                     &member_data,
                 )?;
-                errors.extend(local_errors);
-                seen_dylibs.extend(local_seen_dylibs);
+                errors.extend(context.errors);
+                seen_dylibs.extend(context.seen_dylibs);
             }
         }
 
