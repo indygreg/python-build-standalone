@@ -146,6 +146,12 @@ fn main_impl() -> Result<()> {
                     .help("Run the interpreter to verify behavior"),
             )
             .arg(
+                Arg::new("macos_sdks_path")
+                    .long("macos-sdks-path")
+                    .takes_value(true)
+                    .help("Path to a directory containing MacOS SDKs (typically a checkout of https://github.com/phracker/MacOSX-SDKs)")
+            )
+            .arg(
                 Arg::new("path")
                     .help("Path to tar.zst file to validate")
                     .multiple_occurrences(true)

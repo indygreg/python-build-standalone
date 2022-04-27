@@ -3,13 +3,17 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
-    anyhow::anyhow,
+    crate::validation::ValidationContext,
+    anyhow::{anyhow, Result},
+    semver::Version,
     std::{
         collections::{BTreeMap, BTreeSet},
         convert::TryFrom,
-        path::PathBuf,
+        path::{Path, PathBuf},
         str::FromStr,
     },
+    text_stub_library::TbdVersionedRecord,
+    tugger_apple::{find_sdks_in_directory, AppleSdk},
 };
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
@@ -75,6 +79,19 @@ pub struct LibrarySymbols {
     symbols: BTreeMap<String, BTreeSet<PathBuf>>,
 }
 
+impl LibrarySymbols {
+    /// Obtain all paths referenced in this collection.
+    pub fn all_paths(&self) -> BTreeSet<PathBuf> {
+        let mut res = BTreeSet::new();
+
+        for paths in self.symbols.values() {
+            res.extend(paths.iter().cloned());
+        }
+
+        res
+    }
+}
+
 /// Holds required symbols, indexed by library.
 #[derive(Clone, Debug, Default)]
 pub struct RequiredSymbols {
@@ -105,5 +122,273 @@ impl RequiredSymbols {
                 entry.symbols.entry(name).or_default().extend(paths);
             }
         }
+    }
+}
+
+fn tbd_relative_path(path: &str) -> Result<String> {
+    if let Some(stripped) = path.strip_prefix('/') {
+        if let Some(stem) = stripped.strip_suffix(".dylib") {
+            Ok(format!("{}.tbd", stem))
+        } else {
+            Ok(format!("{}.tbd", stripped))
+        }
+    } else {
+        Err(anyhow!("could not determine tbd path from {}", path))
+    }
+}
+
+#[derive(Default, Debug)]
+struct TbdMetadata {
+    symbols: BTreeMap<String, BTreeSet<String>>,
+    weak_symbols: BTreeMap<String, BTreeSet<String>>,
+    re_export_paths: BTreeMap<String, BTreeSet<String>>,
+}
+
+impl TbdMetadata {
+    fn from_path(path: &Path) -> Result<Self> {
+        let data = std::fs::read_to_string(path)?;
+
+        let mut res = Self::default();
+
+        for record in text_stub_library::parse_str(&data)? {
+            match record {
+                TbdVersionedRecord::V3(record) => {
+                    for export in record.exports {
+                        for arch in export.archs {
+                            res.symbols
+                                .entry(format!("{}-macos", arch.clone()))
+                                .or_default()
+                                .extend(
+                                    export
+                                        .symbols
+                                        .iter()
+                                        .cloned()
+                                        .chain(
+                                            export
+                                                .objc_classes
+                                                .iter()
+                                                .map(|cls| format!("_OBJC_CLASS_$_{}", cls)),
+                                        )
+                                        .chain(
+                                            export
+                                                .objc_classes
+                                                .iter()
+                                                .map(|cls| format!("_OBJC_METACLASS_$_{}", cls)),
+                                        ),
+                                );
+
+                            res.weak_symbols
+                                .entry(format!("{}-macos", arch.clone()))
+                                .or_default()
+                                .extend(export.weak_def_symbols.iter().cloned());
+
+                            // In version 3 records, re-exports is a list of filenames.
+                            res.re_export_paths
+                                .entry(format!("{}-macos", arch.clone()))
+                                .or_default()
+                                .extend(export.re_exports.iter().cloned());
+                        }
+                    }
+                }
+                TbdVersionedRecord::V4(record) => {
+                    for export in record.exports {
+                        for target in export.targets {
+                            res.symbols.entry(target.clone()).or_default().extend(
+                                export
+                                    .symbols
+                                    .iter()
+                                    .cloned()
+                                    .chain(
+                                        export
+                                            .objc_classes
+                                            .iter()
+                                            .map(|cls| format!("_OBJC_CLASS_$_{}", cls)),
+                                    )
+                                    .chain(
+                                        export
+                                            .objc_classes
+                                            .iter()
+                                            .map(|cls| format!("_OBJC_METACLASS_$_{}", cls)),
+                                    ),
+                            );
+                            res.weak_symbols
+                                .entry(target)
+                                .or_default()
+                                .extend(export.weak_symbols.iter().cloned());
+                        }
+                    }
+                    for export in record.re_exports {
+                        for target in export.targets {
+                            res.symbols
+                                .entry(target.clone())
+                                .or_default()
+                                .extend(export.symbols.iter().cloned());
+                            res.weak_symbols
+                                .entry(target.clone())
+                                .or_default()
+                                .extend(export.weak_symbols.iter().cloned());
+                        }
+                    }
+                }
+                _ => {
+                    // We don't appear to see version 1 and 2 files in the SDKs we target. So
+                    // ignore them.
+                    panic!("unexpected TBD version seen");
+                }
+            }
+        }
+
+        // Time for some hacks!
+
+        // Some SDKs have a `R8289209$` prefix on symbol names. We have no clue what this
+        // is for. But we need to strip it for symbol references to resolve properly.
+        for (_, symbols) in res.symbols.iter_mut() {
+            let stripped = symbols
+                .iter()
+                .filter_map(|x| {
+                    if let Some(stripped) = x.strip_prefix("R8289209$") {
+                        Some(stripped.to_string())
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            symbols.extend(stripped);
+        }
+
+        Ok(res)
+    }
+
+    fn expand_file_references(&mut self, root_path: &Path) -> Result<()> {
+        let mut extra_symbols: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+
+        for (target, paths) in self.re_export_paths.iter_mut() {
+            for path in paths.iter() {
+                let tbd_path = root_path.join(tbd_relative_path(&path)?);
+                let tbd_info = TbdMetadata::from_path(&tbd_path)?;
+
+                if let Some(symbols) = tbd_info.symbols.get(target) {
+                    extra_symbols
+                        .entry(target.clone())
+                        .or_default()
+                        .extend(symbols.iter().cloned());
+                }
+            }
+        }
+
+        for (target, symbols) in extra_symbols {
+            self.symbols.entry(target).or_default().extend(symbols);
+        }
+
+        Ok(())
+    }
+}
+
+pub struct IndexedSdks {
+    sdks: Vec<AppleSdk>,
+}
+
+impl IndexedSdks {
+    pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+        let path = path.as_ref();
+
+        Ok(Self {
+            // TODO this only collects SDKs with SDKSettings.json.
+            sdks: find_sdks_in_directory(path)?,
+        })
+    }
+
+    fn required_sdks(&self, minimum_version: Version) -> Result<Vec<&AppleSdk>> {
+        let mut res = vec![];
+
+        for sdk in &self.sdks {
+            if sdk.version_as_semver()? >= minimum_version {
+                res.push(sdk);
+            }
+        }
+
+        res.sort_by(|a, b| {
+            a.version_as_semver()
+                .unwrap()
+                .cmp(&b.version_as_semver().unwrap())
+        });
+
+        Ok(res)
+    }
+
+    pub fn validate_context(
+        &self,
+        context: &mut ValidationContext,
+        minimum_sdk: semver::Version,
+        triple: &str,
+    ) -> Result<()> {
+        let symbol_target = match triple {
+            "aarch64-apple-darwin" => "arm64e-macos",
+            "x86_64-apple-darwin" => "x86_64-macos",
+            _ => {
+                context.errors.push(format!(
+                    "unknown target triple for Mach-O symbol analysis: {}",
+                    triple
+                ));
+                return Ok(());
+            }
+        };
+
+        let sdks = self.required_sdks(minimum_sdk)?;
+        if sdks.is_empty() {
+            context
+                .errors
+                .push("failed to resolve Apple SDKs to test against (this is likely a bug)".into());
+            return Ok(());
+        }
+
+        for (lib, symbols) in &context.macho_undefined_symbols_strong.libraries {
+            // Filter out `@executable_path`.
+            if lib.strip_prefix('/').is_some() {
+                let tbd_relative_path = tbd_relative_path(lib)?;
+
+                for sdk in &sdks {
+                    let tbd_path = sdk.path.join(&tbd_relative_path);
+
+                    if tbd_path.exists() {
+                        let mut tbd_info = TbdMetadata::from_path(&tbd_path)?;
+                        tbd_info.expand_file_references(&sdk.path)?;
+
+                        let empty = BTreeSet::new();
+
+                        let target_symbols = tbd_info
+                            .symbols
+                            .get(&symbol_target.to_string())
+                            .unwrap_or(&empty);
+
+                        for (symbol, paths) in &symbols.symbols {
+                            if !target_symbols.contains(symbol) {
+                                for path in paths {
+                                    context.errors.push(format!(
+                                        "{} references symbol {}:{} which doesn't exist in SDK {}",
+                                        path.display(),
+                                        lib,
+                                        symbol,
+                                        sdk.display_name
+                                    ));
+                                }
+                            }
+                        }
+                    } else {
+                        for path in symbols.all_paths() {
+                            context.errors.push(format!(
+                                "library {} does not exist in SDK {}; {} will likely fail to load",
+                                lib,
+                                sdk.version,
+                                path.display()
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 }

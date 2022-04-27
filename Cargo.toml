@@ -25,7 +25,10 @@ serde = { version = "1", features = ["derive"] }
 sha2 = "0"
 tar = "0"
 tempfile = "3"
+# Waiting on 0.8 for a bug fix.
+text-stub-library = { git = "https://github.com/indygreg/PyOxidizer.git", rev = "944c3eadbf9fdec7ca0d300bb7f27efe42e25659" }
 tokio = "1"
+tugger-apple = "0.6"
 version-compare = "0"
 zip = "0"
 zstd = "0"

@@ -459,18 +459,18 @@ fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
 }
 
 #[derive(Clone, Default)]
-struct ValidationContext {
+pub struct ValidationContext {
     /// Collected errors.
-    errors: Vec<String>,
+    pub errors: Vec<String>,
 
     /// Dynamic libraries required to be loaded.
-    seen_dylibs: BTreeSet<String>,
+    pub seen_dylibs: BTreeSet<String>,
 
     /// Undefined Mach-O symbols that are required / non-weak.
-    macho_undefined_symbols_strong: RequiredSymbols,
+    pub macho_undefined_symbols_strong: RequiredSymbols,
 
     /// Undefined Mach-O symbols that are weakly referenced.
-    macho_undefined_symbols_weak: RequiredSymbols,
+    pub macho_undefined_symbols_weak: RequiredSymbols,
 }
 
 impl ValidationContext {
@@ -977,7 +977,10 @@ fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<
     Ok(errors)
 }
 
-fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
+fn validate_distribution(
+    dist_path: &Path,
+    macos_sdks: Option<&IndexedSdks>,
+) -> Result<Vec<String>> {
     let mut context = ValidationContext::default();
 
     let mut seen_paths = BTreeSet::new();
@@ -1111,6 +1114,8 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         }
     }
 
+    // We've now read the contents of the archive. Move on to analyizing the results.
+
     for path in seen_symlink_targets {
         if !seen_paths.contains(&path) {
             context.errors.push(format!(
@@ -1145,6 +1150,23 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
             context
                 .errors
                 .push(format!("required path {} not seen", path.display()));
+        }
+    }
+
+    // Validate Mach-O symbols and libraries against what the SDKs say. This is only supported
+    // on macOS.
+    if triple.contains("-apple-darwin") {
+        if let Some(sdks) = macos_sdks {
+            if let Some(value) = json.as_ref().unwrap().apple_sdk_deployment_target.as_ref() {
+                let target_minimum_sdk = semver::Version::parse(&format!("{}.0", value))?;
+
+                sdks.validate_context(&mut context, target_minimum_sdk, triple)?;
+            } else {
+                context.errors.push(
+                    "cannot perform Apple targeting analysis due to missing SDK advertisement"
+                        .into(),
+                );
+            };
         }
     }
 
@@ -1185,12 +1207,18 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
 pub fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
     let run = args.is_present("run");
 
+    let macos_sdks = if let Some(path) = args.value_of("macos_sdks_path") {
+        Some(IndexedSdks::new(path)?)
+    } else {
+        None
+    };
+
     let mut success = true;
 
     for path in args.values_of("path").unwrap() {
         let path = PathBuf::from(path);
         println!("validating {}", path.display());
-        let mut errors = validate_distribution(&path)?;
+        let mut errors = validate_distribution(&path, macos_sdks.as_ref())?;
 
         if run {
             errors.extend(verify_distribution_behavior(&path)?.into_iter());
