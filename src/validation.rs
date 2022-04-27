@@ -467,6 +467,14 @@ struct ValidationContext {
     seen_dylibs: BTreeSet<String>,
 }
 
+impl ValidationContext {
+    /// Merge the contents of `other` into this instance.
+    pub fn merge(&mut self, other: Self) {
+        self.errors.extend(other.errors);
+        self.seen_dylibs.extend(other.seen_dylibs);
+    }
+}
+
 fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
     context: &mut ValidationContext,
     json: &PythonJsonMain,
@@ -915,8 +923,8 @@ fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<
 }
 
 fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
-    let mut errors = vec![];
-    let mut seen_dylibs = BTreeSet::new();
+    let mut context = ValidationContext::default();
+
     let mut seen_paths = BTreeSet::new();
     let mut seen_symlink_targets = BTreeSet::new();
 
@@ -966,7 +974,9 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
         json = Some(parse_python_json(&data).context("parsing PYTHON.json")?);
-        errors.extend(validate_json(json.as_ref().unwrap(), triple, is_debug)?);
+        context
+            .errors
+            .extend(validate_json(json.as_ref().unwrap(), triple, is_debug)?);
 
         wanted_python_paths.extend(
             json.as_ref()
@@ -976,7 +986,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                 .map(|x| format!("python/{}", x)),
         );
     } else {
-        errors.push(format!(
+        context.errors.push(format!(
             "1st archive entry should be for python/PYTHON.json; got {}",
             entry.path()?.display()
         ));
@@ -1007,15 +1017,13 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
         let mut data = Vec::new();
         entry.read_to_end(&mut data)?;
 
-        let context = validate_possible_object_file(
+        context.merge(validate_possible_object_file(
             json.as_ref().unwrap(),
             python_major_minor,
             &triple,
             &path,
             &data,
-        )?;
-        errors.extend(context.errors);
-        seen_dylibs.extend(context.seen_dylibs);
+        )?);
 
         // Descend into archive files (static libraries are archive files and members
         // are usually object files).
@@ -1031,26 +1039,26 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
                     member
                 ));
 
-                let context = validate_possible_object_file(
+                context.merge(validate_possible_object_file(
                     json.as_ref().unwrap(),
                     python_major_minor,
                     &triple,
                     &member_path,
                     &member_data,
-                )?;
-                errors.extend(context.errors);
-                seen_dylibs.extend(context.seen_dylibs);
+                )?);
             }
         }
 
         if path == PathBuf::from("python/PYTHON.json") {
-            errors.push("python/PYTHON.json seen twice".to_string());
+            context
+                .errors
+                .push("python/PYTHON.json seen twice".to_string());
         }
     }
 
     for path in seen_symlink_targets {
         if !seen_paths.contains(&path) {
-            errors.push(format!(
+            context.errors.push(format!(
                 "symlink target {} referenced in archive but not found",
                 path.display()
             ));
@@ -1058,7 +1066,7 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
     }
 
     for path in wanted_python_paths {
-        errors.push(format!(
+        context.errors.push(format!(
             "path prefix {} seen in python_paths does not appear in archive",
             path
         ));
@@ -1071,17 +1079,21 @@ fn validate_distribution(dist_path: &Path) -> Result<Vec<String>> {
             .map(|d| d.name.clone()),
     );
 
-    for lib in wanted_dylibs.difference(&seen_dylibs) {
-        errors.push(format!("required library dependency {} not seen", lib));
+    for lib in wanted_dylibs.difference(&context.seen_dylibs) {
+        context
+            .errors
+            .push(format!("required library dependency {} not seen", lib));
     }
 
     if triple.contains("-windows-") && dist_path.to_string_lossy().contains("-static-") {
         for path in WANTED_WINDOWS_STATIC_PATHS.difference(&seen_paths) {
-            errors.push(format!("required path {} not seen", path.display()));
+            context
+                .errors
+                .push(format!("required path {} not seen", path.display()));
         }
     }
 
-    Ok(errors)
+    Ok(context.errors)
 }
 
 fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
