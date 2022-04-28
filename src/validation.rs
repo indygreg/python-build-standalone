@@ -420,12 +420,24 @@ const ELF_BANNED_SYMBOLS: &[&str] = &[
     "pthread_yield",
 ];
 
-/// Symbols that we don't want to appear in mach-o binaries.
-const MACHO_BANNED_SYMBOLS_NON_AARCH64: &[&str] = &[
-    // _readv and _pwritev are introduced when building with the macOS 11 SDK.
-    // If present, they can cause errors re-linking object files. So we ban their
-    // existence.
-    "_preadv", "_pwritev",
+/// Mach-O symbols that can be weakly linked on Python 3.8.
+const MACHO_ALLOWED_WEAK_SYMBOLS_38_NON_AARCH64: &[&str] = &[
+    // Internal to Apple SDK. However, the symbol isn't guarded properly in some Apple
+    // SDKs. See https://github.com/indygreg/PyOxidizer/issues/373.
+    "___darwin_check_fd_set_overflow",
+    // Appears to get inserted by Clang.
+    "_dispatch_once_f",
+    // Used by CPython. But is has runtime availability guards in 3.8 (one of the few
+    // symbols that does).
+    "__dyld_shared_cache_contains_path",
+    // Used by CPython without guards but the symbol is so old it doesn't matter.
+    "_inet_aton",
+    // Used by tk. It does availability guards properly.
+    "_NSAppearanceNameDarkAqua",
+    // Older than 10.9.
+    "_fstatvfs",
+    "_lchown",
+    "_statvfs",
 ];
 
 static WANTED_WINDOWS_STATIC_PATHS: Lazy<BTreeSet<PathBuf>> = Lazy::new(|| {
@@ -777,16 +789,6 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                             library_ordinal: symbol.library_ordinal(endian),
                             weak: symbol.n_desc(endian) & (object::macho::N_WEAK_REF) != 0,
                         });
-
-                        if target_triple != "aarch64-apple-darwin"
-                            && MACHO_BANNED_SYMBOLS_NON_AARCH64.contains(&name.as_str())
-                        {
-                            context.errors.push(format!(
-                                "{} references unallowed symbol {}",
-                                path.display(),
-                                name
-                            ));
-                        }
                     }
                 }
             }
@@ -1150,6 +1152,29 @@ fn validate_distribution(
             context
                 .errors
                 .push(format!("required path {} not seen", path.display()));
+        }
+    }
+
+    // On Apple Python 3.8 we need to ban most weak symbol references because 3.8 doesn't have
+    // the proper runtime guards in place to prevent them from being resolved at runtime,
+    // which would lead to a crash. See
+    // https://github.com/indygreg/python-build-standalone/pull/122.
+    if python_major_minor == "3.8" && *triple != "aarch64-apple-darwin" {
+        for (lib, symbols) in &context.macho_undefined_symbols_weak.libraries {
+            for (symbol, paths) in &symbols.symbols {
+                if MACHO_ALLOWED_WEAK_SYMBOLS_38_NON_AARCH64.contains(&symbol.as_str()) {
+                    continue;
+                }
+
+                for path in paths {
+                    context.errors.push(format!(
+                        "{} has weak symbol {}:{}, which is not allowed on Python 3.8",
+                        path.display(),
+                        lib,
+                        symbol
+                    ));
+                }
+            }
         }
     }
 

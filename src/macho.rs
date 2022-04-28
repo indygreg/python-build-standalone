@@ -76,7 +76,7 @@ pub struct MachOAllowedDylib {
 #[derive(Clone, Debug, Default)]
 pub struct LibrarySymbols {
     /// Symbol name -> source paths that require them.
-    symbols: BTreeMap<String, BTreeSet<PathBuf>>,
+    pub symbols: BTreeMap<String, BTreeSet<PathBuf>>,
 }
 
 impl LibrarySymbols {
@@ -95,7 +95,7 @@ impl LibrarySymbols {
 /// Holds required symbols, indexed by library.
 #[derive(Clone, Debug, Default)]
 pub struct RequiredSymbols {
-    libraries: BTreeMap<String, LibrarySymbols>,
+    pub libraries: BTreeMap<String, LibrarySymbols>,
 }
 
 impl RequiredSymbols {

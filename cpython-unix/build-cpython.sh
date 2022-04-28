@@ -754,18 +754,20 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # as Homebrew or MacPorts. So nerf the check to prevent this.
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_lib_intl_textdomain=no"
 
-    # When building against an 11.0+ SDK, preadv() and pwritev() are
-    # detected and used, despite only being available in the 11.0+ SDK. This
-    # prevents object files from re-linking when built with older SDKs.
-    # So we disable them. But not in aarch64-apple-darwin, as that target
-    # requires the 11.0 SDK.
+    # CPython 3.9+ have proper support for weakly referenced symbols and
+    # runtime availability guards. CPython 3.8 will emit weak symbol references
+    # (this happens automatically when linking due to SDK version targeting).
+    # However CPython lacks the runtime availability guards for most symbols.
+    # This results in runtime failures when attempting to resolve/call the
+    # symbol.
     #
-    # This solution is less than ideal. Modern versions of Python support
-    # weak linking and it should be possible to coerce these functions into
-    # being weakly linked.
-    if [ "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]; then
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_preadv=no"
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pwritev=no"
+    # Unfortunately, this means we need to ban weak symbols on CPython 3.8, to
+    # the detriment of performance. However, we can actually use the symbols
+    # on aarch64 because it targets macOS SDK 11.0, not 10.9.
+    if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" && "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]]; then
+        for symbol in clock_getres clock_gettime clock_settime faccessat fchmodat fchownat fdopendir fstatat getentropy linkat mkdirat openat preadv pwritev readlinkat renameat symlinkat unlinkat; do
+            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"
+        done
     fi
 
     if [ -n "${CROSS_COMPILING}" ]; then

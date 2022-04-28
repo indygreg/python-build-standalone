@@ -219,9 +219,15 @@ jobs:
       - toolchain
     runs-on: 'macos-11'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - uses: actions/checkout@v3
+        with:
+          repository: 'phracker/MacOSX-SDKs'
+          ref: master
+          path: macosx-sdks
 
       - name: Install Python
         uses: actions/setup-python@v2
@@ -267,7 +273,7 @@ jobs:
             EXTRA_ARGS="--run"
           fi
 
-          build/pythonbuild validate-distribution ${EXTRA_ARGS} dist/*.tar.zst
+          build/pythonbuild validate-distribution --macos-sdks-path macosx-sdks ${EXTRA_ARGS} dist/*.tar.zst
 
       - name: Upload Distributions
         uses: actions/upload-artifact@v2
