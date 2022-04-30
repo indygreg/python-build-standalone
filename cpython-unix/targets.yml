@@ -91,7 +91,6 @@ aarch64-apple-darwin:
     - tk
     - uuid
     - xz
-    - zlib
   openssl_target: darwin64-arm64-cc
 
 aarch64-apple-ios:
@@ -128,7 +127,6 @@ aarch64-apple-ios:
     - openssl
     - sqlite
     - xz
-    - zlib
   openssl_target: ios64-cross
 
 aarch64-unknown-linux-gnu:
@@ -198,7 +196,6 @@ arm64-apple-tvos:
     - openssl
     - sqlite
     - xz
-    - zlib
   openssl_target: todo
 
 armv7-unknown-linux-gnueabi:
@@ -445,7 +442,6 @@ thumb7k-apple-watchos:
     - openssl
     - sqlite
     - xz
-    - zlib
   openssl_target: todo
 
 # Intel macOS.
@@ -491,7 +487,6 @@ x86_64-apple-darwin:
     - tk
     - uuid
     - xz
-    - zlib
   openssl_target: darwin64-x86_64-cc
 
 x86_64-apple-ios:
@@ -528,7 +523,6 @@ x86_64-apple-ios:
     - openssl
     - sqlite
     - xz
-    - zlib
   openssl_target: darwin64-x86_64-cc
 
 x86_64-apple-tvos:
@@ -599,7 +593,6 @@ x86_64-apple-watchos:
     - openssl
     - sqlite
     - xz
-    - zlib
   openssl_target: todo
 
 x86_64-unknown-linux-gnu:
