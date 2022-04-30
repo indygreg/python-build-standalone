@@ -1,5 +1,5 @@
 # Debian Stretch.
-FROM debian@sha256:4b9b2ef8de1f3e9531626e8eb3d19e104e9dfde0a2b0f42b763b38235773f48e
+FROM debian@sha256:cebe6e1c30384958d471467e231f740e8f0fd92cbfd2a435a186e9bada3aee1c
 MAINTAINER Gregory Szorc <gregory.szorc@gmail.com>
 
 RUN groupadd -g 1000 build && \
@@ -18,7 +18,7 @@ CMD ["/bin/bash", "--login"]
 WORKDIR '/build'
 
 RUN for s in debian_stretch debian_stretch-updates debian-security_stretch/updates; do \
-      echo "deb http://snapshot.debian.org/archive/${s%_*}/20210927T204628Z/ ${s#*_} main"; \
+      echo "deb http://snapshot.debian.org/archive/${s%_*}/20220429T205342Z/ ${s#*_} main"; \
     done > /etc/apt/sources.list && \
     ( echo 'quiet "true";'; \
       echo 'APT::Get::Assume-Yes "true";'; \
