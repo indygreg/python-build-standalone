@@ -35,16 +35,17 @@ CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" ./configure \
     --enable-threads \
     ${EXTRA_CONFIGURE_FLAGS}
 
+# Remove wish, since we don't need it.
+if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+    sed -i 's/all: binaries libraries doc/all: libraries/' Makefile
+    sed -i 's/install-binaries: $(TK_STUB_LIB_FILE) $(TK_LIB_FILE) ${WISH_EXE}/install-binaries: $(TK_STUB_LIB_FILE) $(TK_LIB_FILE)/' Makefile
+fi
+
 # For some reason musl isn't link libXau and libxcb. So we hack the Makefile
 # to do what we want.
-#
-# In addition, the wish binary is also failing to link. So we remove it
-# from the build and the installation (it shouldn't be needed anyway).
 if [ "${CC}" = "musl-clang" ]; then
     sed -i 's/-ldl  -lpthread /-ldl  -lpthread -lXau -lxcb/' tkConfig.sh
     sed -i 's/-lpthread $(X11_LIB_SWITCHES) -ldl  -lpthread/-lpthread $(X11_LIB_SWITCHES) -ldl  -lpthread -lXau -lxcb/' Makefile
-    sed -i 's/all: binaries libraries doc/all: libraries/' Makefile
-    sed -i 's/install-binaries: $(TK_STUB_LIB_FILE) $(TK_LIB_FILE) ${WISH_EXE}/install-binaries: $(TK_STUB_LIB_FILE) $(TK_LIB_FILE)/' Makefile
 fi
 
 make -j ${NUM_CPUS}
