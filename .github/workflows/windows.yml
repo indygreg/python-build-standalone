@@ -7,7 +7,7 @@ jobs:
   pythonbuild:
     runs-on: 'windows-2019'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -16,7 +16,7 @@ jobs:
           default: true
           profile: minimal
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             C:/Rust/.cargo/registry
@@ -29,7 +29,7 @@ jobs:
           cargo build --release
 
       - name: Upload executable
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pythonbuild
           path: target/release/pythonbuild.exe
@@ -51,7 +51,7 @@ jobs:
     needs: pythonbuild
     runs-on: 'windows-2019'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
           python-version: '3.9'
 
       - name: Download pythonbuild Executable
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: pythonbuild
 
@@ -89,7 +89,7 @@ jobs:
           .\pythonbuild.exe validate-distribution --run $Dists
 
       - name: Upload Distributions
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.py }}-${{ matrix.vcvars }}
           path: dist/*

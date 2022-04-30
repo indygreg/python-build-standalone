@@ -15,14 +15,14 @@ jobs:
           default: true
           profile: minimal
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: mozilla/sccache
           # Update cache key if this changes.
           ref: e6326bc8a20ee06af37e16a3a7a14e3374c66c66
           fetch-depth: 0
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
@@ -35,7 +35,7 @@ jobs:
           cargo build --release
 
       - name: Upload sccache executable
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: sccache
           path: target/release/sccache
@@ -43,7 +43,7 @@ jobs:
   pythonbuild:
     runs-on: 'macos-11'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -52,7 +52,7 @@ jobs:
           default: true
           profile: minimal
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
@@ -65,7 +65,7 @@ jobs:
           cargo build --release
 
       - name: Upload pythonbuild Executable
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pythonbuild
           path: target/release/pythonbuild
@@ -81,7 +81,7 @@ jobs:
       SCCACHE_S3_USE_SSL: '1'
       SCCACHE_IDLE_TIMEOUT: '0'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install Python
         uses: actions/setup-python@v2
@@ -89,7 +89,7 @@ jobs:
           python-version: '3.9'
 
       - name: Download sccache
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: sccache
 
@@ -107,7 +107,7 @@ jobs:
           ./sccache -s
 
       - name: Upload Toolchain Archive
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: toolchain
           path: build/clang-*.tar
@@ -223,25 +223,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/checkout@v3
-        with:
-          repository: 'phracker/MacOSX-SDKs'
-          ref: master
-          path: macosx-sdks
-
       - name: Install Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
 
       - name: Download pythonbuild
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: pythonbuild
           path: build
 
       - name: Download toolchain
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: toolchain
           path: build
@@ -265,6 +259,12 @@ jobs:
 
           ./build-macos.py --skip-toolchain --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
+      - uses: actions/checkout@v3
+        with:
+          repository: 'phracker/MacOSX-SDKs'
+          ref: master
+          path: macosx-sdks
+
       - name: Validate Distribution
         run: |
           chmod +x build/pythonbuild
@@ -276,7 +276,7 @@ jobs:
           build/pythonbuild validate-distribution --macos-sdks-path macosx-sdks ${EXTRA_ARGS} dist/*.tar.zst
 
       - name: Upload Distributions
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
           path: dist/*

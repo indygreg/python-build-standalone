@@ -22,13 +22,13 @@ jobs:
           default: true
           profile: minimal
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: indygreg/sccache
           ref: b0eae3f0d174b81e7582159cb9329dbea0af25c9
           fetch-depth: 0
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
@@ -41,7 +41,7 @@ jobs:
           cargo build --release --target x86_64-unknown-linux-musl
 
       - name: Upload sccache executable
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: sccache
           path: target/x86_64-unknown-linux-musl/release/sccache
@@ -54,7 +54,7 @@ jobs:
           sudo apt update
           sudo apt install -y --no-install-recommends libssl-dev pkg-config
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -63,7 +63,7 @@ jobs:
           default: true
           profile: minimal
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
@@ -76,7 +76,7 @@ jobs:
           cargo build --release
 
       - name: Upload pythonbuild Executable
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pythonbuild
           path: target/release/pythonbuild
@@ -92,7 +92,7 @@ jobs:
       SCCACHE_S3_USE_SSL: '1'
       SCCACHE_IDLE_TIMEOUT: '0'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install Python
         uses: actions/setup-python@v2
@@ -100,7 +100,7 @@ jobs:
           python-version: '3.9'
 
       - name: Download sccache
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: sccache
 
@@ -118,7 +118,7 @@ jobs:
           ./sccache -s
 
       - name: Upload Toolchain Archive
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: toolchain
           path: build/*.tar
@@ -504,7 +504,7 @@ jobs:
       - toolchain
     runs-on: 'ubuntu-20.04'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -514,13 +514,13 @@ jobs:
           python-version: '3.9'
 
       - name: Download pythonbuild
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: pythonbuild
           path: build
 
       - name: Download toolchain
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: toolchain
           path: build
@@ -535,7 +535,7 @@ jobs:
           build/pythonbuild validate-distribution dist/*.tar.zst
 
       - name: Upload Distribution
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
           path: dist/*
