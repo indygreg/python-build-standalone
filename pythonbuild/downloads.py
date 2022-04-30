@@ -29,10 +29,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.bzip2.txt",
     },
     "clang": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1.src.tar.xz",
-        "size": 97584928,
-        "sha256": "326335a830f2e32d06d0a36393b5455d17dc73e0bd1211065227ee014f92cbf8",
-        "version": "13.0.1",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.3/llvm-project-14.0.3.src.tar.xz",
+        "size": 105600488,
+        "sha256": "44d3e7a784d5cf805e72853bb03f218bd1058d448c03ca883dabbebc99204e0c",
+        "version": "14.0.3",
     },
     "cmake-linux-bin": {
         "url": "https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-Linux-x86_64.tar.gz",
