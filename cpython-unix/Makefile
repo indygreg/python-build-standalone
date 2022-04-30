@@ -90,6 +90,8 @@ CLANG_DEPENDS := \
     $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar) \
     $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar) \
     $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-clang.tar) \
+    $(OUTDIR)/versions/VERSION.cmake-linux-bin \
+    $(OUTDIR)/versions/VERSION.cmake-macos-bin \
     $(HERE)/build-clang-$(HOST_PLATFORM).sh \
     $(NULL)
 

@@ -40,7 +40,7 @@ ROOT=$(pwd)
 SCCACHE="${ROOT}/sccache"
 
 mkdir /tools/extra
-tar -C /tools/extra --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz
+tar -C /tools/extra --strip-components=1 -xf ${ROOT}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz
 
 unzip ninja-linux.zip
 mv ninja /tools/extra/bin/
