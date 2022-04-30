@@ -60,6 +60,7 @@ TOOLCHAIN_DEPENDS := \
     $(NULL)
 
 PYTHON_DEP_DEPENDS := \
+    $(OUTDIR)/targets/$(TARGET_TRIPLE) \
     $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).tar) \
     $(if $(PYBUILD_SKIP_TOOLCHAIN),,$(TOOLCHAIN_DEPENDS)) \
     $(NULL)

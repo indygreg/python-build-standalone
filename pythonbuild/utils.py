@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import http.client
 import io
+import json
 import multiprocessing
 import os
 import pathlib
@@ -175,6 +176,20 @@ def write_package_versions(dest_path: pathlib.Path):
         p = dest_path / ("VERSION.%s" % k)
         content = "%s_VERSION := %s\n" % (k.upper().replace("-", "_"), v["version"])
         write_if_different(p, content.encode("ascii"))
+
+
+def write_target_settings(targets, dest_path: pathlib.Path):
+    dest_path.mkdir(parents=True, exist_ok=True)
+
+    for triple, settings in targets.items():
+        payload = {}
+
+        for key in ("host_cc", "host_cxx", "target_cc", "target_cflags"):
+            payload[key] = settings.get(key)
+
+        payload = json.dumps(payload, indent=4).encode("utf-8")
+
+        write_if_different(dest_path / triple, payload)
 
 
 class IntegrityError(Exception):

@@ -35,6 +35,7 @@ from pythonbuild.utils import (
     target_needs,
     validate_python_json,
     write_package_versions,
+    write_target_settings,
     write_triples_makefiles,
 )
 
@@ -1026,7 +1027,9 @@ def main():
         if action == "dockerfiles":
             write_dockerfiles(SUPPORT, BUILD)
         elif action == "makefiles":
-            write_triples_makefiles(get_targets(TARGETS_CONFIG), BUILD, SUPPORT)
+            targets = get_targets(TARGETS_CONFIG)
+            write_triples_makefiles(targets, BUILD, SUPPORT)
+            write_target_settings(targets, BUILD / "targets")
             write_package_versions(BUILD / "versions")
 
         elif action.startswith("image-"):
