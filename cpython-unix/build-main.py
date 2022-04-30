@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import multiprocessing
 import pathlib
 import platform
 import subprocess
@@ -76,6 +77,11 @@ def main():
         help="Disable building in Docker",
     )
     parser.add_argument(
+        "--serial",
+        action="store_true",
+        help="Build packages serially, without parallelism",
+    )
+    parser.add_argument(
         "--skip-toolchain",
         action="store_true",
         help="Skip building the toolchain (requires a tar file in expected location)",
@@ -136,7 +142,17 @@ def main():
     build_basename = "-".join(archive_components) + ".tar"
     dist_basename = "-".join(archive_components + [release_tag])
 
-    subprocess.run(["make", args.make_target], env=env, check=True)
+    # We run make with static parallelism no greater than the machine's CPU count
+    # because we can get some speedup from parallel operations. But we also don't
+    # share a make job server with each build. So if we didn't limit the
+    # parallelism we could easily oversaturate the CPU. Higher levels of
+    # parallelism don't result in meaningful build speedups because tk/tix has
+    # a long, serial dependency chain that can't be built in parallel.
+    parallelism = min(1 if args.serial else 4, multiprocessing.cpu_count())
+
+    subprocess.run(
+        ["make", "-j%d" % parallelism, args.make_target], env=env, check=True
+    )
 
     DIST.mkdir(exist_ok=True)
 
