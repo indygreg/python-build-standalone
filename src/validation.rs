@@ -1090,7 +1090,10 @@ fn validate_distribution(
         // Descend into archive files (static libraries are archive files and members
         // are usually object files).
         if let Ok(archive) = goblin::archive::Archive::parse(&data) {
-            for member in archive.members() {
+            let mut members = archive.members();
+            members.sort();
+
+            for member in members {
                 let member_data = archive
                     .extract(member, &data)
                     .with_context(|| format!("extracting {} from {}", member, path.display()))?;
