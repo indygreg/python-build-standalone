@@ -329,13 +329,7 @@ def build_clang(client, image, host_platform):
         cmake_archive = download_entry("cmake-macos-bin", DOWNLOADS_PATH)
         ninja_archive = download_entry("ninja-macos-bin", DOWNLOADS_PATH)
 
-    clang_archive = download_entry("clang", DOWNLOADS_PATH)
-    clang_rt_archive = download_entry("clang-compiler-rt", DOWNLOADS_PATH)
-    lld_archive = download_entry("lld", DOWNLOADS_PATH)
-    llvm_archive = download_entry("llvm", DOWNLOADS_PATH)
-    libcxx_archive = download_entry("libc++", DOWNLOADS_PATH)
-    libcxxabi_archive = download_entry("libc++abi", DOWNLOADS_PATH)
-    libunwind_archive = download_entry("libunwind", DOWNLOADS_PATH)
+    llvm_archive = download_entry("clang", DOWNLOADS_PATH)
     python_archive = download_entry("cpython-3.9", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
@@ -345,13 +339,7 @@ def build_clang(client, image, host_platform):
         for a in (
             cmake_archive,
             ninja_archive,
-            clang_archive,
-            clang_rt_archive,
-            lld_archive,
             llvm_archive,
-            libcxx_archive,
-            libcxxabi_archive,
-            libunwind_archive,
             python_archive,
         ):
             build_env.copy_file(a)
@@ -362,16 +350,9 @@ def build_clang(client, image, host_platform):
         gcc = binutils
 
         env = {
-            "CLANG_COMPILER_RT_VERSION": DOWNLOADS["clang-compiler-rt"]["version"],
-            "CLANG_VERSION": DOWNLOADS["clang"]["version"],
             "CMAKE_VERSION": DOWNLOADS["cmake-linux-bin"]["version"],
-            "COMPILER_RT_VERSION": DOWNLOADS["clang-compiler-rt"]["version"],
             "GCC_VERSION": DOWNLOADS["gcc"]["version"],
-            "LIBCXX_VERSION": DOWNLOADS["libc++"]["version"],
-            "LIBCXXABI_VERSION": DOWNLOADS["libc++abi"]["version"],
-            "LIBUNWIND_VERSION": DOWNLOADS["libunwind"]["version"],
-            "LLD_VERSION": DOWNLOADS["lld"]["version"],
-            "LLVM_VERSION": DOWNLOADS["llvm"]["version"],
+            "CLANG_VERSION": DOWNLOADS["clang"]["version"],
             "PYTHON_VERSION": DOWNLOADS["cpython-3.9"]["version"],
         }
 
@@ -545,7 +526,7 @@ def python_build_info(
             )
 
         if optimizations in ("lto", "pgo+lto"):
-            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["llvm"]["version"]
+            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["clang"]["version"]
         else:
             object_file_format = "elf"
     elif platform == "macos":
@@ -560,7 +541,7 @@ def python_build_info(
         )
 
         if optimizations in ("lto", "pgo+lto"):
-            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["llvm"]["version"]
+            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["clang"]["version"]
         else:
             object_file_format = "mach-o"
     else:

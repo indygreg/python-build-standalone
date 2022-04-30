@@ -29,15 +29,9 @@ DOWNLOADS = {
         "license_file": "LICENSE.bzip2.txt",
     },
     "clang": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/clang-13.0.1.src.tar.xz",
-        "size": 17847584,
-        "sha256": "787a9e2d99f5c8720aa1773e4be009461cd30d3bd40fdd24591e473467c917c9",
-        "version": "13.0.1",
-    },
-    "clang-compiler-rt": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/compiler-rt-13.0.1.src.tar.xz",
-        "size": 2290068,
-        "sha256": "7b33955031f9a9c5d63077dedb0f99d77e4e7c996266952c1cec55626dca5dfc",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/llvm-project-13.0.1.src.tar.xz",
+        "size": 97584928,
+        "sha256": "326335a830f2e32d06d0a36393b5455d17dc73e0bd1211065227ee014f92cbf8",
         "version": "13.0.1",
     },
     "cmake-linux-bin": {
@@ -125,18 +119,6 @@ DOWNLOADS = {
         "sha256": "828cb275b91268b1a3ea950d5c0c5eb076c678fdf005d517411f89cc8c3bb416",
         "version": "1.0.7",
     },
-    "libc++": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/libcxx-13.0.1.src.tar.xz",
-        "size": 2085992,
-        "sha256": "2f446acc00bb7cfb4e866c2fa46d1b6dbf4e7d2ab62e3c3d84e56f7b9e28110f",
-        "version": "13.0.1",
-    },
-    "libc++abi": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/libcxxabi-13.0.1.src.tar.xz",
-        "size": 554912,
-        "sha256": "db5fa6093c786051e8b1c85527240924eceb6c95eeff0a2bbc57be8422b3cef1",
-        "version": "13.0.1",
-    },
     "libedit": {
         "url": "https://thrysoee.dk/editline/libedit-20210910-3.1.tar.gz",
         "size": 524722,
@@ -161,12 +143,6 @@ DOWNLOADS = {
         "size": 301448,
         "sha256": "f8f7ca635fa54bcaef372fd5fd9028f394992a743d73453088fcadc1dbf3a704",
         "version": "0.1",
-    },
-    "libunwind": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/libunwind-13.0.1.src.tar.xz",
-        "size": 99560,
-        "sha256": "e206dbf1bbe058a113bffe189386ded99a160b2443ee1e2cd41ff810f78551ba",
-        "version": "13.0.1",
     },
     "libX11": {
         "url": "https://www.x.org/archive/individual/lib/libX11-1.6.8.tar.gz",
@@ -194,18 +170,6 @@ DOWNLOADS = {
         "library_names": ["xcb"],
         "licenses": ["MIT"],
         "license_file": "LICENSE.libxcb.txt",
-    },
-    "lld": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/lld-13.0.1.src.tar.xz",
-        "size": 1473868,
-        "sha256": "666af745e8bf7b680533b4d18b7a31dc7cab575b1e6e4d261922bbafd9644cfb",
-        "version": "13.0.1",
-    },
-    "llvm": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.1/llvm-13.0.1.src.tar.xz",
-        "size": 45479112,
-        "sha256": "ec6b80d82c384acad2dc192903a6cf2cdbaffb889b84bfb98da9d71e630fc834",
-        "version": "13.0.1",
     },
     "mpc": {
         "url": "http://www.multiprecision.org/downloads/mpc-1.0.3.tar.gz",

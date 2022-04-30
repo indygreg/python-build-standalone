@@ -71,37 +71,7 @@ popd
 
 mkdir llvm
 pushd llvm
-tar --strip-components=1 -xf ${ROOT}/llvm-${LLVM_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/tools/clang
-pushd llvm/tools/clang
-tar --strip-components=1 -xf ${ROOT}/clang-${CLANG_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/tools/lld
-pushd llvm/tools/lld
-tar --strip-components=1 -xf ${ROOT}/lld-${LLD_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/projects/compiler-rt
-pushd llvm/projects/compiler-rt
-tar --strip-components=1 -xf ${ROOT}/compiler-rt-${CLANG_COMPILER_RT_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/projects/libcxx
-pushd llvm/projects/libcxx
-tar --strip-components=1 -xf ${ROOT}/libcxx-${LIBCXX_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/projects/libcxxabi
-pushd llvm/projects/libcxxabi
-tar --strip-components=1 -xf ${ROOT}/libcxxabi-${LIBCXXABI_VERSION}.src.tar.xz
-popd
-
-mkdir libunwind
-pushd libunwind
-tar --strip-components=1 -xf ${ROOT}/libunwind-${LIBUNWIND_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/llvm-project-${CLANG_VERSION}.src.tar.xz
 popd
 
 mkdir llvm-objdir
@@ -120,6 +90,7 @@ cmake \
     -DCMAKE_CXX_FLAGS="-Wno-cast-function-type" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions" \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
     -DLLVM_TARGETS_TO_BUILD=X86 \
     -DLLVM_TOOL_LIBCXX_BUILD=ON \
     -DLIBCXX_LIBCPPABI_VERSION="" \
@@ -127,7 +98,7 @@ cmake \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
     ${EXTRA_FLAGS} \
-    ../../llvm
+    ../../llvm/llvm
 
 LD_LIBRARY_PATH=/tools/host/lib64 ninja -j ${NUM_JOBS} install
 
@@ -156,6 +127,7 @@ cmake \
     -DCMAKE_CXX_FLAGS="-fPIC -Qunused-arguments -L/tools/clang-stage1/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage1/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage1/lib" \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
     -DLLVM_TARGETS_TO_BUILD=X86 \
     -DLLVM_TOOL_LIBCXX_BUILD=ON \
     -DLIBCXX_LIBCPPABI_VERSION="" \
@@ -163,7 +135,7 @@ cmake \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
     ${EXTRA_FLAGS} \
-    ../../llvm
+    ../../llvm/llvm
 
 LD_LIBRARY_PATH=/tools/clang-stage1/lib ninja -j ${NUM_JOBS} install
 
@@ -197,13 +169,14 @@ cmake \
     -DCMAKE_CXX_FLAGS="-fPIC -Qunused-arguments -L/tools/clang-stage2/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
     -DLLVM_TOOL_LIBCXX_BUILD=ON \
     -DLIBCXX_LIBCPPABI_VERSION="" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
     ${EXTRA_FLAGS} \
-    ../../llvm
+    ../../llvm/llvm
 
 LD_LIBRARY_PATH=/tools/clang-stage2/lib DESTDIR=${ROOT}/out ninja -j ${NUM_JOBS} install
 

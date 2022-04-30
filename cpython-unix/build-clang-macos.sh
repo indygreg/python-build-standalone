@@ -19,32 +19,7 @@ export PATH=${ROOT}/CMake.app/Contents/bin:${ROOT}/ninja/:${PATH}
 
 mkdir llvm
 pushd llvm
-tar --strip-components=1 -xf ${ROOT}/llvm-${LLVM_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/tools/clang
-pushd llvm/tools/clang
-tar --strip-components=1 -xf ${ROOT}/clang-${CLANG_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/tools/lld
-pushd llvm/tools/lld
-tar --strip-components=1 -xf ${ROOT}/lld-${LLD_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/projects/compiler-rt
-pushd llvm/projects/compiler-rt
-tar --strip-components=1 -xf ${ROOT}/compiler-rt-${CLANG_COMPILER_RT_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/projects/libcxx
-pushd llvm/projects/libcxx
-tar --strip-components=1 -xf ${ROOT}/libcxx-${LIBCXX_VERSION}.src.tar.xz
-popd
-
-mkdir llvm/projects/libcxxabi
-pushd llvm/projects/libcxxabi
-tar --strip-components=1 -xf ${ROOT}/libcxxabi-${LIBCXXABI_VERSION}.src.tar.xz
+tar --strip-components=1 -xf ${ROOT}/llvm-project-${CLANG_VERSION}.src.tar.xz
 popd
 
 mkdir llvm-objdir
@@ -65,11 +40,12 @@ cmake \
     -DCMAKE_C_COMPILER=/usr/bin/clang \
     -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
     -DCMAKE_ASM_COMPILER=/usr/bin/clang \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
     -DLLVM_ENABLE_LIBCXX=ON \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     ${EXTRA_FLAGS} \
-    ../../llvm
+    ../../llvm/llvm
 
 if [ -n "${CI}" ]; then
     NUM_JOBS=${NUM_JOBS_AGGRESSIVE}
