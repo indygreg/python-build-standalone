@@ -141,15 +141,15 @@ static GLIBC_MAX_VERSION_BY_TRIPLE: Lazy<HashMap<&'static str, version_compare::
         );
         versions.insert(
             "mips-unknown-linux-gnu",
-            version_compare::Version::from("2.17").unwrap(),
+            version_compare::Version::from("2.19").unwrap(),
         );
         versions.insert(
             "mipsel-unknown-linux-gnu",
-            version_compare::Version::from("2.17").unwrap(),
+            version_compare::Version::from("2.19").unwrap(),
         );
         versions.insert(
             "mips64el-unknown-linux-gnuabi64",
-            version_compare::Version::from("2.17").unwrap(),
+            version_compare::Version::from("2.19").unwrap(),
         );
         versions.insert(
             "s390x-unknown-linux-gnu",
@@ -688,9 +688,11 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
 
                                 if &v > wanted_glibc_max_version {
                                     context.errors.push(format!(
-                                        "{} references too new glibc symbol {:?}",
+                                        "{} references too new glibc symbol {:?} ({} > {})",
                                         path.display(),
-                                        name
+                                        name,
+                                        v,
+                                        wanted_glibc_max_version,
                                     ));
                                 }
                             }
