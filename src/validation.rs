@@ -7,7 +7,10 @@ use {
     anyhow::{anyhow, Context, Result},
     clap::ArgMatches,
     object::{
-        elf::{FileHeader32, FileHeader64},
+        elf::{
+            FileHeader32, FileHeader64, ET_DYN, ET_EXEC, STB_GLOBAL, STB_WEAK, STV_DEFAULT,
+            STV_HIDDEN,
+        },
         macho::{MachHeader32, MachHeader64},
         read::{
             elf::{Dyn, FileHeader, SectionHeader, Sym},
@@ -440,6 +443,75 @@ const MACHO_ALLOWED_WEAK_SYMBOLS_38_NON_AARCH64: &[&str] = &[
     "_statvfs",
 ];
 
+/// Symbols defined in dependency packages.
+///
+/// We use this list to spot test behavior of symbols belonging to dependency packages.
+/// The list is obviously not complete.
+const DEPENDENCY_PACKAGE_SYMBOLS: &[&str] = &[
+    // libX11
+    "XClearWindow",
+    "XFlush",
+    // OpenSSL
+    "BIO_ADDR_new",
+    "BN_new",
+    "DH_new",
+    "SSL_extension_supported",
+    "SSL_read",
+    "CRYPTO_memcmp",
+    "ecp_nistz256_neg",
+    "OPENSSL_instrument_bus",
+    "x25519_fe64_add",
+    // libdb
+    "__txn_begin",
+    // libedit / readline
+    "rl_prompt",
+    "readline",
+    "current_history",
+    "history_expand",
+    // libffi
+    "ffi_call",
+    "ffi_type_void",
+    // ncurses
+    "new_field",
+    "set_field_term",
+    "set_menu_init",
+    "winstr",
+    // gdbm
+    "gdbm_close",
+    "gdbm_import",
+    // sqlite3
+    "sqlite3_initialize",
+    "sqlite3_close",
+    // libxcb
+    "xcb_create_window",
+    "xcb_get_property",
+    // libz
+    "deflateEnd",
+    "gzclose",
+    "inflate",
+    // tix
+    "Tix_DItemCreate",
+    "Tix_GrFormat",
+    // liblzma
+    "lzma_index_init",
+    "lzma_stream_encoder",
+    // tcl
+    "Tcl_Alloc",
+    "Tcl_ChannelName",
+    "Tcl_CreateInterp",
+    // tk
+    "TkBindInit",
+    "TkCreateFrame",
+    "Tk_FreeGC",
+];
+
+const PYTHON_EXPORTED_SYMBOLS: &[&str] = &[
+    "Py_Initialize",
+    "PyList_New",
+    // From limited API.
+    "Py_CompileString",
+];
+
 static WANTED_WINDOWS_STATIC_PATHS: Lazy<BTreeSet<PathBuf>> = Lazy::new(|| {
     [
         PathBuf::from("python/build/lib/libffi.lib"),
@@ -478,6 +550,9 @@ pub struct ValidationContext {
     /// Dynamic libraries required to be loaded.
     pub seen_dylibs: BTreeSet<String>,
 
+    /// Symbols exported from dynamic libpython library.
+    pub libpython_exported_symbols: BTreeSet<String>,
+
     /// Undefined Mach-O symbols that are required / non-weak.
     pub macho_undefined_symbols_strong: RequiredSymbols,
 
@@ -490,6 +565,8 @@ impl ValidationContext {
     pub fn merge(&mut self, other: Self) {
         self.errors.extend(other.errors);
         self.seen_dylibs.extend(other.seen_dylibs);
+        self.libpython_exported_symbols
+            .extend(other.libpython_exported_symbols);
         self.macho_undefined_symbols_strong
             .merge(other.macho_undefined_symbols_strong);
         self.macho_undefined_symbols_weak
@@ -695,6 +772,38 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
                                         wanted_glibc_max_version,
                                     ));
                                 }
+                            }
+                        }
+                    }
+                }
+
+                // Ensure specific symbols in dynamic binaries have proper visibility.
+                if matches!(elf.e_type(endian), ET_EXEC | ET_DYN) {
+                    // Python 3.8 exports ffi symbols for legacy reasons.
+                    let is_exception = name == "ffi_type_void" && python_major_minor == "3.8";
+
+                    // Non-local symbols belonging to dependencies should have hidden visibility
+                    // to prevent them from being exported.
+                    if DEPENDENCY_PACKAGE_SYMBOLS.contains(&name.as_ref())
+                        && matches!(symbol.st_bind(), STB_GLOBAL | STB_WEAK)
+                        && symbol.st_visibility() != STV_HIDDEN
+                        && !is_exception
+                    {
+                        context.errors.push(format!(
+                            "{} contains non-hidden dependency symbol {}",
+                            path.display(),
+                            name
+                        ));
+                    }
+
+                    if let Some(filename) = path.file_name() {
+                        let filename = filename.to_string_lossy();
+
+                        if filename.starts_with("libpython") && filename.ends_with(".so.1.0") {
+                            if matches!(symbol.st_bind(), STB_GLOBAL | STB_WEAK)
+                                && symbol.st_visibility() == STV_DEFAULT
+                            {
+                                context.libpython_exported_symbols.insert(name.to_string());
                             }
                         }
                     }
@@ -1121,7 +1230,7 @@ fn validate_distribution(
         }
     }
 
-    // We've now read the contents of the archive. Move on to analyizing the results.
+    // We've now read the contents of the archive. Move on to analyzing the results.
 
     for path in seen_symlink_targets {
         if !seen_paths.contains(&path) {
@@ -1157,6 +1266,21 @@ fn validate_distribution(
             context
                 .errors
                 .push(format!("required path {} not seen", path.display()));
+        }
+    }
+
+    // If we've collected symbols exported from libpython, ensure the Python symbols are
+    // in the set.
+    if !context.libpython_exported_symbols.is_empty() {
+        for symbol in PYTHON_EXPORTED_SYMBOLS {
+            if !context
+                .libpython_exported_symbols
+                .contains(&symbol.to_string())
+            {
+                context
+                    .errors
+                    .push(format!("libpython does not export {}", symbol));
+            }
         }
     }
 

@@ -279,6 +279,7 @@ i686-unknown-linux-gnu:
   target_cc: clang
   target_cflags:
     - '-m32'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-m32'
   needs:
@@ -606,6 +607,8 @@ x86_64-unknown-linux-gnu:
   host_cc: clang
   host_cxx: clang++
   target_cc: clang
+  target_cflags:
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils
@@ -644,6 +647,7 @@ x86_64_v2-unknown-linux-gnu:
   target_cc: clang
   target_cflags:
     - '-march=x86-64-v2'
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils
@@ -682,6 +686,7 @@ x86_64_v3-unknown-linux-gnu:
   target_cc: clang
   target_cflags:
     - '-march=x86-64-v3'
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils
@@ -720,6 +725,7 @@ x86_64_v4-unknown-linux-gnu:
   target_cc: clang
   target_cflags:
     - '-march=x86-64-v4'
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils
@@ -756,6 +762,8 @@ x86_64-unknown-linux-musl:
   host_cc: clang
   host_cxx: clang++
   target_cc: musl-clang
+  target_cflags:
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils
@@ -795,6 +803,7 @@ x86_64_v2-unknown-linux-musl:
   target_cc: musl-clang
   target_cflags:
     - '-march=x86-64-v2'
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils
@@ -834,6 +843,7 @@ x86_64_v3-unknown-linux-musl:
   target_cc: musl-clang
   target_cflags:
     - '-march=x86-64-v3'
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils
@@ -873,6 +883,7 @@ x86_64_v4-unknown-linux-musl:
   target_cc: musl-clang
   target_cflags:
     - '-march=x86-64-v4'
+    - '-fvisibility=hidden'
   needs:
     - bdb
     - binutils

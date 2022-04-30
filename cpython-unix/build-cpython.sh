@@ -682,6 +682,17 @@ fi
 # So we need to set both.
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
 LDFLAGS="${EXTRA_TARGET_LDFLAGS} -L${TOOLS_PATH}/deps/lib"
+
+# Some target configurations use `-fvisibility=hidden`. Python's configure handles
+# symbol visibility properly itself. So let it do its thing.
+CFLAGS=${CFLAGS//-fvisibility=hidden/}
+
+# But some symbols from some dependency libraries are still non-hidden for some
+# reason. We force the linker to do our bidding.
+if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+    LDFLAGS="${LDFLAGS} -Wl,--exclude-libs,ALL"
+fi
+
 EXTRA_CONFIGURE_FLAGS=
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
