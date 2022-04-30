@@ -90,10 +90,8 @@ cmake \
     -DCMAKE_CXX_FLAGS="-Wno-cast-function-type" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions" \
-    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
+    -DLLVM_ENABLE_PROJECTS="clang" \
     -DLLVM_TARGETS_TO_BUILD=X86 \
-    -DLLVM_TOOL_LIBCXX_BUILD=ON \
-    -DLIBCXX_LIBCPPABI_VERSION="" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
@@ -127,10 +125,8 @@ cmake \
     -DCMAKE_CXX_FLAGS="-fPIC -Qunused-arguments -L/tools/clang-stage1/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage1/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage1/lib" \
-    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
+    -DLLVM_ENABLE_PROJECTS="clang" \
     -DLLVM_TARGETS_TO_BUILD=X86 \
-    -DLLVM_TOOL_LIBCXX_BUILD=ON \
-    -DLIBCXX_LIBCPPABI_VERSION="" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
@@ -169,12 +165,15 @@ cmake \
     -DCMAKE_CXX_FLAGS="-fPIC -Qunused-arguments -L/tools/clang-stage2/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
-    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
-    -DLLVM_TOOL_LIBCXX_BUILD=ON \
-    -DLIBCXX_LIBCPPABI_VERSION="" \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
+    -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+    -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+    -DCOMPILER_RT_BUILD_MEMPROF=OFF \
+    -DCOMPILER_RT_BUILD_ORC=OFF \
+    -DCOMPILER_RT_BUILD_XRAY=OFF \
     ${EXTRA_FLAGS} \
     ../../llvm/llvm
 
