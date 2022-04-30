@@ -90,6 +90,7 @@ cmake \
     -DCMAKE_CXX_FLAGS="-Wno-cast-function-type" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions" \
+    -DLLVM_BUILD_TOOLS=OFF \
     -DLLVM_ENABLE_PROJECTS="clang" \
     -DLLVM_TARGETS_TO_BUILD=X86 \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
@@ -125,6 +126,7 @@ cmake \
     -DCMAKE_CXX_FLAGS="-fPIC -Qunused-arguments -L/tools/clang-stage1/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage1/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage1/lib" \
+    -DLLVM_BUILD_TOOLS=OFF \
     -DLLVM_ENABLE_PROJECTS="clang" \
     -DLLVM_TARGETS_TO_BUILD=X86 \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
@@ -169,6 +171,8 @@ cmake \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
+    -DLLVM_TARGETS_TO_BUILD=X86 \
+    -DCOMPILER_RT_BUILD_BUILTINS=OFF \
     -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
     -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
     -DCOMPILER_RT_BUILD_MEMPROF=OFF \
