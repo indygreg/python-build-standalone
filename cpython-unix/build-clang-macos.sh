@@ -40,7 +40,7 @@ cmake \
     -DCMAKE_C_COMPILER=/usr/bin/clang \
     -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
     -DCMAKE_ASM_COMPILER=/usr/bin/clang \
-    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi;lld" \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libcxx;libcxxabi" \
     -DLLVM_ENABLE_LIBCXX=ON \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \

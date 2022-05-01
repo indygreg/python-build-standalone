@@ -167,7 +167,7 @@ cmake \
     -DCMAKE_CXX_FLAGS="-fPIC -Qunused-arguments -L/tools/clang-stage2/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
     -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic-functions -L/tools/clang-stage2/lib" \
-    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" \
     -DLLVM_BINUTILS_INCDIR=/tools/host/include \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_INSTALL_UTILS=ON \
