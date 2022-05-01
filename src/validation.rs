@@ -17,7 +17,7 @@ use {
             macho::{LoadCommandVariant, MachHeader, Nlist},
             pe::{ImageNtHeaders, PeFile, PeFile32, PeFile64},
         },
-        Endianness, FileKind, SectionIndex,
+        Endianness, FileKind, SectionIndex, SymbolScope,
     },
     once_cell::sync::Lazy,
     std::{
@@ -825,6 +825,7 @@ struct MachOSymbol {
 fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     context: &mut ValidationContext,
     target_triple: &str,
+    python_major_minor: &str,
     path: &Path,
     header: &Mach,
     bytes: &[u8],
@@ -907,6 +908,55 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                             library_ordinal: symbol.library_ordinal(endian),
                             weak: symbol.n_desc(endian) & (object::macho::N_WEAK_REF) != 0,
                         });
+                    }
+
+                    // Ensure specific symbols in dynamic binaries have proper visibility.
+                    // Read: we don't want to export symbols from dependencies.
+                    if header.filetype(endian) != MH_OBJECT {
+                        let n_type = symbol.n_type();
+
+                        let scope = if n_type & object::macho::N_TYPE == object::macho::N_UNDF {
+                            SymbolScope::Unknown
+                        } else if n_type & object::macho::N_EXT == 0 {
+                            SymbolScope::Compilation
+                        } else if n_type & object::macho::N_PEXT != 0 {
+                            SymbolScope::Linkage
+                        } else {
+                            SymbolScope::Dynamic
+                        };
+
+                        let search_name = if let Some(v) = name.strip_prefix('_') {
+                            v
+                        } else {
+                            name.as_str()
+                        };
+
+                        // Python 3.8 exports ffi symbols for legacy reasons.
+                        let is_exception = name == "_ffi_type_void" && python_major_minor == "3.8";
+
+                        if DEPENDENCY_PACKAGE_SYMBOLS.contains(&search_name)
+                            && scope == SymbolScope::Dynamic
+                            && !is_exception
+                        {
+                            context.errors.push(format!(
+                                "{} contains dynamic symbol from dependency {}",
+                                path.display(),
+                                name
+                            ));
+                        }
+
+                        if let Some(filename) = path.file_name() {
+                            let filename = filename.to_string_lossy();
+
+                            if filename.starts_with("libpython")
+                                && filename.ends_with(".dylib")
+                                && scope == SymbolScope::Dynamic
+                            {
+                                context
+                                    .libpython_exported_symbols
+                                    .insert(search_name.to_string());
+                            }
+                        }
                     }
                 }
             }
@@ -1011,12 +1061,26 @@ fn validate_possible_object_file(
             FileKind::MachO32 => {
                 let header = MachHeader32::parse(data, 0)?;
 
-                validate_macho(&mut context, triple, path.as_ref(), header, &data)?;
+                validate_macho(
+                    &mut context,
+                    triple,
+                    python_major_minor,
+                    path.as_ref(),
+                    header,
+                    &data,
+                )?;
             }
             FileKind::MachO64 => {
                 let header = MachHeader64::parse(data, 0)?;
 
-                validate_macho(&mut context, triple, path.as_ref(), header, &data)?;
+                validate_macho(
+                    &mut context,
+                    triple,
+                    python_major_minor,
+                    path.as_ref(),
+                    header,
+                    &data,
+                )?;
             }
             FileKind::MachOFat32 | FileKind::MachOFat64 => {
                 if path.to_string_lossy() != "python/build/lib/libclang_rt.osx.a" {

@@ -78,6 +78,7 @@ aarch64-apple-darwin:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'arm64'
@@ -117,6 +118,7 @@ aarch64-apple-ios:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'arm64'
@@ -187,6 +189,7 @@ arm64-apple-tvos:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'arm64'
@@ -434,6 +437,7 @@ thumb7k-apple-watchos:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'armv7k'
@@ -475,6 +479,7 @@ x86_64-apple-darwin:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'x86_64'
@@ -514,6 +519,7 @@ x86_64-apple-ios:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'x86_64'
@@ -550,6 +556,7 @@ x86_64-apple-tvos:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'x86_64'
@@ -585,6 +592,7 @@ x86_64-apple-watchos:
     # to work with the macOS SDKs out of the box. We work around
     # this by undoing the -Werror=undef-prefix in that commit.
     - '-Wno-undef-prefix'
+    - '-fvisibility=hidden'
   target_ldflags:
     - '-arch'
     - 'x86_64'

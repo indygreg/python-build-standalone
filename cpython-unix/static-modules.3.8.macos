@@ -3,22 +3,22 @@
 # setup.py and what was observed to execute in a normal build via setup.py.
 # We should audit this every time we upgrade CPython.
 
-_bz2 _bz2module.c -lbz2
+_bz2 _bz2module.c -Xlinker -hidden-lbz2
 _crypt _cryptmodule.c
 # We link against the system ncurses on macOS for simplicity. There is no ncursesw
 # but it is Unicode aware.
-_curses _cursesmodule.c -DHAVE_NCURSESW=1 -D_XOPEN_SOURCE_EXTENDED=1 -lncurses
-_curses_panel _curses_panel.c -DHAVE_NCURSESW=1 -D_XOPEN_SOURCE_EXTENDED=1 -lpanel -lncurses
-_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/darwin/dlfcn_simple.c _ctypes/malloc_closure.c _ctypes/stgdict.c _ctypes/cfield.c -DMACOSX -DUSING_MALLOC_CLOSURE_DOT_C=1 -DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1 -I_ctypes/darwin -lffi -ldl
+_curses _cursesmodule.c -DHAVE_NCURSESW=1 -D_XOPEN_SOURCE_EXTENDED=1 -Xlinker -hidden-lncurses
+_curses_panel _curses_panel.c -DHAVE_NCURSESW=1 -D_XOPEN_SOURCE_EXTENDED=1 -Xlinker -hidden-lpanel -Xlinker -hidden-lncurses
+_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/darwin/dlfcn_simple.c _ctypes/malloc_closure.c _ctypes/stgdict.c _ctypes/cfield.c -DMACOSX -DUSING_MALLOC_CLOSURE_DOT_C=1 -DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1 -I_ctypes/darwin -Xlinker -hidden-lffi -ldl
 _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/constants.c _decimal/libmpdec/context.c _decimal/libmpdec/convolute.c _decimal/libmpdec/crt.c _decimal/libmpdec/difradix2.c _decimal/libmpdec/fnt.c _decimal/libmpdec/fourstep.c _decimal/libmpdec/io.c _decimal/libmpdec/memory.c _decimal/libmpdec/mpdecimal.c _decimal/libmpdec/numbertheory.c _decimal/libmpdec/sixstep.c _decimal/libmpdec/transpose.c -DUNIVERSAL=1 -IModules/_decimal/libmpdec
 # macOS ships with an ndbm implementation in libSystem. CPython's setup.py will
 # use it unless an ndbl or gdbm_compat library is present.
 _dbm _dbmmodule.c -DHAVE_NDBM_H
 _elementtree _elementtree.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
-_hashlib _hashopenssl.c -lssl -lcrypto
+_hashlib _hashopenssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 _json _json.c
 _lsprof _lsprof.c rotatingtree.c
-_lzma _lzmamodule.c -llzma
+_lzma _lzmamodule.c -Xlinker -hidden-llzma
 # TODO check setup.py logic for semaphore.c and possibly fix missing
 # dependency.
 _multiprocessing _multiprocessing/multiprocessing.c _multiprocessing/semaphore.c
@@ -26,10 +26,10 @@ _opcode _opcode.c
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing
 _queue _queuemodule.c
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
-_sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -lsqlite3
-_ssl _ssl.c -lssl -lcrypto
+_sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -Xlinker -hidden-lsqlite3
+_ssl _ssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 # CoreFoundation isn't a directory dependency but is a dependency of libtcl and libtk.
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -framework QuartzCore -ltcl8.6 -ltk8.6
-_uuid _uuidmodule.c -luuid
+_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -framework QuartzCore -Xlinker -hidden-ltcl8.6 -Xlinker -hidden-ltk8.6
+_uuid _uuidmodule.c -Xlinker -hidden-luuid
 pyexpat pyexpat.c expat/xmlparse.c expat/xmlrole.c expat/xmltok.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
-readline readline.c -ledit -lncurses
+readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses
