@@ -18,6 +18,7 @@ use {
         io::Read,
         path::PathBuf,
     },
+    url::Url,
     zip::ZipArchive,
 };
 
@@ -42,7 +43,7 @@ async fn upload_release_artifact(
         return Ok(());
     }
 
-    let mut url = release.upload_url.clone();
+    let mut url = Url::parse(&release.upload_url)?;
     let path = url.path().to_string();
 
     if let Some(path) = path.strip_suffix("%7B") {

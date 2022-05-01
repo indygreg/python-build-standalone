@@ -29,6 +29,7 @@ tempfile = "3"
 text-stub-library = { git = "https://github.com/indygreg/PyOxidizer.git", rev = "3468a52340fccc547c1d62456db570aeb0663d8e" }
 tokio = "1"
 tugger-apple = { git = "https://github.com/indygreg/PyOxidizer.git", rev = "3468a52340fccc547c1d62456db570aeb0663d8e" }
+url = "2"
 version-compare = "0"
 zip = "0"
 zstd = "0"
