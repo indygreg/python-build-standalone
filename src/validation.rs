@@ -11,7 +11,7 @@ use {
             FileHeader32, FileHeader64, ET_DYN, ET_EXEC, STB_GLOBAL, STB_WEAK, STV_DEFAULT,
             STV_HIDDEN,
         },
-        macho::{MachHeader32, MachHeader64},
+        macho::{MachHeader32, MachHeader64, MH_OBJECT, MH_TWOLEVEL},
         read::{
             elf::{Dyn, FileHeader, SectionHeader, Sym},
             macho::{LoadCommandVariant, MachHeader, Nlist},
@@ -848,6 +848,13 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
         ));
     }
 
+    if header.filetype(endian) != MH_OBJECT && header.flags(endian) & MH_TWOLEVEL == 0 {
+        context.errors.push(format!(
+            "{} does not use two-level symbol lookup",
+            path.display()
+        ));
+    }
+
     let mut load_commands = header.load_commands(endian, bytes, 0)?;
 
     let mut dylib_names = vec![];
@@ -909,7 +916,7 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
 
     // Don't perform undefined symbol analysis for object files because the object file
     // in isolation lacks context.
-    if header.filetype(endian) != object::macho::MH_OBJECT {
+    if header.filetype(endian) != MH_OBJECT {
         for symbol in undefined_symbols {
             // Assume undefined symbols provided by current library will resolve.
             if symbol.library_ordinal == object::macho::SELF_LIBRARY_ORDINAL {
