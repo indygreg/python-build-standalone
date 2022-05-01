@@ -765,7 +765,7 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # the detriment of performance. However, we can actually use the symbols
     # on aarch64 because it targets macOS SDK 11.0, not 10.9.
     if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" && "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]]; then
-        for symbol in clock_getres clock_gettime clock_settime faccessat fchmodat fchownat fdopendir fstatat getentropy linkat mkdirat openat preadv pwritev readlinkat renameat symlinkat unlinkat; do
+        for symbol in clock_getres clock_gettime clock_settime faccessat fchmodat fchownat fdopendir fstatat futimens getentropy linkat mkdirat openat preadv pwritev readlinkat renameat symlinkat unlinkat utimensat; do
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"
         done
     fi
@@ -827,14 +827,6 @@ fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
     ./configure ${CONFIGURE_FLAGS}
-
-# configure checks for the presence of functions and blindly uses them,
-# even if they aren't available in the target macOS SDK. Work around that.
-# But only on Python 3.8, as Python 3.9.1 improved this functionality.
-if [[ "${PYBUILD_PLATFORM}" = "macos" && "${PYTHON_MAJMIN_VERSION}" = "3.8" ]]; then
-    sed -i "" "s/#define HAVE_UTIMENSAT 1//g" pyconfig.h
-    sed -i "" "s/#define HAVE_FUTIMENS 1//g" pyconfig.h
-fi
 
 # Supplement produced Makefile with our modifications.
 cat ../Makefile.extra >> Makefile
