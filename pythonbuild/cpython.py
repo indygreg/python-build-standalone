@@ -130,6 +130,9 @@ def parse_setup_line(line: bytes, variant: str):
         elif word.startswith(b"-l"):
             links.add(word[2:].decode("ascii"))
 
+        elif word.startswith(b"-hidden-l"):
+            links.add(word[len("-hidden-l") :].decode("ascii"))
+
         elif word == b"-framework":
             frameworks.add(words[i + 1].decode("ascii"))
 
