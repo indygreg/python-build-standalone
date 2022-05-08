@@ -39,45 +39,6 @@ jobs:
           name: pythonbuild
           path: target/release/pythonbuild
 
-  toolchain:
-    runs-on: 'ubuntu-20.04'
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      SCCACHE_BUCKET: 'python-build-standalone-sccache'
-      SCCACHE_S3_USE_SSL: '1'
-      SCCACHE_IDLE_TIMEOUT: '0'
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Install sccache
-        run: |
-          curl --location --insecure https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-unknown-linux-musl.tar.gz > sccache.tar.gz
-          echo "e6cd8485f93d683a49c83796b9986f090901765aa4feb40d191b03ea770311d8  sccache.tar.gz" | sha256sum -c
-          tar -xvf sccache.tar.gz
-          mv sccache-*/sccache .
-          chmod +x sccache
-          ./sccache --start-server
-
-      - name: Build
-        run: |
-          python3.9 ./build-linux.py --make-target toolchain
-
-      - name: Stop sccache
-        run: |
-          ./sccache -s
-
-      - name: Upload Toolchain Archive
-        uses: actions/upload-artifact@v3
-        with:
-          name: toolchain
-          path: build/*.tar
-
   build:
     strategy:
       fail-fast: false
@@ -456,7 +417,6 @@ jobs:
 
     needs:
       - pythonbuild
-      - toolchain
     runs-on: 'ubuntu-20.04'
     steps:
       - uses: actions/checkout@v3
@@ -474,15 +434,9 @@ jobs:
           name: pythonbuild
           path: build
 
-      - name: Download toolchain
-        uses: actions/download-artifact@v3
-        with:
-          name: toolchain
-          path: build
-
       - name: Build
         run: |
-          ./build-linux.py --skip-toolchain --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
+          ./build-linux.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
       - name: Validate Distribution
         run: |

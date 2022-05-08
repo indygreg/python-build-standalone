@@ -113,9 +113,7 @@ Command Prompt`` instead of ``x64``.
 Using sccache to Speed up Builds
 ================================
 
-Builds can take a long time. The bulk of the CPU time is bootstrapping a modern
-Clang toolchain, which requires building a modern GCC then potentially doing
-a 3 stage bootstrap of Clang.
+Builds can take a long time.
 
 python-build-standalone can automatically detect and use the
 `sccache <https://github.com/mozilla/sccache>`_ compiler cache to speed

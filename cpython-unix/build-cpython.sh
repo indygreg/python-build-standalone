@@ -735,7 +735,7 @@ if [ "${CC}" = "musl-clang" ]; then
     # provided by musl. These are part of the include files that are part of clang.
     # But musl-clang eliminates them from the default include path. So copy them into
     # place.
-    for h in /tools/clang-linux64/lib/clang/*/include/*intrin.h /tools/clang-linux64/lib/clang/*/include/{__wmmintrin_aes.h,__wmmintrin_pclmul.h,mm_malloc.h}; do
+    for h in /tools/${TOOLCHAIN}/lib/clang/*/include/*intrin.h /tools/${TOOLCHAIN}/lib/clang/*/include/{__wmmintrin_aes.h,__wmmintrin_pclmul.h,mm_malloc.h}; do
         filename=$(basename "$h")
         if [ -e "/tools/host/include/${filename}" ]; then
             echo "${filename} already exists; don't need to copy!"

@@ -289,7 +289,6 @@ i686-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
-    - gcc
     # TODO cross-compiling has issues.
     # - gdbm
     - libedit
@@ -621,7 +620,6 @@ x86_64-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi
@@ -660,7 +658,6 @@ x86_64_v2-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi
@@ -699,7 +696,6 @@ x86_64_v3-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi
@@ -738,7 +734,6 @@ x86_64_v4-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi
@@ -776,7 +771,6 @@ x86_64-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi
@@ -816,7 +810,6 @@ x86_64_v2-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi
@@ -856,7 +849,6 @@ x86_64_v3-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi
@@ -896,7 +888,6 @@ x86_64_v4-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
-    - gcc
     - gdbm
     - libedit
     - libffi

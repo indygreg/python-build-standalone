@@ -82,11 +82,6 @@ def main():
         help="Build packages serially, without parallelism",
     )
     parser.add_argument(
-        "--skip-toolchain",
-        action="store_true",
-        help="Skip building the toolchain (requires a tar file in expected location)",
-    )
-    parser.add_argument(
         "--make-target",
         choices={"default", "toolchain"},
         default="default",
@@ -121,8 +116,6 @@ def main():
         env["PYBUILD_BREAK_ON_FAILURE"] = "1"
     if args.no_docker:
         env["PYBUILD_NO_DOCKER"] = "1"
-    if args.skip_toolchain:
-        env["PYBUILD_SKIP_TOOLCHAIN"] = "1"
 
     entry = DOWNLOADS[args.python]
     env["PYBUILD_PYTHON_VERSION"] = entry["version"]

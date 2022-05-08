@@ -26,9 +26,9 @@ make -j `nproc` install DESTDIR=${ROOT}/out
 # the defaults of the OS may be used, which would be too old. We run the
 # patched binary afterwards to verify it works without LD_LIBRARY_PATH
 # modification.
-if [ -d /tools/clang-linux64/lib ]; then
-    LD_LIBRARY_PATH=/tools/clang-linux64/lib src/patchelf --replace-needed libstdc++.so.6 /tools/clang-linux64/lib/libstdc++.so.6 ${ROOT}/out/tools/host/bin/patchelf
-    LD_LIBRARY_PATH=/tools/clang-linux64/lib src/patchelf --replace-needed libgcc_s.so.1 /tools/clang-linux64/lib/libgcc_s.so.1 ${ROOT}/out/tools/host/bin/patchelf
+if [ -d /tools/${TOOLCHAIN}/lib ]; then
+    LD_LIBRARY_PATH=/tools/${TOOLCHAIN}/lib src/patchelf --replace-needed libstdc++.so.6 /tools/${TOOLCHAIN}/lib/libstdc++.so.6 ${ROOT}/out/tools/host/bin/patchelf
+    LD_LIBRARY_PATH=/tools/${TOOLCHAIN}/lib src/patchelf --replace-needed libgcc_s.so.1 /tools/${TOOLCHAIN}/lib/libgcc_s.so.1 ${ROOT}/out/tools/host/bin/patchelf
 fi
 
 ${ROOT}/out/tools/host/bin/patchelf --version

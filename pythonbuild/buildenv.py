@@ -15,6 +15,7 @@ from .docker import container_exec, container_get_archive, copy_file_to_containe
 from .downloads import DOWNLOADS
 from .logging import log
 from .utils import (
+    clang_toolchain,
     create_tar_from_directory,
     exec_and_log,
     extract_tar_to_directory,
@@ -66,18 +67,16 @@ class ContainerContext(object):
         build_dir,
         host_platform,
         binutils=False,
-        gcc=False,
         musl=False,
         clang=False,
     ):
         if binutils:
             self.install_toolchain_archive(build_dir, "binutils", host_platform)
 
-        if gcc:
-            self.install_toolchain_archive(build_dir, "gcc", host_platform)
-
         if clang:
-            self.install_toolchain_archive(build_dir, "clang", host_platform)
+            self.install_toolchain_archive(
+                build_dir, clang_toolchain(host_platform), host_platform
+            )
 
         if musl:
             self.install_toolchain_archive(build_dir, "musl", host_platform)
@@ -178,16 +177,15 @@ class TempdirContext(object):
         extract_tar_to_directory(p, dest_path)
 
     def install_toolchain(
-        self, build_dir, platform, binutils=False, gcc=False, musl=False, clang=False
+        self, build_dir, platform, binutils=False, musl=False, clang=False
     ):
         if binutils:
             self.install_toolchain_archive(build_dir, "binutils", platform)
 
-        if gcc:
-            self.install_toolchain_archive(build_dir, "gcc", platform)
-
         if clang:
-            self.install_toolchain_archive(build_dir, "clang", platform)
+            self.install_toolchain_archive(
+                build_dir, clang_toolchain(platform), platform
+            )
 
         if musl:
             self.install_toolchain_archive(build_dir, "musl", platform)

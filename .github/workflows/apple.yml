@@ -34,45 +34,6 @@ jobs:
           name: pythonbuild
           path: target/release/pythonbuild
 
-  toolchain:
-    runs-on: 'macos-11'
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      SCCACHE_BUCKET: 'python-build-standalone-sccache'
-      SCCACHE_S3_USE_SSL: '1'
-      SCCACHE_IDLE_TIMEOUT: '0'
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Install sccache
-        run: |
-          curl --location --insecure https://github.com/mozilla/sccache/releases/download/v0.3.0/sccache-v0.3.0-x86_64-apple-darwin.tar.gz > sccache.tar.gz
-          echo "61c16fd36e32cdc923b66e4f95cb367494702f60f6d90659af1af84c3efb11eb  sccache.tar.gz" | shasum -a 256 -c
-          tar -xvf sccache.tar.gz
-          mv sccache-*/sccache .
-          chmod +x sccache
-          ./sccache --start-server
-
-      - name: Build
-        run: |
-          python3.9 ./build-macos.py --make-target toolchain
-
-      - name: Stop sccache
-        run: |
-          ./sccache -s
-
-      - name: Upload Toolchain Archive
-        uses: actions/upload-artifact@v3
-        with:
-          name: toolchain
-          path: build/clang-*.tar
-
   build:
     strategy:
       fail-fast: false
@@ -177,7 +138,6 @@ jobs:
             optimizations: 'lto'
     needs:
       - pythonbuild
-      - toolchain
     runs-on: 'macos-11'
     steps:
       - uses: actions/checkout@v3
@@ -193,12 +153,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: pythonbuild
-          path: build
-
-      - name: Download toolchain
-        uses: actions/download-artifact@v3
-        with:
-          name: toolchain
           path: build
 
       - name: Build
@@ -218,7 +172,7 @@ jobs:
             exit 1
           fi
 
-          ./build-macos.py --skip-toolchain --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
+          ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
       - uses: actions/checkout@v3
         with:

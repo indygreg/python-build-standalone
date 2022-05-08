@@ -14,6 +14,7 @@ import sys
 import tempfile
 
 import docker
+import zstandard
 
 from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import (
@@ -28,6 +29,7 @@ from pythonbuild.logging import log, set_logger
 from pythonbuild.utils import (
     add_env_common,
     add_licenses_to_extension_entry,
+    clang_toolchain,
     download_entry,
     get_targets,
     get_target_settings,
@@ -84,6 +86,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
 
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
+    env["TOOLCHAIN"] = "llvm"
     env["HOST_CC"] = settings["host_cc"]
     env["HOST_CXX"] = settings["host_cxx"]
     env["CC"] = settings["target_cc"]
@@ -246,7 +249,6 @@ def simple_build(
         build_env.copy_file(SUPPORT / ("build-%s.sh" % entry))
 
         env = {
-            "TOOLCHAIN": "clang-%s" % host_platform,
             "%s_VERSION" % entry.upper().replace("-", "_"): DOWNLOADS[entry]["version"],
         }
 
@@ -285,88 +287,20 @@ def build_binutils(client, image, host_platform):
         )
 
 
-def build_gcc(client, image, host_platform):
-    """Build GCC in the Docker image."""
-    gcc_archive = download_entry("gcc", DOWNLOADS_PATH)
-    gmp_archive = download_entry("gmp", DOWNLOADS_PATH)
-    isl_archive = download_entry("isl", DOWNLOADS_PATH)
-    mpc_archive = download_entry("mpc", DOWNLOADS_PATH)
-    mpfr_archive = download_entry("mpfr", DOWNLOADS_PATH)
+def materialize_clang(host_platform):
+    entry = clang_toolchain(host_platform)
+    tar_zst = download_entry(entry, DOWNLOADS_PATH)
+    local_filename = "%s-%s-%s.tar" % (
+        entry,
+        DOWNLOADS[entry]["version"],
+        host_platform,
+    )
 
-    with build_environment(client, image) as build_env:
-        install_sccache(build_env)
+    dctx = zstandard.ZstdDecompressor()
 
-        log("copying archives to container...")
-        for a in (gcc_archive, gmp_archive, isl_archive, mpc_archive, mpfr_archive):
-            build_env.copy_file(a)
-
-        build_env.copy_file(toolchain_archive_path("binutils", host_platform))
-        build_env.copy_file(SUPPORT / "sccache-wrapper.sh")
-        build_env.copy_file(SUPPORT / "build-gcc.sh")
-
-        env = {
-            "BINUTILS_VERSION": DOWNLOADS["binutils"]["version"],
-            "GCC_VERSION": DOWNLOADS["gcc"]["version"],
-            "GMP_VERSION": DOWNLOADS["gmp"]["version"],
-            "ISL_VERSION": DOWNLOADS["isl"]["version"],
-            "MPC_VERSION": DOWNLOADS["mpc"]["version"],
-            "MPFR_VERSION": DOWNLOADS["mpfr"]["version"],
-        }
-
-        add_env_common(env)
-
-        build_env.run("build-gcc.sh", environment=env)
-
-        build_env.get_tools_archive(
-            toolchain_archive_path("gcc", host_platform), "host"
-        )
-
-
-def build_clang(client, image, host_platform):
-    if "linux" in host_platform:
-        cmake_archive = download_entry("cmake-linux-bin", DOWNLOADS_PATH)
-        ninja_archive = download_entry("ninja-linux-bin", DOWNLOADS_PATH)
-    elif "macos" in host_platform:
-        cmake_archive = download_entry("cmake-macos-bin", DOWNLOADS_PATH)
-        ninja_archive = download_entry("ninja-macos-bin", DOWNLOADS_PATH)
-
-    llvm_archive = download_entry("clang", DOWNLOADS_PATH)
-    python_archive = download_entry("cpython-3.9", DOWNLOADS_PATH)
-
-    with build_environment(client, image) as build_env:
-        install_sccache(build_env)
-
-        log("copying archives to container...")
-        for a in (
-            cmake_archive,
-            ninja_archive,
-            llvm_archive,
-            python_archive,
-        ):
-            build_env.copy_file(a)
-
-        tools_path = "clang-%s" % host_platform
-        build_sh = "build-clang-%s.sh" % host_platform
-        binutils = install_binutils(host_platform)
-        gcc = binutils
-
-        env = {
-            "CMAKE_VERSION": DOWNLOADS["cmake-linux-bin"]["version"],
-            "GCC_VERSION": DOWNLOADS["gcc"]["version"],
-            "CLANG_VERSION": DOWNLOADS["clang"]["version"],
-            "PYTHON_VERSION": DOWNLOADS["cpython-3.9"]["version"],
-        }
-
-        add_env_common(env)
-
-        build_env.install_toolchain(BUILD, host_platform, binutils=binutils, gcc=gcc)
-
-        build_env.copy_file(SUPPORT / build_sh)
-        build_env.run(build_sh, environment=env)
-
-        build_env.get_tools_archive(
-            toolchain_archive_path("clang", host_platform), tools_path
-        )
+    with open(tar_zst, "rb") as ifh:
+        with open(BUILD / local_filename, "wb") as ofh:
+            dctx.copy_stream(ifh, ofh)
 
 
 def build_musl(client, image, host_platform):
@@ -379,7 +313,7 @@ def build_musl(client, image, host_platform):
 
         env = {
             "MUSL_VERSION": DOWNLOADS["musl"]["version"],
-            "TOOLCHAIN": "clang-%s" % host_platform,
+            "TOOLCHAIN": "llvm",
         }
 
         build_env.run("build-musl.sh", environment=env)
@@ -411,7 +345,6 @@ def build_libedit(
         build_env.copy_file(SUPPORT / "build-libedit.sh")
 
         env = {
-            "TOOLCHAIN": "clang-%s" % host_platform,
             "LIBEDIT_VERSION": DOWNLOADS["libedit"]["version"],
         }
 
@@ -527,7 +460,9 @@ def python_build_info(
             )
 
         if optimizations in ("lto", "pgo+lto"):
-            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["clang"]["version"]
+            object_file_format = (
+                "llvm-bitcode:%s" % DOWNLOADS["llvm-x86_64-linux"]["version"]
+            )
         else:
             object_file_format = "elf"
     elif platform == "macos":
@@ -542,7 +477,9 @@ def python_build_info(
         )
 
         if optimizations in ("lto", "pgo+lto"):
-            object_file_format = "llvm-bitcode:%s" % DOWNLOADS["clang"]["version"]
+            object_file_format = (
+                "llvm-bitcode:%s" % DOWNLOADS["llvm-aarch64-macos"]["version"]
+            )
         else:
             object_file_format = "mach-o"
     else:
@@ -798,8 +735,6 @@ def build_cpython(
         packages = target_needs(TARGETS_CONFIG, target_triple, python_version)
         # Toolchain packages are handled specially.
         packages.discard("binutils")
-        packages.discard("clang")
-        packages.discard("gcc")
         packages.discard("musl")
 
         for p in sorted(packages):
@@ -1044,14 +979,7 @@ def main():
             build_binutils(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)
 
         elif action == "clang":
-            build_clang(
-                client,
-                get_image(client, ROOT, BUILD, "clang"),
-                host_platform=host_platform,
-            )
-
-        elif action == "gcc":
-            build_gcc(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)
+            materialize_clang(host_platform)
 
         elif action == "musl":
             build_musl(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)

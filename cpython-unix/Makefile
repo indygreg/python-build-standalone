@@ -50,8 +50,7 @@ $(shell $(RUN_BUILD) placeholder_archive dockerfiles)
 
 BASE_TOOLCHAIN_DEPENDS := \
     $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar) \
-    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar) \
-    $(OUTDIR)/clang-$(CLANG_VERSION)-$(HOST_PLATFORM).tar \
+    $(OUTDIR)/$(CLANG_FILENAME) \
     $(NULL)
 
 TOOLCHAIN_DEPENDS := \
@@ -62,7 +61,7 @@ TOOLCHAIN_DEPENDS := \
 PYTHON_DEP_DEPENDS := \
     $(OUTDIR)/targets/$(TARGET_TRIPLE) \
     $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).tar) \
-    $(if $(PYBUILD_SKIP_TOOLCHAIN),,$(TOOLCHAIN_DEPENDS)) \
+    $(TOOLCHAIN_DEPENDS) \
     $(NULL)
 
 default: $(OUTDIR)/cpython-$(PYBUILD_PYTHON_VERSION)-$(PACKAGE_SUFFIX).tar
@@ -75,28 +74,7 @@ endif
 $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar: $(OUTDIR)/image-gcc.tar $(HERE)/build-binutils.sh
 	$(RUN_BUILD) --toolchain binutils
 
-GCC_DEPENDS := \
-    $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar \
-    $(OUTDIR)/versions/VERSION.gmp \
-    $(OUTDIR)/versions/VERSION.isl \
-    $(OUTDIR)/versions/VERSION.mpc \
-    $(OUTDIR)/versions/VERSION.mpfr \
-    $(HERE)/build-gcc.sh \
-    $(NULL)
-
-$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar: $(GCC_DEPENDS)
-	$(RUN_BUILD) --toolchain gcc
-
-CLANG_DEPENDS := \
-    $(if $(NEED_BINUTILS),$(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar) \
-    $(if $(NEED_GCC),$(OUTDIR)/gcc-$(GCC_VERSION)-$(HOST_PLATFORM).tar) \
-    $(if $(PYBUILD_NO_DOCKER),,$(OUTDIR)/image-clang.tar) \
-    $(OUTDIR)/versions/VERSION.cmake-linux-bin \
-    $(OUTDIR)/versions/VERSION.cmake-macos-bin \
-    $(HERE)/build-clang-$(HOST_PLATFORM).sh \
-    $(NULL)
-
-$(OUTDIR)/clang-$(CLANG_VERSION)-$(HOST_PLATFORM).tar: $(CLANG_DEPENDS)
+$(OUTDIR)/$(CLANG_FILENAME):
 	$(RUN_BUILD) --toolchain clang
 
 $(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
@@ -105,7 +83,7 @@ $(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $
 ifeq ($(HOST_PLATFORM),linux64)
     TOOLCHAIN_TARGET := $(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar
 else
-    TOOLCHAIN_TARGET := $(OUTDIR)/clang-$(CLANG_VERSION)-$(HOST_PLATFORM).tar
+    TOOLCHAIN_TARGET :=
 endif
 
 toolchain: $(TOOLCHAIN_TARGET)

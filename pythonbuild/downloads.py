@@ -28,24 +28,6 @@ DOWNLOADS = {
         "licenses": ["bzip2-1.0.6"],
         "license_file": "LICENSE.bzip2.txt",
     },
-    "clang": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.3/llvm-project-14.0.3.src.tar.xz",
-        "size": 105600488,
-        "sha256": "44d3e7a784d5cf805e72853bb03f218bd1058d448c03ca883dabbebc99204e0c",
-        "version": "14.0.3",
-    },
-    "cmake-linux-bin": {
-        "url": "https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-x86_64.tar.gz",
-        "size": 45998644,
-        "sha256": "f3c654b2e226b9d43369e0bd8487c51618d4dbe5a1af929dd32af7e6ca432d60",
-        "version": "3.23.1",
-    },
-    "cmake-macos-bin": {
-        "url": "https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-macos-universal.tar.gz",
-        "size": 70988516,
-        "sha256": "f794ed92ccb4e9b6619a77328f313497d7decf8fb7e047ba35a348b838e0e1e2",
-        "version": "3.23.1",
-    },
     "cpython-3.8": {
         "url": "https://www.python.org/ftp/python/3.8.13/Python-3.8.13.tar.xz",
         "size": 19023016,
@@ -73,12 +55,6 @@ DOWNLOADS = {
         "license_file": "LICENSE.cpython.txt",
         "python_tag": "cp310",
     },
-    "gcc": {
-        "url": "https://ftp.gnu.org/gnu/gcc/gcc-10.3.0/gcc-10.3.0.tar.xz",
-        "size": 76692288,
-        "sha256": "64f404c1a650f27fc33da242e1f2df54952e3963a49e06e73f6940f3223ac344",
-        "version": "10.3.0",
-    },
     "gdbm": {
         "url": "https://ftp.gnu.org/gnu/gdbm/gdbm-1.21.tar.gz",
         "size": 1005982,
@@ -88,24 +64,11 @@ DOWNLOADS = {
         "licenses": ["GPL-3.0-or-later"],
         "license_file": "LICENSE.gdbm.txt",
     },
-    # gmp 6.2 does not build on wheezy.
-    "gmp": {
-        "url": "https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz",
-        "size": 1946336,
-        "sha256": "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912",
-        "version": "6.1.2",
-    },
     "inputproto": {
         "url": "https://www.x.org/archive/individual/proto/inputproto-2.3.2.tar.gz",
         "size": 244334,
         "sha256": "10eaadd531f38f7c92ab59ef0708ca195caf3164a75c4ed99f0c04f2913f6ef3",
         "version": "2.3.2",
-    },
-    "isl": {
-        "url": "https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
-        "size": 1658291,
-        "sha256": "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b",
-        "version": "0.18",
     },
     "jom-windows-bin": {
         "url": "http://download.qt.io/official_releases/jom/jom_1_1_3.zip",
@@ -171,18 +134,23 @@ DOWNLOADS = {
         "licenses": ["MIT"],
         "license_file": "LICENSE.libxcb.txt",
     },
-    "mpc": {
-        "url": "http://www.multiprecision.org/downloads/mpc-1.0.3.tar.gz",
-        "size": 669925,
-        "sha256": "617decc6ea09889fb08ede330917a00b16809b8db88c29c31bfbb49cbf88ecc3",
-        "version": "1.0.3",
+    "llvm-x86_64-linux": {
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20220508/llvm-14.0.3+20220508-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
+        "size": 158614671,
+        "sha256": "04cb77c660f09df017a57738ae9635ef23a506024789f2f18da1304b45af2023",
+        "version": "14.0.3+20220508",
     },
-    # We seem to have problems building newer MPFR in Debian Jessie.
-    "mpfr": {
-        "url": "https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.6.tar.xz",
-        "size": 1133672,
-        "sha256": "7a62ac1a04408614fccdc506e4844b10cf0ad2c2b1677097f8f35d3a1344a950",
-        "version": "3.1.6",
+    "llvm-aarch64-macos": {
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20220508/llvm-14.0.3+20220508-aarch64-apple-darwin.tar.zst",
+        "size": 83392201,
+        "sha256": "d2464306e6acc8026c640b96bfd9eedb43d5ff3485127c4b70be88b4882adea2",
+        "version": "14.0.3+20220508",
+    },
+    "llvm-x86_64-macos": {
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20220508/llvm-14.0.3+20220508-x86_64-apple-darwin.tar.zst",
+        "size": 89818499,
+        "sha256": "f1f04eb156c43aa73514189302cecdb2376de6099542a616dd445838476628f7",
+        "version": "14.0.3+20220508",
     },
     "musl": {
         "url": "https://musl.libc.org/releases/musl-1.2.3.tar.gz",
@@ -198,18 +166,6 @@ DOWNLOADS = {
         "library_names": ["ncurses", "ncursesw", "panel", "panelw"],
         "licenses": ["X11"],
         "license_file": "LICENSE.ncurses.txt",
-    },
-    "ninja-linux-bin": {
-        "url": "https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-linux.zip",
-        "size": 103219,
-        "sha256": "763464859c7ef2ea3a0a10f4df40d2025d3bb9438fcb1228404640410c0ec22d",
-        "version": "1.10.2",
-    },
-    "ninja-macos-bin": {
-        "url": "https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-mac.zip",
-        "size": 234089,
-        "sha256": "6fa359f491fac7e5185273c6421a000eea6a2f0febf0ac03ac900bd4d80ed2a5",
-        "version": "1.10.2",
     },
     "openssl": {
         "url": "https://www.openssl.org/source/openssl-1.1.1n.tar.gz",

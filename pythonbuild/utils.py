@@ -10,6 +10,7 @@ import json
 import multiprocessing
 import os
 import pathlib
+import platform
 import stat
 import subprocess
 import sys
@@ -152,6 +153,12 @@ def write_triples_makefiles(
 
                 lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
                 lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
+
+                entry = clang_toolchain(host_platform)
+                lines.append(
+                    "CLANG_FILENAME := %s-%s-%s.tar\n"
+                    % (entry, DOWNLOADS[entry]["version"], host_platform)
+                )
 
                 for support_file in (
                     "disabled-static-modules",
@@ -385,6 +392,18 @@ def normalize_tar_archive(data: io.BytesIO) -> io.BytesIO:
     dest.seek(0)
 
     return dest
+
+
+def clang_toolchain(host_platform):
+    if host_platform == "linux64":
+        return "llvm-x86_64-linux"
+    elif host_platform == "macos":
+        if platform.mac_ver()[2] == "arm64":
+            return "llvm-aarch64-macos"
+        else:
+            return "llvm-x86_64-macos"
+    else:
+        raise Exception("unhandled host platform")
 
 
 def compress_python_archive(
