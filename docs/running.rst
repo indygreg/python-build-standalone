@@ -22,15 +22,112 @@ Published distributions vary by their:
 The Python version is hopefully pretty obvious.
 
 The target machine architecture defines the CPU type and operating
-system the distribution runs on. We use LLVM target triples.
+system the distribution runs on. We use LLVM target triples. If you aren't
+familiar with LLVM target triples, here is an overview:
+
+``aarch64-apple-darwin``
+   macOS ARM CPUs. i.e. M1 native binaries.
+
+``x86_64-apple-darwin``
+   macOS Intel CPUs.
+
+``i686-pc-windows-msvc``
+   Windows 32-bit Intel/AMD CPUs.
+
+``x86_64-pc-windows-msvc``
+   Windows 64-bit Intel/AMD CPUs.
+
+``*-windows-msvc-shared``
+   This is a standard build of Python for Windows. There are DLLs for
+   Python and extensions. These builds behave like the official Python
+   for Windows distributions.
+
+``*-windows-msvc-static``
+   These builds of Python are statically linked.
+
+   These builds are extremely brittle and have several known incompatibilities.
+   We recommend not using them unless you have comprehensive test coverage and
+   have confidence they work for your use case.
+
+   See :ref:`quirk_windows_static_distributions` for more.
+
+``x86_64-unknown-linux-gnu``
+   Linux 64-bit Intel/AMD CPUs linking against GNU libc.
+
+``x86_64-unknown-linux-musl``
+   Linux 64-bit Intel/AMD CPUs linking against musl libc.
+
+   These binaries are static and have no shared library dependencies.
+   A side-effect of static binaries is they cannot load Python ``.so``
+   extensions, as static binaries cannot load shared libraries.
+
+``aarch64-unknown-linux-*``
+   Similar to above except targeting Linux on ARM64 CPUs.
+
+   This is what you want for e.g. AWS Graviton EC2 instances. Many Linux
+   ARM devices are also ``aarch64``.
+
+``i686-unknown-linux-*``
+   Linux 32-bit Intel/AMD CPUs.
+
+``x86_64_v2-*``
+   Targets 64-bit Intel/AMD CPUs approximately newer than
+   `Nehalem <https://en.wikipedia.org/wiki/Nehalem_(microarchitecture)>`
+   (released in 2008).
+
+   Binaries will have SSE3, SSE4, and other CPU instructions added after the
+   ~initial x86-64 CPUs were launched in 2003.
+
+   Binaries will crash if you attempt to run them on an older CPU not
+   supporting the newer instructions.
+
+``x86_64_v3-*``
+   Targets 64-bit Intel/AMD CPUs approximately newer than
+   `Haswell <https://en.wikipedia.org/wiki/Haswell_(microarchitecture)>`
+   (released in 2013) and
+   `Excavator <https://en.wikipedia.org/wiki/Excavator_(microarchitecture)>`
+   (released in 2015).
+
+   Binaries will have AVX, AVX2, MOVBE and other newer CPU instructions.
+
+   Binaries will crash if you attempt to run them on an older CPU not
+   supporting the newer instructions.
+
+   Most x86-64 CPUs manufactured after 2013 (Intel) or 2015 (AMD) support
+   this microarchitecture level. An exception is Intel Atom P processors,
+   which Intel released in 2020 but did not include AVX.
+
+``x86_64_v4-*``
+   Targets 64-bit Intel/AMD CPUs with some AVX-512 instructions.
+
+   Requires Intel CPUs manufactured after ~2017. But many Intel CPUs don't
+   have AVX-512.
+
+The ``x86_64_v2``, ``x86_64_v3``, and ``x86_64_v4`` binaries usually crash
+on startup when run on an incompatible CPU. We don't recommend running the
+``x86_64_v4`` builds in production because they likely don't yield a reliable
+performance benefit. Unless you are executing these binaries on a CPU older
+than ~2008 or ~2013, we recommend running the ``x86_64_v2`` or ``x86_64_v3``
+binaries, as these should be slightly faster since they take advantage
+of more modern CPU instructions which are more efficient. But if you want
+maximum portability, stick with the baseline ``x86_64`` builds.
+
+We recommend using the ``*-windows-msvc-shared`` builds on Windows, as these
+are highly compatible with the official Python distributions.
+
+We recommend using the ``*-unknown-linux-gnu`` builds on Linux, since they
+are able to load compiled Python extensions. If you don't need to load
+compiled extensions not provided by the standard library or you are willing
+to compile and link 3rd party extensions into a custom binary, the
+``*-unknown-linux-musl`` builds should work just fine.
 
 The build configuration denotes how Python and its dependencies were built.
 Common configurations include:
 
 ``pgo+lto``
-   Profile guided optimization and link-time optimization. These should be
+   Profile guided optimization and link-time optimization. **These should be
    the fastest distributions since they have the most build-time
-   optimizations.
+   optimizations.**
 
 ``pgo``
    Profile guided optimization.
