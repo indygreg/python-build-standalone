@@ -23,6 +23,13 @@ embedding Python in a larger binary. See the
 `PyOxidizer <https://github.com/indygreg/PyOxidizer>`_ sister project
 for such a downstream repackager.
 
+Many users of these distributions might be better served by the
+`PyOxy <https://pyoxidizer.readthedocs.io/en/latest/pyoxy.html>`_
+sister project. PyOxy takes these Python distributions and adds some
+Rust code for enhancing the functionality of the Python interpreter.
+The official PyOxy release binaries are single file executables providing
+a full-featured Python interpreter.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
