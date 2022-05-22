@@ -110,7 +110,7 @@ class TestPythonInterpreter(unittest.TestCase):
     def test_sqlite(self):
         import sqlite3
 
-        self.assertEqual(sqlite3.sqlite_version_info, (3, 38, 3))
+        self.assertEqual(sqlite3.sqlite_version_info, (3, 38, 5))
 
     def test_ssl(self):
         import ssl
