@@ -22,7 +22,7 @@ _multiprocessing _multiprocessing/multiprocessing.c _multiprocessing/semaphore.c
 _opcode _opcode.c
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing -lrt
 _queue _queuemodule.c
-_sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -I/tools/deps/include -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -L/tools/deps/lib -lsqlite3
+_sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -I/tools/deps/include -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -L/tools/deps/lib -lsqlite3
 _ssl _ssl.c -I/tools/deps/include -lssl -lcrypto
 _tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -I/tools/deps/include/X11 -L/tools/deps/lib -ltcl8.6 -ltk8.6 -lX11 -lxcb -lXau
 _uuid _uuidmodule.c -I/tools/deps/include/uuid -luuid

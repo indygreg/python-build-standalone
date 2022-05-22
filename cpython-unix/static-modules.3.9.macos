@@ -27,7 +27,7 @@ _opcode _opcode.c
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing
 _queue _queuemodule.c
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
-_sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -DSQLITE_OMIT_LOAD_EXTENSION=1 -Xlinker -hidden-lsqlite3
+_sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -Xlinker -hidden-lsqlite3
 _ssl _ssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 _testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c

@@ -112,6 +112,13 @@ class TestPythonInterpreter(unittest.TestCase):
 
         self.assertEqual(sqlite3.sqlite_version_info, (3, 38, 5))
 
+        # Optional SQLite3 features are enabled.
+        conn = sqlite3.connect(":memory:")
+        # Extension loading enabled.
+        self.assertTrue(hasattr(conn, "enable_load_extension"))
+        # Backup feature requires modern SQLite, which we always have.
+        self.assertTrue(hasattr(conn, "backup"))
+
     def test_ssl(self):
         import ssl
 
