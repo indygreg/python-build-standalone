@@ -204,10 +204,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.readline.txt",
     },
     "setuptools": {
-        "url": "https://files.pythonhosted.org/packages/fb/58/9efbfe68482dab9557c49d433a60fff9efd7ed8835f829eba8297c2c124a/setuptools-62.1.0-py3-none-any.whl",
-        "size": 1144059,
-        "sha256": "26ead7d1f93efc0f8c804d9fafafbe4a44b179580a7105754b245155f9af05a8",
-        "version": "62.1.0",
+        "url": "https://files.pythonhosted.org/packages/e9/1c/ec080fde54ab30a738c92f794eab7f5d2f354f2b619ee95b2efe353e0766/setuptools-62.3.2-py3-none-any.whl",
+        "size": 1225929,
+        "sha256": "68e45d17c9281ba25dc0104eadd2647172b3472d9e01f911efa57965e8d51a36",
+        "version": "62.3.2",
     },
     # Remember to update verify_distribution.py when version changed.
     "sqlite": {
