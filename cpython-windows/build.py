@@ -2235,31 +2235,42 @@ def build_cpython(
             os.environ,
         )
 
+        # We install pip by using pip to install itself. This leverages a feature
+        # where Python can automatically recognize wheel/zip files on sys.path and
+        # import their contents. According to
+        # https://github.com/pypa/pip/issues/11146 running pip from a wheel is not
+        # supported. But it has historically worked and is simple. So do this until
+        # it stops working and we need to switch to running pip from the filesytem.
+        pip_env = dict(os.environ)
+        pip_env["PYTHONPATH"] = str(pip_wheel)
+
         # Install pip and setuptools.
         exec_and_log(
             [
                 str(install_dir / "python.exe"),
-                str(pip_wheel / "pip"),
+                "-m",
+                "pip",
                 "install",
                 "--no-cache-dir",
                 "--no-index",
                 str(pip_wheel),
             ],
             td,
-            os.environ,
+            pip_env,
         )
 
         exec_and_log(
             [
                 str(install_dir / "python.exe"),
-                str(pip_wheel / "pip"),
+                "-m",
+                "pip",
                 "install",
                 "--no-cache-dir",
                 "--no-index",
                 str(setuptools_wheel),
             ],
             td,
-            os.environ,
+            pip_env,
         )
 
         # The executables in the Scripts/ directory don't work because they reference
