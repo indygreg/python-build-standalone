@@ -2455,7 +2455,7 @@ def main():
     parser.add_argument(
         "--profile",
         choices={"static-noopt", "shared-noopt", "shared-pgo"},
-        default="static-noopt",
+        default="shared-noopt",
         help="How to compile Python",
     )
     parser.add_argument(
