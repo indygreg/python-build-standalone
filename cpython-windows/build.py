@@ -899,17 +899,23 @@ def hack_project_files(
     # Our version of the xz sources is newer than what's in cpython-source-deps
     # and the xz sources changed the path to config.h. Hack the project file
     # accordingly.
-    liblzma_path = pcbuild_path / "liblzma.vcxproj"
-    static_replace_in_file(
-        liblzma_path,
-        rb"$(lzmaDir)windows;$(lzmaDir)src/liblzma/common;",
-        rb"$(lzmaDir)windows\vs2017;$(lzmaDir)src/liblzma/common;",
-    )
-    static_replace_in_file(
-        liblzma_path,
-        rb'<ClInclude Include="$(lzmaDir)windows\config.h" />',
-        rb'<ClInclude Include="$(lzmaDir)windows\vs2017\config.h" />',
-    )
+    #
+    # ... but CPython finally upgraded liblzma in 2022, so newer CPython releases
+    # already have this patch. So we're phasing it out.
+    try:
+        liblzma_path = pcbuild_path / "liblzma.vcxproj"
+        static_replace_in_file(
+            liblzma_path,
+            rb"$(lzmaDir)windows;$(lzmaDir)src/liblzma/common;",
+            rb"$(lzmaDir)windows\vs2019;$(lzmaDir)src/liblzma/common;",
+        )
+        static_replace_in_file(
+            liblzma_path,
+            rb'<ClInclude Include="$(lzmaDir)windows\config.h" />',
+            rb'<ClInclude Include="$(lzmaDir)windows\vs2019\config.h" />',
+        )
+    except NoSearchStringError:
+        pass
 
     # Our logic for rewriting extension projects gets confused by _sqlite.vcxproj not
     # having a `<PreprocessorDefinitions>` line in 3.10+. So adjust that.
