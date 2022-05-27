@@ -200,7 +200,7 @@ DOWNLOADS = {
         "sha256": "7589a2381a8419e68654a47623ce7dfcb756815c8fee726b98f90bf668af7bc6",
         "version": "8.1.2",
         "library_names": ["readline"],
-        "licenses": ["GPL-3.0"],
+        "licenses": ["GPL-3.0-only"],
         "license_file": "LICENSE.readline.txt",
     },
     "setuptools": {
