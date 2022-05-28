@@ -72,7 +72,7 @@ familiar with LLVM target triples, here is an overview:
 
 ``x86_64_v2-*``
    Targets 64-bit Intel/AMD CPUs approximately newer than
-   `Nehalem <https://en.wikipedia.org/wiki/Nehalem_(microarchitecture)>`
+   `Nehalem <https://en.wikipedia.org/wiki/Nehalem_(microarchitecture)>`_
    (released in 2008).
 
    Binaries will have SSE3, SSE4, and other CPU instructions added after the
@@ -83,9 +83,9 @@ familiar with LLVM target triples, here is an overview:
 
 ``x86_64_v3-*``
    Targets 64-bit Intel/AMD CPUs approximately newer than
-   `Haswell <https://en.wikipedia.org/wiki/Haswell_(microarchitecture)>`
+   `Haswell <https://en.wikipedia.org/wiki/Haswell_(microarchitecture)>`_
    (released in 2013) and
-   `Excavator <https://en.wikipedia.org/wiki/Excavator_(microarchitecture)>`
+   `Excavator <https://en.wikipedia.org/wiki/Excavator_(microarchitecture)>`_
    (released in 2015).
 
    Binaries will have AVX, AVX2, MOVBE and other newer CPU instructions.
