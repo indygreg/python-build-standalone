@@ -76,6 +76,7 @@ fn main_impl() -> Result<()> {
                 Arg::new("path")
                     .required(true)
                     .takes_value(true)
+                    .multiple_occurrences(true)
                     .help("Path of archive to convert"),
             ),
     );
@@ -164,11 +165,11 @@ fn main_impl() -> Result<()> {
 
     match matches.subcommand() {
         Some(("convert-install-only", args)) => {
-            let path = args.value_of("path").expect("path argument is required");
-
-            let dest_path =
-                crate::release::produce_install_only(std::path::PathBuf::from(path).as_path())?;
-            println!("wrote {}", dest_path.display());
+            for path in args.values_of("path").unwrap() {
+                let dest_path =
+                    crate::release::produce_install_only(std::path::PathBuf::from(path).as_path())?;
+                println!("wrote {}", dest_path.display());
+            }
 
             Ok(())
         }
