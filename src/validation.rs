@@ -270,6 +270,11 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
                 required: true,
             },
             MachOAllowedDylib {
+                name: "/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa".to_string(),
+                max_compatibility_version: "1.0.0".try_into().unwrap(),
+                required: true,
+            },
+            MachOAllowedDylib {
                 name:
                     "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation"
                         .to_string(),
