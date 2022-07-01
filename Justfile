@@ -21,7 +21,7 @@ release-build-macos tag:
 
 # Trigger builds of aarch64-apple-darwin release artifacts.
 release-build-macos-remote tag:
-  ssh macmini just --working-directory /Users/gps/src/python-build-standalone --justfile /Users/gps/src/python-build-standalone/Justfile release-build-macos tag={{tag}}
+  ssh macmini just --working-directory /Users/gps/src/python-build-standalone --justfile /Users/gps/src/python-build-standalone/Justfile release-build-macos {{tag}}
   mkdir -p dist
   scp 'macmini:~/src/python-build-standalone/dist/*.zst' dist/
   cargo run --release -- convert-install-only dist/cpython-*-aarch64-apple-darwin-pgo+lto*.zst
