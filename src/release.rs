@@ -3,7 +3,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
-    anyhow::Result,
+    crate::json::parse_python_json,
+    anyhow::{anyhow, Result},
     once_cell::sync::Lazy,
     semver::VersionReq,
     std::{
@@ -182,7 +183,25 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
 
     let mut builder = tar::Builder::new(writer);
 
-    for entry in tar_in.entries()? {
+    let mut entries = tar_in.entries()?;
+
+    // First entry in archive should be python/PYTHON.json.
+    let mut entry = entries.next().expect("tar must have content")?;
+    if entry.path_bytes().as_ref() != b"python/PYTHON.json" {
+        return Err(anyhow!("first archive entry not PYTHON.json"));
+    }
+
+    let mut json_data = vec![];
+    entry.read_to_end(&mut json_data)?;
+
+    let json_main = parse_python_json(&json_data)?;
+
+    let stdlib_path = json_main
+        .python_paths
+        .get("stdlib")
+        .expect("stdlib entry expected");
+
+    for entry in entries {
         let mut entry = entry?;
 
         let path_bytes = entry.path_bytes();
@@ -191,13 +210,29 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
             continue;
         }
 
-        // Also strip the libpython static library, as it significantly
+        // Strip the libpython static library, as it significantly
         // increases the size of the archive and isn't needed in most cases.
         if path_bytes
             .windows(b"/libpython".len())
             .position(|x| x == b"/libpython")
             .is_some()
             && path_bytes.ends_with(b".a")
+        {
+            continue;
+        }
+
+        // Strip standard library test modules, as they aren't needed in regular
+        // installs. We do this based on the metadata in PYTHON.json for
+        // consistency.
+        if json_main
+            .python_stdlib_test_packages
+            .iter()
+            .any(|test_package| {
+                let package_path =
+                    format!("python/{}/{}/", stdlib_path, test_package.replace('.', "/"));
+
+                path_bytes.starts_with(package_path.as_bytes())
+            })
         {
             continue;
         }
