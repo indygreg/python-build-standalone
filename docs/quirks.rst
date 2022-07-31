@@ -360,3 +360,27 @@ files included in the distributions. But there isn't a turnkey way to do this.
 And you can't easily remove ``_tkinter`` and its symbols from the pre-built
 and ready-to-use Python install included in this project's distribution
 artifacts.
+
+.. _quirk_missing_libcrypt:
+
+Missing ``libcrypt.so.1``
+=========================
+
+Some Linux environments may complain about a missing ``libcrypt.so.1`` shared
+library dependency.
+
+``libcrypt.so.1`` is mandated as part of the Linux Standard Base Core
+Specification and therefore should be present in Linux environments conforming
+to this specification. Most Linux distributions attempt to conform to this
+specification.
+
+There was a time period when RedHat-maintained Linux distributions (Fedora,
+CentOS, RHEL) and their derivatives shipped a base OS environment that didn't
+include ``libcrypt.so.1``. See
+https://github.com/indygreg/python-build-standalone/issues/113 and
+https://bugzilla.redhat.com/show_bug.cgi?id=2055953 for more background. On
+these distributions, you can manually install the ``libxcrypt-compat`` package
+to provide the missing ``libcrypt.so.1`` library. Modern versions of these
+distros should install this package automatically when installing
+``redhat-lsb-core`` (or a similarly named) package. This package should be
+present in the base OS install.
