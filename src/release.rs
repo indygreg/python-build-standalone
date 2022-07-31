@@ -185,7 +185,20 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
     for entry in tar_in.entries()? {
         let mut entry = entry?;
 
-        if !entry.path_bytes().starts_with(b"python/install/") {
+        let path_bytes = entry.path_bytes();
+
+        if !path_bytes.starts_with(b"python/install/") {
+            continue;
+        }
+
+        // Also strip the libpython static library, as it significantly
+        // increases the size of the archive and isn't needed in most cases.
+        if path_bytes
+            .windows(b"/libpython".len())
+            .position(|x| x == b"/libpython")
+            .is_some()
+            && path_bytes.ends_with(b".a")
+        {
             continue;
         }
 
