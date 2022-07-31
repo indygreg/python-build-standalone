@@ -1104,7 +1104,16 @@ for f in sorted(os.listdir(ROOT)):
     if not initial.startswith(b"#!"):
         continue
 
-    print("rewriting shebang in %s" % full)
+    # Make sure it is a Python script and not something else.
+    with open(full, "r", encoding="utf-8") as fh:
+        initial = fh.readline()
+        initial = initial.strip()
+
+    if "python" not in initial:
+        print("ignoring %s due to non-python shebang (%s)" % (full, initial))
+        continue
+
+    print("rewriting Python shebang (%s) in %s" % (initial, full))
 
     lines = []
 
