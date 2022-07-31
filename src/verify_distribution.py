@@ -127,7 +127,7 @@ class TestPythonInterpreter(unittest.TestCase):
         self.assertTrue(ssl.HAS_TLSv1_2)
         self.assertTrue(ssl.HAS_TLSv1_3)
 
-        self.assertEqual(ssl.OPENSSL_VERSION_INFO, (1, 1, 1, 16, 15))
+        self.assertEqual(ssl.OPENSSL_VERSION_INFO, (1, 1, 1, 17, 15))
 
         ssl.create_default_context()
 
