@@ -88,56 +88,13 @@ if [ -n "${CROSS_COMPILING}" ]; then
   # Same patch as below. See comment there.
   if [ "${CC}" = "clang" ]; then
     if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
-      patch -p1 <<"EOF"
-diff --git a/configure b/configure
-index d078887b2f..78654eed29 100755
---- a/configure
-+++ b/configure
-@@ -5366,20 +5366,7 @@ $as_echo "none" >&6; }
- fi
- rm -f conftest.c conftest.out
-
--{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch" >&5
--$as_echo_n "checking for multiarch... " >&6; }
--case $ac_sys_system in #(
--  Darwin*) :
--    MULTIARCH="" ;; #(
--  FreeBSD*) :
--    MULTIARCH="" ;; #(
--  *) :
--    MULTIARCH=$($CC --print-multiarch 2>/dev/null)
-- ;;
--esac
--
--{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $MULTIARCH" >&5
--$as_echo "$MULTIARCH" >&6; }
-+MULTIARCH=
-
- if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
-   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
-
-EOF
+      patch -p1 < ${ROOT}/patch-disable-multiarch.patch
     else
-      patch -p1 <<"EOF"
-diff --git a/configure b/configure
-index c091865aff..0aeea8cedb 100755
---- a/configure
-+++ b/configure
-@@ -5318,10 +5318,7 @@ $as_echo "none" >&6; }
- fi
- rm -f conftest.c conftest.out
-
--if test x$PLATFORM_TRIPLET != xdarwin; then
--  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
--fi
--
-+MULTIARCH=
-
- if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
-   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
-EOF
+      patch -p1 < ${ROOT}/patch-disable-multiarch-legacy.patch
     fi
   fi
+
+  autoconf
 
   # When cross-compiling, we need to build a host Python that has working zlib
   # and ctypes extensions, otherwise various things fail. (`make install` fails
@@ -184,204 +141,20 @@ cat Makefile.extra
 
 pushd Python-${PYTHON_VERSION}
 
-# configure assumes cross compiling when host != target and doesn't provide a way to
-# override. Our target triple normalization may lead configure into thinking we
-# aren't cross-compiling when we are. So force a static "yes" value when our
-# build system says we are cross-compiling.
-if [ -n "${CROSS_COMPILING}" ]; then
-  patch -p1 <<"EOF"
-diff --git a/configure b/configure
-index d078887b2f..8f1ea07cd8 100755
---- a/configure
-+++ b/configure
-@@ -1329,14 +1329,7 @@ build=$build_alias
- host=$host_alias
- target=$target_alias
-
--# FIXME: To remove some day.
--if test "x$host_alias" != x; then
--  if test "x$build_alias" = x; then
--    cross_compiling=maybe
--  elif test "x$build_alias" != "x$host_alias"; then
--    cross_compiling=yes
--  fi
--fi
-+cross_compiling=yes
-
- ac_tool_prefix=
- test -n "$host_alias" && ac_tool_prefix=$host_alias-
-EOF
-fi
-
 # configure doesn't support cross-compiling on Apple. Teach it.
-patch -p1 << "EOF"
-diff --git a/configure b/configure
-index 1252335472..6665645839 100755
---- a/configure
-+++ b/configure
-@@ -3301,6 +3301,15 @@ then
- 	*-*-cygwin*)
- 		ac_sys_system=Cygwin
- 		;;
-+	*-apple-ios*)
-+		ac_sys_system=iOS
-+		;;
-+	*-apple-tvos*)
-+		ac_sys_system=tvOS
-+		;;
-+	*-apple-watchos*)
-+		ac_sys_system=watchOS
-+		;;
- 	*-*-vxworks*)
- 	    ac_sys_system=VxWorks
- 	    ;;
-@@ -3351,6 +3360,19 @@ if test "$cross_compiling" = yes; then
- 	*-*-cygwin*)
- 		_host_cpu=
- 		;;
-+	*-*-darwin*)
-+		_host_cpu=
-+		;;
-+	*-apple-*)
-+	  case "$host_cpu" in
-+	  arm*)
-+	    _host_cpu=arm
-+	    ;;
-+	  *)
-+	    _host_cpu=$host_cpu
-+	    ;;
-+	  esac
-+	  ;;
- 	*-*-vxworks*)
- 		_host_cpu=$host_cpu
- 		;;
-@@ -3359,7 +3381,22 @@ if test "$cross_compiling" = yes; then
- 		MACHDEP="unknown"
- 		as_fn_error $? "cross build not supported for $host" "$LINENO" 5
- 	esac
--	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
-+
-+	case "$host" in
-+	  # The _PYTHON_HOST_PLATFORM environment variable is used to
-+	  # override the platform name in distutils and sysconfig when
-+	  # cross-compiling. On Apple, the platform name expansion logic
-+	  # is non-trivial, including renaming MACHDEP=darwin to macosx
-+	  # and including the deployment target (or current OS version if
-+	  # not set). Our hack here is not generic, but gets the job done
-+	  # for python-build-standalone's cross-compile use cases.
-+	  aarch64-apple-darwin*)
-+	    _PYTHON_HOST_PLATFORM="macosx-${MACOSX_DEPLOYMENT_TARGET}-arm64"
-+	    ;;
-+	  *)
-+	    _PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
-+	esac
-+
- fi
- 
- # Some systems cannot stand _XOPEN_SOURCE being defined at all; they
-@@ -5968,7 +6005,7 @@ $as_echo "#define Py_ENABLE_SHARED 1" >>confdefs.h
- 	  BLDLIBRARY='-Wl,+b,$(LIBDIR) -L. -lpython$(LDVERSION)'
- 	  RUNSHARED=SHLIB_PATH=`pwd`${SHLIB_PATH:+:${SHLIB_PATH}}
- 	  ;;
--    Darwin*)
-+    Darwin*|iOS*|tvOS*|watchOS*)
-     	LDLIBRARY='libpython$(LDVERSION).dylib'
- 	BLDLIBRARY='-L. -lpython$(LDVERSION)'
- 	RUNSHARED=DYLD_LIBRARY_PATH=`pwd`${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
-@@ -6205,16 +6242,6 @@ esac
-   fi
- fi
- 
--if test "$cross_compiling" = yes; then
--    case "$READELF" in
--	readelf|:)
--	as_fn_error $? "readelf for the host is required for cross builds" "$LINENO" 5
--	;;
--    esac
--fi
--
--
--
- case $MACHDEP in
- hp*|HP*)
- 	# install -d does not work on HP-UX
-@@ -9541,6 +9568,11 @@ then
- 			BLDSHARED="$LDSHARED"
- 		fi
- 		;;
-+  iOS*|tvOS*|watchOS*)
-+    LDSHARED='$(CC) -bundle -undefined dynamic_lookup'
-+    LDCXXSHARED='$(CXX) -bundle -undefined dynamic_lookup'
-+    BLDSHARED="$LDSHARED"
-+    ;;
- 	Linux*|GNU*|QNX*|VxWorks*)
- 		LDSHARED='$(CC) -shared'
- 		LDCXXSHARED='$(CXX) -shared';;
-EOF
+patch -p1 < ${ROOT}/patch-apple-cross.patch
 
 # This patch is slightly different on Python 3.10+.
 if [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
-    patch -p1 << "EOF"
-diff --git a/configure b/configure
-index 2d379feb4b..3eb8dbe9ea 100755
---- a/configure
-+++ b/configure
-@@ -3426,6 +3448,12 @@ $as_echo "#define _BSD_SOURCE 1" >>confdefs.h
-     define_xopen_source=no;;
-   Darwin/[12][0-9].*)
-     define_xopen_source=no;;
-+  iOS/*)
-+    define_xopen_source=no;;
-+  tvOS/*)
-+    define_xopen_source=no;;
-+  watchOS/*)
-+    define_xopen_source=no;;
-   # On QNX 6.3.2, defining _XOPEN_SOURCE prevents netdb.h from
-   # defining NI_NUMERICHOST.
-   QNX/6.3.2)
-EOF
+    patch -p1 < ${ROOT}/patch-xopen-source-ios.patch
 else
-    patch -p1 << "EOF"
-diff --git a/configure b/configure
-index 2d379feb4b..3eb8dbe9ea 100755
---- a/configure
-+++ b/configure
-@@ -3426,6 +3448,12 @@ $as_echo "#define _BSD_SOURCE 1" >>confdefs.h
-     define_xopen_source=no;;
-   Darwin/[12][0-9].*)
-     define_xopen_source=no;;
-+  iOS/*)
-+    define_xopen_source=no;;
-+  tvOS/*)
-+    define_xopen_source=no;;
-+  watchOS/*)
-+    define_xopen_source=no;;
-   # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
-   # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
-   # or has another value. By not (re)defining it, the defaults come in place.
-EOF
+    patch -p1 < ${ROOT}/patch-xopen-source-ios-legacy.patch
 fi
 
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
-    patch -p1 << "EOF"
-diff --git a/configure b/configure
-index 1252335472..33c11fbade 100755
---- a/configure
-+++ b/configure
-@@ -5989,10 +5989,6 @@ else # shared is disabled
-   esac
- fi
- 
--if test "$cross_compiling" = yes; then
--	RUNSHARED=
--fi
--
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LDLIBRARY" >&5
- $as_echo "$LDLIBRARY" >&6; }
- 
-EOF
+    patch -p1 < ${ROOT}/patch-dont-clear-runshared.patch
 fi
 
 # Clang 13 actually prints something with --print-multiarch, confusing CPython's
@@ -389,54 +162,9 @@ fi
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
     if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
-        patch -p1 <<"EOF"
-diff --git a/configure b/configure
-index d078887b2f..78654eed29 100755
---- a/configure
-+++ b/configure
-@@ -5366,20 +5366,7 @@ $as_echo "none" >&6; }
- fi
- rm -f conftest.c conftest.out
-
--{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch" >&5
--$as_echo_n "checking for multiarch... " >&6; }
--case $ac_sys_system in #(
--  Darwin*) :
--    MULTIARCH="" ;; #(
--  FreeBSD*) :
--    MULTIARCH="" ;; #(
--  *) :
--    MULTIARCH=$($CC --print-multiarch 2>/dev/null)
-- ;;
--esac
--
--{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $MULTIARCH" >&5
--$as_echo "$MULTIARCH" >&6; }
-+MULTIARCH=
-
- if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
-   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
-
-EOF
+        patch -p1 < ${ROOT}/patch-disable-multiarch.patch
     else
-        patch -p1 <<"EOF"
-diff --git a/configure b/configure
-index c091865aff..0aeea8cedb 100755
---- a/configure
-+++ b/configure
-@@ -5318,10 +5318,7 @@ $as_echo "none" >&6; }
- fi
- rm -f conftest.c conftest.out
-
--if test x$PLATFORM_TRIPLET != xdarwin; then
--  MULTIARCH=$($CC --print-multiarch 2>/dev/null)
--fi
--
-+MULTIARCH=
-
- if test x$PLATFORM_TRIPLET != x && test x$MULTIARCH != x; then
-   if test x$PLATFORM_TRIPLET != x$MULTIARCH; then
-EOF
+        patch -p1 < ${ROOT}/patch-disable-multiarch-legacy.patch
     fi
 fi
 
@@ -695,6 +423,38 @@ index 12f72f525f..4503c5fc60 100644
  _Py_IDENTIFIER(__fspath__);
 
  /*[clinic input]
+EOF
+fi
+
+# We patched configure.ac above. Reflect those changes.
+autoconf
+
+# configure assumes cross compiling when host != target and doesn't provide a way to
+# override. Our target triple normalization may lead configure into thinking we
+# aren't cross-compiling when we are. So force a static "yes" value when our
+# build system says we are cross-compiling.
+if [ -n "${CROSS_COMPILING}" ]; then
+  patch -p1 <<"EOF"
+diff --git a/configure b/configure
+index d078887b2f..8f1ea07cd8 100755
+--- a/configure
++++ b/configure
+@@ -1329,14 +1329,7 @@ build=$build_alias
+ host=$host_alias
+ target=$target_alias
+
+-# FIXME: To remove some day.
+-if test "x$host_alias" != x; then
+-  if test "x$build_alias" = x; then
+-    cross_compiling=maybe
+-  elif test "x$build_alias" != "x$host_alias"; then
+-    cross_compiling=yes
+-  fi
+-fi
++cross_compiling=yes
+
+ ac_tool_prefix=
+ test -n "$host_alias" && ac_tool_prefix=$host_alias-
 EOF
 fi
 

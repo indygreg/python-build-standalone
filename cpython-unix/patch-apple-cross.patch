@@ -1,0 +1,100 @@
+diff --git a/configure.ac b/configure.ac
+index cc69015b10..9592ec3877 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -400,6 +400,15 @@ then
+ 	*-*-cygwin*)
+ 		ac_sys_system=Cygwin
+ 		;;
++	*-apple-ios*)
++		ac_sys_system=iOS
++		;;
++	*-apple-tvos*)
++		ac_sys_system=tvOS
++		;;
++	*-apple-watchos*)
++		ac_sys_system=watchOS
++		;;
+ 	*-*-vxworks*)
+ 	    ac_sys_system=VxWorks
+ 	    ;;
+@@ -449,6 +458,19 @@ if test "$cross_compiling" = yes; then
+ 	*-*-cygwin*)
+ 		_host_cpu=
+ 		;;
++	*-*-darwin*)
++		_host_cpu=
++		;;
++	*-apple-*)
++	  case "$host_cpu" in
++	  arm*)
++	    _host_cpu=arm
++	    ;;
++	  *)
++	    _host_cpu=$host_cpu
++	    ;;
++	  esac
++	  ;;
+ 	*-*-vxworks*)
+ 		_host_cpu=$host_cpu
+ 		;;
+@@ -457,7 +479,21 @@ if test "$cross_compiling" = yes; then
+ 		MACHDEP="unknown"
+ 		AC_MSG_ERROR([cross build not supported for $host])
+ 	esac
+-	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
++
++	case "$host" in
++	  # The _PYTHON_HOST_PLATFORM environment variable is used to
++	  # override the platform name in distutils and sysconfig when
++	  # cross-compiling. On Apple, the platform name expansion logic
++	  # is non-trivial, including renaming MACHDEP=darwin to macosx
++	  # and including the deployment target (or current OS version if
++	  # not set). Our hack here is not generic, but gets the job done
++	  # for python-build-standalone's cross-compile use cases.
++	  aarch64-apple-darwin*)
++	    _PYTHON_HOST_PLATFORM="macosx-${MACOSX_DEPLOYMENT_TARGET}-arm64"
++	    ;;
++	  *)
++	    _PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
++	esac
+ fi
+ 
+ # Some systems cannot stand _XOPEN_SOURCE being defined at all; they
+@@ -1171,7 +1207,7 @@ if test $enable_shared = "yes"; then
+ 	  BLDLIBRARY='-Wl,+b,$(LIBDIR) -L. -lpython$(LDVERSION)'
+ 	  RUNSHARED=SHLIB_PATH=`pwd`${SHLIB_PATH:+:${SHLIB_PATH}}
+ 	  ;;
+-    Darwin*)
++    Darwin*|iOS*|tvOS*|watchOS*)
+     	LDLIBRARY='libpython$(LDVERSION).dylib'
+ 	BLDLIBRARY='-L. -lpython$(LDVERSION)'
+ 	RUNSHARED=DYLD_LIBRARY_PATH=`pwd`${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}
+@@ -1209,15 +1245,6 @@ then
+ fi
+ 
+ AC_CHECK_TOOLS([READELF], [readelf], [:])
+-if test "$cross_compiling" = yes; then
+-    case "$READELF" in
+-	readelf|:)
+-	AC_MSG_ERROR([readelf for the host is required for cross builds])
+-	;;
+-    esac
+-fi
+-AC_SUBST(READELF)
+-
+ 
+ case $MACHDEP in
+ hp*|HP*)
+@@ -2715,6 +2742,11 @@ then
+ 	Linux*|GNU*|QNX*|VxWorks*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
++	iOS*|tvOS*|watchOS*)
++		LDSHARED='$(CC) -bundle -undefined dynamic_lookup'
++		LDCXXSHARED='$(CXX) -bundle -undefined dynamic_lookup'
++		BLDSHARED="$LDSHARED"
++		;;
+ 	FreeBSD*)
+ 		if [[ "`$CC -dM -E - </dev/null | grep __ELF__`" != "" ]]
+ 		then

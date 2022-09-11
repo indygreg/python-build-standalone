@@ -752,6 +752,10 @@ def build_cpython(
             if f.startswith("LICENSE.") and f.endswith(".txt"):
                 build_env.copy_file(ROOT / f)
 
+        for f in sorted(os.listdir(SUPPORT)):
+            if f.endswith(".patch"):
+                build_env.copy_file(SUPPORT / f)
+
         with tempfile.NamedTemporaryFile("wb") as fh:
             # In case default file masks cause wonkiness.
             os.chmod(fh.name, 0o644)
