@@ -535,6 +535,139 @@ const GLOBALLY_BANNED_EXTENSIONS: &[&str] = &[
     "nis",
 ];
 
+const GLOBAL_EXTENSIONS: &[&str] = &[
+    "_abc",
+    "_ast",
+    "_asyncio",
+    "_bisect",
+    "_blake2",
+    "_bz2",
+    "_codecs",
+    "_codecs_cn",
+    "_codecs_hk",
+    "_codecs_iso2022",
+    "_codecs_jp",
+    "_codecs_kr",
+    "_codecs_tw",
+    "_collections",
+    "_contextvars",
+    "_csv",
+    "_ctypes",
+    "_datetime",
+    "_decimal",
+    "_elementtree",
+    "_functools",
+    "_hashlib",
+    "_heapq",
+    "_imp",
+    "_io",
+    "_json",
+    "_locale",
+    "_lsprof",
+    "_lzma",
+    "_md5",
+    "_multibytecodec",
+    "_multiprocessing",
+    "_opcode",
+    "_operator",
+    "_pickle",
+    "_queue",
+    "_random",
+    "_sha1",
+    "_sha256",
+    "_sha3",
+    "_sha512",
+    "_signal",
+    "_socket",
+    "_sqlite3",
+    "_sre",
+    "_ssl",
+    "_stat",
+    "_statistics",
+    "_string",
+    "_struct",
+    "_symtable",
+    "_thread",
+    "_tkinter",
+    "_tracemalloc",
+    "_warnings",
+    "_weakref",
+    "array",
+    "atexit",
+    "audioop",
+    "binascii",
+    "builtins",
+    "cmath",
+    "errno",
+    "faulthandler",
+    "gc",
+    "itertools",
+    "marshal",
+    "math",
+    "mmap",
+    "pyexpat",
+    "select",
+    "sys",
+    "time",
+    "unicodedata",
+    "xxsubtype",
+    "zlib",
+];
+
+// _zoneinfo added in 3.9.
+// parser removed in 3.10.
+
+// We didn't build ctypes_test until 3.9.
+// We didn't build some test extensions until 3.9.
+
+const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["parser"];
+
+const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
+    "_peg_parser",
+    "_uuid",
+    "_xxsubinterpreters",
+    "_zoneinfo",
+    "parser",
+];
+
+const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &["_uuid", "_xxsubinterpreters", "_zoneinfo"];
+
+const GLOBAL_EXTENSIONS_MACOS: &[&str] = &["_scproxy"];
+
+const GLOBAL_EXTENSIONS_POSIX: &[&str] = &[
+    "_crypt",
+    "_curses",
+    "_curses_panel",
+    "_dbm",
+    "_posixshmem",
+    "_posixsubprocess",
+    "_testinternalcapi",
+    "fcntl",
+    "grp",
+    "posix",
+    "pwd",
+    "readline",
+    "resource",
+    "syslog",
+    "termios",
+];
+
+const GLOBAL_EXTENSIONS_LINUX: &[&str] = &["spwd"];
+
+const GLOBAL_EXTENSIONS_WINDOWS: &[&str] = &[
+    "_msi",
+    "_overlapped",
+    "_winapi",
+    "_xxsubinterpreters",
+    "msvcrt",
+    "nt",
+    "winreg",
+    "winsound",
+];
+
+/// Extension modules not present in Windows static builds.
+const GLOBAL_EXTENSIONS_WINDOWS_NO_STATIC: &[&str] = &["_testinternalcapi", "_tkinter"];
+
 const PYTHON_VERIFICATIONS: &str = include_str!("verify_distribution.py");
 
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
@@ -1109,6 +1242,103 @@ fn validate_possible_object_file(
     Ok(context)
 }
 
+fn validate_extension_modules(
+    python_major_minor: &str,
+    target_triple: &str,
+    static_crt: bool,
+    have_extensions: &BTreeSet<&str>,
+) -> Result<Vec<String>> {
+    let mut errors = vec![];
+
+    let is_macos = target_triple.contains("-apple-darwin");
+    let is_linux = target_triple.contains("-unknown-linux-");
+    let is_windows = target_triple.contains("-pc-windows-");
+    let is_linux_musl = target_triple.contains("-unknown-linux-musl");
+
+    let mut wanted = BTreeSet::from_iter(GLOBAL_EXTENSIONS.iter().map(|x| *x));
+
+    match python_major_minor {
+        "3.8" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_8);
+        }
+        "3.9" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_9);
+        }
+        "3.10" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_10);
+        }
+        _ => {
+            panic!("unhandled Python version: {}", python_major_minor);
+        }
+    }
+
+    if is_macos {
+        wanted.extend(GLOBAL_EXTENSIONS_POSIX);
+        wanted.extend(GLOBAL_EXTENSIONS_MACOS);
+    }
+
+    if is_windows {
+        wanted.extend(GLOBAL_EXTENSIONS_WINDOWS);
+
+        if static_crt {
+            for x in GLOBAL_EXTENSIONS_WINDOWS_NO_STATIC {
+                wanted.remove(*x);
+            }
+        }
+    }
+
+    if is_linux {
+        wanted.extend(GLOBAL_EXTENSIONS_POSIX);
+        wanted.extend(GLOBAL_EXTENSIONS_LINUX);
+
+        if !is_linux_musl {
+            wanted.insert("ossaudiodev");
+        }
+    }
+
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10") {
+        wanted.extend([
+            "_ctypes_test",
+            "_testbuffer",
+            "_testimportmultiple",
+            "_testmultiphase",
+            "_xxtestfuzz",
+        ]);
+    }
+
+    // _gdbm Linux only until 3.10, where it was dropped by us.
+    if is_linux && matches!(python_major_minor, "3.8" | "3.9") {
+        // But it isn't present on i686 due to build issues.
+        if target_triple != "i686-unknown-linux-gnu" {
+            wanted.insert("_gdbm");
+        }
+    }
+
+    // _uuid is POSIX only on 3.8. On 3.9, it is global.
+    if python_major_minor == "3.8" {
+        if is_linux || is_macos {
+            wanted.insert("_uuid");
+        }
+    } else {
+        wanted.insert("_uuid");
+    }
+
+    // _ctypes_test was only added to some cross builds on 3.8.
+    if python_major_minor == "3.8" && target_triple == "aarch64-unknown-linux-gnu" {
+        wanted.insert("_ctypes_test");
+    }
+
+    for extra in have_extensions.difference(&wanted) {
+        errors.push(format!("extra/unknown extension module: {}", extra));
+    }
+
+    for missing in wanted.difference(have_extensions) {
+        errors.push(format!("missing extension module: {}", missing));
+    }
+
+    Ok(errors)
+}
+
 fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<Vec<String>> {
     let mut errors = vec![];
 
@@ -1162,6 +1392,23 @@ fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<
             errors.push(format!("banned extension detected: {}", extension));
         }
     }
+
+    let have_extensions = json
+        .build_info
+        .extensions
+        .keys()
+        .map(|x| x.as_str())
+        .collect::<BTreeSet<_>>();
+
+    errors.extend(
+        validate_extension_modules(
+            &json.python_major_minor_version,
+            triple,
+            json.crt_features.contains(&"static".to_string()),
+            &have_extensions,
+        )?
+        .into_iter(),
+    );
 
     Ok(errors)
 }
