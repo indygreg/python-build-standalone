@@ -84,8 +84,10 @@ aarch64-apple-darwin:
     - 'arm64'
     - '-mmacosx-version-min=11.0'
   needs:
+    - autoconf
     - bzip2
     - libffi
+    - m4
     - openssl
     - sqlite
     - tcl
@@ -124,8 +126,10 @@ aarch64-apple-ios:
     - 'arm64'
     - '-mios-version-min=12.3'
   needs:
+    - autoconf
     - bzip2
     - libffi
+    - m4
     - openssl
     - sqlite
     - xz
@@ -143,6 +147,7 @@ aarch64-unknown-linux-gnu:
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
   target_cc: /usr/bin/aarch64-linux-gnu-gcc
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -152,6 +157,7 @@ aarch64-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -196,7 +202,9 @@ arm64-apple-tvos:
     - 'arm64'
     - '-mappletvos-version-min=12.3'
   needs:
+    - autoconf
     - bzip2
+    - m4
     - openssl
     - sqlite
     - xz
@@ -213,6 +221,7 @@ armv7-unknown-linux-gnueabi:
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
   target_cc: /usr/bin/arm-linux-gnueabi-gcc
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -222,6 +231,7 @@ armv7-unknown-linux-gnueabi:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -247,6 +257,7 @@ armv7-unknown-linux-gnueabihf:
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
   target_cc: /usr/bin/arm-linux-gnueabihf-gcc
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -256,6 +267,7 @@ armv7-unknown-linux-gnueabihf:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -287,6 +299,7 @@ i686-unknown-linux-gnu:
   target_ldflags:
     - '-m32'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -297,6 +310,7 @@ i686-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -322,6 +336,7 @@ mips-unknown-linux-gnu:
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
   target_cc: /usr/bin/mips-linux-gnu-gcc
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -331,6 +346,7 @@ mips-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -356,6 +372,7 @@ mipsel-unknown-linux-gnu:
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
   target_cc: /usr/bin/mipsel-linux-gnu-gcc
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -365,6 +382,7 @@ mipsel-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -390,6 +408,7 @@ s390x-unknown-linux-gnu:
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
   target_cc: /usr/bin/s390x-linux-gnu-gcc
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -399,6 +418,7 @@ s390x-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -443,7 +463,9 @@ thumb7k-apple-watchos:
     - 'armv7k'
     - '-mwatchos-version-min-7.0'
   needs:
+    - autoconf
     - bzip2
+    - m4
     - openssl
     - sqlite
     - xz
@@ -485,8 +507,10 @@ x86_64-apple-darwin:
     - 'x86_64'
     - '-mmacosx-version-min=10.9'
   needs:
+    - autoconf
     - bzip2
     - libffi
+    - m4
     - openssl
     - sqlite
     - tcl
@@ -525,8 +549,10 @@ x86_64-apple-ios:
     - 'x86_64'
     - '-mios-simulator-version-min=12.3'
   needs:
+    - autoconf
     - bzip2
     - libffi
+    - m4
     - openssl
     - sqlite
     - xz
@@ -562,7 +588,9 @@ x86_64-apple-tvos:
     - 'x86_64'
     - '-mappletvsimulator-version-min=12.3'
   needs:
+    - autoconf
     - bzip2
+    - m4
     - openssl
     - sqlite
     - xz
@@ -598,7 +626,9 @@ x86_64-apple-watchos:
     - 'x86_64'
     - '-mwatchsimulator-version-min=7.0'
   needs:
+    - autoconf
     - bzip2
+    - m4
     - openssl
     - sqlite
     - xz
@@ -618,6 +648,7 @@ x86_64-unknown-linux-gnu:
   target_cflags:
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -627,6 +658,7 @@ x86_64-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -656,6 +688,7 @@ x86_64_v2-unknown-linux-gnu:
     - '-march=x86-64-v2'
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -665,6 +698,7 @@ x86_64_v2-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -694,6 +728,7 @@ x86_64_v3-unknown-linux-gnu:
     - '-march=x86-64-v3'
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -703,6 +738,7 @@ x86_64_v3-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -732,6 +768,7 @@ x86_64_v4-unknown-linux-gnu:
     - '-march=x86-64-v4'
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -741,6 +778,7 @@ x86_64_v4-unknown-linux-gnu:
     - libX11
     - libXau
     - libxcb
+    - m4
     - ncurses
     - openssl
     - patchelf
@@ -769,6 +807,7 @@ x86_64-unknown-linux-musl:
   target_cflags:
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -778,6 +817,7 @@ x86_64-unknown-linux-musl:
     - libX11
     - libXau
     - libxcb
+    - m4
     - musl
     - ncurses
     - openssl
@@ -808,6 +848,7 @@ x86_64_v2-unknown-linux-musl:
     - '-march=x86-64-v2'
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -817,6 +858,7 @@ x86_64_v2-unknown-linux-musl:
     - libX11
     - libXau
     - libxcb
+    - m4
     - musl
     - ncurses
     - openssl
@@ -847,6 +889,7 @@ x86_64_v3-unknown-linux-musl:
     - '-march=x86-64-v3'
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -856,6 +899,7 @@ x86_64_v3-unknown-linux-musl:
     - libX11
     - libXau
     - libxcb
+    - m4
     - musl
     - ncurses
     - openssl
@@ -886,6 +930,7 @@ x86_64_v4-unknown-linux-musl:
     - '-march=x86-64-v4'
     - '-fvisibility=hidden'
   needs:
+    - autoconf
     - bdb
     - binutils
     - bzip2
@@ -895,6 +940,7 @@ x86_64_v4-unknown-linux-musl:
     - libX11
     - libXau
     - libxcb
+    - m4
     - musl
     - ncurses
     - openssl

@@ -14,6 +14,26 @@ export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:${TOOLS_PATH}/
 # environment variable.
 export LLVM_PROFDATA=${TOOLS_PATH}/${TOOLCHAIN}/bin/llvm-profdata
 
+# autoconf has some paths hardcoded into scripts. These paths just work in
+# the containerized build environment. But from macOS the paths are wrong.
+# Explicitly point to the proper path via environment variable overrides.
+export AUTOCONF=${TOOLS_PATH}/host/bin/autoconf
+export AUTOHEADER=${TOOLS_PATH}/host/bin/autoheader
+export AUTOM4TE=${TOOLS_PATH}/host/bin/autom4te
+export autom4te_perllibdir=${TOOLS_PATH}/host/share/autoconf
+export AC_MACRODIR=${TOOLS_PATH}/host/share/autoconf
+export M4=${TOOLS_PATH}/host/bin/m4
+
+# The share/autoconf/autom4te.cfg file also hard-codes some paths. Rewrite
+# those to the real tools path.
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+  sed_args="-i '' -e"
+else
+  sed_args="-i"
+fi
+
+sed ${sed_args} "s|/tools/host|${TOOLS_PATH}/host|g" ${TOOLS_PATH}/host/share/autoconf/autom4te.cfg
+
 # We force linking of external static libraries by removing the shared
 # libraries. This is hacky. But we're building in a temporary container
 # and it gets the job done.

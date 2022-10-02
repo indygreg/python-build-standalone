@@ -984,6 +984,20 @@ def main():
         elif action == "musl":
             build_musl(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)
 
+        elif action == "autoconf":
+            simple_build(
+                settings,
+                client,
+                get_image(client, ROOT, BUILD, docker_image),
+                action,
+                host_platform=host_platform,
+                target_triple=target_triple,
+                optimizations=optimizations,
+                dest_archive=dest_archive,
+                tools_path="host",
+                extra_archives=["m4"],
+            )
+
         elif action == "libedit":
             build_libedit(
                 settings,
@@ -1014,6 +1028,7 @@ def main():
             "kbproto",
             "libffi",
             "libpthread-stubs",
+            "m4",
             "ncurses",
             "openssl",
             "patchelf",
@@ -1028,7 +1043,7 @@ def main():
             "xz",
             "zlib",
         ):
-            tools_path = "host" if action == "patchelf" else "deps"
+            tools_path = "host" if action in ("m4", "patchelf") else "deps"
 
             simple_build(
                 settings,

@@ -88,6 +88,15 @@ endif
 
 toolchain: $(TOOLCHAIN_TARGET)
 
+AUTOCONF_DEPENDS = \
+    $(PYTHON_DEP_DEPENDS) \
+    $(HERE)/build-autoconf.sh \
+    $(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar \
+    $(NULL)
+
+$(OUTDIR)/autoconf-$(AUTOCONF_VERSION)-$(PACKAGE_SUFFIX).tar: $(AUTOCONF_DEPENDS)
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) autoconf
+
 $(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) bdb
 
@@ -146,6 +155,9 @@ LIBXCB_DEPENDS = \
 
 $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBXCB_DEPENDS)
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_XCB) libxcb
+
+$(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-m4.sh
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) m4
 
 $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) ncurses
@@ -229,11 +241,13 @@ PYTHON_DEPENDS := \
     $(PYTHON_SUPPORT_FILES) \
     $(OUTDIR)/versions/VERSION.pip \
     $(OUTDIR)/versions/VERSION.setuptools \
+    $(if $(NEED_AUTOCONF),$(OUTDIR)/autoconf-$(AUTOCONF_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBFFI),$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_m4),$(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_NCURSES),$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_PATCHELF),$(OUTDIR)/patchelf-$(PATCHELF_VERSION)-$(PACKAGE_SUFFIX).tar) \

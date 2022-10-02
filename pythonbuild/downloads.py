@@ -3,6 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 DOWNLOADS = {
+    "autoconf": {
+        "url": "https://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz",
+        "size": 1927468,
+        "sha256": "954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969",
+        "version": "2.69",
+    },
     # 6.0.19 is the last version licensed under the Sleepycat license.
     "bdb": {
         "url": "https://ftp.osuosl.org/pub/blfs/conglomeration/db/db-6.0.19.tar.gz",
@@ -151,6 +157,12 @@ DOWNLOADS = {
         "size": 89818499,
         "sha256": "f1f04eb156c43aa73514189302cecdb2376de6099542a616dd445838476628f7",
         "version": "14.0.3+20220508",
+    },
+    "m4": {
+        "url": "https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz",
+        "size": 1654908,
+        "sha256": "63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96",
+        "version": "1.4.19",
     },
     "musl": {
         "url": "https://musl.libc.org/releases/musl-1.2.3.tar.gz",
