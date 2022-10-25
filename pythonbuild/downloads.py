@@ -318,10 +318,10 @@ DOWNLOADS = {
         "version": "1.4.0",
     },
     "xz": {
-        "url": "https://tukaani.org/xz/xz-5.2.5.tar.gz",
-        "size": 1791345,
-        "sha256": "f6f4910fd033078738bd82bfba4f49219d03b17eb0794eb91efbae419f4aba10",
-        "version": "5.2.5",
+        "url": "https://tukaani.org/xz/xz-5.2.6.tar.gz",
+        "size": 2069602,
+        "sha256": "a2105abee17bcd2ebd15ced31b4f5eda6e17efd6b10f921a01cda4a44c91b3a0",
+        "version": "5.2.6",
         "library_names": ["lzma"],
         # liblzma is in the public domain. Other parts of code have licenses. But
         # we only use liblzma.
