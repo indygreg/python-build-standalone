@@ -1250,10 +1250,16 @@ fn validate_extension_modules(
 ) -> Result<Vec<String>> {
     let mut errors = vec![];
 
+    let is_ios = target_triple.contains("-apple-ios");
     let is_macos = target_triple.contains("-apple-darwin");
     let is_linux = target_triple.contains("-unknown-linux-");
     let is_windows = target_triple.contains("-pc-windows-");
     let is_linux_musl = target_triple.contains("-unknown-linux-musl");
+
+    // iOS isn't well supported. So don't do any validation.
+    if is_ios {
+        return Ok(errors);
+    }
 
     let mut wanted = BTreeSet::from_iter(GLOBAL_EXTENSIONS.iter().map(|x| *x));
 
