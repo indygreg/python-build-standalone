@@ -12,6 +12,12 @@ https://github.com/indygreg/python-build-standalone/releases.
 Simply go to that page and find the latest release along with
 its release notes.
 
+Machines can find the latest release by querying the GitHub releases
+API. Alternatively, a JSON file publishing metadata about the latest
+release can be fetched from
+https://raw.githubusercontent.com/indygreg/python-build-standalone/latest-release/latest-release.json.
+The JSON format is simple and hopefully self-descriptive.
+
 Published distributions vary by their:
 
 * Python version

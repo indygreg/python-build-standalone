@@ -30,6 +30,25 @@ release-build-macos-remote tag:
 release-upload-distributions token datetime tag:
   cargo run --release -- upload-release-distributions --token {{token}} --datetime {{datetime}} --tag {{tag}} --dist dist
 
+release-set-latest-release tag:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+
+  git switch latest-release
+  cat << EOF > latest-release.json
+  {
+    "version": 1,
+    "tag": "{{tag}}",
+    "release_url": "https://github.com/indygreg/python-build-standalone/releases/tag/{{tag}}",
+    "asset_url_prefix": "https://github.com/indygreg/python-build-standalone/releases/download/{{tag}}"
+  }
+  EOF
+
+  git commit -a -m 'set latest release to {{tag}}'
+  git switch main
+
+  git push origin latest-release
+
 # Perform a release.
 release token commit tag:
   #!/bin/bash
@@ -40,3 +59,4 @@ release token commit tag:
   just release-build-macos-remote {{tag}}
   datetime=$(ls dist/cpython-3.10.*-x86_64-unknown-linux-gnu-install_only-*.tar.gz  | awk -F- '{print $8}' | awk -F. '{print $1}')
   just release-upload-distributions {{token}} ${datetime} {{tag}}
+  just release-set-latest-release {{tag}}
