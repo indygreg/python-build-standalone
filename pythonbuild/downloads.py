@@ -88,6 +88,7 @@ DOWNLOADS = {
         "sha256": "828cb275b91268b1a3ea950d5c0c5eb076c678fdf005d517411f89cc8c3bb416",
         "version": "1.0.7",
     },
+    # 20221009-3.1 fails to build on musl due to an includes issue.
     "libedit": {
         "url": "https://thrysoee.dk/editline/libedit-20210910-3.1.tar.gz",
         "size": 524722,
