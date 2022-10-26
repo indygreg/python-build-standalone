@@ -159,11 +159,17 @@ DOWNLOADS = {
         "licenses": ["MIT"],
         "license_file": "LICENSE.libxcb.txt",
     },
-    "llvm-x86_64-linux": {
+    "llvm-14-x86_64-linux": {
         "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20220508/llvm-14.0.3+20220508-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
         "size": 158614671,
         "sha256": "04cb77c660f09df017a57738ae9635ef23a506024789f2f18da1304b45af2023",
         "version": "14.0.3+20220508",
+    },
+    "llvm-15-x86_64-linux": {
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20230114/llvm-15.0.7+20230114-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
+        "size": 185056557,
+        "sha256": "342c9055742335612589b526b19af7a8dd1fa279fddc0e7bf95523fc64a9a2dd",
+        "version": "15.0.7+20230114",
     },
     "llvm-aarch64-macos": {
         "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20230114/llvm-15.0.7+20230114-aarch64-apple-darwin.tar.zst",
