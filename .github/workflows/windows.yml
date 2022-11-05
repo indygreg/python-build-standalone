@@ -55,10 +55,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Cygwin
-        uses: egor-tensin/setup-cygwin@f86ccb21e7a2ba792c837fb9a2b267a9d6335531
+      - name: Install Cygwin Environment
+        uses: cygwin/cygwin-install-action@49f298a7ebb00d4b3ddf58000c3e78eff5fbd6b9
         with:
-          platform: x64
           packages: autoconf automake libtool
 
       - name: Install Python
@@ -81,7 +80,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ matrix.vcvars }}"
-          py.exe -3.9 build-windows.py --python ${{ matrix.py }} --sh c:\tools\cygwin\bin\sh.exe --profile ${{ matrix.profile }}
+          py.exe -3.9 build-windows.py --python ${{ matrix.py }} --sh c:\cygwin\bin\sh.exe --profile ${{ matrix.profile }}
 
       - name: Validate Distribution
         run: |
