@@ -5,7 +5,7 @@ on:
     - cron: '13 11 * * *'
 jobs:
   pythonbuild:
-    runs-on: 'ubuntu-20.04'
+    runs-on: ubuntu-22.04
     steps:
       - name: Install System Dependencies
         run: |
@@ -427,7 +427,7 @@ jobs:
 
     needs:
       - pythonbuild
-    runs-on: 'ubuntu-20.04'
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
