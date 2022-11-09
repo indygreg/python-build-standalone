@@ -384,3 +384,64 @@ to provide the missing ``libcrypt.so.1`` library. Modern versions of these
 distros should install this package automatically when installing
 ``redhat-lsb-core`` (or a similarly named) package. This package should be
 present in the base OS install.
+
+.. _quirk_references_to_build_paths:
+
+References to Build-Time Paths
+==============================
+
+The built Python distribution captures some absolute paths and other
+build-time configuration in a handful of files:
+
+* In a ``_sysconfigdata_*.py`` file in the standard library. e.g.
+  ``lib/python3.10/_sysconfigdata__linux_x86_64-linux-gnu.py``.
+* In a ``Makefile`` under a ``config-*`` directory in the standard library.
+  e.g. ``lib/python3.10/config-3.10-x86_64-linux-gnu/Makefile``.
+* In ``pkgconfig`` files. e.g. ``lib/pkgconfig/python3.pc``.
+* In ``python*-config`` files. e.g. ``bin/python3.10-config``.
+* In ``PYTHON.json`` (mostly reflected values from ``_sysconfigdata_*.py``.
+
+Each of these serves a different use case. But the general theme is various
+aspects of the Python distribution attempt to capture how Python was built.
+The most common use of these values is to facilitate compiling or linking
+other software against this Python build. For example, the ``_sysconfigdata*``
+module is loaded by the `sysconfig <https://docs.python.org/3/library/sysconfig.html>`_
+module. ``sysconfig`` in turn is used by packaging tools like ``setuptools``
+and ``pip`` to figure out how to invoke a compiler for e.g. compiling C
+extensions from source.
+
+On Linux, our distributions are built in containers. The container has a
+custom build of Clang in a custom filesystem location. And Python is
+installed to the prefix ``/install``. So you may see references to
+``/install`` in Linux distributions.
+
+On macOS, most distributions are built from GitHub Actions runners. They
+use a specific macOS SDK. So you may see references to SDK paths that don't
+exist on your machine. e.g.
+``/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk``.
+
+On Windows, builds are performed from a temporary directory. So you may
+see references to temporary directories in Windows distributions.
+
+**The existence of hard-coded paths in our produced distributions can confuse
+consumers of these values and break common workflows, like compiling C
+extensions.**
+
+We don't currently have a great idea for how to solve this problem. We
+can't hardcode values that will work on every machine because every machine
+has different filesystem layouts. For example, if we hardcode ``gcc`` as
+the compiler, someone with only ``clang`` installed will complain. And
+we certainly don't know where end-users will extract their Python
+distribution to!
+
+To solve this problem requires executing dynamic code after extracting
+our custom distributions in order to patch these hardcoded values into
+conformance with the new machine. We're unsure how to actually do this
+because figuring out what values to set is essentially equivalent to
+reinventing autoconf / configure! Perhaps we could implement something
+that works in common system layouts (e.g. hardcoded defaults for common
+distros like Debian/Ubuntu and RedHat).
+
+Until we have a better solution here, just understand that anything looking
+at ``sysconfig`` could resolve non-existent paths or names of binaries that
+don't exist on the current machine.
