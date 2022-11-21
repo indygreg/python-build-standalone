@@ -312,7 +312,26 @@ def create_tar_from_directory(fh, base_path: pathlib.Path, path_prefix=None):
 
 def extract_tar_to_directory(source: pathlib.Path, dest: pathlib.Path):
     with tarfile.open(source, "r") as tf:
-        tf.extractall(dest)
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner) 
+            
+        
+        safe_extract(tf, dest)
 
 
 def extract_zip_to_directory(source: pathlib.Path, dest: pathlib.Path):
