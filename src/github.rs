@@ -97,10 +97,19 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
         .send()
         .await?
         .into_iter()
-        .map(|wf| {
-            workflow_names.insert(wf.id.clone(), wf.name);
+        .filter_map(|wf| {
+            if matches!(
+                wf.name.as_str(),
+                ".github/workflows/apple.yml"
+                    | ".github/workflows/linux.yml"
+                    | ".github/workflows/windows.yml"
+            ) {
+                workflow_names.insert(wf.id.clone(), wf.name);
 
-            wf.id
+                Some(wf.id)
+            } else {
+                None
+            }
         })
         .collect::<Vec<_>>();
 
