@@ -553,10 +553,18 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # symbol.
     #
     # Unfortunately, this means we need to ban weak symbols on CPython 3.8, to
-    # the detriment of performance. However, we can actually use the symbols
-    # on aarch64 because it targets macOS SDK 11.0, not 10.9.
-    if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" && "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]]; then
-        for symbol in clock_getres clock_gettime clock_settime faccessat fchmodat fchownat fdopendir fstatat futimens getentropy linkat mkdirat openat preadv pwritev readlinkat renameat symlinkat unlinkat utimensat; do
+    # the detriment of performance. However, we can actually use most symbols
+    # on aarch64 because it targets macOS SDK 11.0, not 10.9. But more modern
+    # symbols do need to be banned.
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.8" ]; then
+        if [ "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]; then
+            for symbol in clock_getres clock_gettime clock_settime faccessat fchmodat fchownat fdopendir fstatat futimens getentropy linkat mkdirat openat preadv pwritev readlinkat renameat symlinkat unlinkat utimensat; do
+                CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"
+            done
+        fi
+
+        # mkfifoat, mknodat introduced in SDK 13.0.
+        for symbol in mkfifoat mknodat; do
             CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"
         done
     fi
