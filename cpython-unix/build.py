@@ -629,10 +629,14 @@ def python_build_info(
             }
         )
 
-    with get_target_support_file(
-        SUPPORT, "required-extensions", version, platform, target_triple
-    ).open("r") as fh:
-        required_extensions = {l.strip() for l in fh if l.strip()}
+    ems = extension_modules_config(EXTENSION_MODULES)
+    required_extensions = set()
+
+    for name, info in sorted(ems.items()):
+        if targets := info.get("required-targets"):
+            if any(re.match(p, target_triple) for p in targets):
+                log("marking extension module %s as required" % name)
+                required_extensions.add(name.encode("ascii"))
 
     for extension, entries in bi["extensions"].items():
         for entry in entries:

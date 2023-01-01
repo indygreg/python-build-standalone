@@ -15,6 +15,7 @@ EXTENSION_MODULE_SCHEMA = {
     "properties": {
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
         "minimum-python-version": {"type": "string"},
+        "required-targets": {"type": "array", "items": {"type": "string"}},
     },
     "additionalProperties": False,
 }

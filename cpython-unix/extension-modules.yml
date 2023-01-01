@@ -9,6 +9,14 @@
 #
 # minimum-python-version
 #   X.Y version number of minimum Python containing this extension module.
+#
+# required-targets
+#   Array of target triples this extension module is required to initialize
+#   a Python interpreter.
+
+_codecs:
+  required-targets:
+    - .*
 
 _curses:
   # ncurses not available on iOS.
@@ -25,10 +33,22 @@ _gdbm:
   disabled-targets:
     - .*
 
+_io:
+  required-targets:
+    - .*
+
 _scproxy:
   # APIs required by _scproxy not available on iOS.
   disabled-targets:
     - .*-apple-ios
+
+_signal:
+  required-targets:
+    - .*
+
+_thread:
+  required-targets:
+    - .*
 
 _testcapi:
   # Ideally this would only be disabled while cross-compiling. We can't build it
@@ -44,6 +64,18 @@ _tkinter:
   disabled-targets:
     - .*-apple-ios
 
+_tracemalloc:
+  required-targets:
+    - .*
+
+_weakref:
+  required-targets:
+    - .*
+
+faulthandler:
+  required-targets:
+    - .*
+
 nis:
   # NIS is not available on Apple OS.
   disabled-targets:
@@ -55,6 +87,11 @@ ossaudiodev:
   disabled-targets:
     - aarch64-apple-.*
     - x86_64-apple-.*
+
+posix:
+  required-targets:
+    - .*-unknown-linux-.*
+    - .*-apple-darwin
 
 spwd:
   # spwd not available on Apple OS.
