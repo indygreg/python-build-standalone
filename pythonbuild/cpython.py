@@ -78,18 +78,6 @@ STATIC_MODULES = {
     b"zlib",
 }
 
-# Modules we don't (yet) support building.
-UNSUPPORTED_MODULES = {
-    # nis (only installable on UNIX platforms) is globally disabled because
-    # it has a dependency on libnsl, which isn't part of the Linux Standard
-    # Base specification. This library has a wonky history where it was once
-    # part of glibc and core system installs but is slowly being phased away
-    # from base installations. There are potential workarounds to adding nis
-    # support. See discussion in
-    # https://github.com/indygreg/python-build-standalone/issues/51.
-    b"nis",
-}
-
 # Packages that define tests.
 STDLIB_TEST_PACKAGES = {
     "bsddb.test",
@@ -178,11 +166,9 @@ def derive_setup_local(
     extra_cflags = {}
 
     disabled = disabled or set()
-    disabled |= UNSUPPORTED_MODULES
 
     if musl:
         # Missing header dependencies.
-        disabled.add(b"nis")
         disabled.add(b"ossaudiodev")
 
     if debug:

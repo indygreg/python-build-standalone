@@ -77,10 +77,21 @@ faulthandler:
     - .*
 
 nis:
-  # NIS is not available on Apple OS.
   disabled-targets:
+    # NIS is not available on Apple OS.
     - aarch64-apple-.*
     - x86_64-apple-.*
+
+    # Missing header dependencies on musl.
+    - .*-unknown-linux-musl
+
+    # On other UNIX platforms, it is globally disabled because it has a dependency
+    # on libnsl, which isn't part of the Linux Standard Base specification. libnsl
+    # has a wonky history where it was once part of glibc and core system installs
+    # but is slowly being phased away from base installations. There are potential
+    # workarounds to adding nis support. See discussion in
+    # https://github.com/indygreg/python-build-standalone/issues/51.
+    - .*
 
 ossaudiodev:
   # ossaudiodev not available on Apple OS.
