@@ -13,10 +13,47 @@
 # required-targets
 #   Array of target triples this extension module is required to initialize
 #   a Python interpreter.
+#
+# setup-dist-verbatim
+#   Whether extension module can be copied verbatim from Setup.dist without
+#   issue.
+
+_asyncio:
+  setup-dist-verbatim: true
+
+_bisect:
+  setup-dist-verbatim: true
+
+_blake2:
+  setup-dist-verbatim: true
 
 _codecs:
   required-targets:
     - .*
+
+_codecs_cn:
+  setup-dist-verbatim: true
+
+_codecs_hk:
+  setup-dist-verbatim: true
+
+_codecs_iso2022:
+  setup-dist-verbatim: true
+
+_codecs_jp:
+  setup-dist-verbatim: true
+
+_codecs_kr:
+  setup-dist-verbatim: true
+
+_codecs_tw:
+  setup-dist-verbatim: true
+
+_contextvars:
+  setup-dist-verbatim: true
+
+_csv:
+  setup-dist-verbatim: true
 
 _curses:
   # ncurses not available on iOS.
@@ -28,27 +65,65 @@ _curses_panel:
   disabled-targets:
     - .*-apple-ios
 
+_datetime:
+  setup-dist-verbatim: true
+
 _gdbm:
   # Disable GDBM everywhere because it is GPL v3.
   disabled-targets:
     - .*
 
+_heapq:
+  setup-dist-verbatim: true
+
 _io:
   required-targets:
     - .*
+
+_md5:
+  setup-dist-verbatim: true
+
+_multibytecodec:
+  setup-dist-verbatim: true
+
+_pickle:
+  setup-dist-verbatim: true
+
+_posixsubprocess:
+  setup-dist-verbatim: true
+
+_random:
+  setup-dist-verbatim: true
 
 _scproxy:
   # APIs required by _scproxy not available on iOS.
   disabled-targets:
     - .*-apple-ios
 
+_sha1:
+  setup-dist-verbatim: true
+
+_sha256:
+  setup-dist-verbatim: true
+
+_sha3:
+  setup-dist-verbatim: true
+
+_sha512:
+  setup-dist-verbatim: true
+
 _signal:
   required-targets:
     - .*
 
-_thread:
-  required-targets:
-    - .*
+_socket:
+  setup-dist-verbatim: true
+
+_statistics:
+  setup-dist-verbatim: true
+
+_struct:
+  setup-dist-verbatim: true
 
 _testcapi:
   # Ideally this would only be disabled while cross-compiling. We can't build it
@@ -58,6 +133,15 @@ _testcapi:
   # binaries. So just disable it.
   disabled-targets:
     - aarch64-apple-.*
+
+_testinternalcapi:
+  # Despite being a test module, this needs to be built as a
+  # built-in in order to facilitate testing.
+  setup-dist-verbatim: true
+
+_thread:
+  required-targets:
+    - .*
 
 _tkinter:
   # tk not available on iOS.
@@ -69,14 +153,45 @@ _tracemalloc:
     - .*
 
 _weakref:
+  setup-dist-verbatim: true
+
   required-targets:
     - .*
+
+_zoneinfo:
+  setup-dist-verbatim: true
+
+array:
+  setup-dist-verbatim: true
+
+audioop:
+  setup-dist-verbatim: true
+
+binascii:
+  setup-dist-verbatim: true
+
+cmath:
+  setup-dist-verbatim: true
 
 faulthandler:
   required-targets:
     - .*
 
+fcntl:
+  setup-dist-verbatim: true
+
+grp:
+  setup-dist-verbatim: true
+
+math:
+  setup-dist-verbatim: true
+
+mmap:
+  setup-dist-verbatim: true
+
 nis:
+  setup-dist-verbatim: true
+
   disabled-targets:
     # NIS is not available on Apple OS.
     - aarch64-apple-.*
@@ -102,16 +217,36 @@ ossaudiodev:
     # Missing header dependencies.
     - .*-unknown-linux-musl
 
+parser:
+  setup-dist-verbatim: true
+
 posix:
   required-targets:
     - .*-unknown-linux-.*
     - .*-apple-darwin
 
+resource:
+  setup-dist-verbatim: true
+
+select:
+  setup-dist-verbatim: true
+
 spwd:
+  setup-dist-verbatim: true
+
   # spwd not available on Apple OS.
   disabled-targets:
     - aarch64-apple-.*
     - x86_64-apple-.*
+
+syslog:
+  setup-dist-verbatim: true
+
+termios:
+  setup-dist-verbatim: true
+
+unicodedata:
+  setup-dist-verbatim: true
 
 xxlimited:
   # Similar story as _testcapi. The extension exists to test the limited API,
@@ -128,3 +263,6 @@ xxlimited_35:
   # and cross-compiling emits wrong machine type when built via setup.py.
   disabled-targets:
     - aarch64-apple-.*
+
+zlib:
+  setup-dist-verbatim: true

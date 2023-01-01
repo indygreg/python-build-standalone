@@ -678,6 +678,7 @@ def build_cpython(
     ems = extension_modules_config(EXTENSION_MODULES)
 
     disabled_static_modules = set()
+    setup_dist_verbatim = set()
 
     for name, info in sorted(ems.items()):
         if min_version := info.get("minimum-python-version"):
@@ -701,6 +702,9 @@ def build_cpython(
                 )
                 disabled_static_modules.add(name)
 
+        if info.get("setup-dist-verbatim"):
+            setup_dist_verbatim.add(name.encode("ascii"))
+
     disabled_static_modules = {v.encode("ascii") for v in disabled_static_modules}
 
     setup = derive_setup_local(
@@ -710,6 +714,7 @@ def build_cpython(
         musl="musl" in target_triple,
         debug=optimizations == "debug",
         disabled=disabled_static_modules,
+        setup_dist_verbatim=setup_dist_verbatim,
     )
 
     config_c_in = parse_config_c(setup["config_c_in"].decode("utf-8"))

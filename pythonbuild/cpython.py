@@ -16,6 +16,7 @@ EXTENSION_MODULE_SCHEMA = {
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
         "minimum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
+        "setup-dist-verbatim": {"type": "boolean"},
     },
     "additionalProperties": False,
 }
@@ -25,58 +26,6 @@ EXTENSION_MODULES_SCHEMA = {
     "patternProperties": {"^[a-z_]+$": EXTENSION_MODULE_SCHEMA},
 }
 
-
-# Module entries from Setup.dist that we can copy verbatim without
-# issue.
-STATIC_MODULES = {
-    b"_asyncio",
-    b"_bisect",
-    b"_blake2",
-    b"_codecs_cn",
-    b"_codecs_hk",
-    b"_codecs_iso2022",
-    b"_codecs_jp",
-    b"_codecs_kr",
-    b"_codecs_tw",
-    b"_contextvars",
-    b"_csv",
-    b"_datetime",
-    b"_heapq",
-    b"_md5",
-    b"_multibytecodec",
-    b"_pickle",
-    b"_posixsubprocess",
-    b"_random",
-    b"_sha1",
-    b"_sha256",
-    b"_sha512",
-    b"_sha3",
-    b"_socket",
-    b"_statistics",
-    b"_struct",
-    # Despite being a test module, this needs to be built as a
-    # built-in in order to facilitate testing.
-    b"_testinternalcapi",
-    b"_weakref",
-    b"_zoneinfo",
-    b"array",
-    b"audioop",
-    b"binascii",
-    b"cmath",
-    b"fcntl",
-    b"grp",
-    b"math",
-    b"mmap",
-    b"nis",
-    b"parser",
-    b"resource",
-    b"select",
-    b"spwd",
-    b"syslog",
-    b"termios",
-    b"unicodedata",
-    b"zlib",
-}
 
 # Packages that define tests.
 STDLIB_TEST_PACKAGES = {
@@ -155,6 +104,7 @@ def derive_setup_local(
     cpython_source_archive,
     python_version,
     disabled=None,
+    setup_dist_verbatim=None,
     musl=False,
     debug=False,
 ):
@@ -166,6 +116,7 @@ def derive_setup_local(
     extra_cflags = {}
 
     disabled = disabled or set()
+    setup_dist_verbatim = setup_dist_verbatim or set()
 
     if debug:
         # Doesn't work in debug builds.
@@ -199,7 +150,7 @@ def derive_setup_local(
         if line == b"#*disabled*":
             break
 
-        if line.startswith(tuple(b"#%s" % k for k in STATIC_MODULES)):
+        if line.startswith(tuple(b"#%s" % k for k in setup_dist_verbatim)):
             line = line[1:]
 
             if b"#" in line:
