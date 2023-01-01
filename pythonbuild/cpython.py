@@ -162,25 +162,32 @@ def derive_setup_local(
         ifh = tf.extractfile("Python-%s/Modules/config.c.in" % python_version)
         config_c_in = ifh.read()
 
-    found_shared = False
+    section = "builtin"
 
     dest_lines = []
     make_lines = []
 
+    RE_VARIABLE = re.compile(rb"^[a-zA-Z_]+\s*=")
+
     for line in source_lines:
         line = line.rstrip()
 
-        if line == b"#*shared*":
-            found_shared = True
-            dest_lines.append(b"*static*")
-
-        if not found_shared:
+        if not line:
             continue
 
-        # Stop processing at the #*disabled* line.
-        if line == b"#*disabled*":
-            break
+        # Looks like a variable assignment.
+        if RE_VARIABLE.match(line):
+            continue
 
+        if line == b"#*shared*":
+            section = "shared"
+
+            # Convert all shared extension modules to static.
+            dest_lines.append(b"*static*")
+        elif line == b"#*disabled*":
+            section = "disabled"
+
+        # Look for commented out lines that we are actually capable of processing.
         if line.startswith(tuple(b"#%s" % k for k in setup_dist_verbatim)):
             line = line[1:]
 
@@ -188,7 +195,8 @@ def derive_setup_local(
                 line = line[: line.index(b"#")]
 
             module = line.split()[0]
-            if module in disabled:
+
+            if section == "disabled" or module in disabled:
                 continue
 
             dest_lines.append(line)
