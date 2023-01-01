@@ -94,10 +94,13 @@ nis:
     - .*
 
 ossaudiodev:
-  # ossaudiodev not available on Apple OS.
   disabled-targets:
+    # ossaudiodev not available on Apple OS.
     - aarch64-apple-.*
     - x86_64-apple-.*
+
+    # Missing header dependencies.
+    - .*-unknown-linux-musl
 
 posix:
   required-targets:

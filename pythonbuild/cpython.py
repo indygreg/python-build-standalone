@@ -167,10 +167,6 @@ def derive_setup_local(
 
     disabled = disabled or set()
 
-    if musl:
-        # Missing header dependencies.
-        disabled.add(b"ossaudiodev")
-
     if debug:
         # Doesn't work in debug builds.
         disabled.add(b"xxlimited")
