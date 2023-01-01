@@ -18,6 +18,10 @@
 #   Whether extension module can be copied verbatim from Setup.dist without
 #   issue.
 
+_abc: {}
+
+_ast: {}
+
 _asyncio:
   setup-dist-verbatim: true
 
@@ -26,6 +30,8 @@ _bisect:
 
 _blake2:
   setup-dist-verbatim: true
+
+_bz2: {}
 
 _codecs:
   required-targets:
@@ -49,11 +55,19 @@ _codecs_kr:
 _codecs_tw:
   setup-dist-verbatim: true
 
+_collections: {}
+
 _contextvars:
   setup-dist-verbatim: true
 
+_crypt: {}
+
 _csv:
   setup-dist-verbatim: true
+
+_ctypes: {}
+
+_ctypes_test: {}
 
 _curses:
   # ncurses not available on iOS.
@@ -68,17 +82,37 @@ _curses_panel:
 _datetime:
   setup-dist-verbatim: true
 
+_dbm: {}
+
+_decimal: {}
+
+_elementtree: {}
+
+_functools: {}
+
 _gdbm:
   # Disable GDBM everywhere because it is GPL v3.
   disabled-targets:
     - .*
 
+_hashlib: {}
+
 _heapq:
   setup-dist-verbatim: true
+
+_imp: {}
 
 _io:
   required-targets:
     - .*
+
+_json: {}
+
+_locale: {}
+
+_lsprof: {}
+
+_lzma: {}
 
 _md5:
   setup-dist-verbatim: true
@@ -86,11 +120,23 @@ _md5:
 _multibytecodec:
   setup-dist-verbatim: true
 
+_multiprocessing: {}
+
+_opcode: {}
+
+_operator: {}
+
+_peg_parser: {}
+
 _pickle:
   setup-dist-verbatim: true
 
+_posixshmem: {}
+
 _posixsubprocess:
   setup-dist-verbatim: true
+
+_queue: {}
 
 _random:
   setup-dist-verbatim: true
@@ -116,14 +162,28 @@ _signal:
   required-targets:
     - .*
 
+_sqlite3: {}
+
 _socket:
   setup-dist-verbatim: true
+
+_sre: {}
+
+_ssl: {}
 
 _statistics:
   setup-dist-verbatim: true
 
+_stat: {}
+
+_string: {}
+
 _struct:
   setup-dist-verbatim: true
+
+_symtable: {}
+
+_testbuffer: {}
 
 _testcapi:
   # Ideally this would only be disabled while cross-compiling. We can't build it
@@ -134,10 +194,14 @@ _testcapi:
   disabled-targets:
     - aarch64-apple-.*
 
+_testimportmultiple: {}
+
 _testinternalcapi:
   # Despite being a test module, this needs to be built as a
   # built-in in order to facilitate testing.
   setup-dist-verbatim: true
+
+_testmultiphase: {}
 
 _thread:
   required-targets:
@@ -152,11 +216,19 @@ _tracemalloc:
   required-targets:
     - .*
 
+_uuid: {}
+
+_warnings: {}
+
 _weakref:
   setup-dist-verbatim: true
 
   required-targets:
     - .*
+
+_xxsubinterpreters: {}
+
+_xxtestfuzz: {}
 
 _zoneinfo:
   setup-dist-verbatim: true
@@ -164,14 +236,20 @@ _zoneinfo:
 array:
   setup-dist-verbatim: true
 
+atexit: {}
+
 audioop:
   setup-dist-verbatim: true
 
 binascii:
   setup-dist-verbatim: true
 
+builtins: {}
+
 cmath:
   setup-dist-verbatim: true
+
+errno: {}
 
 faulthandler:
   required-targets:
@@ -180,8 +258,14 @@ faulthandler:
 fcntl:
   setup-dist-verbatim: true
 
+gc: {}
+
 grp:
   setup-dist-verbatim: true
+
+itertools: {}
+
+marshal: {}
 
 math:
   setup-dist-verbatim: true
@@ -225,6 +309,12 @@ posix:
     - .*-unknown-linux-.*
     - .*-apple-darwin
 
+pwd: {}
+
+pyexpat: {}
+
+readline: {}
+
 resource:
   setup-dist-verbatim: true
 
@@ -242,8 +332,12 @@ spwd:
 syslog:
   setup-dist-verbatim: true
 
+sys: {}
+
 termios:
   setup-dist-verbatim: true
+
+time: {}
 
 unicodedata:
   setup-dist-verbatim: true
@@ -263,6 +357,8 @@ xxlimited_35:
   # and cross-compiling emits wrong machine type when built via setup.py.
   disabled-targets:
     - aarch64-apple-.*
+
+xxsubtype: {}
 
 zlib:
   setup-dist-verbatim: true

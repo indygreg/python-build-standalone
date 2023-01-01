@@ -2419,7 +2419,7 @@ def build_cpython(
                 "tix8.4.3",
             ]
 
-        validate_python_json(python_info)
+        validate_python_json(python_info, extension_modules=None)
 
         with (out_dir / "python" / "PYTHON.json").open("w", encoding="utf8") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)

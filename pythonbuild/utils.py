@@ -537,13 +537,23 @@ def exec_and_log(args, cwd, env):
         sys.exit(p.returncode)
 
 
-def validate_python_json(info):
+def validate_python_json(info, extension_modules):
     """Validate a PYTHON.json file for problems.
 
     Raises an exception if an issue is detected.
     """
 
-    for name, variants in info["build_info"]["extensions"].items():
+    if extension_modules:
+        missing = set(info["build_info"]["extensions"].keys()) - set(
+            extension_modules.keys()
+        )
+        if missing:
+            raise Exception(
+                "extension modules in PYTHON.json lack metadata: %s"
+                % ", ".join(sorted(missing))
+            )
+
+    for name, variants in sorted(info["build_info"]["extensions"].items()):
         for ext in variants:
             variant = ext["variant"]
 

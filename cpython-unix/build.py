@@ -842,7 +842,7 @@ def build_cpython(
         # Add metadata derived from built distribution.
         python_info.update(extra_metadata)
 
-        validate_python_json(python_info)
+        validate_python_json(python_info, extension_modules=ems)
 
         with tempfile.NamedTemporaryFile("w") as fh:
             json.dump(python_info, fh, sort_keys=True, indent=4)

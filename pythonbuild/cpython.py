@@ -25,7 +25,9 @@ EXTENSION_MODULE_SCHEMA = {
 
 EXTENSION_MODULES_SCHEMA = {
     "type": "object",
-    "patternProperties": {"^[a-z_]+$": EXTENSION_MODULE_SCHEMA},
+    "patternProperties": {
+        "^[a-z_]+$": EXTENSION_MODULE_SCHEMA,
+    },
 }
 
 
@@ -166,8 +168,10 @@ def derive_setup_local(
 
     dest_lines = []
     make_lines = []
+    dist_modules = set()
 
     RE_VARIABLE = re.compile(rb"^[a-zA-Z_]+\s*=")
+    RE_EXTENSION_MODULE = re.compile(rb"^([a-z_]+)\s+[a-zA-Z/_-]+\.c\s")
 
     for line in source_lines:
         line = line.rstrip()
@@ -187,6 +191,14 @@ def derive_setup_local(
         elif line == b"#*disabled*":
             section = "disabled"
 
+        # Look for all extension modules.
+        if b"#" in line:
+            # Look for extension syntax before and after comment.
+            for part in line.split(b"#"):
+                if m := RE_EXTENSION_MODULE.match(part):
+                    dist_modules.add(m.group(1).decode("ascii"))
+                    break
+
         # Look for commented out lines that we are actually capable of processing.
         if line.startswith(tuple(b"#%s" % k for k in setup_dist_verbatim)):
             line = line[1:]
@@ -196,10 +208,20 @@ def derive_setup_local(
 
             module = line.split()[0]
 
+            # Should be handled above. But doesn't hurt to be redundant.
+            dist_modules.add(module.decode("ascii"))
+
             if section == "disabled" or module in disabled:
                 continue
 
             dest_lines.append(line)
+
+    missing = dist_modules - set(extension_modules.keys())
+
+    if missing:
+        raise Exception(
+            "missing extension modules from YAML: %s" % ", ".join(sorted(missing))
+        )
 
     RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
     RE_VARIANT = re.compile(rb"VARIANT=([^\s]+)\s")
