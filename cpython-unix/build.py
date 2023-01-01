@@ -19,6 +19,7 @@ import zstandard
 from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import (
     derive_setup_local,
+    extension_modules_config,
     parse_config_c,
     parse_setup_line,
     STDLIB_TEST_PACKAGES,
@@ -45,6 +46,7 @@ ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
 BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
+EXTENSION_MODULES = SUPPORT / "extension-modules.yml"
 TARGETS_CONFIG = SUPPORT / "targets.yml"
 
 LINUX_ALLOW_SYSTEM_LIBRARIES = {"c", "crypt", "dl", "m", "pthread", "rt", "util"}
@@ -669,12 +671,33 @@ def build_cpython(
     ).open("rb") as fh:
         static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
 
-    with get_target_support_file(
-        SUPPORT, "disabled-static-modules", version, host_platform, target_triple
-    ).open("rb") as fh:
-        disabled_static_modules = {
-            l.strip() for l in fh if l.strip() and not l.strip().startswith(b"#")
-        }
+    ems = extension_modules_config(EXTENSION_MODULES)
+
+    disabled_static_modules = set()
+
+    for name, info in sorted(ems.items()):
+        if min_version := info.get("minimum-python-version"):
+            parts = min_version.split(".")
+            required_major, required_minor = int(parts[0]), int(parts[1])
+            parts = python_version.split(".")
+            py_major, py_minor = int(parts[0]), int(parts[1])
+
+            if (py_major, py_minor) < (required_major, required_minor):
+                log(
+                    "disabling extension module %s because Python version too old"
+                    % name
+                )
+                disabled_static_modules.add(name)
+
+        if targets := info.get("disabled-targets"):
+            if any(re.match(p, target_triple) for p in targets):
+                log(
+                    "disabling extension module %s because disabled for this target triple"
+                    % name
+                )
+                disabled_static_modules.add(name)
+
+    disabled_static_modules = {v.encode("ascii") for v in disabled_static_modules}
 
     setup = derive_setup_local(
         static_modules_lines,

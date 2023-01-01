@@ -1,0 +1,79 @@
+# This file defines metadata for Python extension modules.
+#
+# Keys are the name of an extension module in a CPython distribution.
+# Values are maps having the following keys:
+#
+# disabled-targets
+#   Array of targets the extension module is disabled on. Values are regular
+#   expressions.
+#
+# minimum-python-version
+#   X.Y version number of minimum Python containing this extension module.
+
+_curses:
+  # ncurses not available on iOS.
+  disabled-targets:
+    - .*-apple-ios
+
+_curses_panel:
+  # ncurses not available on iOS.
+  disabled-targets:
+    - .*-apple-ios
+
+_gdbm:
+  # Disable GDBM everywhere because it is GPL v3.
+  disabled-targets:
+    - .*
+
+_scproxy:
+  # APIs required by _scproxy not available on iOS.
+  disabled-targets:
+    - .*-apple-ios
+
+_testcapi:
+  # Ideally this would only be disabled while cross-compiling. We can't build it
+  # as a built-in extension via static-modules. And when letting setup.py build
+  # it, it builds for the host architecture during cross-builds, which upsets
+  # our validation script when it screens for the target machine type of
+  # binaries. So just disable it.
+  disabled-targets:
+    - aarch64-apple-.*
+
+_tkinter:
+  # tk not available on iOS.
+  disabled-targets:
+    - .*-apple-ios
+
+nis:
+  # NIS is not available on Apple OS.
+  disabled-targets:
+    - aarch64-apple-.*
+    - x86_64-apple-.*
+
+ossaudiodev:
+  # ossaudiodev not available on Apple OS.
+  disabled-targets:
+    - aarch64-apple-.*
+    - x86_64-apple-.*
+
+spwd:
+  # spwd not available on Apple OS.
+  disabled-targets:
+    - aarch64-apple-.*
+    - x86_64-apple-.*
+
+xxlimited:
+  # Similar story as _testcapi. The extension exists to test the limited API,
+  # which we don't really care about. Statically building it runs into problems
+  # and cross-compiling emits wrong machine type when built via setup.py.
+  disabled-targets:
+    - aarch64-apple-.*
+
+xxlimited_35:
+  minimum-python-version: '3.10'
+
+  # Similar story as _testcapi. The extension exists to test the limited API,
+  # which we don't really care about. Statically building it runs into problems
+  # and cross-compiling emits wrong machine type when built via setup.py.
+  disabled-targets:
+    - aarch64-apple-.*

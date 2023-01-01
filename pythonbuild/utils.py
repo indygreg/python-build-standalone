@@ -160,8 +160,12 @@ def write_triples_makefiles(
                     % (entry, DOWNLOADS[entry]["version"], host_platform)
                 )
 
+                lines.append(
+                    "PYTHON_SUPPORT_FILES := $(PYTHON_SUPPORT_FILES) %s\n"
+                    % (support_search_dir / "extension-modules.yml")
+                )
+
                 for support_file in (
-                    "disabled-static-modules",
                     "required-extensions",
                     "static-modules",
                 ):

@@ -57,8 +57,8 @@ older are licensed under the Sleepycat License. The Sleepycat License
 is more permissive. So we build the ``_dbm`` extension against BDB
 6.0.19.
 
-We explicitly disable the ``_gdbm`` extension on all macOS versions
-and on Python 3.10+ Linux distributions to avoid the GPL dependency.
+We explicitly disable the ``_gdbm`` extension on all targets to avoid
+the GPL dependency.
 
 readline / libedit / ncurses
 ----------------------------

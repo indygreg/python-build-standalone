@@ -250,8 +250,9 @@ We build CPython against libedit - as opposed to readline - to avoid this
 GPL dependency. This requires patches on CPython < 3.10. Distribution releases
 before 2023 may link against readline and are therefore subject to the GPL.
 
-Python 3.10 and newer distributions do not link against GDBM. Older Python
-versions may link against GDBM and be subject to the GPL.
+We globally disable the ``_gdbm`` extension module to avoid linking against
+GDBM and introducing a GPL dependency. Distribution releases before 2023 may
+link against GDBM and be subject to the GPL.
 
 **It is important to understand the licensing requirements when integrating
 the output of this project into derived works.** To help with this, the

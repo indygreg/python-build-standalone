@@ -7,7 +7,23 @@ import pathlib
 import re
 import tarfile
 
-from .downloads import DOWNLOADS
+import jsonschema
+import yaml
+
+EXTENSION_MODULE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "disabled-targets": {"type": "array", "items": {"type": "string"}},
+        "minimum-python-version": {"type": "string"},
+    },
+    "additionalProperties": False,
+}
+
+EXTENSION_MODULES_SCHEMA = {
+    "type": "object",
+    "patternProperties": {"^[a-z_]+$": EXTENSION_MODULE_SCHEMA},
+}
+
 
 # Module entries from Setup.dist that we can copy verbatim without
 # issue.
@@ -386,3 +402,13 @@ def parse_config_c(s: str):
             extensions[m.group(1)] = m.group(2)
 
     return extensions
+
+
+def extension_modules_config(yaml_path: pathlib.Path):
+    """Loads the extension-modules.yml file."""
+    with yaml_path.open("r", encoding="utf-8") as fh:
+        data = yaml.load(fh, Loader=yaml.SafeLoader)
+
+    jsonschema.validate(data, EXTENSION_MODULES_SCHEMA)
+
+    return data

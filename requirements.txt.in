@@ -1,5 +1,6 @@
 docker
 jinja2
+jsonschema
 PyYAML
 # Undeclared dependency in docker 5.0 package.
 six

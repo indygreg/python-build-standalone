@@ -1312,14 +1312,6 @@ fn validate_extension_modules(
         ]);
     }
 
-    // _gdbm Linux only until 3.10, where it was dropped by us.
-    if is_linux && matches!(python_major_minor, "3.8" | "3.9") {
-        // But it isn't present on i686 due to build issues.
-        if target_triple != "i686-unknown-linux-gnu" {
-            wanted.insert("_gdbm");
-        }
-    }
-
     // _uuid is POSIX only on 3.8. On 3.9, it is global.
     if python_major_minor == "3.8" {
         if is_linux || is_macos {
