@@ -1,0 +1,15 @@
+diff --git a/Lib/ctypes/__init__.py b/Lib/ctypes/__init__.py
+--- a/Lib/ctypes/__init__.py
++++ b/Lib/ctypes/__init__.py
+@@ -441,7 +441,10 @@ if _os.name == "nt":
+ elif _sys.platform == "cygwin":
+     pythonapi = PyDLL("libpython%d.%d.dll" % _sys.version_info[:2])
+ else:
+-    pythonapi = PyDLL(None)
++    try:
++        pythonapi = PyDLL(None)
++    except OSError:
++        pythonapi = None
+
+
+ if _os.name == "nt":

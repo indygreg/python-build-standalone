@@ -57,24 +57,7 @@ pushd pip-tmp
 unzip "${PIP_WHEEL}"
 rm -f "${PIP_WHEEL}"
 
-patch -p1 <<EOF
-diff --git a/pip/_internal/utils/glibc.py b/pip/_internal/utils/glibc.py
-index 819979d80..4ae91e364 100644
---- a/pip/_internal/utils/glibc.py
-+++ b/pip/_internal/utils/glibc.py
-@@ -47,7 +47,10 @@ def glibc_version_string_ctypes():
-     # manpage says, "If filename is NULL, then the returned handle is for the
-     # main program". This way we can let the linker do the work to figure out
-     # which libc our process is actually using.
--    process_namespace = ctypes.CDLL(None)
-+    try:
-+        process_namespace = ctypes.CDLL(None)
-+    except OSError:
-+        return None
-     try:
-         gnu_get_libc_version = process_namespace.gnu_get_libc_version
-     except AttributeError:
-EOF
+patch -p1 < ${ROOT}/patch-pip-static-binary.patch
 
 zip -r "${PIP_WHEEL}" *
 popd
@@ -170,72 +153,15 @@ fi
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
 # invoke the host Python on our own.
-patch -p1 << "EOF"
-diff --git a/Makefile.pre.in b/Makefile.pre.in
-index f128444b98..d2013a2987 100644
---- a/Makefile.pre.in
-+++ b/Makefile.pre.in
-@@ -1930,6 +1930,12 @@ patchcheck: @DEF_MAKE_RULE@
- 
- Python/thread.o: @THREADHEADERS@ $(srcdir)/Python/condvar.h
- 
-+write-python-for-build:
-+	echo "#!/bin/sh" > python-for-build
-+	echo "set -e" >> python-for-build
-+	echo "exec env $(PYTHON_FOR_BUILD) \$$@" >> python-for-build
-+	chmod +x python-for-build
-+
- # Declare targets that aren't real files
- .PHONY: all build_all sharedmods check-clean-src oldsharedmods test quicktest
- .PHONY: install altinstall oldsharedinstall bininstall altbininstall
-EOF
+patch -p1 < ${ROOT}/patch-write-python-for-build.patch
 
 # We build all extensions statically. So remove the auto-generated make
 # rules that produce shared libraries for them.
-patch -p1 << "EOF"
-diff --git a/Modules/makesetup b/Modules/makesetup
---- a/Modules/makesetup
-+++ b/Modules/makesetup
-@@ -241,18 +241,11 @@ sed -e 's/[ 	]*#.*//' -e '/^[ 	]*$/d' |
- 		case $doconfig in
- 		yes)	OBJS="$OBJS $objs";;
- 		esac
--		for mod in $mods
--		do
--			file="$srcdir/$mod\$(EXT_SUFFIX)"
--			case $doconfig in
--			no)	SHAREDMODS="$SHAREDMODS $file";;
--			esac
--			rule="$file: $objs"
--			rule="$rule; \$(BLDSHARED) $objs $libs $ExtraLibs -o $file"
--			echo "$rule" >>$rulesf
--		done
- 	done
- 
-+	# Deduplicate OBJS.
-+	OBJS=$(echo $OBJS | tr ' ' '\n' | sort -u | xargs)
-+
- 	case $SHAREDMODS in
- 	'')	;;
- 	*)	DEFS="SHAREDMODS=$SHAREDMODS$NL$DEFS";;
-EOF
+patch -p1 < ${ROOT}/patch-remove-extension-module-shared-libraries.patch
 
 # The default build rule for the macOS dylib doesn't pick up libraries
 # from modules / makesetup. So patch it accordingly.
-patch -p1 << "EOF"
-diff --git a/Makefile.pre.in b/Makefile.pre.in
---- a/Makefile.pre.in
-+++ b/Makefile.pre.in
-@@ -628,7 +628,7 @@ libpython3.so:	libpython$(LDVERSION).so
- 	$(BLDSHARED) $(NO_AS_NEEDED) -o $@ -Wl,-h$@ $^
- 
- libpython$(LDVERSION).dylib: $(LIBRARY_OBJS)
--	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(DTRACE_OBJS) $(SHLIBS) $(LIBC) $(LIBM); \
-+	 $(CC) -dynamiclib -Wl,-single_module $(PY_CORE_LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(LDVERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(DTRACE_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM); \
- 
- 
- libpython$(VERSION).sl: $(LIBRARY_OBJS)
-EOF
+patch -p1 < ${ROOT}/patch-macos-link-extension-modules.patch
 
 # Also on macOS, the `python` executable is linked against libraries defined by statically
 # linked modules. But those libraries should only get linked into libpython, not the
@@ -243,50 +169,11 @@ EOF
 # library dependencies that shouldn't need to be there.
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     if [ "${PYTHON_MAJMIN_VERSION}" = "3.8" ]; then
-        patch -p1 <<"EOF"
-diff --git a/Makefile.pre.in b/Makefile.pre.in
---- a/Makefile.pre.in
-+++ b/Makefile.pre.in
-@@ -563,7 +563,7 @@ clinic: check-clean-src $(srcdir)/Modules/_blake2/blake2s_impl.c
- 
- # Build the interpreter
- $(BUILDPYTHON):	Programs/python.o $(LIBRARY) $(LDLIBRARY) $(PY3LIBRARY)
--	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS)
-+	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(SYSLIBS)
- 
- platform: $(BUILDPYTHON) pybuilddir.txt
- 	$(RUNSHARED) $(PYTHON_FOR_BUILD) -c 'import sys ; from sysconfig import get_platform ; print("%s-%d.%d" % (get_platform(), *sys.version_info[:2]))' >platform
-EOF
+        patch -p1 < ${ROOT}/patch-python-link-modules-3.8.patch
     elif [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
-        patch -p1 <<"EOF"
-diff --git a/Makefile.pre.in b/Makefile.pre.in
---- a/Makefile.pre.in
-+++ b/Makefile.pre.in
-@@ -563,7 +563,7 @@ clinic: check-clean-src $(srcdir)/Modules/_blake2/blake2s_impl.c
-
- # Build the interpreter
- $(BUILDPYTHON):	Programs/python.o $(LIBRARY) $(LDLIBRARY) $(PY3LIBRARY) $(EXPORTSYMS)
--	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS)
-+	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(SYSLIBS)
-
- platform: $(BUILDPYTHON) pybuilddir.txt
- 	$(RUNSHARED) $(PYTHON_FOR_BUILD) -c 'import sys ; from sysconfig import get_platform ; print("%s-%d.%d" % (get_platform(), *sys.version_info[:2]))' >platform
-EOF
+        patch -p1 < ${ROOT}/patch-python-link-modules-3.9.patch
     else
-        patch -p1 <<"EOF"
-diff --git a/Makefile.pre.in b/Makefile.pre.in
---- a/Makefile.pre.in
-+++ b/Makefile.pre.in
-@@ -563,7 +563,7 @@ clinic: check-clean-src $(srcdir)/Modules/_blake2/blake2s_impl.c
-
- # Build the interpreter
- $(BUILDPYTHON):	Programs/python.o $(LIBRARY_DEPS)
--	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(MODLIBS) $(SYSLIBS)
-+	$(LINKCC) $(PY_CORE_LDFLAGS) $(LINKFORSHARED) -o $@ Programs/python.o $(BLDLIBRARY) $(LIBS) $(SYSLIBS)
-
- platform: $(BUILDPYTHON) pybuilddir.txt
- 	$(RUNSHARED) $(PYTHON_FOR_BUILD) -c 'import sys ; from sysconfig import get_platform ; print("%s-%d.%d" % (get_platform(), *sys.version_info[:2]))' >platform
-EOF
+        patch -p1 < ${ROOT}/patch-python-link-modules-3.10.patch
     fi
 fi
 
@@ -294,63 +181,12 @@ fi
 # and doesn't support all our building scenarios. We replace it with something
 # more reasonable. This patch likely isn't generally appropriate. But since we
 # guarantee we're building with a 11.0+ SDK, it should be safe.
-patch -p1 << "EOF"
-diff --git a/Modules/_ctypes/callproc.c b/Modules/_ctypes/callproc.c
-index b0f1e0bd04..80e81fe65c 100644
---- a/Modules/_ctypes/callproc.c
-+++ b/Modules/_ctypes/callproc.c
-@@ -1450,29 +1450,8 @@ copy_com_pointer(PyObject *self, PyObject *args)
- }
- #else
- #ifdef __APPLE__
--#ifdef HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH
- #define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
-     __builtin_available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, *)
--#else
--// Support the deprecated case of compiling on an older macOS version
--static void *libsystem_b_handle;
--static bool (*_dyld_shared_cache_contains_path)(const char *path);
--
--__attribute__((constructor)) void load_dyld_shared_cache_contains_path(void) {
--    libsystem_b_handle = dlopen("/usr/lib/libSystem.B.dylib", RTLD_LAZY);
--    if (libsystem_b_handle != NULL) {
--        _dyld_shared_cache_contains_path = dlsym(libsystem_b_handle, "_dyld_shared_cache_contains_path");
--    }
--}
--
--__attribute__((destructor)) void unload_dyld_shared_cache_contains_path(void) {
--    if (libsystem_b_handle != NULL) {
--        dlclose(libsystem_b_handle);
--    }
--}
--#define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
--    _dyld_shared_cache_contains_path != NULL
--#endif
-
- static PyObject *py_dyld_shared_cache_contains_path(PyObject *self, PyObject *args)
- {
-EOF
+patch -p1 < ${ROOT}/patch-ctypes-callproc.patch
 
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.
 # See https://bugs.python.org/issue37060.
-patch -p1 << EOF
-diff --git a/Lib/ctypes/__init__.py b/Lib/ctypes/__init__.py
---- a/Lib/ctypes/__init__.py
-+++ b/Lib/ctypes/__init__.py
-@@ -441,7 +441,10 @@ if _os.name == "nt":
- elif _sys.platform == "cygwin":
-     pythonapi = PyDLL("libpython%d.%d.dll" % _sys.version_info[:2])
- else:
--    pythonapi = PyDLL(None)
-+    try:
-+        pythonapi = PyDLL(None)
-+    except OSError:
-+        pythonapi = None
-
-
- if _os.name == "nt":
-EOF
+patch -p1 < ${ROOT}/patch-ctypes-static-binary.patch
 
 # CPython 3.10 added proper support for building against libedit outside of
 # macOS. On older versions, we need to patch readline.c and distribute
@@ -367,63 +203,12 @@ if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]
     # HAVE_RL_COMPLETION_SUPPRESS_APPEND improperly. So hack that. This is a bug
     # in our build system, as we should probably be invoking configure again when
     # using libedit.
-    patch -p1 << EOF
-diff --git a/Modules/readline-libedit.c b/Modules/readline-libedit.c
-index 1e74f997b0..56a36e26e6 100644
---- a/Modules/readline-libedit.c
-+++ b/Modules/readline-libedit.c
-@@ -511,7 +511,7 @@ set the word delimiters for completion");
- 
- /* _py_free_history_entry: Utility function to free a history entry. */
- 
--#if defined(RL_READLINE_VERSION) && RL_READLINE_VERSION >= 0x0500
-+#ifndef USE_LIBEDIT
- 
- /* Readline version >= 5.0 introduced a timestamp field into the history entry
-    structure; this needs to be freed to avoid a memory leak.  This version of
-@@ -1055,7 +1055,7 @@ flex_complete(const char *text, int start, int end)
- #ifdef HAVE_RL_COMPLETION_APPEND_CHARACTER
-     rl_completion_append_character ='\0';
- #endif
--#ifdef HAVE_RL_COMPLETION_SUPPRESS_APPEND
-+#ifndef USE_LIBEDIT
-     rl_completion_suppress_append = 0;
- #endif
- 
-@@ -1241,7 +1241,7 @@ readline_until_enter_or_signal(const char *prompt, int *signal)
-             PyEval_SaveThread();
-             if (s < 0) {
-                 rl_free_line_state();
--#if defined(RL_READLINE_VERSION) && RL_READLINE_VERSION >= 0x0700
-+#ifndef USE_LIBEDIT
-                 rl_callback_sigcleanup();
- #endif
-                 rl_cleanup_after_signal();
-EOF
+    patch -p1 < ${ROOT}/patch-readline-libedit.patch
 fi
 
 # iOS doesn't have system(). Teach posixmodule.c about that.
 if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
-    patch -p1 <<EOF
-diff --git a/Modules/posixmodule.c b/Modules/posixmodule.c
-index 12f72f525f..4503c5fc60 100644
---- a/Modules/posixmodule.c
-+++ b/Modules/posixmodule.c
-@@ -326,6 +326,13 @@ corresponding Unix manual entries for more information on calls.");
- #  endif  /* _MSC_VER */
- #endif  /* ! __WATCOMC__ || __QNX__ */
-
-+#if __APPLE__
-+#include <TargetConditionals.h>
-+#if TARGET_OS_IPHONE
-+#    undef HAVE_SYSTEM
-+#endif
-+#endif
-+
- _Py_IDENTIFIER(__fspath__);
-
- /*[clinic input]
-EOF
+    patch -p1 < ${ROOT}/patch-posixmodule-remove-system.patch
 fi
 
 # We patched configure.ac above. Reflect those changes.
@@ -434,28 +219,7 @@ autoconf
 # aren't cross-compiling when we are. So force a static "yes" value when our
 # build system says we are cross-compiling.
 if [ -n "${CROSS_COMPILING}" ]; then
-  patch -p1 <<"EOF"
-diff --git a/configure b/configure
-index d078887b2f..8f1ea07cd8 100755
---- a/configure
-+++ b/configure
-@@ -1329,14 +1329,7 @@ build=$build_alias
- host=$host_alias
- target=$target_alias
-
--# FIXME: To remove some day.
--if test "x$host_alias" != x; then
--  if test "x$build_alias" = x; then
--    cross_compiling=maybe
--  elif test "x$build_alias" != "x$host_alias"; then
--    cross_compiling=yes
--  fi
--fi
-+cross_compiling=yes
-
- ac_tool_prefix=
- test -n "$host_alias" && ac_tool_prefix=$host_alias-
-EOF
+  patch -p1 < ${ROOT}/patch-force-cross-compile.patch
 fi
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
