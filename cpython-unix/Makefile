@@ -86,7 +86,12 @@ else
     TOOLCHAIN_TARGET :=
 endif
 
+empty:
+
 toolchain: $(TOOLCHAIN_TARGET)
+
+toolchain-image-%: $(OUTDIR)/%.Dockerfile
+	$(RUN_BUILD) --toolchain image-$*
 
 AUTOCONF_DEPENDS = \
     $(PYTHON_DEP_DEPENDS) \

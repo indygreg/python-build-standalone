@@ -83,7 +83,16 @@ def main():
     )
     parser.add_argument(
         "--make-target",
-        choices={"default", "toolchain"},
+        choices={
+            "default",
+            "empty",
+            "toolchain",
+            "toolchain-image-build",
+            "toolchain-image-build.cross",
+            "toolchain-image-gcc",
+            "toolchain-image-xcb",
+            "toolchain-image-xcb.cross",
+        },
         default="default",
         help="The make target to evaluate",
     )
