@@ -10,6 +10,8 @@ import tarfile
 import jsonschema
 import yaml
 
+from pythonbuild.logging import log
+
 EXTENSION_MODULE_SCHEMA = {
     "type": "object",
     "properties": {
@@ -103,12 +105,41 @@ def derive_setup_local(
     static_modules_lines,
     cpython_source_archive,
     python_version,
-    disabled=None,
-    setup_dist_verbatim=None,
+    target_triple,
+    extension_modules,
     musl=False,
     debug=False,
 ):
     """Derive the content of the Modules/Setup.local file."""
+
+    disabled = set()
+    setup_dist_verbatim = set()
+
+    for name, info in sorted(extension_modules.items()):
+        if min_version := info.get("minimum-python-version"):
+            parts = min_version.split(".")
+            required_major, required_minor = int(parts[0]), int(parts[1])
+            parts = python_version.split(".")
+            py_major, py_minor = int(parts[0]), int(parts[1])
+
+            if (py_major, py_minor) < (required_major, required_minor):
+                log(
+                    "disabling extension module %s because Python version too old"
+                    % name
+                )
+                disabled.add(name.encode("ascii"))
+
+        if targets := info.get("disabled-targets"):
+            if any(re.match(p, target_triple) for p in targets):
+                log(
+                    "disabling extension module %s because disabled for this target triple"
+                    % name
+                )
+                disabled.add(name.encode("ascii"))
+
+        if info.get("setup-dist-verbatim"):
+            setup_dist_verbatim.add(name.encode("ascii"))
+
     # makesetup parses lines with = as extra config options. There appears
     # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
     # around this by producing a Makefile supplement that overrides the build

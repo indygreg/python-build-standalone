@@ -677,44 +677,14 @@ def build_cpython(
 
     ems = extension_modules_config(EXTENSION_MODULES)
 
-    disabled_static_modules = set()
-    setup_dist_verbatim = set()
-
-    for name, info in sorted(ems.items()):
-        if min_version := info.get("minimum-python-version"):
-            parts = min_version.split(".")
-            required_major, required_minor = int(parts[0]), int(parts[1])
-            parts = python_version.split(".")
-            py_major, py_minor = int(parts[0]), int(parts[1])
-
-            if (py_major, py_minor) < (required_major, required_minor):
-                log(
-                    "disabling extension module %s because Python version too old"
-                    % name
-                )
-                disabled_static_modules.add(name)
-
-        if targets := info.get("disabled-targets"):
-            if any(re.match(p, target_triple) for p in targets):
-                log(
-                    "disabling extension module %s because disabled for this target triple"
-                    % name
-                )
-                disabled_static_modules.add(name)
-
-        if info.get("setup-dist-verbatim"):
-            setup_dist_verbatim.add(name.encode("ascii"))
-
-    disabled_static_modules = {v.encode("ascii") for v in disabled_static_modules}
-
     setup = derive_setup_local(
         static_modules_lines,
         python_archive,
         python_version=python_version,
+        target_triple=target_triple,
+        extension_modules=ems,
         musl="musl" in target_triple,
         debug=optimizations == "debug",
-        disabled=disabled_static_modules,
-        setup_dist_verbatim=setup_dist_verbatim,
     )
 
     config_c_in = parse_config_c(setup["config_c_in"].decode("utf-8"))
