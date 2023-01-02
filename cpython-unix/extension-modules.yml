@@ -127,7 +127,10 @@ _json:
 
 _locale: {}
 
-_lsprof: {}
+_lsprof:
+  sources:
+    - _lsprof.c
+    - rotatingtree.c
 
 _lzma: {}
 
