@@ -582,8 +582,6 @@ _uuid:
 _warnings: {}
 
 _weakref:
-  setup-dist-verbatim: true
-
   required-targets:
     - .*
 
