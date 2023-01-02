@@ -407,7 +407,11 @@ _sha1:
     - sha1module.c
 
 _sha256:
-  setup-dist-verbatim: true
+  sources:
+    - sha256module.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_BUILTIN
+      minimum-python-version: "3.9"
 
 _sha3:
   setup-dist-verbatim: true
