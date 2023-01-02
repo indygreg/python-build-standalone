@@ -356,7 +356,11 @@ _operator: {}
 _peg_parser: {}
 
 _pickle:
-  setup-dist-verbatim: true
+  sources:
+    - _pickle.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_MODULE
+      minimum-python-version: "3.10"
 
 _posixshmem:
   sources:
