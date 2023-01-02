@@ -65,6 +65,7 @@ EXTENSION_MODULE_SCHEMA = {
             },
         },
         "minimum-python-version": {"type": "string"},
+        "maximum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
         "setup-dist-verbatim": {"type": "boolean"},
         "sources": {"type": "array", "items": {"type": "string"}},
@@ -184,6 +185,16 @@ def meets_python_minimum_version(got: str, wanted: str) -> bool:
     return (got_major, got_minor) >= (wanted_major, wanted_minor)
 
 
+def meets_python_maximum_version(got: str, wanted: str) -> bool:
+    parts = got.split(".")
+    got_major, got_minor = int(parts[0]), int(parts[1])
+
+    parts = wanted.split(".")
+    wanted_major, wanted_minor = int(parts[0]), int(parts[1])
+
+    return (got_major, got_minor) <= (wanted_major, wanted_minor)
+
+
 def derive_setup_local(
     static_modules_lines,
     cpython_source_archive,
@@ -199,13 +210,18 @@ def derive_setup_local(
     setup_dist_verbatim = set()
 
     for name, info in sorted(extension_modules.items()):
-        if min_version := info.get("minimum-python-version"):
-            if not meets_python_minimum_version(python_version, min_version):
-                log(
-                    "disabling extension module %s because Python version too old"
-                    % name
-                )
-                disabled.add(name.encode("ascii"))
+        python_min_match = meets_python_minimum_version(
+            python_version, info.get("minimum-python-version", "1.0")
+        )
+        python_max_match = meets_python_maximum_version(
+            python_version, info.get("maximum-python-version", "100.0")
+        )
+
+        if not (python_min_match and python_max_match):
+            log(
+                f"disabling extension module {name} because Python version incompatible"
+            )
+            disabled.add(name.encode("ascii"))
 
         if targets := info.get("disabled-targets"):
             if any(re.match(p, target_triple) for p in targets):
@@ -338,7 +354,7 @@ def derive_setup_local(
             python_min_match = meets_python_minimum_version(
                 python_version, entry.get("minimum-python-version", "1.0")
             )
-            python_max_match = not meets_python_minimum_version(
+            python_max_match = meets_python_maximum_version(
                 python_version, entry.get("maximum-python-version", "100.0")
             )
 

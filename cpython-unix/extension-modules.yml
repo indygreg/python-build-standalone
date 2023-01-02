@@ -702,7 +702,9 @@ ossaudiodev:
     - ossaudiodev.c
 
 parser:
-  setup-dist-verbatim: true
+  maximum-python-version: "3.9"
+  sources:
+    - parsermodule.c
 
 posix:
   required-targets:
