@@ -418,7 +418,11 @@ _sha3:
     - _sha3/sha3module.c
 
 _sha512:
-  setup-dist-verbatim: true
+  sources:
+    - sha512module.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_BUILTIN
+      minimum-python-version: "3.9"
 
 _signal:
   required-targets:
