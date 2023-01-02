@@ -29,6 +29,16 @@ EXTENSION_MODULE_SCHEMA = {
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
         "frameworks": {"type": "array", "items": {"type": "string"}},
         "includes": {"type": "array", "items": {"type": "string"}},
+        "includes-conditional": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string"},
+                    "targets": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+        },
         "includes-deps": {"type": "array", "items": {"type": "string"}},
         "links": {"type": "array", "items": {"type": "string"}},
         "links-conditional": {
@@ -56,6 +66,17 @@ EXTENSION_MODULE_SCHEMA = {
         "required-targets": {"type": "array", "items": {"type": "string"}},
         "setup-dist-verbatim": {"type": "boolean"},
         "sources": {"type": "array", "items": {"type": "string"}},
+        "sources-conditional": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "source": {"type": "string"},
+                    "targets": {"type": "array", "items": {"type": "string"}},
+                },
+                "additionalProperties": False,
+            },
+        },
     },
     "additionalProperties": False,
 }
@@ -298,6 +319,10 @@ def derive_setup_local(
         for source in info.get("sources", []):
             line += " %s" % source
 
+        for entry in info.get("sources-conditional", []):
+            if any(re.match(p, target_triple) for p in entry["targets"]):
+                line += f" {entry['source']}"
+
         for define in info.get("defines", []):
             line += f" -D{define}"
 
@@ -307,6 +332,10 @@ def derive_setup_local(
 
         for path in info.get("includes", []):
             line += f" -I{path}"
+
+        for entry in info.get("includes-conditional", []):
+            if any(re.match(p, target_triple) for p in entry["targets"]):
+                line += f" -I{entry['path']}"
 
         for path in info.get("includes-deps", []):
             # Includes are added to global search path.

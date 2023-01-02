@@ -76,7 +76,40 @@ _crypt:
 _csv:
   setup-dist-verbatim: true
 
-_ctypes: {}
+_ctypes:
+  sources:
+    - _ctypes/_ctypes.c
+    - _ctypes/callbacks.c
+    - _ctypes/callproc.c
+    - _ctypes/stgdict.c
+    - _ctypes/cfield.c
+  sources-conditional:
+    - source: _ctypes/darwin/dlfcn_simple.c
+      targets:
+        - .*-apple-.*
+    - source: _ctypes/malloc_closure.c
+      targets:
+        - .*-apple-.*
+  defines:
+    - HAVE_FFI_PREP_CIF_VAR=1
+    - HAVE_FFI_PREP_CLOSURE_LOC=1
+    - HAVE_FFI_CLOSURE_ALLOC=1
+  defines-conditional:
+    - define: MACOSX
+      targets:
+        - .*-apple-.*
+    - define: USING_MALLOC_CLOSURE_DOT_C=1
+      targets:
+        - .*-apple-.*
+  includes-deps:
+    - include
+  includes-conditional:
+    - path: _ctypes/darwin
+      targets:
+        - .*-apple-.*
+  links:
+    - ffi
+    - dl
 
 _ctypes_test:
   sources:
