@@ -337,7 +337,8 @@ _md5:
     - md5module.c
 
 _multibytecodec:
-  setup-dist-verbatim: true
+  sources:
+    - cjkcodecs/multibytecodec.c
 
 _multiprocessing:
   # TODO check setup.py logic for semaphore.c and possibly fix missing
