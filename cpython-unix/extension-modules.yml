@@ -200,7 +200,30 @@ _signal:
   required-targets:
     - .*
 
-_sqlite3: {}
+_sqlite3:
+  sources:
+    - _sqlite/cache.c
+    - _sqlite/connection.c
+    - _sqlite/cursor.c
+    - _sqlite/microprotocols.c
+    - _sqlite/module.c
+    - _sqlite/prepare_protocol.c
+    - _sqlite/row.c
+    - _sqlite/statement.c
+    - _sqlite/util.c
+  includes-deps:
+    - include
+  includes:
+    - Modules/_sqlite
+  defines:
+    - "MODULE_NAME=\\\"sqlite3\\\""
+  defines-conditional:
+    # Cannot load dynamic extensions on iOS.
+    - define: SQLITE_OMIT_LOAD_EXTENSION=1
+      targets:
+        - .*-ios
+  links:
+    - sqlite3
 
 _socket:
   setup-dist-verbatim: true

@@ -16,6 +16,16 @@ EXTENSION_MODULE_SCHEMA = {
     "type": "object",
     "properties": {
         "defines": {"type": "array", "items": {"type": "string"}},
+        "defines-conditional": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "define": {"type": "string"},
+                    "targets": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+        },
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
         "frameworks": {"type": "array", "items": {"type": "string"}},
         "includes": {"type": "array", "items": {"type": "string"}},
@@ -290,6 +300,10 @@ def derive_setup_local(
 
         for define in info.get("defines", []):
             line += f" -D{define}"
+
+        for entry in info.get("defines-conditional", []):
+            if any(re.match(p, target_triple) for p in entry["targets"]):
+                line += f" -D{entry['define']}"
 
         for path in info.get("includes", []):
             line += f" -I{path}"
