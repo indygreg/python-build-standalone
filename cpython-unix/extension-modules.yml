@@ -140,7 +140,27 @@ _curses_panel:
 _datetime:
   setup-dist-verbatim: true
 
-_dbm: {}
+_dbm:
+  sources:
+    - _dbmmodule.c
+  defines-conditional:
+    - define: HAVE_BERKDB_H
+      targets:
+        - .*-unknown-linux-.*
+    - define: DB_DBM_HSEARCH
+      targets:
+        - .*-unknown-linux-.*
+    - define: HAVE_NDBM_H
+      targets:
+        - .*-apple-.*
+  includes-deps:
+    - include
+  links-conditional:
+    # macOS ships with an ndbm implementation in libSystem. CPython's setup.py will
+    # use it unless an ndbl or gdbm_compat library is present.
+    - name: db
+      targets:
+        - .*-unknown-linux-.*
 
 _decimal: {}
 
