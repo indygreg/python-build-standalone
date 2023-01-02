@@ -184,7 +184,8 @@ _curses_panel:
         - .*-apple-darwin
 
 _datetime:
-  setup-dist-verbatim: true
+  sources:
+    - _datetimemodule.c
 
 _dbm:
   sources:
