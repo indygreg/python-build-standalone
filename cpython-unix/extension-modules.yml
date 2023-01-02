@@ -425,6 +425,8 @@ ossaudiodev:
 
     # Missing header dependencies.
     - .*-unknown-linux-musl
+  sources:
+    - ossaudiodev.c
 
 parser:
   setup-dist-verbatim: true

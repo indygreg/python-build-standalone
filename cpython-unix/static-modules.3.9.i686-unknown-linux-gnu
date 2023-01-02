@@ -18,5 +18,4 @@ _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 _testmultiphase _testmultiphase.c
 _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
-ossaudiodev ossaudiodev.c
 readline readline.c -DUSE_LIBEDIT=1 -I/tools/deps/libedit/include -I/tools/deps/libedit/include/ncursesw -L/tools/deps/libedit/lib -ledit -lncursesw
