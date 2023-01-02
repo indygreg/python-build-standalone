@@ -140,7 +140,12 @@ _md5:
 _multibytecodec:
   setup-dist-verbatim: true
 
-_multiprocessing: {}
+_multiprocessing:
+  # TODO check setup.py logic for semaphore.c and possibly fix missing
+  # dependency.
+  sources:
+    - _multiprocessing/multiprocessing.c
+    - _multiprocessing/semaphore.c
 
 _opcode: {}
 

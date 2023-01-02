@@ -11,7 +11,6 @@ _dbm _dbmmodule.c -DHAVE_NDBM_H
 _elementtree _elementtree.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
 _hashlib _hashopenssl.c -Wl,-hidden-lssl -Wl,-hidden-lcrypto
 _lzma _lzmamodule.c -Wl,-hidden-llzma
-_multiprocessing _multiprocessing/multiprocessing.c _multiprocessing/semaphore.c
 _opcode _opcode.c
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing
 _queue _queuemodule.c
