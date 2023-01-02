@@ -477,7 +477,11 @@ _stat: {}
 _string: {}
 
 _struct:
-  setup-dist-verbatim: true
+  sources:
+    - _struct.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_MODULE
+      minimum-python-version: "3.10"
 
 _symtable: {}
 
