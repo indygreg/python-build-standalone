@@ -772,7 +772,8 @@ syslog:
 sys: {}
 
 termios:
-  setup-dist-verbatim: true
+  sources:
+    - termios.c
 
 time: {}
 
