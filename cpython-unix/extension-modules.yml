@@ -265,7 +265,10 @@ _struct:
 
 _symtable: {}
 
-_testbuffer: {}
+_testbuffer:
+  minimum-python-version: '3.9'
+  sources:
+    - _testbuffer.c
 
 _testcapi:
   # Ideally this would only be disabled while cross-compiling. We can't build it

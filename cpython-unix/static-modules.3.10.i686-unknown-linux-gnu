@@ -9,7 +9,6 @@ _curses_panel _curses_panel.c -DHAVE_NCURSESW=1 -I/tools/deps/include/ncursesw -
 _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/constants.c _decimal/libmpdec/context.c _decimal/libmpdec/convolute.c _decimal/libmpdec/crt.c _decimal/libmpdec/difradix2.c _decimal/libmpdec/fnt.c _decimal/libmpdec/fourstep.c _decimal/libmpdec/io.c _decimal/libmpdec/mpalloc.c _decimal/libmpdec/mpdecimal.c _decimal/libmpdec/numbertheory.c _decimal/libmpdec/sixstep.c _decimal/libmpdec/transpose.c -DCONFIG_32=1 -DPPRO=1 -DASM=1 -IModules/_decimal/libmpdec
 _dbm _dbmmodule.c -DHAVE_BERKDB_H -DDB_DBM_HSEARCH -I/tools/deps/include -L/tools/deps/lib -ldb
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lssl -lcrypto
-_testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 _testmultiphase _testmultiphase.c
