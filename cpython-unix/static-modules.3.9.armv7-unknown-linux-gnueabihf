@@ -11,5 +11,4 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _gdbm _gdbmmodule.c -DHAVE_NDBM_H -I/tools/deps/include -L/tools/deps/lib -lgdbm
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lssl -lcrypto
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
-_xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 readline readline.c -DUSE_LIBEDIT=1 -I/tools/deps/libedit/include -I/tools/deps/libedit/include/ncursesw -L/tools/deps/libedit/lib -ledit -lncursesw

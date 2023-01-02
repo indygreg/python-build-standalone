@@ -371,7 +371,11 @@ _xxsubinterpreters:
   sources:
     - _xxsubinterpretersmodule.c
 
-_xxtestfuzz: {}
+_xxtestfuzz:
+  minimum-python-version: '3.9'
+  sources:
+    - _xxtestfuzz/_xxtestfuzz.c
+    - _xxtestfuzz/fuzzer.c
 
 _zoneinfo:
   setup-dist-verbatim: true
