@@ -196,7 +196,6 @@ def meets_python_maximum_version(got: str, wanted: str) -> bool:
 
 
 def derive_setup_local(
-    static_modules_lines,
     cpython_source_archive,
     python_version,
     target_triple,
@@ -283,20 +282,13 @@ def derive_setup_local(
     RE_VARIANT = re.compile(rb"VARIANT=([^\s]+)\s")
 
     seen_variants = set()
-    seen_extensions = set()
 
-    # Collect all extension modules seen in the static-modules file.
-    for line in static_modules_lines:
-        entry = parse_setup_line(line, "")
-        if entry:
-            seen_extensions.add(entry["extension"])
-
-    static_modules_lines = list(static_modules_lines)
+    static_modules_lines = []
 
     # Derive lines from YAML metadata.
 
     # Ensure pure YAML extensions are emitted.
-    for name in sorted(set(extension_modules.keys()) - seen_extensions):
+    for name in sorted(extension_modules.keys()):
         info = extension_modules[name]
 
         if "sources" not in info:

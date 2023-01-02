@@ -670,12 +670,9 @@ def build_cpython(
     setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
     pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
-    static_modules_lines = []
-
     ems = extension_modules_config(EXTENSION_MODULES)
 
     setup = derive_setup_local(
-        static_modules_lines,
         python_archive,
         python_version=python_version,
         target_triple=target_triple,
