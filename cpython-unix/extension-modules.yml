@@ -753,7 +753,8 @@ resource:
     - resource.c
 
 select:
-  setup-dist-verbatim: true
+  sources:
+    - selectmodule.c
 
 spwd:
   setup-dist-verbatim: true
