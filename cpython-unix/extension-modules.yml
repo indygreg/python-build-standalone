@@ -181,6 +181,17 @@ _gdbm:
   # Disable GDBM everywhere because it is GPL v3.
   disabled-targets:
     - .*
+  # Configs never tested in YAML world since extension disabled globally. See
+  # VCS history from old static-modules* files for possible config changes if
+  # we ever need to revive this.
+  sources:
+    - _gdbmmodule.c
+  defines:
+    - HAVE_NDBM_H
+  includes-deps:
+    - include
+  links:
+    - gdbm
 
 _hashlib:
   sources:
