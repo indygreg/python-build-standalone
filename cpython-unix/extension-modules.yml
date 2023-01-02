@@ -803,4 +803,9 @@ xxlimited_35:
 xxsubtype: {}
 
 zlib:
-  setup-dist-verbatim: true
+  sources:
+    - zlibmodule.c
+  includes-deps:
+    - include
+  links:
+    - z
