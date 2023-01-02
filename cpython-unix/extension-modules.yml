@@ -597,7 +597,12 @@ _xxtestfuzz:
     - _xxtestfuzz/fuzzer.c
 
 _zoneinfo:
-  setup-dist-verbatim: true
+  minimum-python-version: "3.9"
+  sources:
+    - _zoneinfo.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_MODULE
+      minimum-python-version: "3.10"
 
 array:
   setup-dist-verbatim: true
