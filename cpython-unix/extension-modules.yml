@@ -78,7 +78,11 @@ _csv:
 
 _ctypes: {}
 
-_ctypes_test: {}
+_ctypes_test:
+  sources:
+    - _ctypes/_ctypes_test.c
+  links:
+    - m
 
 _curses:
   # ncurses not available on iOS.
