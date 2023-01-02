@@ -669,8 +669,6 @@ mmap:
     - mmapmodule.c
 
 nis:
-  setup-dist-verbatim: true
-
   disabled-targets:
     # NIS is not available on Apple OS.
     - aarch64-apple-.*
@@ -686,6 +684,11 @@ nis:
     # workarounds to adding nis support. See discussion in
     # https://github.com/indygreg/python-build-standalone/issues/51.
     - .*
+
+  sources:
+    - nismodule.c
+  links:
+    - nsl
 
 ossaudiodev:
   disabled-targets:
