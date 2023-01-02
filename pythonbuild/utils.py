@@ -165,14 +165,6 @@ def write_triples_makefiles(
                     % (support_search_dir / "extension-modules.yml")
                 )
 
-                for support_file in ("static-modules",):
-                    path = get_target_support_file(
-                        support_search_dir, support_file, python, host_platform, triple
-                    )
-                    lines.append(
-                        "PYTHON_SUPPORT_FILES := $(PYTHON_SUPPORT_FILES) %s\n" % path
-                    )
-
                 write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 

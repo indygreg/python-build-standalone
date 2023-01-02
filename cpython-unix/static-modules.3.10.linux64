@@ -1,6 +1,0 @@
-# Setup.dist doesn't have entries for all modules. This file defines
-# what's missing. The content here is reconstructed from logic in
-# setup.py and what was observed to execute in a normal build via setup.py.
-# We should audit this every time we upgrade CPython.
-
-readline readline.c -ledit -lncursesw

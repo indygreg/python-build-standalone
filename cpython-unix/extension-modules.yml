@@ -649,7 +649,27 @@ pyexpat:
     - XML_POOR_ENTROPY=1
     - USE_PYEXPAT_CAPI
 
-readline: {}
+readline:
+  disabled-targets:
+    - .*-apple-ios
+    - .*-apple-tvos
+    - .*-apple-watchos
+  sources:
+    - readline.c
+  defines:
+    - USE_LIBEDIT=1
+  includes-deps:
+    - libedit/include
+    - libedit/include/ncursesw
+  links:
+    - edit
+  links-conditional:
+    - name: ncursesw
+      targets:
+        - .*-unknown-linux-.*
+    - name: ncurses
+      targets:
+        - .*-apple-.*
 
 resource:
   setup-dist-verbatim: true

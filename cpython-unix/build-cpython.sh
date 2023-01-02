@@ -190,8 +190,6 @@ patch -p1 < ${ROOT}/patch-ctypes-static-binary.patch
 
 # CPython 3.10 added proper support for building against libedit outside of
 # macOS. On older versions, we need to patch readline.c.
-#
-# USE_LIBEDIT comes from our static-modules file.
 if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
     # readline.c assumes that a modern readline API version has a free_history_entry().
     # but libedit does not. Change the #ifdef accordingly.

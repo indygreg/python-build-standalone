@@ -670,10 +670,7 @@ def build_cpython(
     setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
     pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
-    with get_target_support_file(
-        SUPPORT, "static-modules", version, host_platform, target_triple
-    ).open("rb") as fh:
-        static_modules_lines = [l.rstrip() for l in fh if not l.startswith(b"#")]
+    static_modules_lines = []
 
     ems = extension_modules_config(EXTENSION_MODULES)
 
