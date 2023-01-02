@@ -333,7 +333,8 @@ _lzma:
     - lzma
 
 _md5:
-  setup-dist-verbatim: true
+  sources:
+    - md5module.c
 
 _multibytecodec:
   setup-dist-verbatim: true
