@@ -15,6 +15,5 @@ _lzma _lzmamodule.c -I/tools/deps/include -L/tools/deps/lib -llzma
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing -lrt
 _sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -I/tools/deps/include -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -L/tools/deps/lib -lsqlite3
 _ssl _ssl.c -I/tools/deps/include -lssl -lcrypto
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -I/tools/deps/include/X11 -L/tools/deps/lib -ltcl8.6 -ltk8.6 -lX11 -lxcb -lXau
 ossaudiodev ossaudiodev.c
 readline readline.c -DUSE_LIBEDIT=1 -I/tools/deps/libedit/include -I/tools/deps/libedit/include/ncursesw -L/tools/deps/libedit/lib -ledit -lncursesw

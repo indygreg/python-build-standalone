@@ -23,11 +23,6 @@ _testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 _testmultiphase _testmultiphase.c
-# CoreFoundation isn't a directory dependency but is a dependency of libtcl and libtk.
-# Without -ObjC, we get a crash: -[TKApplication tkProcessEvent:]: unrecognized selector sent to instance.
-# See also https://core.tcl-lang.org/tk/tktview/85f316beb15108ac43b03fa6c8608e31f3ae5f92.
-# This is apparently an issue with static linking Objective-C binaries.
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework Cocoa -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -framework QuartzCore -Xlinker -hidden-ltcl8.6 -Xlinker -hidden-ltk8.6 -Xlinker -ObjC
 _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses

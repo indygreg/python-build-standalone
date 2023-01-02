@@ -17,6 +17,7 @@ EXTENSION_MODULE_SCHEMA = {
     "properties": {
         "defines": {"type": "array", "items": {"type": "string"}},
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
+        "frameworks": {"type": "array", "items": {"type": "string"}},
         "includes": {"type": "array", "items": {"type": "string"}},
         "includes-deps": {"type": "array", "items": {"type": "string"}},
         "links": {"type": "array", "items": {"type": "string"}},
@@ -28,6 +29,17 @@ EXTENSION_MODULE_SCHEMA = {
                     "name": {"type": "string"},
                     "targets": {"type": "array", "items": {"type": "string"}},
                 },
+            },
+        },
+        "linker-args": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "args": {"type": "array", "items": {"type": "string"}},
+                    "targets": {"type": "array", "items": {"type": "string"}},
+                },
+                "additionalProperties": False,
             },
         },
         "minimum-python-version": {"type": "string"},
@@ -295,6 +307,15 @@ def derive_setup_local(
         for entry in info.get("links-conditional", []):
             if any(re.match(p, target_triple) for p in entry["targets"]):
                 line += " %s" % link_for_target(entry["name"], target_triple)
+
+        if "-apple-" in target_triple:
+            for framework in info.get("frameworks", []):
+                line += f" -framework {framework}"
+
+        for entry in info.get("linker-args", []):
+            if any(re.match(p, target_triple) for p in entry["targets"]):
+                for arg in entry["args"]:
+                    line += f" -Xlinker {arg}"
 
         static_modules_lines.append(line.encode("ascii"))
 
