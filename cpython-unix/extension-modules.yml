@@ -373,7 +373,11 @@ _posixshmem:
         - .*-unknown-linux-.*
 
 _posixsubprocess:
-  setup-dist-verbatim: true
+  sources:
+    - _posixsubprocess.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_BUILTIN
+      minimum-python-version: "3.10"
 
 _queue:
   sources:
