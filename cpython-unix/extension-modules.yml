@@ -403,7 +403,8 @@ _scproxy:
     - SystemConfiguration
 
 _sha1:
-  setup-dist-verbatim: true
+  sources:
+    - sha1module.c
 
 _sha256:
   setup-dist-verbatim: true
