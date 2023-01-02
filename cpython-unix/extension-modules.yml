@@ -522,10 +522,18 @@ _tkinter:
     - IOKit
     - QuartzCore
 
+_tokenize:
+  minimum-python-version: "3.11"
+
 _tracemalloc:
   setup-enabled: true
   required-targets:
     - .*
+
+_typing:
+  minimum-python-version: "3.11"
+  sources:
+    - _typingmodule.c
 
 _uuid:
   sources:
@@ -748,6 +756,12 @@ xxlimited_35:
 
 xxsubtype:
   setup-enabled: true
+
+# xx is a demo extension. So disable globally.
+xx:
+  minimum-python-version: "3.11"
+  disabled-targets:
+    - .*
 
 zlib:
   sources:
