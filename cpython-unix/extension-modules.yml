@@ -167,7 +167,15 @@ _peg_parser: {}
 _pickle:
   setup-dist-verbatim: true
 
-_posixshmem: {}
+_posixshmem:
+  sources:
+    - _multiprocessing/posixshmem.c
+  includes:
+    - Modules/_multiprocessing
+  links-conditional:
+    - name: rt
+      targets:
+        - .*-unknown-linux-.*
 
 _posixsubprocess:
   setup-dist-verbatim: true

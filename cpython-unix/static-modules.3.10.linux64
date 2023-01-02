@@ -10,7 +10,6 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _dbm _dbmmodule.c -DHAVE_BERKDB_H -DDB_DBM_HSEARCH -I/tools/deps/include -L/tools/deps/lib -ldb
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lcrypto
 _lzma _lzmamodule.c -I/tools/deps/include -L/tools/deps/lib -llzma
-_posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing -lrt
 _testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE

@@ -14,7 +14,6 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _dbm _dbmmodule.c -DHAVE_NDBM_H
 _hashlib _hashopenssl.c -Xlinker -hidden-lcrypto
 _lzma _lzmamodule.c -Xlinker -hidden-llzma
-_posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 _testbuffer _testbuffer.c
 _testimportmultiple _testimportmultiple.c
