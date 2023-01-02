@@ -11,7 +11,6 @@ _dbm _dbmmodule.c -DHAVE_BERKDB_H -DDB_DBM_HSEARCH -I/tools/deps/include -L/tool
 _elementtree _elementtree.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lcrypto
 _lzma _lzmamodule.c -I/tools/deps/include -L/tools/deps/lib -llzma
-_opcode _opcode.c
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing -lrt
 _queue _queuemodule.c
 _sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -I/tools/deps/include -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -L/tools/deps/lib -lsqlite3

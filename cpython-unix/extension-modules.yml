@@ -147,7 +147,9 @@ _multiprocessing:
     - _multiprocessing/multiprocessing.c
     - _multiprocessing/semaphore.c
 
-_opcode: {}
+_opcode:
+  sources:
+    - _opcode.c
 
 _operator: {}
 

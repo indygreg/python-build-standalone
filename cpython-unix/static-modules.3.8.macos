@@ -15,7 +15,6 @@ _dbm _dbmmodule.c -DHAVE_NDBM_H
 _elementtree _elementtree.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
 _hashlib _hashopenssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 _lzma _lzmamodule.c -Xlinker -hidden-llzma
-_opcode _opcode.c
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing
 _queue _queuemodule.c
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
