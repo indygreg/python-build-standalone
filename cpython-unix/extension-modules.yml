@@ -73,7 +73,8 @@ _codecs_tw:
 _collections: {}
 
 _contextvars:
-  setup-dist-verbatim: true
+  sources:
+    - _contextvarsmodule.c
 
 _crypt:
   sources:
