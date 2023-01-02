@@ -67,7 +67,6 @@ EXTENSION_MODULE_SCHEMA = {
         "minimum-python-version": {"type": "string"},
         "maximum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
-        "setup-dist-verbatim": {"type": "boolean"},
         "sources": {"type": "array", "items": {"type": "string"}},
         "sources-conditional": {
             "type": "array",
@@ -207,7 +206,6 @@ def derive_setup_local(
     """Derive the content of the Modules/Setup.local file."""
 
     disabled = set()
-    setup_dist_verbatim = set()
 
     for name, info in sorted(extension_modules.items()):
         python_min_match = meets_python_minimum_version(
@@ -231,9 +229,6 @@ def derive_setup_local(
                 )
                 disabled.add(name.encode("ascii"))
 
-        if info.get("setup-dist-verbatim"):
-            setup_dist_verbatim.add(name.encode("ascii"))
-
     # makesetup parses lines with = as extra config options. There appears
     # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
     # around this by producing a Makefile supplement that overrides the build
@@ -241,7 +236,6 @@ def derive_setup_local(
     extra_cflags = {}
 
     disabled = disabled or set()
-    setup_dist_verbatim = setup_dist_verbatim or set()
 
     if debug:
         # Doesn't work in debug builds.
@@ -290,23 +284,6 @@ def derive_setup_local(
                 if m := RE_EXTENSION_MODULE.match(part):
                     dist_modules.add(m.group(1).decode("ascii"))
                     break
-
-        # Look for commented out lines that we are actually capable of processing.
-        if line.startswith(tuple(b"#%s" % k for k in setup_dist_verbatim)):
-            line = line[1:]
-
-            if b"#" in line:
-                line = line[: line.index(b"#")]
-
-            module = line.split()[0]
-
-            # Should be handled above. But doesn't hurt to be redundant.
-            dist_modules.add(module.decode("ascii"))
-
-            if section == "disabled" or module in disabled:
-                continue
-
-            dest_lines.append(line)
 
     missing = dist_modules - set(extension_modules.keys())
 

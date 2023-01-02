@@ -13,10 +13,6 @@
 # required-targets
 #   Array of target triples this extension module is required to initialize
 #   a Python interpreter.
-#
-# setup-dist-verbatim
-#   Whether extension module can be copied verbatim from Setup.dist without
-#   issue.
 
 _abc: {}
 
