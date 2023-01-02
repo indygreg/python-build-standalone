@@ -636,6 +636,7 @@ const GLOBAL_EXTENSIONS_MACOS: &[&str] = &["_scproxy"];
 
 const GLOBAL_EXTENSIONS_POSIX: &[&str] = &[
     "_crypt",
+    "_ctypes_test",
     "_curses",
     "_curses_panel",
     "_dbm",
@@ -1303,7 +1304,6 @@ fn validate_extension_modules(
 
     if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10") {
         wanted.extend([
-            "_ctypes_test",
             "_testbuffer",
             "_testimportmultiple",
             "_testmultiphase",
@@ -1318,11 +1318,6 @@ fn validate_extension_modules(
         }
     } else {
         wanted.insert("_uuid");
-    }
-
-    // _ctypes_test was only added to some cross builds on 3.8.
-    if python_major_minor == "3.8" && target_triple == "aarch64-unknown-linux-gnu" {
-        wanted.insert("_ctypes_test");
     }
 
     for extra in have_extensions.difference(&wanted) {
