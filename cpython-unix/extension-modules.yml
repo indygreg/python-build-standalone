@@ -625,7 +625,14 @@ binascii:
 builtins: {}
 
 cmath:
-  setup-dist-verbatim: true
+  sources:
+    - cmathmodule.c
+    - _math.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_MODULE
+      minimum-python-version: "3.9"
+  links:
+    - m
 
 errno: {}
 
