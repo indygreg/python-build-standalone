@@ -86,7 +86,8 @@ _crypt:
         - .*-unknown-linux-.*
 
 _csv:
-  setup-dist-verbatim: true
+  sources:
+    - _csv.c
 
 _ctypes:
   sources:
