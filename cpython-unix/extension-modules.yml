@@ -366,7 +366,10 @@ _weakref:
   required-targets:
     - .*
 
-_xxsubinterpreters: {}
+_xxsubinterpreters:
+  minimum-python-version: '3.9'
+  sources:
+    - _xxsubinterpretersmodule.c
 
 _xxtestfuzz: {}
 
