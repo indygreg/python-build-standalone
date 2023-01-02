@@ -16,6 +16,7 @@ EXTENSION_MODULE_SCHEMA = {
     "type": "object",
     "properties": {
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
+        "includes-deps": {"type": "array", "items": {"type": "string"}},
         "links": {"type": "array", "items": {"type": "string"}},
         "links-conditional": {
             "type": "array",
@@ -272,6 +273,13 @@ def derive_setup_local(
 
         for source in info.get("sources", []):
             line += " %s" % source
+
+        for path in info.get("includes-deps", []):
+            # Includes are added to global search path.
+            if "-apple-" in target_triple:
+                continue
+
+            line += f" -I/tools/deps/{path}"
 
         for lib in info.get("links", []):
             line += " %s" % link_for_target(lib, target_triple)

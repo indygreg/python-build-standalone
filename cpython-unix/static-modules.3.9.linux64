@@ -20,7 +20,6 @@ _testimportmultiple _testimportmultiple.c
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 _testmultiphase _testmultiphase.c
 _tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -I/tools/deps/include/X11 -L/tools/deps/lib -ltcl8.6 -ltk8.6 -lX11 -lxcb -lXau
-_uuid _uuidmodule.c -I/tools/deps/include/uuid -luuid
 _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 ossaudiodev ossaudiodev.c

@@ -245,7 +245,17 @@ _tracemalloc:
   required-targets:
     - .*
 
-_uuid: {}
+_uuid:
+  sources:
+    - _uuidmodule.c
+  includes-deps:
+    - include/uuid
+  links-conditional:
+    - name: uuid
+      # iOS doesn't need to link.
+      targets:
+        - .*-unknown-linux-.*
+        - .*-apple-darwin
 
 _warnings: {}
 
