@@ -414,7 +414,8 @@ _sha256:
       minimum-python-version: "3.9"
 
 _sha3:
-  setup-dist-verbatim: true
+  sources:
+    - _sha3/sha3module.c
 
 _sha512:
   setup-dist-verbatim: true
