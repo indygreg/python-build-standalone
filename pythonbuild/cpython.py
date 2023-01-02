@@ -167,7 +167,8 @@ def parse_setup_line(line: bytes, variant: str):
 
 
 def link_for_target(lib: str, target_triple: str) -> str:
-    # -Wl,-hidden-lbz2
+    # TODO use -Wl,-hidden-lbz2?
+    # TODO use -Wl,--exclude-libs,libfoo.a?
     if "-apple-" in target_triple:
         return f"-Xlinker -hidden-l{lib}"
     else:
