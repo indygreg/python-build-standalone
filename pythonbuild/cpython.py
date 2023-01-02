@@ -15,7 +15,9 @@ from pythonbuild.logging import log
 EXTENSION_MODULE_SCHEMA = {
     "type": "object",
     "properties": {
+        "defines": {"type": "array", "items": {"type": "string"}},
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
+        "includes": {"type": "array", "items": {"type": "string"}},
         "includes-deps": {"type": "array", "items": {"type": "string"}},
         "links": {"type": "array", "items": {"type": "string"}},
         "links-conditional": {
@@ -273,6 +275,12 @@ def derive_setup_local(
 
         for source in info.get("sources", []):
             line += " %s" % source
+
+        for define in info.get("defines", []):
+            line += f" -D{define}"
+
+        for path in info.get("includes", []):
+            line += f" -I{path}"
 
         for path in info.get("includes-deps", []):
             # Includes are added to global search path.

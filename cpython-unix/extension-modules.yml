@@ -350,7 +350,18 @@ posix:
 
 pwd: {}
 
-pyexpat: {}
+pyexpat:
+  sources:
+    - pyexpat.c
+    - expat/xmlparse.c
+    - expat/xmlrole.c
+    - expat/xmltok.c
+  includes:
+    - Modules/expat
+  defines:
+    - HAVE_EXPAT_CONFIG_H=1
+    - XML_POOR_ENTROPY=1
+    - USE_PYEXPAT_CAPI
 
 readline: {}
 

@@ -24,5 +24,4 @@ _ssl _ssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 # See also https://core.tcl-lang.org/tk/tktview/85f316beb15108ac43b03fa6c8608e31f3ae5f92.
 # This is apparently an issue with static linking Objective-C binaries.
 _tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -framework AppKit -framework ApplicationServices -framework Carbon -framework Cocoa -framework CoreFoundation -framework CoreServices -framework CoreGraphics -framework IOKit -framework QuartzCore -Xlinker -hidden-ltcl8.6 -Xlinker -hidden-ltk8.6 -Xlinker -ObjC
-pyexpat pyexpat.c expat/xmlparse.c expat/xmlrole.c expat/xmltok.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
 readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses
