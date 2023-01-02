@@ -17,5 +17,4 @@ _lzma _lzmamodule.c -Xlinker -hidden-llzma
 _posixshmem _multiprocessing/posixshmem.c -IModules/_multiprocessing
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 _sqlite3 _sqlite/cache.c _sqlite/connection.c _sqlite/cursor.c _sqlite/microprotocols.c _sqlite/module.c _sqlite/prepare_protocol.c _sqlite/row.c _sqlite/statement.c _sqlite/util.c -IModules/_sqlite -DMODULE_NAME=\"sqlite3\" -Xlinker -hidden-lsqlite3
-_ssl _ssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses

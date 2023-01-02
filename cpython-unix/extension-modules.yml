@@ -207,7 +207,14 @@ _socket:
 
 _sre: {}
 
-_ssl: {}
+_ssl:
+  sources:
+    - _ssl.c
+  includes-deps:
+    - include
+  links:
+    - ssl
+    - crypto
 
 _statistics:
   setup-dist-verbatim: true
