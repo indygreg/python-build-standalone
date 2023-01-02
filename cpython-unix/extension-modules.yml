@@ -757,7 +757,8 @@ select:
     - selectmodule.c
 
 spwd:
-  setup-dist-verbatim: true
+  sources:
+    - spwdmodule.c
 
   # spwd not available on Apple OS.
   disabled-targets:
