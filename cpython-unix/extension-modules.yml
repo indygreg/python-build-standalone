@@ -182,7 +182,13 @@ _gdbm:
   disabled-targets:
     - .*
 
-_hashlib: {}
+_hashlib:
+  sources:
+    - _hashopenssl.c
+  includes-deps:
+    - include
+  links:
+    - crypto
 
 _heapq:
   setup-dist-verbatim: true
