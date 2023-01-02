@@ -121,7 +121,9 @@ _io:
   required-targets:
     - .*
 
-_json: {}
+_json:
+  sources:
+    - _json.c
 
 _locale: {}
 

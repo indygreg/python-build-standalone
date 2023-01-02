@@ -10,7 +10,6 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _dbm _dbmmodule.c -DHAVE_NDBM_H
 _elementtree _elementtree.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
 _hashlib _hashopenssl.c -Wl,-hidden-lssl -Wl,-hidden-lcrypto
-_json _json.c
 _lsprof _lsprof.c rotatingtree.c
 _lzma _lzmamodule.c -Wl,-hidden-llzma
 _multiprocessing _multiprocessing/multiprocessing.c _multiprocessing/semaphore.c

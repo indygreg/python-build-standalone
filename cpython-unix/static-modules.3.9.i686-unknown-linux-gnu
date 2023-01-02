@@ -12,7 +12,6 @@ _elementtree _elementtree.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_P
 # Cannot build _gdbm due to use of bdb.
 #_gdbm _gdbmmodule.c -DHAVE_NDBM_H -I/tools/deps/include -L/tools/deps/lib -lgdbm
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lssl -lcrypto
-_json _json.c
 _lsprof _lsprof.c rotatingtree.c
 _lzma _lzmamodule.c -I/tools/deps/include -L/tools/deps/lib -llzma
 # TODO check setup.py logic for semaphore.c and possibly fix missing
