@@ -619,7 +619,8 @@ audioop:
     - audioop.c
 
 binascii:
-  setup-dist-verbatim: true
+  sources:
+    - binascii.c
 
 builtins: {}
 
