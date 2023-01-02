@@ -3,5 +3,4 @@
 # setup.py and what was observed to execute in a normal build via setup.py.
 # We should audit this every time we upgrade CPython.
 
-_scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses

@@ -362,9 +362,16 @@ _random:
   setup-dist-verbatim: true
 
 _scproxy:
+  # _scproxy is Apple OS only.
   # APIs required by _scproxy not available on iOS.
   disabled-targets:
     - .*-apple-ios
+    - .*-unknown-linux-.*
+  sources:
+    - _scproxy.c
+  frameworks:
+    - CoreFoundation
+    - SystemConfiguration
 
 _sha1:
   setup-dist-verbatim: true
