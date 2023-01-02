@@ -31,7 +31,11 @@ _bisect:
 _blake2:
   setup-dist-verbatim: true
 
-_bz2: {}
+_bz2:
+  sources:
+    - _bz2module.c
+  links:
+    - bz2
 
 _codecs:
   required-targets:

@@ -16,9 +16,11 @@ EXTENSION_MODULE_SCHEMA = {
     "type": "object",
     "properties": {
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
+        "links": {"type": "array", "items": {"type": "string"}},
         "minimum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
         "setup-dist-verbatim": {"type": "boolean"},
+        "sources": {"type": "array", "items": {"type": "string"}},
     },
     "additionalProperties": False,
 }
@@ -101,6 +103,14 @@ def parse_setup_line(line: bytes, variant: str):
         "frameworks": frameworks,
         "variant": variant or "default",
     }
+
+
+def link_for_target(lib: str, target_triple: str) -> str:
+    # -Wl,-hidden-lbz2
+    if "-apple-" in target_triple:
+        return f"-Xlinker -hidden-l{lib}"
+    else:
+        return f"-l{lib}"
 
 
 def derive_setup_local(
@@ -227,6 +237,36 @@ def derive_setup_local(
     RE_VARIANT = re.compile(rb"VARIANT=([^\s]+)\s")
 
     seen_variants = set()
+    seen_extensions = set()
+
+    # Collect all extension modules seen in the static-modules file.
+    for line in static_modules_lines:
+        entry = parse_setup_line(line, "")
+        if entry:
+            seen_extensions.add(entry["extension"])
+
+    static_modules_lines = list(static_modules_lines)
+
+    # Derive lines from YAML metadata.
+
+    # Ensure pure YAML extensions are emitted.
+    for name in sorted(set(extension_modules.keys()) - seen_extensions):
+        info = extension_modules[name]
+
+        if "sources" not in info:
+            continue
+
+        log(f"deriving Setup line for {name}")
+
+        line = name
+
+        for source in info.get("sources", []):
+            line += " %s" % source
+
+        for lib in info.get("links", []):
+            line += " %s" % link_for_target(lib, target_triple)
+
+        static_modules_lines.append(line.encode("ascii"))
 
     for line in static_modules_lines:
         if not line.strip():
