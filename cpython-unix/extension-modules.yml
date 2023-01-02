@@ -384,7 +384,11 @@ _queue:
     - _queuemodule.c
 
 _random:
-  setup-dist-verbatim: true
+  sources:
+    - _randommodule.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_MODULE
+      minimum-python-version: "3.9"
 
 _scproxy:
   # _scproxy is Apple OS only.
