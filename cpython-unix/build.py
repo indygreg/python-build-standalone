@@ -354,38 +354,6 @@ def build_libedit(
         build_env.get_tools_archive(dest_archive, "deps")
 
 
-def build_readline(
-    settings, client, image, host_platform, target_triple, optimizations, dest_archive
-):
-    readline_archive = download_entry("readline", DOWNLOADS_PATH)
-
-    with build_environment(client, image) as build_env:
-        if settings.get("needs_toolchain"):
-            build_env.install_toolchain(
-                BUILD,
-                host_platform,
-                binutils=True,
-                clang=True,
-                musl="musl" in target_triple,
-            )
-
-        build_env.install_artifact_archive(
-            BUILD, "ncurses", target_triple, optimizations
-        )
-        build_env.copy_file(readline_archive)
-        build_env.copy_file(SUPPORT / "build-readline.sh")
-
-        env = {
-            "TOOLCHAIN": "clang-%s" % host_platform,
-            "READLINE_VERSION": DOWNLOADS["readline"]["version"],
-        }
-
-        add_target_env(env, host_platform, target_triple, build_env)
-
-        build_env.run("build-readline.sh", environment=env)
-        build_env.get_tools_archive(dest_archive, "deps")
-
-
 def build_tix(
     settings, client, image, host_platform, target_triple, optimizations, dest_archive
 ):
@@ -1004,17 +972,6 @@ def main():
 
         elif action == "libedit":
             build_libedit(
-                settings,
-                client,
-                get_image(client, ROOT, BUILD, docker_image),
-                host_platform=host_platform,
-                target_triple=target_triple,
-                optimizations=optimizations,
-                dest_archive=dest_archive,
-            )
-
-        elif action == "readline":
-            build_readline(
                 settings,
                 client,
                 get_image(client, ROOT, BUILD, docker_image),

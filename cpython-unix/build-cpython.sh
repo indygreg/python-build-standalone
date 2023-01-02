@@ -189,13 +189,10 @@ patch -p1 < ${ROOT}/patch-ctypes-callproc.patch
 patch -p1 < ${ROOT}/patch-ctypes-static-binary.patch
 
 # CPython 3.10 added proper support for building against libedit outside of
-# macOS. On older versions, we need to patch readline.c and distribute
-# multiple extension module variants.
+# macOS. On older versions, we need to patch readline.c.
 #
 # USE_LIBEDIT comes from our static-modules file.
 if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
-    cp Modules/readline.c Modules/readline-libedit.c
-
     # readline.c assumes that a modern readline API version has a free_history_entry().
     # but libedit does not. Change the #ifdef accordingly.
     #
@@ -246,16 +243,18 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CFLAGS="${CFLAGS} -Werror=unguarded-availability-new"
 fi
 
-# CPython 3.10 introduced proper support for libedit on all platforms. Link against
-# libedit by default because it isn't GPL.
-#
-# Ideally we wouldn't need to adjust global compiler and linker flags. But configure
-# performs detection of readline features and sets some preprocessor defines accordingly.
-# So we define these accordingly.
-if [[ "${PYBUILD_PLATFORM}" != "macos" && "${PYTHON_MAJMIN_VERSION}" != "3.8" && "${PYTHON_MAJMIN_VERSION}" != "3.9" ]]; then
+# Always build against libedit instead of the default of readline.
+# macOS always uses the system libedit, so no tweaks are needed.
+if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+    # On Linux, we need to add our custom libedit to search paths.
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/libedit/include"
     LDFLAGS="${LDFLAGS} -L${TOOLS_PATH}/deps/libedit/lib"
-    EXTRA_CONFIGURE_FLAGS="${EXTRA_CONFIGURE_FLAGS} --with-readline=editline"
+
+    # CPython 3.10 introduced proper configure support for libedit, so add configure
+    # flag there.
+    if [[ "${PYTHON_MAJMIN_VERSION}" != "3.8" && "${PYTHON_MAJMIN_VERSION}" != "3.9" ]]; then
+        EXTRA_CONFIGURE_FLAGS="${EXTRA_CONFIGURE_FLAGS} --with-readline=editline"
+    fi
 fi
 
 CPPFLAGS=$CFLAGS

@@ -12,7 +12,7 @@ for building Python. On Linux, a base Docker image based on a deterministic
 snapshot of Debian Wheezy is created. A modern binutils and GCC are built
 in this environment. That modern GCC is then used to build a modern Clang.
 Clang is then used to build all of Python's dependencies (openssl, ncurses,
-readline, sqlite, etc). Finally, Python itself is built.
+libedit, sqlite, etc). Finally, Python itself is built.
 
 Python is built in such a way that extensions are statically linked
 against their dependencies. e.g. instead of the ``sqlite3`` Python
@@ -77,16 +77,9 @@ in a way that respects the user's environment.
 On macOS, we use the system ``libedit`` and ``libncurses``, which is
 typically provided in ``/usr/lib``.
 
-On Linux, Python 3.10+ distributions have a ``readline`` extension
-module compiled and statically linked against ``libedit`` and
-``libncurses``, both of which we be build ourselves.
-
-On Linux, older Python versions produce ``readline`` extension module
-variants compiled against both ``libreadline`` and ``libedit``, which
-are statically linked against libraries built ourselves. These libraries
-each statically link against a ``libncurses`` built ourselves. The
-``readline`` extension module variant is the default, as Python compiles
-against ``readline`` by default.
+On Linux, we build ``libedit`` and ``ncurses`` from source and statically
+link against their respective libraries. Project releases before 2023 linked
+against ``readline`` on Linux.
 
 gettext / locale Module
 -----------------------

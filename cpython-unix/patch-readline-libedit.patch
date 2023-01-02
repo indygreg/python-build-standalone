@@ -1,7 +1,7 @@
-diff --git a/Modules/readline-libedit.c b/Modules/readline-libedit.c
+diff --git a/Modules/readline.c b/Modules/readline.c
 index 1e74f997b0..56a36e26e6 100644
---- a/Modules/readline-libedit.c
-+++ b/Modules/readline-libedit.c
+--- a/Modules/readline.c
++++ b/Modules/readline.c
 @@ -511,7 +511,7 @@ set the word delimiters for completion");
 
  /* _py_free_history_entry: Utility function to free a history entry. */

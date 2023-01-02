@@ -30,13 +30,12 @@ you build a program (like Python) locally, you link against
 *for free*.
 
 Because python-build-standalone Python distributions compile
-and use their own version of ``readline``/``libedit`` and
-because the build environment is different from your
-machine, the default search locations for the *terminfo
-database* built into binaries distributed with this project
-may point to a path that doesn't exist. The *terminfo database*
-cannot be located and ``readline``/``libedit`` do not know
-how to convert special key presses to special behavior.
+and use their own version of ``libedit`` and because the build
+environment is different from your machine, the default search
+locations for the *terminfo database* built into binaries
+distributed with this project may point to a path that doesn't
+exist. The *terminfo database* cannot be located and ``libedit``
+does not know how to convert special key presses to special behavior.
 
 The solution to this is to set an environment variable
 with the location of the *terminfo database*.

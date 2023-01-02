@@ -35,9 +35,4 @@ _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 ossaudiodev ossaudiodev.c
 pyexpat pyexpat.c expat/xmlparse.c expat/xmlrole.c expat/xmltok.c -DHAVE_EXPAT_CONFIG_H=1 -DXML_POOR_ENTROPY=1 -DUSE_PYEXPAT_CAPI -IModules/expat
-# readline variant needs to come first because libreadline is in /tools/deps and is
-# picked up by build. We /could/ make libedit first. But since we employ a hack to
-# coerce use of libedit on Linux, it seems prudent for the build system to pick
-# up readline.
-readline VARIANT=readline readline.c -I/tools/deps/include -I/tools/deps/include/ncursesw -L/tools/deps/lib -lreadline -lncursesw
-readline VARIANT=libedit readline-libedit.c -DUSE_LIBEDIT=1 -I/tools/deps/libedit/include -I/tools/deps/libedit/include/ncursesw -L/tools/deps/libedit/lib -ledit -lncursesw
+readline readline.c -DUSE_LIBEDIT=1 -I/tools/deps/libedit/include -I/tools/deps/libedit/include/ncursesw -L/tools/deps/libedit/lib -ledit -lncursesw

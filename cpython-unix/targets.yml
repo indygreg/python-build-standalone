@@ -161,7 +161,6 @@ aarch64-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -235,7 +234,6 @@ armv7-unknown-linux-gnueabi:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -271,7 +269,6 @@ armv7-unknown-linux-gnueabihf:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -314,7 +311,6 @@ i686-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -350,7 +346,6 @@ mips-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -386,7 +381,6 @@ mipsel-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -422,7 +416,6 @@ s390x-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -662,7 +655,6 @@ x86_64-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -702,7 +694,6 @@ x86_64_v2-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -742,7 +733,6 @@ x86_64_v3-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -782,7 +772,6 @@ x86_64_v4-unknown-linux-gnu:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -822,7 +811,6 @@ x86_64-unknown-linux-musl:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -863,7 +851,6 @@ x86_64_v2-unknown-linux-musl:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -904,7 +891,6 @@ x86_64_v3-unknown-linux-musl:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
@@ -945,7 +931,6 @@ x86_64_v4-unknown-linux-musl:
     - ncurses
     - openssl
     - patchelf
-    - readline
     - sqlite
     - tcl
     - tk
