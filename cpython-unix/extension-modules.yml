@@ -27,7 +27,8 @@ _asyncio:
     - _asynciomodule.c
 
 _bisect:
-  setup-dist-verbatim: true
+  sources:
+    - _bisectmodule.c
 
 _blake2:
   setup-dist-verbatim: true
