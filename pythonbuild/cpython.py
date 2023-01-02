@@ -67,6 +67,15 @@ EXTENSION_MODULE_SCHEMA = {
         "minimum-python-version": {"type": "string"},
         "maximum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
+        "setup-enabled": {"type": "boolean"},
+        "setup-enabled-conditional": {
+            "type": "object",
+            "properties": {
+                "minimum-python-version": {"type": "string"},
+                "maximum-python-version": {"type": "string"},
+            },
+            "additionalProperties": False,
+        },
         "sources": {"type": "array", "items": {"type": "string"}},
         "sources-conditional": {
             "type": "array",
@@ -245,9 +254,10 @@ def derive_setup_local(
     dest_lines = []
     make_lines = []
     dist_modules = set()
+    setup_enabled_actual = set()
 
     RE_VARIABLE = re.compile(rb"^[a-zA-Z_]+\s*=")
-    RE_EXTENSION_MODULE = re.compile(rb"^([a-z_]+)\s+[a-zA-Z/_-]+\.c\s")
+    RE_EXTENSION_MODULE = re.compile(rb"^([a-z_]+)\s.*[a-zA-Z/_-]+\.c\b")
 
     for line in source_lines:
         line = line.rstrip()
@@ -263,19 +273,55 @@ def derive_setup_local(
             # Convert all shared extension modules to static.
             dest_lines.append(b"*static*")
 
-        # Look for all extension modules.
-        if b"#" in line:
-            # Look for extension syntax before and after comment.
-            for part in line.split(b"#"):
-                if m := RE_EXTENSION_MODULE.match(part):
-                    dist_modules.add(m.group(1).decode("ascii"))
-                    break
+        # Look for extension syntax before and after comment.
+        for i, part in enumerate(line.split(b"#")):
+            if m := RE_EXTENSION_MODULE.match(part):
+                dist_modules.add(m.group(1).decode("ascii"))
+
+                if i == 0:
+                    setup_enabled_actual.add(m.group(1).decode("ascii"))
+
+                break
 
     missing = dist_modules - set(extension_modules.keys())
 
     if missing:
         raise Exception(
             "missing extension modules from YAML: %s" % ", ".join(sorted(missing))
+        )
+
+    # Also verify that all Setup enabled extensions are annotated as such.
+    setup_enabled_wanted = set()
+
+    for name, info in extension_modules.items():
+        want_enabled = info.get("setup-enabled", False)
+
+        if entry := info.get("setup-enabled-conditional"):
+            python_min_match = meets_python_minimum_version(
+                python_version, entry.get("minimum-python-version", "1.0")
+            )
+            python_max_match = meets_python_maximum_version(
+                python_version, entry.get("maximum-python-version", "100.0")
+            )
+
+            if python_min_match and python_max_match:
+                want_enabled = True
+
+        if want_enabled:
+            setup_enabled_wanted.add(name)
+
+    missing = setup_enabled_actual - setup_enabled_wanted
+    if missing:
+        raise Exception(
+            "Setup enabled extensions missing YAML setup-enabled annotation: %s"
+            % ", ".join(sorted(missing))
+        )
+
+    extra = setup_enabled_wanted - setup_enabled_actual
+    if extra:
+        raise Exception(
+            "YAML setup-enabled extensions not present in Setup: %s"
+            % ", ".join(sorted(extra))
         )
 
     RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
@@ -287,7 +333,6 @@ def derive_setup_local(
 
     # Derive lines from YAML metadata.
 
-    # Ensure pure YAML extensions are emitted.
     for name in sorted(extension_modules.keys()):
         info = extension_modules[name]
 

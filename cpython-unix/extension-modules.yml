@@ -14,7 +14,8 @@
 #   Array of target triples this extension module is required to initialize
 #   a Python interpreter.
 
-_abc: {}
+_abc:
+  setup-enabled: true
 
 _ast: {}
 
@@ -39,6 +40,7 @@ _bz2:
     - bz2
 
 _codecs:
+  setup-enabled: true
   required-targets:
     - .*
 
@@ -66,7 +68,8 @@ _codecs_tw:
   sources:
     - cjkcodecs/_codecs_tw.c
 
-_collections: {}
+_collections:
+  setup-enabled: true
 
 _contextvars:
   sources:
@@ -273,7 +276,8 @@ _elementtree:
   includes:
     - Modules/expat
 
-_functools: {}
+_functools:
+  setup-enabled: true
 
 _gdbm:
   # Disable GDBM everywhere because it is GPL v3.
@@ -306,6 +310,7 @@ _heapq:
 _imp: {}
 
 _io:
+  setup-enabled: true
   required-targets:
     - .*
 
@@ -313,7 +318,8 @@ _json:
   sources:
     - _json.c
 
-_locale: {}
+_locale:
+  setup-enabled: true
 
 _lsprof:
   sources:
@@ -347,9 +353,13 @@ _opcode:
   sources:
     - _opcode.c
 
-_operator: {}
+_operator:
+  setup-enabled: true
 
-_peg_parser: {}
+_peg_parser:
+  setup-enabled-conditional:
+    minimum-python-version: "3.9"
+    maximum-python-version: "3.9"
 
 _pickle:
   sources:
@@ -421,6 +431,7 @@ _sha512:
       minimum-python-version: "3.9"
 
 _signal:
+  setup-enabled: true
   required-targets:
     - .*
 
@@ -453,7 +464,8 @@ _socket:
   sources:
     - socketmodule.c
 
-_sre: {}
+_sre:
+  setup-enabled: true
 
 _ssl:
   sources:
@@ -468,7 +480,8 @@ _statistics:
   sources:
     - _statisticsmodule.c
 
-_stat: {}
+_stat:
+  setup-enabled: true
 
 _string: {}
 
@@ -479,7 +492,8 @@ _struct:
     - define: Py_BUILD_CORE_MODULE
       minimum-python-version: "3.10"
 
-_symtable: {}
+_symtable:
+  setup-enabled: true
 
 _testbuffer:
   minimum-python-version: '3.9'
@@ -520,6 +534,7 @@ _testmultiphase:
     - _testmultiphase.c
 
 _thread:
+  setup-enabled: true
   required-targets:
     - .*
 
@@ -568,6 +583,7 @@ _tkinter:
     - QuartzCore
 
 _tracemalloc:
+  setup-enabled: true
   required-targets:
     - .*
 
@@ -586,6 +602,7 @@ _uuid:
 _warnings: {}
 
 _weakref:
+  setup-enabled: true
   required-targets:
     - .*
 
@@ -615,7 +632,8 @@ array:
     - define: Py_BUILD_CORE_MODULE
       minimum-python-version: "3.10"
 
-atexit: {}
+atexit:
+  setup-enabled: true
 
 # Modules/Setup comment is ambiguous as to whether this module actually works.
 audioop:
@@ -638,9 +656,11 @@ cmath:
   links:
     - m
 
-errno: {}
+errno:
+  setup-enabled: true
 
 faulthandler:
+  setup-enabled: true
   required-targets:
     - .*
 
@@ -654,7 +674,8 @@ grp:
   sources:
     - grpmodule.c
 
-itertools: {}
+itertools:
+  setup-enabled: true
 
 marshal: {}
 
@@ -711,11 +732,13 @@ parser:
     - parsermodule.c
 
 posix:
+  setup-enabled: true
   required-targets:
     - .*-unknown-linux-.*
     - .*-apple-darwin
 
-pwd: {}
+pwd:
+  setup-enabled: true
 
 pyexpat:
   sources:
@@ -779,7 +802,8 @@ termios:
   sources:
     - termios.c
 
-time: {}
+time:
+  setup-enabled: true
 
 unicodedata:
   sources:
@@ -804,7 +828,8 @@ xxlimited_35:
   disabled-targets:
     - .*
 
-xxsubtype: {}
+xxsubtype:
+  setup-enabled: true
 
 zlib:
   sources:
