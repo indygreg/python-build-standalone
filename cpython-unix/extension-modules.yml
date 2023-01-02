@@ -613,8 +613,10 @@ array:
 
 atexit: {}
 
+# Modules/Setup comment is ambiguous as to whether this module actually works.
 audioop:
-  setup-dist-verbatim: true
+  sources:
+    - audioop.c
 
 binascii:
   setup-dist-verbatim: true
