@@ -141,7 +141,13 @@ _lsprof:
     - _lsprof.c
     - rotatingtree.c
 
-_lzma: {}
+_lzma:
+  sources:
+    - _lzmamodule.c
+  includes-deps:
+    - include
+  links:
+    - lzma
 
 _md5:
   setup-dist-verbatim: true

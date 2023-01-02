@@ -13,6 +13,5 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 # use it unless an ndbl or gdbm_compat library is present.
 _dbm _dbmmodule.c -DHAVE_NDBM_H
 _hashlib _hashopenssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
-_lzma _lzmamodule.c -Xlinker -hidden-llzma
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses

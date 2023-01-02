@@ -9,4 +9,3 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 # use it unless an ndbl or gdbm_compat library is present.
 _dbm _dbmmodule.c -DHAVE_NDBM_H
 _hashlib _hashopenssl.c -Wl,-hidden-lssl -Wl,-hidden-lcrypto
-_lzma _lzmamodule.c -Wl,-hidden-llzma
