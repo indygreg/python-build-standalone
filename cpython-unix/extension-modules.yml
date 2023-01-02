@@ -641,7 +641,8 @@ faulthandler:
     - .*
 
 fcntl:
-  setup-dist-verbatim: true
+  sources:
+    - fcntlmodule.c
 
 gc: {}
 
