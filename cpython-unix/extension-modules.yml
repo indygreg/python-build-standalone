@@ -665,7 +665,8 @@ math:
     - m
 
 mmap:
-  setup-dist-verbatim: true
+  sources:
+    - mmapmodule.c
 
 nis:
   setup-dist-verbatim: true
