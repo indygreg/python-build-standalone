@@ -14,7 +14,6 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _dbm _dbmmodule.c -DHAVE_NDBM_H
 _hashlib _hashopenssl.c -Xlinker -hidden-lcrypto
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
-_testimportmultiple _testimportmultiple.c
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 _testmultiphase _testmultiphase.c
 _xxsubinterpreters _xxsubinterpretersmodule.c

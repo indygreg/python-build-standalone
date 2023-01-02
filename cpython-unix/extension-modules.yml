@@ -279,7 +279,10 @@ _testcapi:
   disabled-targets:
     - aarch64-apple-.*
 
-_testimportmultiple: {}
+_testimportmultiple:
+  minimum-python-version: '3.9'
+  sources:
+    - _testimportmultiple.c
 
 _testinternalcapi:
   # Despite being a test module, this needs to be built as a
