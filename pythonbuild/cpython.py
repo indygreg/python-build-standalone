@@ -174,11 +174,7 @@ def derive_setup_local(
         disabled.add(b"xxlimited_35")
 
     with tarfile.open(str(cpython_source_archive)) as tf:
-        # Setup.dist removed in Python 3.8.
-        try:
-            ifh = tf.extractfile("Python-%s/Modules/Setup.dist" % python_version)
-        except KeyError:
-            ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)
+        ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)
 
         source_lines = ifh.readlines()
 
