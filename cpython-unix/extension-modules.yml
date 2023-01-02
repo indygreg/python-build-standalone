@@ -655,7 +655,14 @@ itertools: {}
 marshal: {}
 
 math:
-  setup-dist-verbatim: true
+  sources:
+    - mathmodule.c
+    - _math.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_MODULE
+      minimum-python-version: "3.9"
+  links:
+    - m
 
 mmap:
   setup-dist-verbatim: true
