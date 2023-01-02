@@ -163,7 +163,9 @@ _posixshmem: {}
 _posixsubprocess:
   setup-dist-verbatim: true
 
-_queue: {}
+_queue:
+  sources:
+    - _queuemodule.c
 
 _random:
   setup-dist-verbatim: true
