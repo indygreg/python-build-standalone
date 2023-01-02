@@ -778,7 +778,11 @@ termios:
 time: {}
 
 unicodedata:
-  setup-dist-verbatim: true
+  sources:
+    - unicodedata.c
+  defines-conditional:
+    - define: Py_BUILD_CORE_BUILTIN
+      minimum-python-version: "3.10"
 
 xxlimited:
   # Similar story as _testcapi. The extension exists to test the limited API,
