@@ -251,8 +251,6 @@ def derive_setup_local(
         ifh = tf.extractfile("Python-%s/Modules/config.c.in" % python_version)
         config_c_in = ifh.read()
 
-    section = "builtin"
-
     dest_lines = []
     make_lines = []
     dist_modules = set()
@@ -271,12 +269,8 @@ def derive_setup_local(
             continue
 
         if line == b"#*shared*":
-            section = "shared"
-
             # Convert all shared extension modules to static.
             dest_lines.append(b"*static*")
-        elif line == b"#*disabled*":
-            section = "disabled"
 
         # Look for all extension modules.
         if b"#" in line:
