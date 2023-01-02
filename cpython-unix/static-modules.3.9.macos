@@ -3,7 +3,6 @@
 # setup.py and what was observed to execute in a normal build via setup.py.
 # We should audit this every time we upgrade CPython.
 
-_crypt _cryptmodule.c
 _ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/darwin/dlfcn_simple.c _ctypes/malloc_closure.c _ctypes/stgdict.c _ctypes/cfield.c -DMACOSX -DUSING_MALLOC_CLOSURE_DOT_C=1 -DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1 -I_ctypes/darwin -Xlinker -hidden-lffi -ldl
 _ctypes_test _ctypes/_ctypes_test.c -lm
 # We link against the system ncurses on macOS for simplicity. There is no ncursesw

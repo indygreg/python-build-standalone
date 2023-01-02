@@ -17,6 +17,16 @@ EXTENSION_MODULE_SCHEMA = {
     "properties": {
         "disabled-targets": {"type": "array", "items": {"type": "string"}},
         "links": {"type": "array", "items": {"type": "string"}},
+        "links-conditional": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "targets": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+        },
         "minimum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
         "setup-dist-verbatim": {"type": "boolean"},
@@ -265,6 +275,10 @@ def derive_setup_local(
 
         for lib in info.get("links", []):
             line += " %s" % link_for_target(lib, target_triple)
+
+        for entry in info.get("links-conditional", []):
+            if any(re.match(p, target_triple) for p in entry["targets"]):
+                line += " %s" % link_for_target(entry["name"], target_triple)
 
         static_modules_lines.append(line.encode("ascii"))
 

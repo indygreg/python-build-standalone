@@ -64,7 +64,14 @@ _collections: {}
 _contextvars:
   setup-dist-verbatim: true
 
-_crypt: {}
+_crypt:
+  sources:
+    - _cryptmodule.c
+  links-conditional:
+    # Linux links against libcrypt. Apple has symbols through a universal framework.
+    - name: crypt
+      targets:
+        - .*-unknown-linux-.*
 
 _csv:
   setup-dist-verbatim: true
