@@ -749,7 +749,8 @@ readline:
         - .*-apple-.*
 
 resource:
-  setup-dist-verbatim: true
+  sources:
+    - resource.c
 
 select:
   setup-dist-verbatim: true
