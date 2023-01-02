@@ -10,7 +10,6 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _dbm _dbmmodule.c -DHAVE_BERKDB_H -DDB_DBM_HSEARCH -I/tools/deps/include -L/tools/deps/lib -ldb
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lssl -lcrypto
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
-_testmultiphase _testmultiphase.c
 _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 readline readline.c -ledit -lncursesw

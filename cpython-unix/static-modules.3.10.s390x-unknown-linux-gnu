@@ -10,7 +10,6 @@ _dbm _dbmmodule.c -DHAVE_BERKDB_H -DDB_DBM_HSEARCH -I/tools/deps/include -L/tool
 _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/constants.c _decimal/libmpdec/context.c _decimal/libmpdec/convolute.c _decimal/libmpdec/crt.c _decimal/libmpdec/difradix2.c _decimal/libmpdec/fnt.c _decimal/libmpdec/fourstep.c _decimal/libmpdec/io.c _decimal/libmpdec/mpalloc.c _decimal/libmpdec/mpdecimal.c _decimal/libmpdec/numbertheory.c _decimal/libmpdec/sixstep.c _decimal/libmpdec/transpose.c -DCONFIG_64=1 -DANSI=1 -DHAVE_UINT128_T=1 -IModules/_decimal/libmpdec
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lcrypto
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
-_testmultiphase _testmultiphase.c
 _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 readline readline.c -ledit -lncursesw

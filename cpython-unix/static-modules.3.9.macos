@@ -15,7 +15,6 @@ _dbm _dbmmodule.c -DHAVE_NDBM_H
 _hashlib _hashopenssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
 _testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
-_testmultiphase _testmultiphase.c
 _xxsubinterpreters _xxsubinterpretersmodule.c
 _xxtestfuzz _xxtestfuzz/_xxtestfuzz.c _xxtestfuzz/fuzzer.c
 readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses
