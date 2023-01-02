@@ -469,7 +469,8 @@ _ssl:
     - crypto
 
 _statistics:
-  setup-dist-verbatim: true
+  sources:
+    - _statisticsmodule.c
 
 _stat: {}
 
