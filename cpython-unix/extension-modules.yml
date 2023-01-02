@@ -647,7 +647,8 @@ fcntl:
 gc: {}
 
 grp:
-  setup-dist-verbatim: true
+  sources:
+    - grpmodule.c
 
 itertools: {}
 
