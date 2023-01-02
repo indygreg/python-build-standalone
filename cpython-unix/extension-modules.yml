@@ -23,7 +23,8 @@ _abc: {}
 _ast: {}
 
 _asyncio:
-  setup-dist-verbatim: true
+  sources:
+    - _asynciomodule.c
 
 _bisect:
   setup-dist-verbatim: true
