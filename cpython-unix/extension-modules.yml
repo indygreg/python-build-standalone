@@ -486,14 +486,14 @@ _testbuffer:
   sources:
     - _testbuffer.c
 
+# _testcapi exists to test the public C APIs. It makes assumptions that it is
+# built as a shared library. Our static extension module builds invalidate this
+# assumption. So just disable globally.
 _testcapi:
-  # Ideally this would only be disabled while cross-compiling. We can't build it
-  # as a built-in extension via static-modules. And when letting setup.py build
-  # it, it builds for the host architecture during cross-builds, which upsets
-  # our validation script when it screens for the target machine type of
-  # binaries. So just disable it.
   disabled-targets:
-    - aarch64-apple-.*
+    - .*
+  sources:
+    - _testcapimodule.c
 
 _testimportmultiple:
   minimum-python-version: '3.9'
@@ -785,7 +785,7 @@ xxlimited:
   # which we don't really care about. Statically building it runs into problems
   # and cross-compiling emits wrong machine type when built via setup.py.
   disabled-targets:
-    - aarch64-apple-.*
+    - .*
 
 xxlimited_35:
   minimum-python-version: '3.10'
@@ -794,7 +794,7 @@ xxlimited_35:
   # which we don't really care about. Statically building it runs into problems
   # and cross-compiling emits wrong machine type when built via setup.py.
   disabled-targets:
-    - aarch64-apple-.*
+    - .*
 
 xxsubtype: {}
 

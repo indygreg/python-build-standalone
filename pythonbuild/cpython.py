@@ -202,7 +202,6 @@ def derive_setup_local(
     target_triple,
     extension_modules,
     musl=False,
-    debug=False,
 ):
     """Derive the content of the Modules/Setup.local file."""
 
@@ -235,13 +234,6 @@ def derive_setup_local(
     # around this by producing a Makefile supplement that overrides the build
     # rules for certain targets to include these missing values.
     extra_cflags = {}
-
-    disabled = disabled or set()
-
-    if debug:
-        # Doesn't work in debug builds.
-        disabled.add(b"xxlimited")
-        disabled.add(b"xxlimited_35")
 
     with tarfile.open(str(cpython_source_archive)) as tf:
         ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)

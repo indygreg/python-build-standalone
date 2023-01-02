@@ -681,7 +681,6 @@ def build_cpython(
         target_triple=target_triple,
         extension_modules=ems,
         musl="musl" in target_triple,
-        debug=optimizations == "debug",
     )
 
     config_c_in = parse_config_c(setup["config_c_in"].decode("utf-8"))
