@@ -454,7 +454,8 @@ _sqlite3:
     - sqlite3
 
 _socket:
-  setup-dist-verbatim: true
+  sources:
+    - socketmodule.c
 
 _sre: {}
 
