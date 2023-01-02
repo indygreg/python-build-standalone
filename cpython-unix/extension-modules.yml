@@ -88,6 +88,27 @@ _curses:
   # ncurses not available on iOS.
   disabled-targets:
     - .*-apple-ios
+    - .*-apple-tvos
+    - .*-apple-watchos
+  sources:
+    - _cursesmodule.c
+  defines:
+    - HAVE_NCURSESW=1
+  defines-conditional:
+    - define: _XOPEN_SOURCE_EXTENDED=1
+      targets:
+        - .*-apple-darwin
+  includes-deps:
+    - include/ncursesw
+  links-conditional:
+    # link against ncursesw on Linux and ncurses on macOS. The macOS library is
+    # Unicode aware, despite the name implying it isn't.
+    - name: ncursesw
+      targets:
+        - .*-unknown-linux-.*
+    - name: ncurses
+      targets:
+        - .*-apple-darwin
 
 _curses_panel:
   # ncurses not available on iOS.
