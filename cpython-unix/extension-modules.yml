@@ -500,7 +500,15 @@ _testimportmultiple:
   sources:
     - _testimportmultiple.c
 
+# Similar deal as _testcapi. Extension exists to test the exported C API. Since
+# we're statically linking, assumptions are invalidated. So value of extension
+# is minimal.
+#
+# If we ever enable this, we should add $(srcdir)/Include/internal to includes,
+# otherwise it likely picks up public API.
 _testinternalcapi:
+  disabled-targets:
+    - .*
   sources:
     - _testinternalcapi.c
   defines:
