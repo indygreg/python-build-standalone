@@ -114,6 +114,28 @@ _curses_panel:
   # ncurses not available on iOS.
   disabled-targets:
     - .*-apple-ios
+    - .*-apple-tvos
+    - .*-apple-watchos
+  sources:
+    - _curses_panel.c
+  defines:
+    - HAVE_NCURSESW=1
+  includes-deps:
+    - include/ncursesw
+  links-conditional:
+    - name: panelw
+      targets:
+        - .*-unknown-linux-.*
+    - name: panel
+      targets:
+        - .*-apple-darwin
+
+    - name: ncursesw
+      targets:
+        - .*-unknown-linux-.*
+    - name: ncurses
+      targets:
+        - .*-apple-darwin
 
 _datetime:
   setup-dist-verbatim: true
