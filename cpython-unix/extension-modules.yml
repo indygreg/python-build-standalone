@@ -328,9 +328,10 @@ _testimportmultiple:
     - _testimportmultiple.c
 
 _testinternalcapi:
-  # Despite being a test module, this needs to be built as a
-  # built-in in order to facilitate testing.
-  setup-dist-verbatim: true
+  sources:
+    - _testinternalcapi.c
+  defines:
+    - Py_BUILD_CORE_MODULE
 
 _testmultiphase:
   minimum-python-version: '3.9'

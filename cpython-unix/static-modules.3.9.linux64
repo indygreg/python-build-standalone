@@ -8,5 +8,4 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _dbm _dbmmodule.c -DHAVE_BERKDB_H -DDB_DBM_HSEARCH -I/tools/deps/include -L/tools/deps/lib -ldb
 _gdbm _gdbmmodule.c -DHAVE_NDBM_H -I/tools/deps/include -L/tools/deps/lib -lgdbm
 _hashlib _hashopenssl.c -I/tools/deps/include -L/tools/deps/lib -lssl -lcrypto
-_testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 readline readline.c -DUSE_LIBEDIT=1 -I/tools/deps/libedit/include -I/tools/deps/libedit/include/ncursesw -L/tools/deps/libedit/lib -ledit -lncursesw

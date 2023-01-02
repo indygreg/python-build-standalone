@@ -10,5 +10,4 @@ _decimal _decimal/_decimal.c _decimal/libmpdec/basearith.c _decimal/libmpdec/con
 _dbm _dbmmodule.c -DHAVE_NDBM_H
 _hashlib _hashopenssl.c -Xlinker -hidden-lssl -Xlinker -hidden-lcrypto
 _scproxy _scproxy.c -framework SystemConfiguration -framework CoreFoundation
-_testinternalcapi _testinternalcapi.c -DPy_BUILD_CORE_MODULE
 readline readline.c -Xlinker -hidden-ledit -Xlinker -hidden-lncurses
