@@ -766,7 +766,8 @@ spwd:
     - x86_64-apple-.*
 
 syslog:
-  setup-dist-verbatim: true
+  sources:
+    - syslogmodule.c
 
 sys: {}
 
