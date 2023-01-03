@@ -364,9 +364,6 @@ _peg_parser:
 _pickle:
   sources:
     - _pickle.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_MODULE
-      minimum-python-version: "3.10"
 
 _posixshmem:
   sources:
@@ -381,9 +378,6 @@ _posixshmem:
 _posixsubprocess:
   sources:
     - _posixsubprocess.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_BUILTIN
-      minimum-python-version: "3.10"
 
 _queue:
   sources:
@@ -392,9 +386,6 @@ _queue:
 _random:
   sources:
     - _randommodule.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_MODULE
-      minimum-python-version: "3.9"
 
 _scproxy:
   # _scproxy is Apple OS only.
@@ -415,9 +406,6 @@ _sha1:
 _sha256:
   sources:
     - sha256module.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_BUILTIN
-      minimum-python-version: "3.9"
 
 _sha3:
   sources:
@@ -426,9 +414,6 @@ _sha3:
 _sha512:
   sources:
     - sha512module.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_BUILTIN
-      minimum-python-version: "3.9"
 
 _signal:
   setup-enabled: true
@@ -488,9 +473,6 @@ _string: {}
 _struct:
   sources:
     - _struct.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_MODULE
-      minimum-python-version: "3.10"
 
 _symtable:
   setup-enabled: true
@@ -525,8 +507,6 @@ _testinternalcapi:
     - .*
   sources:
     - _testinternalcapi.c
-  defines:
-    - Py_BUILD_CORE_MODULE
 
 _testmultiphase:
   minimum-python-version: '3.9'
@@ -621,16 +601,10 @@ _zoneinfo:
   minimum-python-version: "3.9"
   sources:
     - _zoneinfo.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_MODULE
-      minimum-python-version: "3.10"
 
 array:
   sources:
     - arraymodule.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_MODULE
-      minimum-python-version: "3.10"
 
 atexit:
   setup-enabled: true
@@ -650,9 +624,6 @@ cmath:
   sources:
     - cmathmodule.c
     - _math.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_MODULE
-      minimum-python-version: "3.9"
   links:
     - m
 
@@ -683,9 +654,6 @@ math:
   sources:
     - mathmodule.c
     - _math.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_MODULE
-      minimum-python-version: "3.9"
   links:
     - m
 
@@ -808,9 +776,6 @@ time:
 unicodedata:
   sources:
     - unicodedata.c
-  defines-conditional:
-    - define: Py_BUILD_CORE_BUILTIN
-      minimum-python-version: "3.10"
 
 xxlimited:
   # Similar story as _testcapi. The extension exists to test the limited API,
