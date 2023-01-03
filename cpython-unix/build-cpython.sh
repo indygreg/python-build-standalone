@@ -375,6 +375,13 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     export MACOSX_DEPLOYMENT_TARGET="${APPLE_MIN_DEPLOYMENT_TARGET}"
 fi
 
+# We use ndbm on macOS and BerkeleyDB elsewhere.
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-dbmliborder=ndbm"
+else
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-dbmliborder=bdb"
+fi
+
 if [ -n "${CROSS_COMPILING}" ]; then
     # configure doesn't like a handful of scenarios when cross-compiling.
     #
