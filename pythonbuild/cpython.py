@@ -25,6 +25,7 @@ EXTENSION_MODULE_SCHEMA = {
                     "targets": {"type": "array", "items": {"type": "string"}},
                     "minimum-python-version": {"type": "string"},
                 },
+                "additionalProperties": False,
                 "required": ["define"],
             },
         },
@@ -39,6 +40,7 @@ EXTENSION_MODULE_SCHEMA = {
                     "path": {"type": "string"},
                     "targets": {"type": "array", "items": {"type": "string"}},
                 },
+                "additionalProperties": False,
             },
         },
         "includes-deps": {"type": "array", "items": {"type": "string"}},
@@ -51,6 +53,7 @@ EXTENSION_MODULE_SCHEMA = {
                     "name": {"type": "string"},
                     "targets": {"type": "array", "items": {"type": "string"}},
                 },
+                "additionalProperties": False,
             },
         },
         "linker-args": {
