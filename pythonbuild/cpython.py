@@ -124,7 +124,7 @@ STDLIB_TEST_PACKAGES = {
 }
 
 
-def parse_setup_line(line: bytes):
+def parse_setup_line(line: bytes, python_version: str):
     """Parse a line in a ``Setup.*`` file."""
     if b"#" in line:
         line = line[: line.index(b"#")].rstrip()
@@ -147,7 +147,15 @@ def parse_setup_line(line: bytes):
             # directories they may happen to reside in are stripped out.
             source_path = pathlib.Path(word.decode("ascii"))
 
-            obj_path = pathlib.Path("Modules/%s" % source_path.with_suffix(".o").name)
+            # Python 3.11 changed the path of the object file.
+            if meets_python_minimum_version(python_version, "3.11") and b"/" in word:
+                obj_path = (
+                    pathlib.Path("Modules")
+                    / source_path.parent
+                    / source_path.with_suffix(".o").name
+                )
+            else:
+                obj_path = pathlib.Path("Modules") / source_path.with_suffix(".o").name
 
             objs.add(obj_path)
 
@@ -164,6 +172,7 @@ def parse_setup_line(line: bytes):
 
     return {
         "extension": extension,
+        "line": line,
         "posix_obj_paths": objs,
         "links": links,
         "frameworks": frameworks,
@@ -222,7 +231,7 @@ def derive_setup_local(
 
         if not (python_min_match and python_max_match):
             log(f"ignoring extension module {name} because Python version incompatible")
-            ignored.add(name.encode("ascii"))
+            ignored.add(name)
             continue
 
         if targets := info.get("disabled-targets"):
@@ -231,7 +240,7 @@ def derive_setup_local(
                     "disabling extension module %s because disabled for this target triple"
                     % name
                 )
-                disabled.add(name.encode("ascii"))
+                disabled.add(name)
 
     # makesetup parses lines with = as extra config options. There appears
     # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
@@ -322,7 +331,7 @@ def derive_setup_local(
 
     RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
 
-    # Tranlate our YAML metadata into Setup lines.
+    # Translate our YAML metadata into Setup lines.
     static_modules_lines = []
 
     for name in sorted(extension_modules.keys()):
@@ -411,17 +420,19 @@ def derive_setup_local(
     # Now translate all Setup lines to the final version.
 
     for line in static_modules_lines:
+        parsed = parse_setup_line(line, python_version=python_version)
+
+        if not parsed:
+            continue
+
         # makesetup parses lines with = as extra config options. There appears
         # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
         # around this by detecting the syntax we'd like to support and move the
         # variable defines to a Makefile supplement that overrides variables for
         # specific targets.
-        for m in RE_DEFINE.finditer(line):
-            sources = [w for w in line.split() if w.endswith(b".c")]
-            for source in sources:
-                obj = b"Modules/%s.o" % os.path.basename(source)[:-2]
-
-                extra_cflags.setdefault(obj, []).append(m.group(0))
+        for m in RE_DEFINE.finditer(parsed["line"]):
+            for obj_path in sorted(parsed["posix_obj_paths"]):
+                extra_cflags.setdefault(bytes(obj_path), []).append(m.group(0))
 
         line = RE_DEFINE.sub(b"", line)
 
@@ -433,7 +444,7 @@ def derive_setup_local(
         dest_lines.append(line)
 
     dest_lines.append(b"\n*disabled*\n")
-    dest_lines.extend(sorted(disabled))
+    dest_lines.extend(sorted(x.encode("ascii") for x in disabled))
 
     dest_lines.append(b"")
 

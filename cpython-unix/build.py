@@ -528,7 +528,7 @@ def python_build_info(
     # Extension data is derived by "parsing" the Setup.dist and Setup.local files.
 
     def process_setup_line(line):
-        d = parse_setup_line(line)
+        d = parse_setup_line(line, python_version=version)
 
         if not d:
             return
