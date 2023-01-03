@@ -24,6 +24,7 @@ EXTENSION_MODULE_SCHEMA = {
                     "define": {"type": "string"},
                     "targets": {"type": "array", "items": {"type": "string"}},
                     "minimum-python-version": {"type": "string"},
+                    "maximum-python-version": {"type": "string"},
                 },
                 "additionalProperties": False,
                 "required": ["define"],
@@ -368,8 +369,11 @@ def derive_setup_local(
             python_min_match = meets_python_minimum_version(
                 python_version, entry.get("minimum-python-version", "1.0")
             )
+            python_max_match = meets_python_maximum_version(
+                python_version, entry.get("minimum-python-version", "100.0")
+            )
 
-            if target_match and python_min_match:
+            if target_match and (python_min_match and python_max_match):
                 line += f" -D{entry['define']}"
 
         for path in info.get("includes", []):
