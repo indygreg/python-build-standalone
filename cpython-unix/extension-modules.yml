@@ -609,7 +609,9 @@ builtins: {}
 cmath:
   sources:
     - cmathmodule.c
-    - _math.c
+  sources-conditional:
+    - source: _math.c
+      maximum-python-version: "3.10"
   links:
     - m
 
@@ -639,7 +641,9 @@ marshal: {}
 math:
   sources:
     - mathmodule.c
-    - _math.c
+  sources-conditional:
+    - source: _math.c
+      maximum-python-version: "3.10"
   links:
     - m
 
