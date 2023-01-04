@@ -547,8 +547,6 @@ def validate_python_json(info, extension_modules):
 
     for name, variants in sorted(info["build_info"]["extensions"].items()):
         for ext in variants:
-            variant = ext["variant"]
-
             local_links = set()
 
             for link in ext["links"]:
@@ -559,8 +557,7 @@ def validate_python_json(info, extension_modules):
 
                 if not local_links and "framework" not in link and "system" not in link:
                     raise Exception(
-                        "Invalid link entry for extension %s[%s]: link type not defined"
-                        % (name, variant)
+                        f"Invalid link entry for extension {name}: link type not defined"
                     )
 
             if (
@@ -569,6 +566,6 @@ def validate_python_json(info, extension_modules):
                 and not ext.get("license_public_domain")
             ):
                 raise Exception(
-                    "Missing license annotations for extension %s[%s] for library files %s"
-                    % (name, variant, ", ".join(sorted(local_links)))
+                    "Missing license annotations for extension %s for library files %s"
+                    % (name, ", ".join(sorted(local_links)))
                 )

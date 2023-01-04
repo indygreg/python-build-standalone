@@ -527,14 +527,14 @@ def python_build_info(
 
     # Extension data is derived by "parsing" the Setup.dist and Setup.local files.
 
-    def process_setup_line(line, variant=None):
-        d = parse_setup_line(line, variant)
+    def process_setup_line(line):
+        d = parse_setup_line(line)
 
         if not d:
             return
 
         extension = d["extension"]
-        log("processing extension %s (variant %s)" % (extension, d["variant"]))
+        log(f"processing extension {extension}")
 
         objs = []
 
@@ -597,21 +597,6 @@ def python_build_info(
             break
 
         process_setup_line(line)
-
-    # Extension variants are denoted by the presence of
-    # Modules/VARIANT-<extension>-<variant>.data files that describe the
-    # extension. Find those files and process them.
-    tf = build_env.get_output_archive("python/build/Modules", as_tar=True)
-
-    for ti in tf:
-        basename = os.path.basename(ti.name)
-
-        if not basename.startswith("VARIANT-") or not basename.endswith(".data"):
-            continue
-
-        variant = basename[:-5].split("-")[2]
-        line = tf.extractfile(ti).read().strip()
-        process_setup_line(line, variant=variant)
 
     # There are also a setup of built-in extensions defined in config.c.in which
     # aren't built using the Setup.* files and are part of the core libpython

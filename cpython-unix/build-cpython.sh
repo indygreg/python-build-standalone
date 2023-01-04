@@ -699,11 +699,6 @@ for d in Modules Objects Parser Parser/pegen Programs Python; do
     fi
 done
 
-# Also copy extension variant metadata files.
-if compgen -G "Modules/VARIANT-*.data" > /dev/null; then
-    cp -av Modules/VARIANT-*.data ${ROOT}/out/python/build/Modules/
-fi
-
 # The object files need to be linked against library dependencies. So copy
 # library files as well.
 mkdir ${ROOT}/out/python/build/lib
