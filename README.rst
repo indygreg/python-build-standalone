@@ -2,5 +2,7 @@
 Python Standalone Builds
 ========================
 
+This project produces standalone, highly-redistributable builds of Python.
+
 See the docs in ``docs/`` or online at
-https://python-build-standalone.readthedocs.io/.
+https://gregoryszorc.com/docs/python-build-standalone/main/.
