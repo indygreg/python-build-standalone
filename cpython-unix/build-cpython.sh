@@ -188,6 +188,11 @@ patch -p1 < ${ROOT}/patch-ctypes-callproc.patch
 # See https://bugs.python.org/issue37060.
 patch -p1 < ${ROOT}/patch-ctypes-static-binary.patch
 
+# Older versions of Python need patching to work with modern mpdecimal.
+if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
+    patch -p1 < ${ROOT}/patch-decimal-modern-mpdecimal.patch
+fi
+
 # CPython 3.10 added proper support for building against libedit outside of
 # macOS. On older versions, we need to patch readline.c.
 if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
@@ -262,6 +267,7 @@ CONFIGURE_FLAGS="
     --host=${TARGET_TRIPLE}
     --prefix=/install
     --with-openssl=${TOOLS_PATH}/deps
+    --with-system-libmpdec
     --without-ensurepip
     ${EXTRA_CONFIGURE_FLAGS}"
 

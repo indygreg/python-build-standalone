@@ -211,35 +211,9 @@ _dbm:
 _decimal:
   sources:
     - _decimal/_decimal.c
-    - _decimal/libmpdec/basearith.c
-    - _decimal/libmpdec/constants.c
-    - _decimal/libmpdec/context.c
-    - _decimal/libmpdec/convolute.c
-    - _decimal/libmpdec/crt.c
-    - _decimal/libmpdec/difradix2.c
-    - _decimal/libmpdec/fnt.c
-    - _decimal/libmpdec/fourstep.c
-    - _decimal/libmpdec/io.c
-    - _decimal/libmpdec/mpdecimal.c
-    - _decimal/libmpdec/numbertheory.c
-    - _decimal/libmpdec/sixstep.c
-    - _decimal/libmpdec/transpose.c
-  sources-conditional:
-    # memory.c renamed to mpalloc.c in 3.9.
-    - source: _decimal/libmpdec/memory.c
-      maximum-python-version: "3.8"
-    - source: _decimal/libmpdec/mpalloc.c
-      minimum-python-version: "3.9"
-  includes:
-    - Modules/_decimal/libmpdec
+  includes-deps:
+    - include
   defines-conditional:
-    - define: ANSI=1
-      targets:
-        - .*-unknown-linux-.*
-    - define: ASM=1
-      targets:
-        - i686-.*
-        - x86_64.*
     - define: CONFIG_32=1
       targets:
         - armv7-.*
@@ -248,22 +222,11 @@ _decimal:
         - mipsel-.*
     - define: CONFIG_64=1
       targets:
-        # CONFIG_64 is mutually exclusive with UNIVERSAL=1
-        - aarch64-unknown-linux-.*
-        - s390x-unknown-linux-.*
-        - x86_64.*-unknown-linux-.*
-    - define: HAVE_UINT128_T=1
-      targets:
         - aarch64-.*
-        - s390x-.*
+        - s390x-unknown-linux-.*
         - x86_64.*
-    - define: PPRO=1
-      targets:
-        - i686-.*
-    # TODO is this correct for non-universal binaries?
-    - define: UNIVERSAL=1
-      targets:
-        - .*-apple-.*
+  links:
+    - mpdec
 
 _elementtree:
   sources:
