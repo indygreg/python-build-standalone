@@ -165,6 +165,15 @@ DOWNLOADS = {
         "sha256": "63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96",
         "version": "1.4.19",
     },
+    "mpdecimal": {
+        "url": "https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz",
+        "size": 2584021,
+        "sha256": "9f9cd4c041f99b5c49ffb7b59d9f12d95b683d88585608aa56a6307667b2b21f",
+        "version": "2.5.1",
+        "library_names": ["mpdec"],
+        "licenses": ["BSD-2-Clause"],
+        "license_file": "LICENSE.mpdecimal.txt",
+    },
     "musl": {
         "url": "https://musl.libc.org/releases/musl-1.2.3.tar.gz",
         "size": 1058642,

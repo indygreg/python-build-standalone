@@ -164,6 +164,9 @@ $(OUTDIR)/libxcb-$(LIBXCB_VERSION)-$(PACKAGE_SUFFIX).tar: $(LIBXCB_DEPENDS)
 $(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-m4.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) m4
 
+$(OUTDIR)/mpdecimal-$(MPDECIMAL_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-mpdecimal.sh
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) mpdecimal
+
 $(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-ncurses.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) ncurses
 
@@ -245,6 +248,7 @@ PYTHON_DEPENDS := \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBFFI),$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_m4),$(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_MPDECIMAL),$(OUTDIR)/mpdecimal-$(MPDECIMAL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_NCURSES),$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_OPENSSL),$(OUTDIR)/openssl-$(OPENSSL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_PATCHELF),$(OUTDIR)/patchelf-$(PATCHELF_VERSION)-$(PACKAGE_SUFFIX).tar) \

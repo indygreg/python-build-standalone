@@ -88,6 +88,7 @@ aarch64-apple-darwin:
     - bzip2
     - libffi
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - tcl
@@ -130,6 +131,7 @@ aarch64-apple-ios:
     - bzip2
     - libffi
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - xz
@@ -158,6 +160,7 @@ aarch64-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -204,6 +207,7 @@ arm64-apple-tvos:
     - autoconf
     - bzip2
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - xz
@@ -231,6 +235,7 @@ armv7-unknown-linux-gnueabi:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -266,6 +271,7 @@ armv7-unknown-linux-gnueabihf:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -308,6 +314,7 @@ i686-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -343,6 +350,7 @@ mips-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -378,6 +386,7 @@ mipsel-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -413,6 +422,7 @@ s390x-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -459,6 +469,7 @@ thumb7k-apple-watchos:
     - autoconf
     - bzip2
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - xz
@@ -504,6 +515,7 @@ x86_64-apple-darwin:
     - bzip2
     - libffi
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - tcl
@@ -546,6 +558,7 @@ x86_64-apple-ios:
     - bzip2
     - libffi
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - xz
@@ -584,6 +597,7 @@ x86_64-apple-tvos:
     - autoconf
     - bzip2
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - xz
@@ -622,6 +636,7 @@ x86_64-apple-watchos:
     - autoconf
     - bzip2
     - m4
+    - mpdecimal
     - openssl
     - sqlite
     - xz
@@ -652,6 +667,7 @@ x86_64-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -691,6 +707,7 @@ x86_64_v2-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -730,6 +747,7 @@ x86_64_v3-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -769,6 +787,7 @@ x86_64_v4-unknown-linux-gnu:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - ncurses
     - openssl
     - patchelf
@@ -807,6 +826,7 @@ x86_64-unknown-linux-musl:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - musl
     - ncurses
     - openssl
@@ -847,6 +867,7 @@ x86_64_v2-unknown-linux-musl:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - musl
     - ncurses
     - openssl
@@ -887,6 +908,7 @@ x86_64_v3-unknown-linux-musl:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - musl
     - ncurses
     - openssl
@@ -927,6 +949,7 @@ x86_64_v4-unknown-linux-musl:
     - libXau
     - libxcb
     - m4
+    - mpdecimal
     - musl
     - ncurses
     - openssl

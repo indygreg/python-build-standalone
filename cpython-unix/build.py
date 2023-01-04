@@ -970,6 +970,7 @@ def main():
             "libffi",
             "libpthread-stubs",
             "m4",
+            "mpdecimal",
             "ncurses",
             "openssl",
             "patchelf",
