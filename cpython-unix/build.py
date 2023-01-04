@@ -964,6 +964,7 @@ def main():
         elif action in (
             "bdb",
             "bzip2",
+            "expat",
             "gdbm",
             "inputproto",
             "kbproto",

@@ -86,6 +86,7 @@ aarch64-apple-darwin:
   needs:
     - autoconf
     - bzip2
+    - expat
     - libffi
     - m4
     - mpdecimal
@@ -129,6 +130,7 @@ aarch64-apple-ios:
   needs:
     - autoconf
     - bzip2
+    - expat
     - libffi
     - m4
     - mpdecimal
@@ -154,6 +156,7 @@ aarch64-unknown-linux-gnu:
     - binutils
     - bzip2
     - gdbm
+    - expat
     - libedit
     - libffi
     - libX11
@@ -206,6 +209,7 @@ arm64-apple-tvos:
   needs:
     - autoconf
     - bzip2
+    - expat
     - m4
     - mpdecimal
     - openssl
@@ -228,6 +232,7 @@ armv7-unknown-linux-gnueabi:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -264,6 +269,7 @@ armv7-unknown-linux-gnueabihf:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -308,6 +314,7 @@ i686-unknown-linux-gnu:
     - bzip2
     # TODO cross-compiling has issues.
     # - gdbm
+    - expat
     - libedit
     - libffi
     - libX11
@@ -343,6 +350,7 @@ mips-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -379,6 +387,7 @@ mipsel-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -415,6 +424,7 @@ s390x-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -468,6 +478,7 @@ thumb7k-apple-watchos:
   needs:
     - autoconf
     - bzip2
+    - expat
     - m4
     - mpdecimal
     - openssl
@@ -513,6 +524,7 @@ x86_64-apple-darwin:
   needs:
     - autoconf
     - bzip2
+    - expat
     - libffi
     - m4
     - mpdecimal
@@ -556,6 +568,7 @@ x86_64-apple-ios:
   needs:
     - autoconf
     - bzip2
+    - expat
     - libffi
     - m4
     - mpdecimal
@@ -596,6 +609,7 @@ x86_64-apple-tvos:
   needs:
     - autoconf
     - bzip2
+    - expat
     - m4
     - mpdecimal
     - openssl
@@ -635,6 +649,7 @@ x86_64-apple-watchos:
   needs:
     - autoconf
     - bzip2
+    - expat
     - m4
     - mpdecimal
     - openssl
@@ -660,6 +675,7 @@ x86_64-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -700,6 +716,7 @@ x86_64_v2-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -740,6 +757,7 @@ x86_64_v3-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -780,6 +798,7 @@ x86_64_v4-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -819,6 +838,7 @@ x86_64-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -860,6 +880,7 @@ x86_64_v2-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -901,6 +922,7 @@ x86_64_v3-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi
@@ -942,6 +964,7 @@ x86_64_v4-unknown-linux-musl:
     - bdb
     - binutils
     - bzip2
+    - expat
     - gdbm
     - libedit
     - libffi

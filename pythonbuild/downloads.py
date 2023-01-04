@@ -61,6 +61,15 @@ DOWNLOADS = {
         "license_file": "LICENSE.cpython.txt",
         "python_tag": "cp310",
     },
+    "expat": {
+        "url": "https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.xz",
+        "size": 460560,
+        "sha256": "ef2420f0232c087801abf705e89ae65f6257df6b7931d37846a193ef2e8cdcbe",
+        "version": "2.5.0",
+        "library_names": ["expat"],
+        "licenses": ["MIT"],
+        "license_file": "LICENSE.expat.txt",
+    },
     "gdbm": {
         "url": "https://ftp.gnu.org/gnu/gdbm/gdbm-1.21.tar.gz",
         "size": 1005982,
