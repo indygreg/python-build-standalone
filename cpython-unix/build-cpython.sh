@@ -267,6 +267,7 @@ CONFIGURE_FLAGS="
     --host=${TARGET_TRIPLE}
     --prefix=/install
     --with-openssl=${TOOLS_PATH}/deps
+    --with-system-expat
     --with-system-libmpdec
     --without-ensurepip
     ${EXTRA_CONFIGURE_FLAGS}"
