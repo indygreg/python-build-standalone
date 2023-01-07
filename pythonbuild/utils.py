@@ -15,6 +15,7 @@ import stat
 import subprocess
 import sys
 import tarfile
+import time
 import zipfile
 import urllib.error
 import urllib.request
@@ -256,7 +257,7 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
 
     tmp = path.with_name("%s.tmp" % path.name)
 
-    for _ in range(5):
+    for attempt in range(5):
         try:
             try:
                 with tmp.open("wb") as fh:
@@ -269,8 +270,10 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
                 raise
         except http.client.HTTPException as e:
             print("HTTP exception; retrying: %s" % e)
+            time.sleep(2 ** attempt)
         except urllib.error.URLError as e:
             print("urllib error; retrying: %s" % e)
+            time.sleep(2 ** attempt)
     else:
         raise Exception("download failed after multiple retries")
 
