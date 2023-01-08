@@ -209,6 +209,7 @@ def derive_setup_local(
     """Derive the content of the Modules/Setup.local file."""
 
     disabled = set()
+    ignored = set()
 
     for name, info in sorted(extension_modules.items()):
         python_min_match = meets_python_minimum_version(
@@ -219,10 +220,9 @@ def derive_setup_local(
         )
 
         if not (python_min_match and python_max_match):
-            log(
-                f"disabling extension module {name} because Python version incompatible"
-            )
-            disabled.add(name.encode("ascii"))
+            log(f"ignoring extension module {name} because Python version incompatible")
+            ignored.add(name.encode("ascii"))
+            continue
 
         if targets := info.get("disabled-targets"):
             if any(re.match(p, target_triple) for p in targets):
@@ -321,11 +321,13 @@ def derive_setup_local(
 
     RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
 
+    # Tranlate our YAML metadata into Setup lines.
     static_modules_lines = []
 
-    # Derive lines from YAML metadata.
-
     for name in sorted(extension_modules.keys()):
+        if name in disabled or name in ignored:
+            continue
+
         info = extension_modules[name]
 
         if "sources" not in info:
@@ -402,15 +404,9 @@ def derive_setup_local(
 
         static_modules_lines.append(line.encode("ascii"))
 
+    # Now translate all Setup lines to the final version.
+
     for line in static_modules_lines:
-        if not line.strip():
-            continue
-
-        # This was added to support musl, since not all extensions build in the
-        # musl environment.
-        if line.split()[0] in disabled:
-            continue
-
         # makesetup parses lines with = as extra config options. There appears
         # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
         # around this by detecting the syntax we'd like to support and move the
