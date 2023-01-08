@@ -401,9 +401,7 @@ def python_build_info(
     target_triple,
     musl,
     optimizations,
-    config_c_extensions,
-    setup_dist,
-    setup_local,
+    extensions,
     extra_metadata,
 ):
     """Obtain build metadata for the Python distribution."""
@@ -523,16 +521,12 @@ def python_build_info(
 
         libraries.add(libname)
 
-    # Extension data is derived by "parsing" the Setup.dist and Setup.local files.
+    for extension, info in sorted(extensions.items()):
+        log(f"processing extension module {extension}")
 
-    def process_setup_line(line):
-        d = parse_setup_line(line, python_version=version)
-
+        d = parse_setup_line(info["setup_line"], version)
         if not d:
-            return
-
-        extension = d["extension"]
-        log(f"processing extension {extension}")
+            raise Exception(f"Setup line for {extension} failed to parse")
 
         objs = []
 
@@ -563,67 +557,23 @@ def python_build_info(
             else:
                 links.append({"name": libname, "system": True})
 
+        if targets := info.get("required-targets"):
+            required = any(re.match(p, target_triple) for p in targets)
+        else:
+            required = False
+
         entry = {
-            "in_core": False,
-            "init_fn": "PyInit_%s" % extension,
+            "in_core": info["in_core"],
+            "init_fn": info["init_fn"],
             "links": links,
             "objs": objs,
+            "required": required,
             "variant": d["variant"],
         }
 
         add_licenses_to_extension_entry(entry)
 
         bi["extensions"].setdefault(extension, []).append(entry)
-
-    found_start = False
-
-    for line in setup_dist.splitlines():
-        if not found_start:
-            if line.startswith(b"PYTHONPATH="):
-                found_start = True
-                continue
-
-            continue
-
-        process_setup_line(line)
-
-    for line in setup_local.splitlines():
-        if line.startswith(b"*static*"):
-            continue
-
-        if line.startswith(b"*disabled*"):
-            break
-
-        process_setup_line(line)
-
-    # There are also a setup of built-in extensions defined in config.c.in which
-    # aren't built using the Setup.* files and are part of the core libpython
-    # distribution. Define extensions entries for these so downstream consumers
-    # can register their PyInit_ functions.
-    for name, init_fn in sorted(config_c_extensions.items()):
-        log("adding in-core extension %s" % name)
-        bi["extensions"].setdefault(name, []).append(
-            {
-                "in_core": True,
-                "init_fn": init_fn,
-                "links": [],
-                "objs": [],
-                "variant": "default",
-            }
-        )
-
-    ems = extension_modules_config(EXTENSION_MODULES)
-    required_extensions = set()
-
-    for name, info in sorted(ems.items()):
-        if targets := info.get("required-targets"):
-            if any(re.match(p, target_triple) for p in targets):
-                log("marking extension module %s as required" % name)
-                required_extensions.add(name.encode("ascii"))
-
-    for extension, entries in bi["extensions"].items():
-        for entry in entries:
-            entry["required"] = extension in required_extensions
 
     # Any paths left in modules_objs are not part of any extension and are
     # instead part of the core distribution.
@@ -662,8 +612,7 @@ def build_cpython(
         extension_modules=ems,
     )
 
-    config_c_extensions = setup["config_c_extensions"]
-    setup_dist_content = setup["setup_dist"]
+    enabled_extensions = setup["extensions"]
     setup_local_content = setup["setup_local"]
     extra_make_content = setup["make_data"]
 
@@ -785,9 +734,7 @@ def build_cpython(
                 target_triple,
                 "musl" in target_triple,
                 optimizations,
-                config_c_extensions,
-                setup_dist_content,
-                setup_local_content,
+                enabled_extensions,
                 extra_metadata,
             ),
             "licenses": entry["licenses"],

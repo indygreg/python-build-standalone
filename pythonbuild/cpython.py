@@ -258,6 +258,8 @@ def derive_setup_local(
 
     dist_modules = set()
     setup_enabled_actual = set()
+    setup_enabled_lines = {}
+    section = "static"
 
     RE_VARIABLE = re.compile(rb"^[a-zA-Z_]+\s*=")
     RE_EXTENSION_MODULE = re.compile(rb"^([a-z_]+)\s.*[a-zA-Z/_-]+\.c\b")
@@ -281,6 +283,24 @@ def derive_setup_local(
                     setup_enabled_actual.add(m.group(1).decode("ascii"))
 
                 break
+
+        # Now look for enabled extensions and stash away the line.
+
+        if line == b"*static*":
+            section = "static"
+            continue
+        elif line == b"*shared*":
+            section = "shared"
+            continue
+        elif line == b"*disabled*":
+            section = "disabled"
+            continue
+
+        if b"#" in line:
+            line = line[: line.index(b"#")].strip()
+
+        if line and section != "disabled":
+            setup_enabled_lines[line.split()[0].decode("ascii")] = line
 
     config_c_extensions = parse_config_c(config_c_in.decode("utf-8"))
 
@@ -344,16 +364,50 @@ def derive_setup_local(
     # rules for certain targets to include these missing values.
     extra_cflags = {}
 
-    for name in sorted(extension_modules.keys()):
+    enabled_extensions = {}
+
+    for name, info in sorted(extension_modules.items()):
         if name in disabled or name in ignored:
             continue
 
-        info = extension_modules[name]
+        enabled_extensions[name] = dict(info)
 
-        if "sources" not in info:
+        # The initialization function is usually PyInit_{extension}. But some
+        # config.c.in extensions don't follow this convention!
+        if name in config_c_extensions:
+            init_fn = config_c_extensions[name]
+            in_core = True
+        else:
+            init_fn = f"PyInit_{name}"
+            in_core = False
+
+        enabled_extensions[name]["init_fn"] = init_fn
+        enabled_extensions[name]["in_core"] = in_core
+
+        # config.c.in only extensions are part of core object files. There is
+        # nothing else to process.
+        if name in config_c_only_wanted:
+            log(f"extension {name} enabled through config.c")
+            enabled_extensions[name]["setup_line"] = name.encode("ascii")
             continue
 
-        log(f"deriving Setup line for {name}")
+        # Presumably this means the extension comes from the distribution's
+        # Setup. Lack of sources means we don't need to derive a Setup.local
+        # line.
+        if "sources" not in info:
+            if name not in setup_enabled_lines:
+                raise Exception(
+                    f"found a sourceless extension ({name}) with no Setup entry"
+                )
+
+            log(f"extension {name} enabled through distribution's Modules/Setup file")
+
+            # But we do record a placeholder Setup line in the returned metadata
+            # as this is what's used to derive PYTHON.json metadata.
+            enabled_extensions[name]["setup_line"] = setup_enabled_lines[name]
+            continue
+
+        log(f"extension {name} being configured via YAML metadata")
 
         line = name
 
@@ -450,7 +504,9 @@ def derive_setup_local(
                 "= appears in EXTRA_MODULES line; will confuse "
                 "makesetup: %s" % line.decode("utf-8")
             )
+
         dest_lines.append(line)
+        enabled_extensions[name]["setup_line"] = line
 
     dest_lines.append(b"\n*disabled*\n")
     dest_lines.extend(sorted(x.encode("ascii") for x in disabled))
@@ -465,8 +521,7 @@ def derive_setup_local(
         )
 
     return {
-        "config_c_extensions": config_c_extensions,
-        "setup_dist": b"\n".join(setup_lines),
+        "extensions": enabled_extensions,
         "setup_local": b"\n".join(dest_lines),
         "make_data": b"\n".join(make_lines),
     }
