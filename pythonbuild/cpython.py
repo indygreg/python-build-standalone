@@ -331,7 +331,6 @@ def derive_setup_local(
     RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
 
     # Translate our YAML metadata into Setup lines.
-    static_modules_lines = []
 
     for name in sorted(extension_modules.keys()):
         if name in disabled or name in ignored:
@@ -414,11 +413,10 @@ def derive_setup_local(
                 for arg in entry["args"]:
                     line += f" -Xlinker {arg}"
 
-        static_modules_lines.append(line.encode("ascii"))
+        line = line.encode("ascii")
 
-    # Now translate all Setup lines to the final version.
-
-    for line in static_modules_lines:
+        # This extra parse is a holder from older code and could likely be
+        # factored away.
         parsed = parse_setup_line(line, python_version=python_version)
 
         if not parsed:
