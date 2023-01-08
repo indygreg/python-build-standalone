@@ -255,7 +255,6 @@ def derive_setup_local(
         ifh = tf.extractfile("Python-%s/Modules/config.c.in" % python_version)
         config_c_in = ifh.read()
 
-    dest_lines = []
     make_lines = []
     dist_modules = set()
     setup_enabled_actual = set()
@@ -272,10 +271,6 @@ def derive_setup_local(
         # Looks like a variable assignment.
         if RE_VARIABLE.match(line):
             continue
-
-        if line == b"#*shared*":
-            # Convert all shared extension modules to static.
-            dest_lines.append(b"*static*")
 
         # Look for extension syntax before and after comment.
         for i, part in enumerate(line.split(b"#")):
@@ -331,6 +326,9 @@ def derive_setup_local(
     RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
 
     # Translate our YAML metadata into Setup lines.
+
+    # All extensions are statically linked.
+    dest_lines = [b"*static*"]
 
     for name in sorted(extension_modules.keys()):
         if name in disabled or name in ignored:
