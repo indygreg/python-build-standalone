@@ -217,9 +217,16 @@ def derive_setup_local(
 ):
     """Derive the content of the Modules/Setup.local file."""
 
+    # The first part of this function validates that our extension modules YAML
+    # based metadata is in sync with the various files declaring extension
+    # modules in the Python distribution.
+
     disabled = set()
     ignored = set()
+    setup_enabled_wanted = set()
 
+    # Collect metadata about our extension modules as they relate to this
+    # Python target.
     for name, info in sorted(extension_modules.items()):
         python_min_match = meets_python_minimum_version(
             python_version, info.get("minimum-python-version", "1.0")
@@ -240,6 +247,22 @@ def derive_setup_local(
                     % name
                 )
                 disabled.add(name)
+
+        want_setup_enabled = info.get("setup-enabled", False)
+
+        if entry := info.get("setup-enabled-conditional"):
+            python_min_match = meets_python_minimum_version(
+                python_version, entry.get("minimum-python-version", "1.0")
+            )
+            python_max_match = meets_python_maximum_version(
+                python_version, entry.get("maximum-python-version", "100.0")
+            )
+
+            if python_min_match and python_max_match:
+                want_setup_enabled = True
+
+        if want_setup_enabled:
+            setup_enabled_wanted.add(name)
 
     with tarfile.open(str(cpython_source_archive)) as tf:
         ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)
@@ -281,26 +304,6 @@ def derive_setup_local(
         raise Exception(
             "missing extension modules from YAML: %s" % ", ".join(sorted(missing))
         )
-
-    # Also verify that all Setup enabled extensions are annotated as such.
-    setup_enabled_wanted = set()
-
-    for name, info in extension_modules.items():
-        want_enabled = info.get("setup-enabled", False)
-
-        if entry := info.get("setup-enabled-conditional"):
-            python_min_match = meets_python_minimum_version(
-                python_version, entry.get("minimum-python-version", "1.0")
-            )
-            python_max_match = meets_python_maximum_version(
-                python_version, entry.get("maximum-python-version", "100.0")
-            )
-
-            if python_min_match and python_max_match:
-                want_enabled = True
-
-        if want_enabled:
-            setup_enabled_wanted.add(name)
 
     missing = setup_enabled_actual - setup_enabled_wanted
     if missing:
