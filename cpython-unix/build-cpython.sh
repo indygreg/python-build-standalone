@@ -70,7 +70,7 @@ if [ -n "${CROSS_COMPILING}" ]; then
 
   # Same patch as below. See comment there.
   if [ "${CC}" = "clang" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
       patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     else
       patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
@@ -128,7 +128,7 @@ pushd Python-${PYTHON_VERSION}
 patch -p1 -i ${ROOT}/patch-apple-cross.patch
 
 # This patch is slightly different on Python 3.10+.
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_10}" ]; then
     patch -p1 -i ${ROOT}/patch-xopen-source-ios.patch
 else
     patch -p1 -i ${ROOT}/patch-xopen-source-ios-legacy.patch
@@ -144,7 +144,7 @@ fi
 # configure. This is reported as https://bugs.python.org/issue45405. We nerf the
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
         patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     else
         patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
@@ -189,13 +189,13 @@ patch -p1 -i ${ROOT}/patch-ctypes-callproc.patch
 patch -p1 -i ${ROOT}/patch-ctypes-static-binary.patch
 
 # Older versions of Python need patching to work with modern mpdecimal.
-if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_9}" ]; then
     patch -p1 -i ${ROOT}/patch-decimal-modern-mpdecimal.patch
 fi
 
 # CPython 3.10 added proper support for building against libedit outside of
 # macOS. On older versions, we need to patch readline.c.
-if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_9}" ]; then
     # readline.c assumes that a modern readline API version has a free_history_entry().
     # but libedit does not. Change the #ifdef accordingly.
     #
@@ -207,7 +207,7 @@ if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]
 fi
 
 # iOS doesn't have system(). Teach posixmodule.c about that.
-if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
     patch -p1 -i ${ROOT}/patch-posixmodule-remove-system.patch
 fi
 
@@ -255,7 +255,7 @@ if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
 
     # CPython 3.10 introduced proper configure support for libedit, so add configure
     # flag there.
-    if [[ "${PYTHON_MAJMIN_VERSION}" != "3.8" && "${PYTHON_MAJMIN_VERSION}" != "3.9" ]]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_10}" ]; then
         EXTRA_CONFIGURE_FLAGS="${EXTRA_CONFIGURE_FLAGS} --with-readline=editline"
     fi
 fi
@@ -324,7 +324,7 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # the detriment of performance. However, we can actually use most symbols
     # on aarch64 because it targets macOS SDK 11.0, not 10.9. But more modern
     # symbols do need to be banned.
-    if [ "${PYTHON_MAJMIN_VERSION}" = "3.8" ]; then
+    if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_9}" ]; then
         if [ "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]; then
             for symbol in clock_getres clock_gettime clock_settime faccessat fchmodat fchownat fdopendir fstatat futimens getentropy linkat mkdirat openat preadv pwritev readlinkat renameat symlinkat unlinkat utimensat; do
                 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"

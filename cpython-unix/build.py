@@ -20,6 +20,8 @@ from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import (
     derive_setup_local,
     extension_modules_config,
+    meets_python_minimum_version,
+    meets_python_maximum_version,
     parse_setup_line,
     STDLIB_TEST_PACKAGES,
 )
@@ -673,6 +675,16 @@ def build_cpython(
             "SETUPTOOLS_VERSION": DOWNLOADS["setuptools"]["version"],
             "TOOLCHAIN": "clang-%s" % host_platform,
         }
+
+        # Set environment variables allowing convenient testing for Python
+        # version ranges.
+        for v in ("3.8", "3.9", "3.10", "3.11"):
+            normal_version = v.replace(".", "_")
+
+            if meets_python_minimum_version(python_version, v):
+                env[f"PYTHON_MEETS_MINIMUM_VERSION_{normal_version}"] = "1"
+            if meets_python_maximum_version(python_version, v):
+                env[f"PYTHON_MEETS_MAXIMUM_VERSION_{normal_version}"] = "1"
 
         if optimizations == "debug":
             env["CPYTHON_DEBUG"] = "1"
