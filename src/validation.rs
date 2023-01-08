@@ -255,6 +255,16 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
                 required: false,
             },
             MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.11.dylib".to_string(),
+                max_compatibility_version: "3.11.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.11d.dylib".to_string(),
+                max_compatibility_version: "3.11.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
                 name: "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit".to_string(),
                 max_compatibility_version: "45.0.0".try_into().unwrap(),
                 required: true,
@@ -370,6 +380,16 @@ static IOS_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
         MachOAllowedDylib {
             name: "@executable_path/../lib/libpython3.10d.dylib".to_string(),
             max_compatibility_version: "3.10.0".try_into().unwrap(),
+            required: false,
+        },
+        MachOAllowedDylib {
+            name: "@executable_path/../lib/libpython3.11.dylib".to_string(),
+            max_compatibility_version: "3.11.0".try_into().unwrap(),
+            required: false,
+        },
+        MachOAllowedDylib {
+            name: "@executable_path/../lib/libpython3.11d.dylib".to_string(),
+            max_compatibility_version: "3.11.0".try_into().unwrap(),
             required: false,
         },
         // For some reason, CoreFoundation is present in debug/noopt builds but not
@@ -616,6 +636,8 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 
 // _zoneinfo added in 3.9.
 // parser removed in 3.10.
+// _tokenize added in 3.11.
+// _typing added in 3.11.
 
 // We didn't build ctypes_test until 3.9.
 // We didn't build some test extensions until 3.9.
@@ -631,6 +653,14 @@ const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &["_uuid", "_xxsubinterpreters", "_zoneinfo"];
+
+const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
+    "_tokenize",
+    "_typing",
+    "_uuid",
+    "_xxsubinterpreters",
+    "_zoneinfo",
+];
 
 const GLOBAL_EXTENSIONS_MACOS: &[&str] = &["_scproxy"];
 
@@ -1273,6 +1303,9 @@ fn validate_extension_modules(
         "3.10" => {
             wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_10);
         }
+        "3.11" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_11);
+        }
         _ => {
             panic!("unhandled Python version: {}", python_major_minor);
         }
@@ -1302,7 +1335,7 @@ fn validate_extension_modules(
         }
     }
 
-    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10") {
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10" | "3.11") {
         wanted.extend([
             "_testbuffer",
             "_testimportmultiple",
@@ -1439,6 +1472,8 @@ fn validate_distribution(
         "3.9"
     } else if dist_filename.starts_with("cpython-3.10.") {
         "3.10"
+    } else if dist_filename.starts_with("cpython-3.11.") {
+        "3.11"
     } else {
         return Err(anyhow!("could not parse Python version from filename"));
     };
