@@ -72,14 +72,6 @@ EXTENSION_MODULE_SCHEMA = {
         "maximum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
         "setup-enabled": {"type": "boolean"},
-        "setup-enabled-conditional": {
-            "type": "object",
-            "properties": {
-                "minimum-python-version": {"type": "string"},
-                "maximum-python-version": {"type": "string"},
-            },
-            "additionalProperties": False,
-        },
         "sources": {"type": "array", "items": {"type": "string"}},
         "sources-conditional": {
             "type": "array",
@@ -249,20 +241,7 @@ def derive_setup_local(
                 )
                 disabled.add(name)
 
-        want_setup_enabled = info.get("setup-enabled", False)
-
-        if entry := info.get("setup-enabled-conditional"):
-            python_min_match = meets_python_minimum_version(
-                python_version, entry.get("minimum-python-version", "1.0")
-            )
-            python_max_match = meets_python_maximum_version(
-                python_version, entry.get("maximum-python-version", "100.0")
-            )
-
-            if python_min_match and python_max_match:
-                want_setup_enabled = True
-
-        if want_setup_enabled:
+        if info.get("setup-enabled", False):
             setup_enabled_wanted.add(name)
 
         if info.get("config-c-only"):

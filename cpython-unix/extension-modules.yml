@@ -331,9 +331,9 @@ _operator:
   setup-enabled: true
 
 _peg_parser:
-  setup-enabled-conditional:
-    minimum-python-version: "3.9"
-    maximum-python-version: "3.9"
+  minimum-python-version: "3.9"
+  maximum-python-version: "3.9"
+  setup-enabled: true
 
 _pickle:
   sources:
