@@ -241,12 +241,6 @@ def derive_setup_local(
                 )
                 disabled.add(name)
 
-    # makesetup parses lines with = as extra config options. There appears
-    # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
-    # around this by producing a Makefile supplement that overrides the build
-    # rules for certain targets to include these missing values.
-    extra_cflags = {}
-
     with tarfile.open(str(cpython_source_archive)) as tf:
         ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)
 
@@ -328,6 +322,12 @@ def derive_setup_local(
 
     # All extensions are statically linked.
     dest_lines = [b"*static*"]
+
+    # makesetup parses lines with = as extra config options. There appears
+    # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
+    # around this by producing a Makefile supplement that overrides the build
+    # rules for certain targets to include these missing values.
+    extra_cflags = {}
 
     for name in sorted(extension_modules.keys()):
         if name in disabled or name in ignored:
