@@ -34,7 +34,6 @@ from pythonbuild.utils import (
     download_entry,
     get_targets,
     get_target_settings,
-    get_target_support_file,
     target_needs,
     validate_python_json,
     write_package_versions,
@@ -662,7 +661,6 @@ def build_cpython(
         python_version=python_version,
         target_triple=target_triple,
         extension_modules=ems,
-        musl="musl" in target_triple,
     )
 
     config_c_in = parse_config_c(setup["config_c_in"].decode("utf-8"))

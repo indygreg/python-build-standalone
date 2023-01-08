@@ -214,7 +214,6 @@ def derive_setup_local(
     python_version,
     target_triple,
     extension_modules,
-    musl=False,
 ):
     """Derive the content of the Modules/Setup.local file."""
 
