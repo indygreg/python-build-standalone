@@ -59,6 +59,7 @@ aarch64-apple-darwin:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -146,6 +147,7 @@ aarch64-unknown-linux-gnu:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -222,6 +224,7 @@ armv7-unknown-linux-gnueabi:
   pythons_supported:
     - '3.9'
     - '3.10'
+    - '3.11'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -258,6 +261,7 @@ armv7-unknown-linux-gnueabihf:
   pythons_supported:
     - '3.9'
     - '3.10'
+    - '3.11'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -295,6 +299,7 @@ i686-unknown-linux-gnu:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -338,6 +343,7 @@ mips-unknown-linux-gnu:
   pythons_supported:
     - '3.9'
     - '3.10'
+    - '3.11'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -374,6 +380,7 @@ mipsel-unknown-linux-gnu:
   pythons_supported:
     - '3.9'
     - '3.10'
+    - '3.11'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -410,6 +417,7 @@ s390x-unknown-linux-gnu:
   pythons_supported:
     - '3.9'
     - '3.10'
+    - '3.11'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -491,6 +499,7 @@ x86_64-apple-darwin:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   apple_sdk_platform: macosx
   host_cc: clang
@@ -658,6 +667,7 @@ x86_64-unknown-linux-gnu:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -697,6 +707,7 @@ x86_64_v2-unknown-linux-gnu:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -737,6 +748,7 @@ x86_64_v3-unknown-linux-gnu:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -777,6 +789,7 @@ x86_64_v4-unknown-linux-gnu:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -817,6 +830,7 @@ x86_64-unknown-linux-musl:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -857,6 +871,7 @@ x86_64_v2-unknown-linux-musl:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -898,6 +913,7 @@ x86_64_v3-unknown-linux-musl:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -939,6 +955,7 @@ x86_64_v4-unknown-linux-musl:
     - '3.8'
     - '3.9'
     - '3.10'
+    - '3.11'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++

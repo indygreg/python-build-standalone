@@ -1040,7 +1040,7 @@ def main():
                 extra_archives=extra_archives,
             )
 
-        elif action in ("cpython-3.8", "cpython-3.9", "cpython-3.10"):
+        elif action in ("cpython-3.8", "cpython-3.9", "cpython-3.10", "cpython-3.11"):
             build_cpython(
                 settings,
                 client,
