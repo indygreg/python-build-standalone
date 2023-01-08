@@ -255,7 +255,6 @@ def derive_setup_local(
         ifh = tf.extractfile("Python-%s/Modules/config.c.in" % python_version)
         config_c_in = ifh.read()
 
-    make_lines = []
     dist_modules = set()
     setup_enabled_actual = set()
 
@@ -442,6 +441,8 @@ def derive_setup_local(
     dest_lines.extend(sorted(x.encode("ascii") for x in disabled))
 
     dest_lines.append(b"")
+
+    make_lines = []
 
     for target in sorted(extra_cflags):
         make_lines.append(
