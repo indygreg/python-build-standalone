@@ -57,7 +57,7 @@ pushd pip-tmp
 unzip "${PIP_WHEEL}"
 rm -f "${PIP_WHEEL}"
 
-patch -p1 < ${ROOT}/patch-pip-static-binary.patch
+patch -p1 -i ${ROOT}/patch-pip-static-binary.patch
 
 zip -r "${PIP_WHEEL}" *
 popd
@@ -71,9 +71,9 @@ if [ -n "${CROSS_COMPILING}" ]; then
   # Same patch as below. See comment there.
   if [ "${CC}" = "clang" ]; then
     if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
-      patch -p1 < ${ROOT}/patch-disable-multiarch.patch
+      patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     else
-      patch -p1 < ${ROOT}/patch-disable-multiarch-legacy.patch
+      patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
     fi
   fi
 
@@ -125,19 +125,19 @@ cat Makefile.extra
 pushd Python-${PYTHON_VERSION}
 
 # configure doesn't support cross-compiling on Apple. Teach it.
-patch -p1 < ${ROOT}/patch-apple-cross.patch
+patch -p1 -i ${ROOT}/patch-apple-cross.patch
 
 # This patch is slightly different on Python 3.10+.
 if [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
-    patch -p1 < ${ROOT}/patch-xopen-source-ios.patch
+    patch -p1 -i ${ROOT}/patch-xopen-source-ios.patch
 else
-    patch -p1 < ${ROOT}/patch-xopen-source-ios-legacy.patch
+    patch -p1 -i ${ROOT}/patch-xopen-source-ios-legacy.patch
 fi
 
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
-    patch -p1 < ${ROOT}/patch-dont-clear-runshared.patch
+    patch -p1 -i ${ROOT}/patch-dont-clear-runshared.patch
 fi
 
 # Clang 13 actually prints something with --print-multiarch, confusing CPython's
@@ -145,23 +145,23 @@ fi
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
     if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
-        patch -p1 < ${ROOT}/patch-disable-multiarch.patch
+        patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     else
-        patch -p1 < ${ROOT}/patch-disable-multiarch-legacy.patch
+        patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
     fi
 fi
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
 # invoke the host Python on our own.
-patch -p1 < ${ROOT}/patch-write-python-for-build.patch
+patch -p1 -i ${ROOT}/patch-write-python-for-build.patch
 
 # We build all extensions statically. So remove the auto-generated make
 # rules that produce shared libraries for them.
-patch -p1 < ${ROOT}/patch-remove-extension-module-shared-libraries.patch
+patch -p1 -i ${ROOT}/patch-remove-extension-module-shared-libraries.patch
 
 # The default build rule for the macOS dylib doesn't pick up libraries
 # from modules / makesetup. So patch it accordingly.
-patch -p1 < ${ROOT}/patch-macos-link-extension-modules.patch
+patch -p1 -i ${ROOT}/patch-macos-link-extension-modules.patch
 
 # Also on macOS, the `python` executable is linked against libraries defined by statically
 # linked modules. But those libraries should only get linked into libpython, not the
@@ -169,11 +169,11 @@ patch -p1 < ${ROOT}/patch-macos-link-extension-modules.patch
 # library dependencies that shouldn't need to be there.
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     if [ "${PYTHON_MAJMIN_VERSION}" = "3.8" ]; then
-        patch -p1 < ${ROOT}/patch-python-link-modules-3.8.patch
+        patch -p1 -i ${ROOT}/patch-python-link-modules-3.8.patch
     elif [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
-        patch -p1 < ${ROOT}/patch-python-link-modules-3.9.patch
+        patch -p1 -i ${ROOT}/patch-python-link-modules-3.9.patch
     else
-        patch -p1 < ${ROOT}/patch-python-link-modules-3.10.patch
+        patch -p1 -i ${ROOT}/patch-python-link-modules-3.10.patch
     fi
 fi
 
@@ -181,16 +181,16 @@ fi
 # and doesn't support all our building scenarios. We replace it with something
 # more reasonable. This patch likely isn't generally appropriate. But since we
 # guarantee we're building with a 11.0+ SDK, it should be safe.
-patch -p1 < ${ROOT}/patch-ctypes-callproc.patch
+patch -p1 -i ${ROOT}/patch-ctypes-callproc.patch
 
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.
 # See https://bugs.python.org/issue37060.
-patch -p1 < ${ROOT}/patch-ctypes-static-binary.patch
+patch -p1 -i ${ROOT}/patch-ctypes-static-binary.patch
 
 # Older versions of Python need patching to work with modern mpdecimal.
 if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]]; then
-    patch -p1 < ${ROOT}/patch-decimal-modern-mpdecimal.patch
+    patch -p1 -i ${ROOT}/patch-decimal-modern-mpdecimal.patch
 fi
 
 # CPython 3.10 added proper support for building against libedit outside of
@@ -203,12 +203,12 @@ if [[ "${PYTHON_MAJMIN_VERSION}" = "3.8" || "${PYTHON_MAJMIN_VERSION}" = "3.9" ]
     # HAVE_RL_COMPLETION_SUPPRESS_APPEND improperly. So hack that. This is a bug
     # in our build system, as we should probably be invoking configure again when
     # using libedit.
-    patch -p1 < ${ROOT}/patch-readline-libedit.patch
+    patch -p1 -i ${ROOT}/patch-readline-libedit.patch
 fi
 
 # iOS doesn't have system(). Teach posixmodule.c about that.
 if [ "${PYTHON_MAJMIN_VERSION}" != "3.8" ]; then
-    patch -p1 < ${ROOT}/patch-posixmodule-remove-system.patch
+    patch -p1 -i ${ROOT}/patch-posixmodule-remove-system.patch
 fi
 
 # We patched configure.ac above. Reflect those changes.
@@ -219,7 +219,7 @@ autoconf
 # aren't cross-compiling when we are. So force a static "yes" value when our
 # build system says we are cross-compiling.
 if [ -n "${CROSS_COMPILING}" ]; then
-  patch -p1 < ${ROOT}/patch-force-cross-compile.patch
+  patch -p1 -i ${ROOT}/patch-force-cross-compile.patch
 fi
 
 # Most bits look at CFLAGS. But setup.py only looks at CPPFLAGS.
