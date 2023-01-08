@@ -422,7 +422,7 @@ def derive_setup_local(
         parsed = parse_setup_line(line, python_version=python_version)
 
         if not parsed:
-            continue
+            raise Exception("we should always parse a setup line we generated")
 
         # makesetup parses lines with = as extra config options. There appears
         # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
