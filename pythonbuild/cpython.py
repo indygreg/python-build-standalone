@@ -253,6 +253,12 @@ def derive_setup_local(
         ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)
         setup_lines = ifh.readlines()
 
+        try:
+            ifh = tf.extractfile(f"Python-{python_version}/Modules/Setup.bootstrap.in")
+            setup_bootstrap_in = ifh.readlines()
+        except KeyError:
+            setup_bootstrap_in = []
+
         ifh = tf.extractfile("Python-%s/Modules/config.c.in" % python_version)
         config_c_in = ifh.read()
 
@@ -263,6 +269,30 @@ def derive_setup_local(
 
     RE_VARIABLE = re.compile(rb"^[a-zA-Z_]+\s*=")
     RE_EXTENSION_MODULE = re.compile(rb"^([a-z_]+)\s.*[a-zA-Z/_-]+\.c\b")
+
+    # Setup.bootstrap.in has a simple format.
+    for line in setup_bootstrap_in:
+        if b"#" in line:
+            line = line[: line.index(b"#")]
+
+        # There is special `@MODULE_<name>_TRUE@` syntax that gets elided or turned
+        # into a comment during Makefile expansion. For now, just pretend it always
+        # goes away. This assumption may not be valid in future Python versions. But
+        # as of 3.11 only pwd is defined this way.
+        if line.startswith(b"@") and line.count(b"@") == 2:
+            line = line.split(b"@")[-1]
+
+        line = line.strip()
+
+        if not line:
+            continue
+
+        if m := RE_EXTENSION_MODULE.match(line):
+            name = m.group(1).decode("ascii")
+
+            dist_modules.add(name)
+            setup_enabled_actual.add(name)
+            setup_enabled_lines[name] = line
 
     for line in setup_lines:
         line = line.rstrip()
