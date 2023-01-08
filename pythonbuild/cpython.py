@@ -264,10 +264,11 @@ def derive_setup_local(
         if want_setup_enabled:
             setup_enabled_wanted.add(name)
 
+    # Parse the Setup file in the distribution for its metadata.
+
     with tarfile.open(str(cpython_source_archive)) as tf:
         ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)
-
-        source_lines = ifh.readlines()
+        setup_lines = ifh.readlines()
 
         ifh = tf.extractfile("Python-%s/Modules/config.c.in" % python_version)
         config_c_in = ifh.read()
@@ -278,7 +279,7 @@ def derive_setup_local(
     RE_VARIABLE = re.compile(rb"^[a-zA-Z_]+\s*=")
     RE_EXTENSION_MODULE = re.compile(rb"^([a-z_]+)\s.*[a-zA-Z/_-]+\.c\b")
 
-    for line in source_lines:
+    for line in setup_lines:
         line = line.rstrip()
 
         if not line:
@@ -297,6 +298,12 @@ def derive_setup_local(
                     setup_enabled_actual.add(m.group(1).decode("ascii"))
 
                 break
+
+    # With ours and theirs extension module metadata collections, compare and
+    # make sure our metadata is comprehensive. This isn't strictly necessary.
+    # But it makes it drastically easier to catch bugs due to our metadata being
+    # out of sync with the distribution. This has historically caused several
+    # subtle and hard-to-diagnose bugs, which is why we do it.
 
     missing = dist_modules - set(extension_modules.keys())
 
@@ -318,6 +325,11 @@ def derive_setup_local(
             "YAML setup-enabled extensions not present in Setup: %s"
             % ", ".join(sorted(extra))
         )
+
+    # And with verification out of way, now we generate a Setup.local file
+    # from our metadata. The verification above ensured that our metadata
+    # agrees fully with the distribution's knowledge of extensions. So we can
+    # treat our metadata as canonical.
 
     RE_DEFINE = re.compile(rb"-D[^=]+=[^\s]+")
 
@@ -454,7 +466,7 @@ def derive_setup_local(
 
     return {
         "config_c_in": config_c_in,
-        "setup_dist": b"\n".join(source_lines),
+        "setup_dist": b"\n".join(setup_lines),
         "setup_local": b"\n".join(dest_lines),
         "make_data": b"\n".join(make_lines),
     }
