@@ -20,7 +20,6 @@ from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import (
     derive_setup_local,
     extension_modules_config,
-    parse_config_c,
     parse_setup_line,
     STDLIB_TEST_PACKAGES,
 )
@@ -402,7 +401,7 @@ def python_build_info(
     target_triple,
     musl,
     optimizations,
-    config_c_in,
+    config_c_extensions,
     setup_dist,
     setup_local,
     extra_metadata,
@@ -601,7 +600,7 @@ def python_build_info(
     # aren't built using the Setup.* files and are part of the core libpython
     # distribution. Define extensions entries for these so downstream consumers
     # can register their PyInit_ functions.
-    for name, init_fn in sorted(config_c_in.items()):
+    for name, init_fn in sorted(config_c_extensions.items()):
         log("adding in-core extension %s" % name)
         bi["extensions"].setdefault(name, []).append(
             {
@@ -663,7 +662,7 @@ def build_cpython(
         extension_modules=ems,
     )
 
-    config_c_in = parse_config_c(setup["config_c_in"].decode("utf-8"))
+    config_c_extensions = setup["config_c_extensions"]
     setup_dist_content = setup["setup_dist"]
     setup_local_content = setup["setup_local"]
     extra_make_content = setup["make_data"]
@@ -786,7 +785,7 @@ def build_cpython(
                 target_triple,
                 "musl" in target_triple,
                 optimizations,
-                config_c_in,
+                config_c_extensions,
                 setup_dist_content,
                 setup_local_content,
                 extra_metadata,

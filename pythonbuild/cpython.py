@@ -264,7 +264,7 @@ def derive_setup_local(
         if want_setup_enabled:
             setup_enabled_wanted.add(name)
 
-    # Parse the Setup file in the distribution for its metadata.
+    # Parse more files in the distribution for their metadata.
 
     with tarfile.open(str(cpython_source_archive)) as tf:
         ifh = tf.extractfile("Python-%s/Modules/Setup" % python_version)
@@ -298,6 +298,11 @@ def derive_setup_local(
                     setup_enabled_actual.add(m.group(1).decode("ascii"))
 
                 break
+
+    config_c_extensions = parse_config_c(config_c_in.decode("utf-8"))
+
+    for extension in sorted(config_c_extensions):
+        dist_modules.add(extension)
 
     # With ours and theirs extension module metadata collections, compare and
     # make sure our metadata is comprehensive. This isn't strictly necessary.
@@ -465,7 +470,7 @@ def derive_setup_local(
         )
 
     return {
-        "config_c_in": config_c_in,
+        "config_c_extensions": config_c_extensions,
         "setup_dist": b"\n".join(setup_lines),
         "setup_local": b"\n".join(dest_lines),
         "make_data": b"\n".join(make_lines),
