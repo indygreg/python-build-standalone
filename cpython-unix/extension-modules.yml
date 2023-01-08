@@ -17,7 +17,8 @@
 _abc:
   setup-enabled: true
 
-_ast: {}
+_ast:
+  config-c-only: true
 
 _asyncio:
   sources:
@@ -279,7 +280,8 @@ _heapq:
   sources:
     - _heapqmodule.c
 
-_imp: {}
+_imp:
+  config-c-only: true
 
 _io:
   setup-enabled: true
@@ -452,7 +454,8 @@ _statistics:
 _stat:
   setup-enabled: true
 
-_string: {}
+_string:
+  config-c-only: true
 
 _struct:
   sources:
@@ -550,6 +553,7 @@ _tkinter:
 
 _tokenize:
   minimum-python-version: "3.11"
+  config-c-only: true
 
 _tracemalloc:
   setup-enabled: true
@@ -573,7 +577,8 @@ _uuid:
         - .*-unknown-linux-.*
         - .*-apple-darwin
 
-_warnings: {}
+_warnings:
+  config-c-only: true
 
 _weakref:
   setup-enabled: true
@@ -612,7 +617,8 @@ binascii:
   sources:
     - binascii.c
 
-builtins: {}
+builtins:
+  config-c-only: true
 
 cmath:
   sources:
@@ -635,7 +641,8 @@ fcntl:
   sources:
     - fcntlmodule.c
 
-gc: {}
+gc:
+  config-c-only: true
 
 grp:
   sources:
@@ -644,7 +651,8 @@ grp:
 itertools:
   setup-enabled: true
 
-marshal: {}
+marshal:
+  config-c-only: true
 
 math:
   sources:
@@ -755,7 +763,8 @@ syslog:
   sources:
     - syslogmodule.c
 
-sys: {}
+sys:
+  config-c-only: true
 
 termios:
   sources:

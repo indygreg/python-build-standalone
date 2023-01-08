@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import os
 import pathlib
 import re
 import tarfile
@@ -15,6 +14,7 @@ from pythonbuild.logging import log
 EXTENSION_MODULE_SCHEMA = {
     "type": "object",
     "properties": {
+        "config-c-only": {"type": "boolean"},
         "defines": {"type": "array", "items": {"type": "string"}},
         "defines-conditional": {
             "type": "array",
@@ -224,6 +224,7 @@ def derive_setup_local(
     disabled = set()
     ignored = set()
     setup_enabled_wanted = set()
+    config_c_only_wanted = set()
 
     # Collect metadata about our extension modules as they relate to this
     # Python target.
@@ -263,6 +264,9 @@ def derive_setup_local(
 
         if want_setup_enabled:
             setup_enabled_wanted.add(name)
+
+        if info.get("config-c-only"):
+            config_c_only_wanted.add(name)
 
     # Parse more files in the distribution for their metadata.
 
@@ -328,6 +332,18 @@ def derive_setup_local(
     if extra:
         raise Exception(
             "YAML setup-enabled extensions not present in Setup: %s"
+            % ", ".join(sorted(extra))
+        )
+
+    if missing := set(config_c_extensions) - config_c_only_wanted:
+        raise Exception(
+            "config.c.in extensions missing YAML config-c-only annotation: %s"
+            % ", ".join(sorted(missing))
+        )
+
+    if extra := config_c_only_wanted - set(config_c_extensions):
+        raise Exception(
+            "YAML config-c-only extensions not present in config.c.in: %s"
             % ", ".join(sorted(extra))
         )
 
