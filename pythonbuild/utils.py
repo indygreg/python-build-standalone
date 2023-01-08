@@ -419,9 +419,8 @@ def compress_python_archive(
             cctx.copy_stream(ifh, ofh, source_path.stat().st_size)
 
         temp_path.rename(dest_path)
-    except Exception:
-        temp_path.unlink()
-        raise
+    finally:
+        temp_path.unlink(missing_ok=True)
 
     print("%s has SHA256 %s" % (dest_path, hash_path(dest_path)))
 
