@@ -992,7 +992,7 @@ def hack_project_files(
             b"<WholeProgramOptimization>false</WholeProgramOptimization>",
         )
 
-    # Make libpython a static library.
+    # Make libpython a static library and disable linker warnings for duplicate symbols.
     if static:
         static_replace_in_file(
             pythoncore_proj,
@@ -1001,6 +1001,12 @@ def hack_project_files(
         )
 
         copy_link_to_lib(pythoncore_proj)
+
+        static_replace_in_file(
+            pythoncore_proj,
+            b"</AdditionalDependencies>\r\n    </Lib>",
+            b"</AdditionalDependencies>\r\n    <AdditionalOptions>/IGNORE:4006</AdditionalOptions>\r\n    </Lib>",
+        )
 
     # We don't need to produce python_uwp.exe and its *w variant. Or the
     # python3.dll, pyshellext, or pylauncher.
