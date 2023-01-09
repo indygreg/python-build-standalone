@@ -152,7 +152,10 @@ PGO_TESTS = {
     "test_pprint",
     "test_re",
     "test_set",
+    # Renamed to test_sqlite3 in 3.11. We keep both names as we just look for
+    # test presence in this set.
     "test_sqlite",
+    "test_sqlite3",
     "test_statistics",
     "test_struct",
     "test_tabnanny",
