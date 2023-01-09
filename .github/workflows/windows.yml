@@ -44,6 +44,7 @@ jobs:
           - 'cpython-3.8'
           - 'cpython-3.9'
           - 'cpython-3.10'
+          - 'cpython-3.11'
         vcvars:
           - 'vcvars32.bat'
           - 'vcvars64.bat'
