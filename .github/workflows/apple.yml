@@ -114,30 +114,6 @@ jobs:
           - target_triple: 'x86_64-apple-darwin'
             py: 'cpython-3.10'
             optimizations: 'pgo+lto'
-
-          # iOS targeting mobile hardware. Can't do PGO during cross-compiles.
-          # Can't cross-compile until Python 3.9.
-          - target_triple: 'aarch64-apple-ios'
-            py: 'cpython-3.9'
-            optimizations: 'debug'
-          - target_triple: 'aarch64-apple-ios'
-            py: 'cpython-3.9'
-            optimizations: 'noopt'
-          - target_triple: 'aarch64-apple-ios'
-            py: 'cpython-3.9'
-            optimizations: 'lto'
-
-          # iOS targeting simulator. Can't do PGO during cross-compiles.
-          # Can't cross-compile until Python 3.9.
-          - target_triple: 'x86_64-apple-ios'
-            py: 'cpython-3.9'
-            optimizations: 'debug'
-          - target_triple: 'x86_64-apple-ios'
-            py: 'cpython-3.9'
-            optimizations: 'noopt'
-          - target_triple: 'x86_64-apple-ios'
-            py: 'cpython-3.9'
-            optimizations: 'lto'
     needs:
       - pythonbuild
     runs-on: 'macos-11'
