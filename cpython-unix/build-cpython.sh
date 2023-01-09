@@ -226,6 +226,17 @@ if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" && -n "${PYTHON_MEETS_MAXIMUM_VER
     patch -p1 -i ${ROOT}/patch-posixmodule-remove-system.patch
 fi
 
+# Python 3.11 has configure support for configuring extension modules. We really,
+# really, really want to use this feature because it looks promising. But at the
+# time we added this code the functionality didn't support all extension modules
+# nor did it easily support static linking, including static linking of extra
+# libraries (which appears to be a limitation of `makesetup`). So for now we
+# disable the functionality and require our auto-generated Setup.local to provide
+# everything.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+    patch -p1 -i ${ROOT}/patch-configure-disable-stdlib-mod.patch
+fi
+
 # We patched configure.ac above. Reflect those changes.
 autoconf
 
