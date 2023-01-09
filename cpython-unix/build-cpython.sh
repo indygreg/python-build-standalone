@@ -161,7 +161,11 @@ patch -p1 -i ${ROOT}/patch-write-python-for-build.patch
 
 # We build all extensions statically. So remove the auto-generated make
 # rules that produce shared libraries for them.
-patch -p1 -i ${ROOT}/patch-remove-extension-module-shared-libraries.patch
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+    patch -p1 -i ${ROOT}/patch-remove-extension-module-shared-libraries.patch
+else
+    patch -p1 -i ${ROOT}/patch-remove-extension-module-shared-libraries-legacy.patch
+fi
 
 # The default build rule for the macOS dylib doesn't pick up libraries
 # from modules / makesetup. So patch it accordingly.
