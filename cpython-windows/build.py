@@ -216,15 +216,22 @@ def find_vswhere():
     return vswhere
 
 
-def find_vs_path(path):
+def find_vs_path(path, msvc_version):
     vswhere = find_vswhere()
+
+    if msvc_version == "2019":
+        version = "[16,17)"
+    elif msvc_version == "2022":
+        version = "[17,18)"
+    else:
+        raise ValueError(f"unsupported Visual Studio version: {msvc_version}")
 
     p = subprocess.check_output(
         [
             str(vswhere),
             # Visual Studio 2019.
             "-version",
-            "[16,17)",
+            version,
             "-property",
             "installationPath",
             "-products",
@@ -244,13 +251,17 @@ def find_vs_path(path):
     return p
 
 
-def find_msbuild():
-    return find_vs_path(pathlib.Path("MSBuild") / "Current" / "Bin" / "MSBuild.exe")
+def find_msbuild(msvc_version):
+    return find_vs_path(
+        pathlib.Path("MSBuild") / "Current" / "Bin" / "MSBuild.exe", msvc_version
+    )
 
 
-def find_vcvarsall_path():
+def find_vcvarsall_path(msvc_version):
     """Find path to vcvarsall.bat"""
-    return find_vs_path(pathlib.Path("VC") / "Auxiliary" / "Build" / "vcvarsall.bat")
+    return find_vs_path(
+        pathlib.Path("VC") / "Auxiliary" / "Build" / "vcvarsall.bat", msvc_version
+    )
 
 
 def find_vctools_path():
@@ -1582,6 +1593,7 @@ def build_libffi(
     python: str,
     arch: str,
     sh_exe: pathlib.Path,
+    msvc_version: str,
     dest_archive: pathlib.Path,
     static: bool,
 ):
@@ -1667,7 +1679,7 @@ def build_libffi(
 
         env = dict(os.environ)
         env["LIBFFI_SOURCE"] = str(ffi_source_path)
-        env["VCVARSALL"] = str(find_vcvarsall_path())
+        env["VCVARSALL"] = str(find_vcvarsall_path(msvc_version))
         env["SH"] = str(sh_exe)
 
         args = [str(prepare_libffi), "-pdb"]
@@ -2004,13 +2016,14 @@ def build_cpython(
     target_triple: str,
     arch: str,
     profile,
+    msvc_version: str,
     openssl_archive,
     libffi_archive,
 ):
     static = "static" in profile
     pgo = "-pgo" in profile
 
-    msbuild = find_msbuild()
+    msbuild = find_msbuild(msvc_version)
     log("found MSBuild at %s" % msbuild)
 
     # The python.props file keys off MSBUILD, so it needs to be set.
@@ -2464,6 +2477,12 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--vs",
+        choices={"2019", "2022"},
+        default="2019",
+        help="Visual Studio version to use",
+    )
+    parser.add_argument(
         "--python",
         choices={"cpython-3.8", "cpython-3.9", "cpython-3.10"},
         default="cpython-3.10",
@@ -2508,6 +2527,7 @@ def main():
                 args.python,
                 arch,
                 pathlib.Path(args.sh),
+                args.vs,
                 libffi_archive,
                 "static" in args.profile,
             )
@@ -2518,6 +2538,7 @@ def main():
             target_triple,
             arch,
             profile=args.profile,
+            msvc_version=args.vs,
             openssl_archive=openssl_archive,
             libffi_archive=libffi_archive,
         )
