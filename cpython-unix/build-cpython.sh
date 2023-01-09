@@ -390,6 +390,11 @@ else
 fi
 
 if [ -n "${CROSS_COMPILING}" ]; then
+    # Python 3.11 require a --with-build-python to denote the host Python.
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-python=${TOOLS_PATH}/pyhost/bin/python${PYTHON_MAJMIN_VERSION}"
+    fi
+
     # configure doesn't like a handful of scenarios when cross-compiling.
     #
     # getaddrinfo buggy test fails for some reason. So we short-circuit it.
