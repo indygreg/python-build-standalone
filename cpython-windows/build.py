@@ -856,7 +856,7 @@ def hack_props(
 
     libffi_props = pcbuild_path / "libffi.props"
 
-    # Always use libffi-8 / 3.4.2. (Python <= 3.11 use libffi-7 by default.)
+    # Always use libffi-8 / 3.4.2. (Python < 3.11 use libffi-7 by default.)
     try:
         static_replace_in_file(
             libffi_props,
