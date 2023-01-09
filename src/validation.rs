@@ -1664,6 +1664,7 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
     let output = duct::cmd(&python_exe, &[test_file.display().to_string()])
         .stdout_to_stderr()
         .unchecked()
+        .env("TARGET_TRIPLE", &python_json.target_triple)
         .run()?;
 
     if !output.status.success() {

@@ -48,7 +48,11 @@ class TestPythonInterpreter(unittest.TestCase):
     def test_ctypes(self):
         import ctypes
 
-        self.assertIsNotNone(ctypes.pythonapi)
+        # pythonapi will be None on statically linked binaries.
+        if os.environ["TARGET_TRIPLE"].endswith("-unknown-linux-musl"):
+            self.assertIsNone(ctypes.pythonapi)
+        else:
+            self.assertIsNotNone(ctypes.pythonapi)
 
         # https://bugs.python.org/issue42688
         @ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p)
