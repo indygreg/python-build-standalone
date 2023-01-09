@@ -251,93 +251,121 @@ jobs:
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.8'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.8'
             optimizations: 'lto'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.8'
             optimizations: 'pgo'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.8'
             optimizations: 'pgo+lto'
+            run: true
 
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'lto'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'pgo'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'pgo+lto'
+            run: true
 
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'lto'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'pgo'
+            run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'pgo+lto'
+            run: true
 
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'lto'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'pgo'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'pgo+lto'
+            run: true
 
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'lto'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'pgo'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'pgo+lto'
+            run: true
 
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'lto'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'pgo'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.9'
             optimizations: 'pgo+lto'
+            run: true
 
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'lto'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'pgo'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.10'
             optimizations: 'pgo+lto'
+            run: true
 
           # GitHub Actions runners don't support x86-64-v4 so we can't PGO.
           - target_triple: 'x86_64_v4-unknown-linux-gnu'
@@ -365,72 +393,93 @@ jobs:
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.8'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.8'
             optimizations: 'noopt'
+            run: true
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.8'
             optimizations: 'lto'
+            run: true
 
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'noopt'
+            run: true
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'lto'
+            run: true
 
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'noopt'
+            run: true
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'lto'
+            run: true
 
           - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'noopt'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'lto'
+            run: true
 
           - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'noopt'
+            run: true
           - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'lto'
+            run: true
 
           - target_triple: 'x86_64_v3-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'noopt'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-musl'
             py: 'cpython-3.9'
             optimizations: 'lto'
+            run: true
 
           - target_triple: 'x86_64_v3-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'debug'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'noopt'
+            run: true
           - target_triple: 'x86_64_v3-unknown-linux-musl'
             py: 'cpython-3.10'
             optimizations: 'lto'
+            run: true
 
           - target_triple: 'x86_64_v4-unknown-linux-musl'
             py: 'cpython-3.9'
@@ -503,7 +552,12 @@ jobs:
       - name: Validate Distribution
         run: |
           chmod +x build/pythonbuild
-          build/pythonbuild validate-distribution dist/*.tar.zst
+
+          if [ -n "${{matrix.build.run}}" ]; then
+            EXTRA_ARGS="--run"
+          fi
+
+          build/pythonbuild validate-distribution ${EXTRA_ARGS} dist/*.tar.zst
 
       - name: Upload Distribution
         uses: actions/upload-artifact@v3
