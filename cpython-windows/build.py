@@ -1411,6 +1411,7 @@ def run_msbuild(
     platform: str,
     static: bool,
     python_version: str,
+    windows_sdk_version: str,
 ):
     args = [
         str(msbuild),
@@ -1432,7 +1433,7 @@ def run_msbuild(
         # We pin the Windows 10 SDK version to make builds more deterministic.
         # This can also work around known incompatibilities with the Windows 11
         # SDK as of at least CPython 3.9.7.
-        "/property:DefaultWindowsSDKVersion=10.0.20348.0",
+        f"/property:DefaultWindowsSDKVersion={windows_sdk_version}",
     ]
 
     exec_and_log(args, str(pcbuild_path), os.environ)
@@ -2017,6 +2018,7 @@ def build_cpython(
     arch: str,
     profile,
     msvc_version: str,
+    windows_sdk_version: str,
     openssl_archive,
     libffi_archive,
 ):
@@ -2128,6 +2130,7 @@ def build_cpython(
                 platform=build_platform,
                 static=static,
                 python_version=python_version,
+                windows_sdk_version=windows_sdk_version,
             )
 
             # build-windows.py sets some environment variables which cause the
@@ -2193,6 +2196,7 @@ def build_cpython(
                 platform=build_platform,
                 static=static,
                 python_version=python_version,
+                windows_sdk_version=windows_sdk_version,
             )
             artifact_config = "PGUpdate"
 
@@ -2204,6 +2208,7 @@ def build_cpython(
                 platform=build_platform,
                 static=static,
                 python_version=python_version,
+                windows_sdk_version=windows_sdk_version,
             )
             artifact_config = "Release"
 
@@ -2497,6 +2502,11 @@ def main():
     parser.add_argument(
         "--sh", required=True, help="Path to sh.exe in a cygwin or mingw installation"
     )
+    parser.add_argument(
+        "--windows-sdk-version",
+        default="10.0.20348.0",
+        help="Windows SDK version to build with",
+    )
 
     args = parser.parse_args()
 
@@ -2539,6 +2549,7 @@ def main():
             arch,
             profile=args.profile,
             msvc_version=args.vs,
+            windows_sdk_version=args.windows_sdk_version,
             openssl_archive=openssl_archive,
             libffi_archive=libffi_archive,
         )
