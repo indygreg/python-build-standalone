@@ -1039,11 +1039,19 @@ def hack_project_files(
     # Ditto for freeze_importlib, which isn't needed since we don't modify
     # the frozen importlib baked into the source distribution (
     # Python/importlib.h and Python/importlib_external.h).
-    static_replace_in_file(
-        pcbuild_proj,
-        b"""<Projects2 Condition="$(Platform) != 'ARM' and $(Platform) != 'ARM64'" Include="_freeze_importlib.vcxproj" />""",
-        b"",
-    )
+    #
+    # But Python 3.11 refactored the frozen module project handling and if
+    # we attempt to disable this project there we get a build failure due to
+    # a missing /Python/frozen_modules/getpath.h file. So we skip this on
+    # newer Python.
+    try:
+        static_replace_in_file(
+            pcbuild_proj,
+            b"""<Projects2 Condition="$(Platform) != 'ARM' and $(Platform) != 'ARM64'" Include="_freeze_importlib.vcxproj" />""",
+            b"",
+        )
+    except NoSearchStringError:
+        pass
 
     # Switch to the static version of the run-time library.
     if static:
