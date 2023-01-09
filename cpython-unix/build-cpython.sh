@@ -177,11 +177,15 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     fi
 fi
 
-# The macOS code for sniffing for _dyld_shared_cache_contains_path is a bit buggy
-# and doesn't support all our building scenarios. We replace it with something
-# more reasonable. This patch likely isn't generally appropriate. But since we
-# guarantee we're building with a 11.0+ SDK, it should be safe.
-patch -p1 -i ${ROOT}/patch-ctypes-callproc.patch
+# The macOS code for sniffing for _dyld_shared_cache_contains_path falls back on a
+# possibly inappropriate code path if a configure time check fails. This is not
+# appropriate for certain cross-compiling scenarios. See discussion at
+# https://bugs.python.org/issue44689.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+    patch -p1 -i ${ROOT}/patch-ctypes-callproc.patch
+else
+    patch -p1 -i ${ROOT}/patch-ctypes-callproc-legacy.patch
+fi
 
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.

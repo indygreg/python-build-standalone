@@ -1,19 +1,14 @@
 diff --git a/Modules/_ctypes/callproc.c b/Modules/_ctypes/callproc.c
-index f42ff08f58..e0a698b6b2 100644
+index b0f1e0bd04..80e81fe65c 100644
 --- a/Modules/_ctypes/callproc.c
 +++ b/Modules/_ctypes/callproc.c
-@@ -1446,34 +1446,8 @@ copy_com_pointer(PyObject *self, PyObject *args)
+@@ -1450,29 +1450,8 @@ copy_com_pointer(PyObject *self, PyObject *args)
  }
  #else
  #ifdef __APPLE__
 -#ifdef HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH
--#  ifdef HAVE_BUILTIN_AVAILABLE
--#    define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
--        __builtin_available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, *)
--#  else
--#    define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
--         (_dyld_shared_cache_contains_path != NULL)
--#  endif
+ #define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
+     __builtin_available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, *)
 -#else
 -// Support the deprecated case of compiling on an older macOS version
 -static void *libsystem_b_handle;
@@ -31,10 +26,9 @@ index f42ff08f58..e0a698b6b2 100644
 -        dlclose(libsystem_b_handle);
 -    }
 -}
- #define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
+-#define HAVE_DYLD_SHARED_CACHE_CONTAINS_PATH_RUNTIME \
 -    _dyld_shared_cache_contains_path != NULL
 -#endif
-+    __builtin_available(macOS 11.0, iOS 14.0, tvOS 14.0, watchOS 7.0, *)
- 
+
  static PyObject *py_dyld_shared_cache_contains_path(PyObject *self, PyObject *args)
  {
