@@ -172,8 +172,10 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
         patch -p1 -i ${ROOT}/patch-python-link-modules-3.8.patch
     elif [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
         patch -p1 -i ${ROOT}/patch-python-link-modules-3.9.patch
-    else
+    elif [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
         patch -p1 -i ${ROOT}/patch-python-link-modules-3.10.patch
+    else
+        patch -p1 -i ${ROOT}/patch-python-link-modules-3.11.patch
     fi
 fi
 
