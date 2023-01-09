@@ -1628,7 +1628,7 @@ def build_libffi(
         prepare_libffi = (
             td
             / ("Python-%s" % python_entry["version"])
-            / "PCBuild"
+            / "PCbuild"
             / "prepare_libffi.bat"
         )
 
@@ -2081,7 +2081,7 @@ def build_cpython(
                 shutil.copyfile(source, dest)
 
         cpython_source_path = td / ("Python-%s" % python_version)
-        pcbuild_path = cpython_source_path / "PCBuild"
+        pcbuild_path = cpython_source_path / "PCbuild"
 
         out_dir = td / "out"
 
