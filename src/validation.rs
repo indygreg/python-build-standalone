@@ -117,6 +117,7 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "python38.dll",
     "python39.dll",
     "python310.dll",
+    "python311.dll",
     "sqlite3.dll",
     "tcl86t.dll",
     "tk86t.dll",
