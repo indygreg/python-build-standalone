@@ -414,7 +414,15 @@ _sqlite3:
   defines:
     - "MODULE_NAME=\\\"sqlite3\\\""
   defines-conditional:
-    # Cannot load dynamic extensions on iOS.
+    # Require dynamic binaries to load extensions. Cannot load on iOS.
+    # 3.11+ uses opt in. <3.11 uses opt out.
+    - define: PY_SQLITE_ENABLE_LOAD_EXTENSION=1
+      targets:
+        - .*-apple-darwin
+        # TODO this should likely be restricted to gnu since musl is statically
+        # linked. But this would break verification code. So enabled for
+        # backwards compatibility.
+        - .*-unknown-linux-.*
     - define: SQLITE_OMIT_LOAD_EXTENSION=1
       targets:
         - .*-ios
