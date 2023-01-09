@@ -694,7 +694,7 @@ def copy_link_to_lib(p: pathlib.Path):
         fh.write("\n".join(lines))
 
 
-OPENSSL_PROPS_REMOVE_RULES = b"""
+OPENSSL_PROPS_REMOVE_RULES_LEGACY = b"""
   <ItemGroup>
     <_SSLDLL Include="$(opensslOutDir)\libcrypto$(_DLLSuffix).dll" />
     <_SSLDLL Include="$(opensslOutDir)\libcrypto$(_DLLSuffix).pdb" />
@@ -705,6 +705,25 @@ OPENSSL_PROPS_REMOVE_RULES = b"""
     <Copy SourceFiles="@(_SSLDLL)" DestinationFolder="$(OutDir)" />
   </Target>
   <Target Name="_CleanSSLDLL" BeforeTargets="Clean">
+    <Delete Files="@(_SSLDLL->'$(OutDir)%(Filename)%(Extension)')" TreatErrorsAsWarnings="true" />
+  </Target>
+"""
+
+OPENSSL_PROPS_REMOVE_RULES = b"""
+  <ItemGroup>
+    <_SSLDLL Include="$(opensslOutDir)\libcrypto$(_DLLSuffix).dll" />
+    <_SSLDLL Include="$(opensslOutDir)\libcrypto$(_DLLSuffix).pdb" />
+    <_SSLDLL Include="$(opensslOutDir)\libssl$(_DLLSuffix).dll" />
+    <_SSLDLL Include="$(opensslOutDir)\libssl$(_DLLSuffix).pdb" />
+  </ItemGroup>
+  <Target Name="_CopySSLDLL"
+          Inputs="@(_SSLDLL)"
+          Outputs="@(_SSLDLL->'$(OutDir)%(Filename)%(Extension)')"
+          Condition="$(SkipCopySSLDLL) == ''"
+          AfterTargets="Build">
+    <Copy SourceFiles="@(_SSLDLL)" DestinationFolder="$(OutDir)" />
+  </Target>
+  <Target Name="_CleanSSLDLL" Condition="$(SkipCopySSLDLL) == ''" BeforeTargets="Clean">
     <Delete Files="@(_SSLDLL->'$(OutDir)%(Filename)%(Extension)')" TreatErrorsAsWarnings="true" />
   </Target>
 """
@@ -793,11 +812,22 @@ def hack_props(
 
     if static:
         # We don't need the install rules to copy the libcrypto and libssl DLLs.
-        static_replace_in_file(
-            openssl_props,
-            OPENSSL_PROPS_REMOVE_RULES.strip().replace(b"\n", b"\r\n"),
-            b"",
-        )
+        # 3.11 added a `SkipCopySSLDLL` property to nerf these rules. But we still
+        # disable that variant because doing so enables us to build in Visual Studio
+        # without having to pass a custom property. We could define a new property
+        # globally. But meh.
+        try:
+            static_replace_in_file(
+                openssl_props,
+                OPENSSL_PROPS_REMOVE_RULES.strip().replace(b"\n", b"\r\n"),
+                b"",
+            )
+        except NoSearchStringError:
+            static_replace_in_file(
+                openssl_props,
+                OPENSSL_PROPS_REMOVE_RULES_LEGACY.strip().replace(b"\n", b"\r\n"),
+                b"",
+            )
 
         # We need to copy linking settings for dynamic libraries to static libraries.
         copy_link_to_lib(pcbuild_path / "libffi.props")
