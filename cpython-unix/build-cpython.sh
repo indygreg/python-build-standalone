@@ -137,7 +137,11 @@ fi
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
-    patch -p1 -i ${ROOT}/patch-dont-clear-runshared.patch
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+        patch -p1 -i ${ROOT}/patch-dont-clear-runshared.patch
+    else
+        patch -p1 -i ${ROOT}/patch-dont-clear-runshared-legacy.patch
+    fi
 fi
 
 # Clang 13 actually prints something with --print-multiarch, confusing CPython's
