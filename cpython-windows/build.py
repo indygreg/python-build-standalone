@@ -1422,6 +1422,15 @@ def hack_source_files(source_path: pathlib.Path, static: bool, python_version: s
             b"pythonapi = PyDLL(_sys.executable)",
         )
 
+    # Python 3.11 made _Py_IDENTIFIER hidden by default. Source files need to
+    # opt in to unmasking it. Our static build tickles this into not working.
+    if static:
+        static_replace_in_file(
+            source_path / "PC" / "_msi.c",
+            b"#include <Python.h>\n",
+            b"#define NEEDS_PY_IDENTIFIER\n#include <Python.h>\n",
+        )
+
     # The `sys` module only populates `sys.winver` if MS_COREDLL is defined,
     # which it isn't in static builds. We know what the version should be, so
     # we go ahead and set it.
