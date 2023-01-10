@@ -18,7 +18,11 @@ import zipfile
 import multiprocessing
 
 from pythonbuild.downloads import DOWNLOADS
-from pythonbuild.cpython import parse_config_c, STDLIB_TEST_PACKAGES
+from pythonbuild.cpython import (
+    parse_config_c,
+    STDLIB_TEST_PACKAGES,
+    meets_python_minimum_version,
+)
 from pythonbuild.utils import (
     create_tar_from_directory,
     download_entry,
@@ -890,6 +894,7 @@ def hack_project_files(
     td: pathlib.Path,
     cpython_source_path: pathlib.Path,
     build_directory: str,
+    python_version: str,
     static: bool,
     honor_allow_missing_preprocessor: bool,
 ):
@@ -903,6 +908,22 @@ def hack_project_files(
         build_directory,
         static=static,
     )
+
+    # Python 3.11 removed various redundant ffi_* symbol definitions as part of commit
+    # 38f331d4656394ae0f425568e26790ace778e076. We were relying on these symbol
+    # definitions in older Python versions. (See also our commit
+    # c3fa21f89c696bc17aec686dee2d13969cca7aa2 for some history with treatment of libffi
+    # linkage.)
+    #
+    # Here, we add FFI_BUILDING to the preprocessor. This feeds into libffi's ffi.h in
+    # order to set up symbol / linkage __declspec fu properly in static builds.
+    if static and meets_python_minimum_version(python_version, "3.11"):
+        ctypes_path = pcbuild_path / "_ctypes.vcxproj"
+        static_replace_in_file(
+            ctypes_path,
+            b"<PreprocessorDefinitions>USING_MALLOC_CLOSURE_DOT_C=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>",
+            b"<PreprocessorDefinitions>USING_MALLOC_CLOSURE_DOT_C=1;FFI_BUILDING;%(PreprocessorDefinitions)</PreprocessorDefinitions>",
+        )
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
@@ -2173,6 +2194,7 @@ def build_cpython(
             td,
             cpython_source_path,
             build_directory,
+            python_version=python_version,
             static=static,
             honor_allow_missing_preprocessor=python_entry_name == "cpython-3.8",
         )
