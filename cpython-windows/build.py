@@ -1374,6 +1374,30 @@ def hack_source_files(source_path: pathlib.Path, static: bool, python_version: s
                     pyport_h, PYPORT_EXPORT_SEARCH_37, PYPORT_EXPORT_REPLACE_OLD
                 )
 
+    if static:
+        # Modules/getpath.c unconditionally refers to PyWin_DLLhModule, which is
+        # conditionally defined behind Py_ENABLE_SHARED. Change its usage
+        # accordingly. This regressed as part of upstream commit
+        # 99fcf1505218464c489d419d4500f126b6d6dc28.
+        # TODO send this patch upstream.
+        if meets_python_minimum_version(python_version, "3.11"):
+            static_replace_in_file(
+                source_path / "Modules" / "getpath.c",
+                b"#ifdef MS_WINDOWS\n    extern HMODULE PyWin_DLLhModule;",
+                b"#if defined MS_WINDOWS && defined Py_ENABLE_SHARED\n    extern HMODULE PyWin_DLLhModule;",
+            )
+
+    # Similar deal as above. Regression also introduced in upstream commit
+    # 99fcf1505218464c489d419d4500f126b6d6dc28.
+    # TODO send this patch upstream.
+    if static:
+        if meets_python_minimum_version(python_version, "3.11"):
+            static_replace_in_file(
+                source_path / "Python" / "dynload_win.c",
+                b"extern HMODULE PyWin_DLLhModule;\n",
+                b"#ifdef Py_ENABLE_SHARED\nextern HMODULE PyWin_DLLhModule;\n#else\n#define PyWin_DLLhModule NULL\n#endif\n",
+            )
+
     # Modules/_winapi.c and Modules/overlapped.c both define an
     # ``OverlappedType`` symbol. We rename one to make the symbol conflict
     # go away.
