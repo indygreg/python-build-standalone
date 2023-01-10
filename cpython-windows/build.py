@@ -1810,6 +1810,8 @@ def collect_python_build_artifacts(
         # We don't care about build artifacts for the python executable.
         "python",
         "pythonw",
+        # Used to bootstrap interpreter.
+        "_freeze_module",
         # Don't care about venvlauncher executable.
         "venvlauncher",
         "venvwlauncher",
