@@ -1632,8 +1632,9 @@ dependencies = [
 
 [[package]]
 name = "text-stub-library"
-version = "0.8.0-pre"
-source = "git+https://github.com/indygreg/PyOxidizer.git?rev=3468a52340fccc547c1d62456db570aeb0663d8e#3468a52340fccc547c1d62456db570aeb0663d8e"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba6daef3ef93d74440e2a831b785e5e61cf8d6ea400f4502dfb921177ad82e6b"
 dependencies = [
  "serde",
  "serde_yaml",
