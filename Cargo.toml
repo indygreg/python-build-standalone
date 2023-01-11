@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.57"
+apple-sdk = "0.4.0"
 bytes = "1.1.0"
 clap = "3.1.14"
 duct = "0.13.5"
@@ -27,7 +28,6 @@ tar = "0.4.38"
 tempfile = "3.3.0"
 text-stub-library = "0.8.0"
 tokio = "1.18.0"
-tugger-apple = { git = "https://github.com/indygreg/PyOxidizer.git", rev = "3468a52340fccc547c1d62456db570aeb0663d8e" }
 url = "2.2.2"
 version-compare = "0.1.0"
 zip = "0.6.2"

@@ -4,7 +4,8 @@
 
 use {
     crate::validation::ValidationContext,
-    anyhow::{anyhow, Result},
+    anyhow::{anyhow, Context, Result},
+    apple_sdk::{AppleSdk, SdkSearch, SdkSearchLocation, SdkSorting, SdkVersion, SimpleSdk},
     semver::Version,
     std::{
         collections::{BTreeMap, BTreeSet},
@@ -13,7 +14,6 @@ use {
         str::FromStr,
     },
     text_stub_library::TbdVersionedRecord,
-    tugger_apple::{find_sdks_in_directory, AppleSdk},
 };
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
@@ -328,32 +328,36 @@ impl TbdMetadata {
 }
 
 pub struct IndexedSdks {
-    sdks: Vec<AppleSdk>,
+    sdks: Vec<SimpleSdk>,
 }
 
 impl IndexedSdks {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
 
-        Ok(Self {
-            sdks: find_sdks_in_directory(path)?,
-        })
+        let sdks = SdkSearch::empty()
+            .location(SdkSearchLocation::Sdks(path.to_path_buf()))
+            .sorting(SdkSorting::VersionAscending)
+            .search::<SimpleSdk>()
+            .context("searching for SDKs")?;
+
+        Ok(Self { sdks })
     }
 
-    fn required_sdks(&self, minimum_version: Version) -> Result<Vec<&AppleSdk>> {
+    fn required_sdks(&self, minimum_version: Version) -> Result<Vec<&SimpleSdk>> {
         let mut res = vec![];
 
         for sdk in &self.sdks {
-            if sdk.version_as_semver()? >= minimum_version {
-                res.push(sdk);
+            if let Some(sdk_version) = sdk.version() {
+                if let Ok(sdk_version) = sdk_version.semantic_version() {
+                    let sdk_version = Version::from_str(sdk_version.as_str())?;
+
+                    if sdk_version >= minimum_version {
+                        res.push(sdk);
+                    }
+                }
             }
         }
-
-        res.sort_by(|a, b| {
-            a.version_as_semver()
-                .unwrap()
-                .cmp(&b.version_as_semver().unwrap())
-        });
 
         Ok(res)
     }
@@ -391,15 +395,17 @@ impl IndexedSdks {
 
                 for sdk in &sdks {
                     // The 10.9 SDK doesn't have TBDs. So skip it for now.
-                    if sdk.version == "10.9" {
-                        continue;
+                    if let Some(version) = sdk.version() {
+                        if version == &SdkVersion::from("10.9") {
+                            continue;
+                        }
                     }
 
-                    let tbd_path = sdk.path.join(&tbd_relative_path);
+                    let tbd_path = sdk.path().join(&tbd_relative_path);
 
                     if tbd_path.exists() {
                         let mut tbd_info = TbdMetadata::from_path(&tbd_path)?;
-                        tbd_info.expand_file_references(&sdk.path)?;
+                        tbd_info.expand_file_references(sdk.path())?;
 
                         let empty = BTreeSet::new();
 
@@ -416,7 +422,7 @@ impl IndexedSdks {
                                         path.display(),
                                         lib,
                                         symbol,
-                                        sdk.display_name
+                                        sdk.path().display()
                                     ));
                                 }
                             }
@@ -426,7 +432,7 @@ impl IndexedSdks {
                             context.errors.push(format!(
                                 "library {} does not exist in SDK {}; {} will likely fail to load",
                                 lib,
-                                sdk.version,
+                                sdk.version().unwrap_or(&SdkVersion::from("99.99")),
                                 path.display()
                             ));
                         }
