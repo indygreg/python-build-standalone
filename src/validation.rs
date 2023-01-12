@@ -1711,9 +1711,9 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
 }
 
 pub fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
-    let run = args.is_present("run");
+    let run = args.get_flag("run");
 
-    let macos_sdks = if let Some(path) = args.value_of("macos_sdks_path") {
+    let macos_sdks = if let Some(path) = args.get_one::<String>("macos_sdks_path") {
         Some(IndexedSdks::new(path)?)
     } else {
         None
@@ -1721,13 +1721,12 @@ pub fn command_validate_distribution(args: &ArgMatches) -> Result<()> {
 
     let mut success = true;
 
-    for path in args.values_of("path").unwrap() {
-        let path = PathBuf::from(path);
+    for path in args.get_many::<PathBuf>("path").unwrap() {
         println!("validating {}", path.display());
-        let mut errors = validate_distribution(&path, macos_sdks.as_ref())?;
+        let mut errors = validate_distribution(path, macos_sdks.as_ref())?;
 
         if run {
-            errors.extend(verify_distribution_behavior(&path)?.into_iter());
+            errors.extend(verify_distribution_behavior(path)?.into_iter());
         }
 
         if errors.is_empty() {

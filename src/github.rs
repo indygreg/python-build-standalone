@@ -74,15 +74,17 @@ async fn upload_release_artifact(
 }
 
 pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()> {
-    let dest_dir = PathBuf::from(args.value_of("dest").expect("dest directory should be set"));
+    let dest_dir = args
+        .get_one::<PathBuf>("dest")
+        .expect("dest directory should be set");
     let org = args
-        .value_of("organization")
+        .get_one::<String>("organization")
         .expect("organization should be set");
-    let repo = args.value_of("repo").expect("repo should be set");
+    let repo = args.get_one::<String>("repo").expect("repo should be set");
 
     let client = OctocrabBuilder::new()
         .personal_token(
-            args.value_of("token")
+            args.get_one::<String>("token")
                 .expect("token should be required argument")
                 .to_string(),
         )
@@ -125,7 +127,10 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                 .await?
                 .into_iter()
                 .find(|run| {
-                    run.head_sha == args.value_of("commit").expect("commit should be defined")
+                    run.head_sha.as_str()
+                        == args
+                            .get_one::<String>("commit")
+                            .expect("commit should be defined")
                 })
                 .ok_or_else(|| {
                     anyhow!(
@@ -253,21 +258,27 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
 }
 
 pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<()> {
-    let dist_dir = PathBuf::from(args.value_of("dist").expect("dist should be specified"));
+    let dist_dir = args
+        .get_one::<PathBuf>("dist")
+        .expect("dist should be specified");
     let datetime = args
-        .value_of("datetime")
+        .get_one::<String>("datetime")
         .expect("datetime should be specified");
-    let tag = args.value_of("tag").expect("tag should be specified");
-    let ignore_missing = args.is_present("ignore_missing");
+    let tag = args
+        .get_one::<String>("tag")
+        .expect("tag should be specified");
+    let ignore_missing = args.get_flag("ignore_missing");
     let token = args
-        .value_of("token")
+        .get_one::<String>("token")
         .expect("token should be specified")
         .to_string();
     let organization = args
-        .value_of("organization")
+        .get_one::<String>("organization")
         .expect("organization should be specified");
-    let repo = args.value_of("repo").expect("repo should be specified");
-    let dry_run = args.is_present("dry_run");
+    let repo = args
+        .get_one::<String>("repo")
+        .expect("repo should be specified");
+    let dry_run = args.get_flag("dry_run");
 
     let mut filenames = std::fs::read_dir(&dist_dir)?
         .into_iter()

@@ -10,8 +10,11 @@ mod validation;
 
 use {
     anyhow::{anyhow, Context, Result},
-    clap::{Arg, Command},
-    std::{io::Read, path::Path},
+    clap::{value_parser, Arg, ArgAction, Command},
+    std::{
+        io::Read,
+        path::{Path, PathBuf},
+    },
 };
 
 pub fn open_distribution_archive(path: &Path) -> Result<tar::Archive<impl Read>> {
@@ -51,6 +54,7 @@ fn main_impl() -> Result<()> {
                     .long("dest")
                     .required(true)
                     .takes_value(true)
+                    .value_parser(value_parser!(PathBuf))
                     .help("Destination directory"),
             )
             .arg(
@@ -76,7 +80,8 @@ fn main_impl() -> Result<()> {
                 Arg::new("path")
                     .required(true)
                     .takes_value(true)
-                    .multiple_occurrences(true)
+                    .action(ArgAction::Append)
+                    .value_parser(value_parser!(PathBuf))
                     .help("Path of archive to convert"),
             ),
     );
@@ -96,6 +101,7 @@ fn main_impl() -> Result<()> {
                     .long("--dist")
                     .required(true)
                     .takes_value(true)
+                    .value_parser(value_parser!(PathBuf))
                     .help("Directory with release artifacts"),
             )
             .arg(
@@ -155,7 +161,8 @@ fn main_impl() -> Result<()> {
             .arg(
                 Arg::new("path")
                     .help("Path to tar.zst file to validate")
-                    .multiple_occurrences(true)
+                    .action(ArgAction::Append)
+                    .value_parser(value_parser!(PathBuf))
                     .multiple_values(true)
                     .required(true),
             ),
@@ -165,9 +172,8 @@ fn main_impl() -> Result<()> {
 
     match matches.subcommand() {
         Some(("convert-install-only", args)) => {
-            for path in args.values_of("path").unwrap() {
-                let dest_path =
-                    crate::release::produce_install_only(std::path::PathBuf::from(path).as_path())?;
+            for path in args.get_many::<PathBuf>("path").unwrap() {
+                let dest_path = crate::release::produce_install_only(path)?;
                 println!("wrote {}", dest_path.display());
             }
 
