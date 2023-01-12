@@ -38,36 +38,36 @@ fn main_impl() -> Result<()> {
             .about("Fetch builds from GitHub Actions that are release artifacts")
             .arg(
                 Arg::new("token")
-                    .long("--token")
+                    .long("token")
+                    .action(ArgAction::Set)
                     .required(true)
-                    .takes_value(true)
                     .help("GitHub API token"),
             )
             .arg(
                 Arg::new("commit")
-                    .long("--commit")
-                    .takes_value(true)
+                    .long("commit")
+                    .action(ArgAction::Set)
                     .help("Git commit whose artifacts to fetch"),
             )
             .arg(
                 Arg::new("dest")
                     .long("dest")
                     .required(true)
-                    .takes_value(true)
+                    .action(ArgAction::Set)
                     .value_parser(value_parser!(PathBuf))
                     .help("Destination directory"),
             )
             .arg(
                 Arg::new("organization")
-                    .long("--org")
-                    .takes_value(true)
+                    .long("org")
+                    .action(ArgAction::Set)
                     .default_value("indygreg")
                     .help("GitHub organization"),
             )
             .arg(
                 Arg::new("repo")
-                    .long("--repo")
-                    .takes_value(true)
+                    .long("repo")
+                    .action(ArgAction::Set)
                     .default_value("python-build-standalone")
                     .help("GitHub repository name"),
             ),
@@ -79,7 +79,6 @@ fn main_impl() -> Result<()> {
             .arg(
                 Arg::new("path")
                     .required(true)
-                    .takes_value(true)
                     .action(ArgAction::Append)
                     .value_parser(value_parser!(PathBuf))
                     .help("Path of archive to convert"),
@@ -91,54 +90,56 @@ fn main_impl() -> Result<()> {
             .about("Upload release distributions to a GitHub release")
             .arg(
                 Arg::new("token")
-                    .long("--token")
+                    .long("token")
+                    .action(ArgAction::Set)
                     .required(true)
-                    .takes_value(true)
                     .help("GitHub API token"),
             )
             .arg(
                 Arg::new("dist")
-                    .long("--dist")
+                    .long("dist")
+                    .action(ArgAction::Set)
                     .required(true)
-                    .takes_value(true)
                     .value_parser(value_parser!(PathBuf))
                     .help("Directory with release artifacts"),
             )
             .arg(
                 Arg::new("datetime")
-                    .long("--datetime")
+                    .long("datetime")
+                    .action(ArgAction::Set)
                     .required(true)
-                    .takes_value(true)
                     .help("Date/time tag associated with builds"),
             )
             .arg(
                 Arg::new("dry_run")
                     .short('n')
+                    .action(ArgAction::SetTrue)
                     .help("Dry run mode; do not actually upload"),
             )
             .arg(
                 Arg::new("tag")
-                    .long("--tag")
+                    .long("tag")
+                    .action(ArgAction::Set)
                     .required(true)
-                    .takes_value(true)
                     .help("Release tag"),
             )
             .arg(
                 Arg::new("ignore_missing")
-                    .long("--ignore-missing")
+                    .long("ignore-missing")
+                    .action(ArgAction::SetTrue)
                     .help("Continue even if there are missing artifacts"),
             )
             .arg(
                 Arg::new("organization")
-                    .long("--org")
-                    .takes_value(true)
+                    .long("org")
+                    .action(ArgAction::Set)
                     .default_value("indygreg")
                     .help("GitHub organization"),
             )
             .arg(
                 Arg::new("repo")
-                    .long("--repo")
-                    .takes_value(true)
+                    .long("repo")
+                    .action(ArgAction::Set)
                     .default_value("python-build-standalone")
                     .help("GitHub repository name"),
             ),
@@ -149,13 +150,14 @@ fn main_impl() -> Result<()> {
             .about("Ensure a distribution archive conforms to standards")
             .arg(
                 Arg::new("run")
-                    .long("--run")
+                    .long("run")
+                    .action(ArgAction::SetTrue)
                     .help("Run the interpreter to verify behavior"),
             )
             .arg(
                 Arg::new("macos_sdks_path")
                     .long("macos-sdks-path")
-                    .takes_value(true)
+                    .action(ArgAction::Set)
                     .help("Path to a directory containing MacOS SDKs (typically a checkout of https://github.com/phracker/MacOSX-SDKs)")
             )
             .arg(
@@ -163,7 +165,6 @@ fn main_impl() -> Result<()> {
                     .help("Path to tar.zst file to validate")
                     .action(ArgAction::Append)
                     .value_parser(value_parser!(PathBuf))
-                    .multiple_values(true)
                     .required(true),
             ),
     );
