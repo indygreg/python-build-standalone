@@ -18,6 +18,8 @@ release-build-macos tag:
   ./build-macos.py --python cpython-3.9 --optimizations pgo+lto
   ./build-macos.py --python cpython-3.10 --optimizations pgo
   ./build-macos.py --python cpython-3.10 --optimizations pgo+lto
+  ./build-macos.py --python cpython-3.11 --optimizations pgo
+  ./build-macos.py --python cpython-3.11 --optimizations pgo+lto
 
 # Trigger builds of aarch64-apple-darwin release artifacts.
 release-build-macos-remote tag:
