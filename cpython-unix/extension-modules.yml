@@ -1,18 +1,8 @@
 # This file defines metadata for Python extension modules.
 #
 # Keys are the name of an extension module in a CPython distribution.
-# Values are maps having the following keys:
-#
-# disabled-targets
-#   Array of targets the extension module is disabled on. Values are regular
-#   expressions.
-#
-# minimum-python-version
-#   X.Y version number of minimum Python containing this extension module.
-#
-# required-targets
-#   Array of target triples this extension module is required to initialize
-#   a Python interpreter.
+# Values are maps with various attributes. See cpython.py for the JSON
+# schema definition.
 
 _abc:
   setup-enabled: true
