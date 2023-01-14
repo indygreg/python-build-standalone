@@ -428,9 +428,11 @@ def python_build_info(
             )
 
         if optimizations in ("lto", "pgo+lto"):
-            object_file_format = (
-                "llvm-bitcode:%s" % DOWNLOADS[clang_toolchain(platform)]["version"]
-            )
+            llvm_version = DOWNLOADS[clang_toolchain(platform)]["version"]
+            if "+" in llvm_version:
+                llvm_version = llvm_version.split("+")[0]
+
+            object_file_format = f"llvm-bitcode:%{llvm_version}"
         else:
             object_file_format = "elf"
     elif platform == "macos":
