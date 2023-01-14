@@ -429,7 +429,7 @@ def python_build_info(
 
         if optimizations in ("lto", "pgo+lto"):
             object_file_format = (
-                "llvm-bitcode:%s" % DOWNLOADS["llvm-x86_64-linux"]["version"]
+                "llvm-bitcode:%s" % DOWNLOADS[clang_toolchain(platform)]["version"]
             )
         else:
             object_file_format = "elf"
