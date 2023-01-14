@@ -729,9 +729,16 @@ ${BUILD_PYTHON} ${ROOT}/fix_shebangs.py ${ROOT}/out/python/install/bin
 
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
-for d in Modules Objects Parser Parser/pegen Programs Python; do
-    # Parser/pegen only exists in 3.9+
-    if [ -d $d ]; then
+OBJECT_DIRS="Objects Parser Parser/pegen Programs Python"
+OBJECT_DIRS="${OBJECT_DIRS} Modules"
+for ext in _blake2 cjkcodecs _ctypes _ctypes/darwin _decimal _expat _io _multiprocessing _sha3 _sqlite _sre _xxtestfuzz ; do
+    OBJECT_DIRS="${OBJECT_DIRS} Modules/${ext}"
+done
+
+for d in ${OBJECT_DIRS}; do
+    # Not all directories are in all Python versions. And some directories may
+    # exist but not have object files.
+    if compgen -G "${d}/*.o" > /dev/null; then
         mkdir -p ${ROOT}/out/python/build/$d
         cp -av $d/*.o ${ROOT}/out/python/build/$d/
     fi
