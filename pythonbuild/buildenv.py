@@ -66,6 +66,7 @@ class ContainerContext(object):
         self,
         build_dir,
         host_platform,
+        target_triple: str,
         binutils=False,
         musl=False,
         clang=False,
@@ -75,7 +76,7 @@ class ContainerContext(object):
 
         if clang:
             self.install_toolchain_archive(
-                build_dir, clang_toolchain(host_platform), host_platform
+                build_dir, clang_toolchain(host_platform, target_triple), host_platform
             )
 
         if musl:
@@ -177,14 +178,20 @@ class TempdirContext(object):
         extract_tar_to_directory(p, dest_path)
 
     def install_toolchain(
-        self, build_dir, platform, binutils=False, musl=False, clang=False
+        self,
+        build_dir,
+        platform,
+        target_triple,
+        binutils=False,
+        musl=False,
+        clang=False,
     ):
         if binutils:
             self.install_toolchain_archive(build_dir, "binutils", platform)
 
         if clang:
             self.install_toolchain_archive(
-                build_dir, clang_toolchain(platform), platform
+                build_dir, clang_toolchain(platform, target_triple), platform
             )
 
         if musl:

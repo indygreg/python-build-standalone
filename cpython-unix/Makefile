@@ -75,7 +75,7 @@ $(OUTDIR)/binutils-$(BINUTILS_VERSION)-$(HOST_PLATFORM).tar: $(OUTDIR)/image-gcc
 	$(RUN_BUILD) --toolchain binutils
 
 $(OUTDIR)/$(CLANG_FILENAME):
-	$(RUN_BUILD) --toolchain clang
+	$(RUN_BUILD) --toolchain clang --target-triple $(TARGET_TRIPLE)
 
 $(OUTDIR)/musl-$(MUSL_VERSION)-$(HOST_PLATFORM).tar: $(BASE_TOOLCHAIN_DEPENDS) $(HERE)/build-musl.sh
 	$(RUN_BUILD) --toolchain musl

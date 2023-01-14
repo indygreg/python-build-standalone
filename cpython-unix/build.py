@@ -239,6 +239,7 @@ def simple_build(
             build_env.install_toolchain(
                 BUILD,
                 host_platform,
+                target_triple,
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
@@ -289,8 +290,8 @@ def build_binutils(client, image, host_platform):
         )
 
 
-def materialize_clang(host_platform):
-    entry = clang_toolchain(host_platform)
+def materialize_clang(host_platform: str, target_triple: str):
+    entry = clang_toolchain(host_platform, target_triple)
     tar_zst = download_entry(entry, DOWNLOADS_PATH)
     local_filename = "%s-%s-%s.tar" % (
         entry,
@@ -305,11 +306,13 @@ def materialize_clang(host_platform):
             dctx.copy_stream(ifh, ofh)
 
 
-def build_musl(client, image, host_platform):
+def build_musl(client, image, host_platform: str, target_triple: str):
     musl_archive = download_entry("musl", DOWNLOADS_PATH)
 
     with build_environment(client, image) as build_env:
-        build_env.install_toolchain(BUILD, host_platform, binutils=True, clang=True)
+        build_env.install_toolchain(
+            BUILD, host_platform, target_triple, binutils=True, clang=True
+        )
         build_env.copy_file(musl_archive)
         build_env.copy_file(SUPPORT / "build-musl.sh")
 
@@ -335,6 +338,7 @@ def build_libedit(
             build_env.install_toolchain(
                 BUILD,
                 host_platform,
+                target_triple,
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
@@ -368,6 +372,7 @@ def build_tix(
             build_env.install_toolchain(
                 BUILD,
                 host_platform,
+                target_triple,
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
@@ -428,7 +433,9 @@ def python_build_info(
             )
 
         if optimizations in ("lto", "pgo+lto"):
-            llvm_version = DOWNLOADS[clang_toolchain(platform)]["version"]
+            llvm_version = DOWNLOADS[clang_toolchain(platform, target_triple)][
+                "version"
+            ]
             if "+" in llvm_version:
                 llvm_version = llvm_version.split("+")[0]
 
@@ -625,6 +632,7 @@ def build_cpython(
             build_env.install_toolchain(
                 BUILD,
                 host_platform,
+                target_triple,
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
@@ -889,10 +897,15 @@ def main():
             build_binutils(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)
 
         elif action == "clang":
-            materialize_clang(host_platform)
+            materialize_clang(host_platform, target_triple)
 
         elif action == "musl":
-            build_musl(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)
+            build_musl(
+                client,
+                get_image(client, ROOT, BUILD, "gcc"),
+                host_platform,
+                target_triple,
+            )
 
         elif action == "autoconf":
             simple_build(

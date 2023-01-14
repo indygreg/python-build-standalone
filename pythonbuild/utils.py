@@ -155,7 +155,7 @@ def write_triples_makefiles(
                 lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
                 lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
 
-                entry = clang_toolchain(host_platform)
+                entry = clang_toolchain(host_platform, triple)
                 lines.append(
                     "CLANG_FILENAME := %s-%s-%s.tar\n"
                     % (entry, DOWNLOADS[entry]["version"], host_platform)
@@ -390,7 +390,7 @@ def normalize_tar_archive(data: io.BytesIO) -> io.BytesIO:
     return dest
 
 
-def clang_toolchain(host_platform):
+def clang_toolchain(host_platform: str, target_triple: str) -> str:
     if host_platform == "linux64":
         return "llvm-x86_64-linux"
     elif host_platform == "macos":
