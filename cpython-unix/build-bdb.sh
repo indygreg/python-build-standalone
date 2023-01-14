@@ -21,7 +21,14 @@ CONFIGURE_FLAGS="--enable-dbm --disable-shared"
 # to configure and tell it pthread_yield() isn't available.
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_pthread_yield=no"
 
-CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC" ../dist/configure \
+CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC"
+
+if [ "${CC}" = "clang" ]; then
+    # deprecated-non-prototype gets very chatty with Clang 15. Suppress it.
+    CFLAGS="${CFLAGS} -Wno-deprecated-non-prototype"
+fi
+
+CFLAGS="${CFLAGS}" CPPFLAGS="${CFLAGS}" ../dist/configure \
     --build=${BUILD_TRIPLE} \
     --host=${TARGET_TRIPLE} \
     --prefix=/tools/deps \
