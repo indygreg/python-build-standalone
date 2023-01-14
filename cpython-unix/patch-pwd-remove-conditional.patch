@@ -1,0 +1,10 @@
+diff --git a/Modules/Setup.bootstrap.in b/Modules/Setup.bootstrap.in
+index e3e9b96b06..5fb3ab9b56 100644
+--- a/Modules/Setup.bootstrap.in
++++ b/Modules/Setup.bootstrap.in
+@@ -32,4 +32,4 @@ _stat _stat.c
+ _symtable symtablemodule.c
+ 
+ # for systems without $HOME env, used by site._getuserbase()
+-@MODULE_PWD_TRUE@pwd pwdmodule.c
++pwd pwdmodule.c

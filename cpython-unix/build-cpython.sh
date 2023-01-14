@@ -235,6 +235,10 @@ fi
 # everything.
 if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
     patch -p1 -i ${ROOT}/patch-configure-disable-stdlib-mod.patch
+
+    # This hack also prevents the conditional definition of the pwd module in
+    # Setup.bootstrap.in from working. So we remove that conditional.
+    patch -p1 -i ${ROOT}/patch-pwd-remove-conditional.patch
 fi
 
 # We patched configure.ac above. Reflect those changes.
