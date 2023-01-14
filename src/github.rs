@@ -34,7 +34,7 @@ async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Re
 async fn upload_release_artifact(
     client: &Octocrab,
     release: &Release,
-    filename: &str,
+    filename: String,
     data: Vec<u8>,
     dry_run: bool,
 ) -> Result<()> {
@@ -50,7 +50,7 @@ async fn upload_release_artifact(
         url.set_path(path);
     }
 
-    url.query_pairs_mut().clear().append_pair("name", filename);
+    url.query_pairs_mut().clear().append_pair("name", &filename);
 
     println!("uploading to {}", url);
 
@@ -364,6 +364,8 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
 
     let mut digests = BTreeMap::new();
 
+    let mut fs = vec![];
+
     for (source, dest) in wanted_filenames {
         if !filenames.contains(&source) {
             continue;
@@ -378,15 +380,26 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
 
         digests.insert(dest.clone(), digest.clone());
 
-        upload_release_artifact(&client, &release, &dest, file_data, dry_run).await?;
-        upload_release_artifact(
+        fs.push(upload_release_artifact(
             &client,
             &release,
-            &format!("{}.sha256", dest),
+            dest.clone(),
+            file_data,
+            dry_run,
+        ));
+        fs.push(upload_release_artifact(
+            &client,
+            &release,
+            format!("{}.sha256", dest),
             format!("{}\n", digest).into_bytes(),
             dry_run,
-        )
-        .await?;
+        ));
+    }
+
+    let mut buffered = futures::stream::iter(fs).buffer_unordered(6);
+
+    while let Some(res) = buffered.next().await {
+        res?;
     }
 
     let shasums = digests
@@ -400,7 +413,7 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     upload_release_artifact(
         &client,
         &release,
-        "SHA256SUMS",
+        "SHA256SUMS".to_string(),
         shasums.into_bytes(),
         dry_run,
     )
