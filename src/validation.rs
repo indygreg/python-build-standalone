@@ -1658,6 +1658,36 @@ fn validate_distribution(
         }
     }
 
+    // Validate extension module initialization functions are present.
+    //
+    // Note that we export PyInit_* functions from libpython on POSIX whereas these
+    // aren't exported from official Python builds. We may want to consider changing
+    // this.
+    for (name, variants) in json.as_ref().unwrap().build_info.extensions.iter() {
+        for ext in variants {
+            if ext.init_fn == "NULL" {
+                continue;
+            }
+
+            let exported = context.libpython_exported_symbols.contains(&ext.init_fn);
+
+            // Static distributions never export symbols.
+            // Windows dynamic doesn't export extension module init functions.
+            // And for some strange reason _PyWarnings_Init is exported as part of the ABI.
+            let wanted =
+                !(is_static || triple.contains("-windows-")) || (!is_static && name == "_warnings");
+
+            if exported != wanted {
+                context.errors.push(format!(
+                    "libpython {} {} for extension module {}",
+                    if wanted { "doesn't export" } else { "exports" },
+                    ext.init_fn,
+                    name
+                ));
+            }
+        }
+    }
+
     // On Apple Python 3.8 we need to ban most weak symbol references because 3.8 doesn't have
     // the proper runtime guards in place to prevent them from being resolved at runtime,
     // which would lead to a crash. See
