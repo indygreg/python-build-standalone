@@ -17,7 +17,7 @@ use {
             macho::{LoadCommandVariant, MachHeader, Nlist},
             pe::{ImageNtHeaders, PeFile, PeFile32, PeFile64},
         },
-        Endianness, FileKind, SectionIndex, SymbolScope,
+        Endianness, FileKind, Object, SectionIndex, SymbolScope,
     },
     once_cell::sync::Lazy,
     std::{
@@ -1186,6 +1186,19 @@ fn validate_pe<'data, Pe: ImageNtHeaders>(
         }
     }
 
+    let filename = path
+        .file_name()
+        .ok_or_else(|| anyhow!("should be able to resolve filename"))?
+        .to_string_lossy();
+
+    if filename.starts_with("python") && filename.ends_with(".dll") {
+        for symbol in pe.exports()? {
+            context
+                .libpython_exported_symbols
+                .insert(String::from_utf8(symbol.name().to_vec())?);
+        }
+    }
+
     Ok(())
 }
 
@@ -1481,6 +1494,9 @@ fn validate_distribution(
 
     let is_debug = dist_filename.contains("-debug-");
 
+    let is_static = triple.contains("unknown-linux-musl")
+        || (triple.contains("-windows-") && dist_path.to_string_lossy().contains("-static-"));
+
     let mut tf = crate::open_distribution_archive(&dist_path)?;
 
     // First entry in archive should be python/PYTHON.json.
@@ -1612,7 +1628,7 @@ fn validate_distribution(
             .push(format!("required library dependency {} not seen", lib));
     }
 
-    if triple.contains("-windows-") && dist_path.to_string_lossy().contains("-static-") {
+    if triple.contains("-windows-") && is_static {
         for path in WANTED_WINDOWS_STATIC_PATHS.difference(&seen_paths) {
             context
                 .errors
@@ -1620,18 +1636,25 @@ fn validate_distribution(
         }
     }
 
-    // If we've collected symbols exported from libpython, ensure the Python symbols are
-    // in the set.
-    if !context.libpython_exported_symbols.is_empty() {
-        for symbol in PYTHON_EXPORTED_SYMBOLS {
-            if !context
-                .libpython_exported_symbols
-                .contains(&symbol.to_string())
-            {
-                context
-                    .errors
-                    .push(format!("libpython does not export {}", symbol));
-            }
+    if context.libpython_exported_symbols.is_empty() && !is_static {
+        context
+            .errors
+            .push("libpython does not export any symbols".to_string());
+    }
+
+    // Ensure that some well known Python symbols are being exported from libpython.
+    for symbol in PYTHON_EXPORTED_SYMBOLS {
+        let exported = context
+            .libpython_exported_symbols
+            .contains(&symbol.to_string());
+        let wanted = !is_static;
+
+        if exported != wanted {
+            context.errors.push(format!(
+                "libpython {} {}",
+                if wanted { "doesn't export" } else { "exports" },
+                symbol,
+            ));
         }
     }
 
