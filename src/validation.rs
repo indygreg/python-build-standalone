@@ -1590,6 +1590,13 @@ fn validate_distribution(
             }
         }
 
+        // Verify shebangs don't reference build environment.
+        if data.starts_with(b"#!/install") || data.starts_with(b"#!/build") {
+            context
+                .errors
+                .push(format!("{} has #!/install shebang", path.display()));
+        }
+
         if path == PathBuf::from("python/PYTHON.json") {
             context
                 .errors

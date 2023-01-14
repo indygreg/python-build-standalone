@@ -694,26 +694,29 @@ import sys
 
 ROOT = sys.argv[1]
 
-for f in sorted(os.listdir(ROOT)):
-    full = os.path.join(ROOT, f)
-
+def fix_shebang(full):
     if os.path.islink(full) or not os.path.isfile(full):
-        continue
+        return
 
     with open(full, "rb") as fh:
-        initial = fh.read(64)
+        initial = fh.read(256)
 
     if not initial.startswith(b"#!"):
-        continue
+        return
+
+    if b"\n" not in initial:
+        raise Exception("could not find end of shebang line; consider increasing read count")
+
+    initial = initial.splitlines()[0].decode("utf-8", "replace")
+
+    # Some shebangs are allowed.
+    if "bin/env" in initial or "bin/sh" in initial or "bin/bash" in initial:
+        print("ignoring %s due to non-python shebang (%s)" % (full, initial))
+        return
 
     # Make sure it is a Python script and not something else.
-    with open(full, "r", encoding="utf-8") as fh:
-        initial = fh.readline()
-        initial = initial.strip()
-
-    if "python" not in initial:
-        print("ignoring %s due to non-python shebang (%s)" % (full, initial))
-        continue
+    if "/python" not in initial:
+       raise Exception("unexpected shebang (%s) in %s" % (initial, full))
 
     print("rewriting Python shebang (%s) in %s" % (initial, full))
 
@@ -731,9 +734,16 @@ for f in sorted(os.listdir(ROOT)):
 
     with open(full, "wb") as fh:
         fh.write(b"".join(lines))
+
+
+for root, dirs, files in os.walk(ROOT):
+    dirs[:] = sorted(dirs)
+
+    for f in sorted(files):
+        fix_shebang(os.path.join(root, f))
 EOF
 
-${BUILD_PYTHON} ${ROOT}/fix_shebangs.py ${ROOT}/out/python/install/bin
+${BUILD_PYTHON} ${ROOT}/fix_shebangs.py ${ROOT}/out/python/install
 
 # Also copy object files so they can be linked in a custom manner by
 # downstream consumers.
