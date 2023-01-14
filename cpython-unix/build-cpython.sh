@@ -134,6 +134,10 @@ else
     patch -p1 -i ${ROOT}/patch-xopen-source-ios-legacy.patch
 fi
 
+# LIBTOOL_CRUFT is unused and breaks cross-compiling on macOS. Nuke it.
+# Submitted upstream at https://github.com/python/cpython/pull/101048.
+patch -p1 -i ${ROOT}/patch-configure-remove-libtool-cruft.patch
+
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
