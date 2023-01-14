@@ -55,6 +55,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
       - name: Build Image
         run: |
           ./build-linux.py --make-target toolchain-image-${{ matrix.image }}
