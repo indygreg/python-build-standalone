@@ -5,7 +5,7 @@
 use {
     anyhow::Result,
     serde::Deserialize,
-    std::collections::{BTreeMap, HashMap},
+    std::collections::{BTreeMap, BTreeSet, HashMap},
 };
 
 #[derive(Debug, Deserialize)]
@@ -91,6 +91,20 @@ pub struct PythonJsonMain {
     pub tcl_library_path: Option<String>,
     pub tcl_library_paths: Option<Vec<String>>,
     pub version: String,
+}
+
+impl PythonJsonMain {
+    pub fn all_object_paths(&self) -> BTreeSet<&str> {
+        let mut res = BTreeSet::from_iter(self.build_info.core.objs.iter().map(|x| x.as_str()));
+
+        for entries in self.build_info.extensions.values() {
+            for ext in entries {
+                res.extend(ext.objs.iter().map(|x| x.as_str()));
+            }
+        }
+
+        res
+    }
 }
 
 pub fn parse_python_json(json_data: &[u8]) -> Result<PythonJsonMain> {

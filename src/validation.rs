@@ -1675,6 +1675,18 @@ fn validate_distribution(
         }
     }
 
+    // Ensure all referenced object paths are in the archive.
+    for object_path in json.as_ref().unwrap().all_object_paths() {
+        let wanted_path = PathBuf::from("python").join(object_path);
+
+        if !seen_paths.contains(&wanted_path) {
+            context.errors.push(format!(
+                "PYTHON.json referenced object file not in tar archive: {}",
+                wanted_path.display()
+            ));
+        }
+    }
+
     Ok(context.errors)
 }
 
