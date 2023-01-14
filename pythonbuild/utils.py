@@ -269,10 +269,10 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
                 tmp.unlink()
                 raise
         except http.client.HTTPException as e:
-            print("HTTP exception; retrying: %s" % e)
+            print(f"HTTP exception on {url}; retrying: {e}")
             time.sleep(2 ** attempt)
         except urllib.error.URLError as e:
-            print("urllib error; retrying: %s" % e)
+            print(f"urllib error on {url}; retrying: {e}")
             time.sleep(2 ** attempt)
     else:
         raise Exception("download failed after multiple retries")
