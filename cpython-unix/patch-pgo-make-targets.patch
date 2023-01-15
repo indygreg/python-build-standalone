@@ -1,0 +1,24 @@
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index b356f6293e..e584dede51 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -642,12 +642,16 @@ run_profile_task:
+ build_all_merge_profile:
+ 	$(LLVM_PROF_MERGER)
+ 
+-# Compile Python binary with profile guided optimization.
+-# To force re-running of the profile task, remove the profile-run-stamp file.
+-profile-opt: profile-run-stamp
++profile-rebuild-stamp: profile-run-stamp
+ 	@echo "Rebuilding with profile guided optimizations:"
+ 	-rm -f profile-clean-stamp
+ 	$(MAKE) @DEF_MAKE_RULE@ CFLAGS_NODIST="$(CFLAGS_NODIST) $(PGO_PROF_USE_FLAG)" LDFLAGS_NODIST="$(LDFLAGS_NODIST)"
++	touch $@
++
++# Compile Python binary with profile guided optimization.
++# To force re-running of the profile task, remove the profile-run-stamp file.
++.PHONY: profile-opt
++profile-opt: profile-rebuild-stamp
+ 
+ # Compile and run with gcov
+ .PHONY=coverage coverage-lcov coverage-report

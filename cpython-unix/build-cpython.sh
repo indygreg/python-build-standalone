@@ -245,6 +245,11 @@ if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
     patch -p1 -i ${ROOT}/patch-pwd-remove-conditional.patch
 fi
 
+# The optimization make targets are both phony and non-phony. This leads
+# to PGO targets getting reevaluated after a build when you use multiple
+# make invocations. e.g. `make install` like we do below. Fix that.
+patch -p1 -i ${ROOT}/patch-pgo-make-targets.patch
+
 # We patched configure.ac above. Reflect those changes.
 autoconf
 
