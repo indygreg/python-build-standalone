@@ -1,3 +1,27 @@
+# Diff 2 releases using diffocope.
+diff a b:
+  diffoscope \
+    --html build/diff.html \
+    --exclude 'python/build/**' \
+    --exclude-command '^readelf.*' \
+    --exclude-command '^xxd.*' \
+    --exclude-command '^objdump.*' \
+    --exclude-command '^strings.*' \
+    --max-report-size 9999999999 \
+    --max-page-size 999999999 \
+    --max-diff-block-lines 100000 \
+    --max-page-diff-block-lines 100000 \
+    {{ a }} {{ b }}
+
+diff-python-json a b:
+  diffoscope \
+    --html build/diff.html \
+    --exclude 'python/build/**' \
+    --exclude 'python/install/**' \
+    --max-diff-block-lines 100000 \
+    --max-page-diff-block-lines 100000 \
+    {{ a }} {{ b }}
+
 # Download release artifacts from GitHub Actions
 release-download-distributions token commit:
   mkdir -p dist
@@ -62,3 +86,4 @@ release token commit tag:
   datetime=$(ls dist/cpython-3.10.*-x86_64-unknown-linux-gnu-install_only-*.tar.gz  | awk -F- '{print $8}' | awk -F. '{print $1}')
   just release-upload-distributions {{token}} ${datetime} {{tag}}
   just release-set-latest-release {{tag}}
+
