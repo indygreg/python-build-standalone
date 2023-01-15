@@ -673,6 +673,7 @@ const GLOBAL_EXTENSIONS_POSIX: &[&str] = &[
     "_dbm",
     "_posixshmem",
     "_posixsubprocess",
+    "_testinternalcapi",
     "fcntl",
     "grp",
     "posix",

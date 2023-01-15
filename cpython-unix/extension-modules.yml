@@ -473,15 +473,12 @@ _testimportmultiple:
   sources:
     - _testimportmultiple.c
 
-# Similar deal as _testcapi. Extension exists to test the exported C API. Since
-# we're statically linking, assumptions are invalidated. So value of extension
-# is minimal.
-#
-# If we ever enable this, we should add $(srcdir)/Include/internal to includes,
-# otherwise it likely picks up public API.
+# Ideally we disable all test extensions. However, this one is used by a bunch
+# of tests, including tests that run during PGO profiling. We keep it enabled
+# so it doesn't break tests and undermine PGO.
 _testinternalcapi:
-  disabled-targets:
-    - .*
+  includes:
+    - Include/internal
   sources:
     - _testinternalcapi.c
 
