@@ -22,6 +22,9 @@ diff-python-json a b:
     --max-page-diff-block-lines 100000 \
     {{ a }} {{ b }}
 
+cat-python-json archive:
+  tar -x --to-stdout -f {{ archive }} python/PYTHON.json
+
 # Download release artifacts from GitHub Actions
 release-download-distributions token commit:
   mkdir -p dist
