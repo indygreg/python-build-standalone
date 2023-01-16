@@ -1,5 +1,5 @@
 diff --git a/configure.ac b/configure.ac
-index c62a565eb6..f39de9f98c 100644
+index c62a565eb6..7e5d34632c 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -545,6 +545,15 @@ then
@@ -38,32 +38,30 @@ index c62a565eb6..f39de9f98c 100644
  	*-*-vxworks*)
  		_host_cpu=$host_cpu
  		;;
-@@ -611,7 +633,24 @@ if test "$cross_compiling" = yes; then
- 		MACHDEP="unknown"
- 		AC_MSG_ERROR([cross build not supported for $host])
- 	esac
--	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
-+
-+	case "$host" in
-+	  # The _PYTHON_HOST_PLATFORM environment variable is used to
-+	  # override the platform name in distutils and sysconfig when
-+	  # cross-compiling. On Apple, the platform name expansion logic
-+	  # is non-trivial, including renaming MACHDEP=darwin to macosx
-+	  # and including the deployment target (or current OS version if
-+	  # not set). Our hack here is not generic, but gets the job done
-+	  # for python-build-standalone's cross-compile use cases.
-+	  aarch64-apple-darwin*)
-+	    _PYTHON_HOST_PLATFORM="macosx-${MACOSX_DEPLOYMENT_TARGET}-arm64"
-+	    ;;
-+	  x86_64-apple-darwin*)
-+	    _PYTHON_HOST_PLATFORM="macosx-${MACOSX_DEPLOYMENT_TARGET}-x86_64"
-+	    ;;
-+	  *)
-+	    _PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
-+	esac
+@@ -614,6 +636,23 @@ if test "$cross_compiling" = yes; then
+ 	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
  fi
  
++# The _PYTHON_HOST_PLATFORM environment variable is used to
++# override the platform name in distutils and sysconfig when
++# cross-compiling. On Apple, the platform name expansion logic
++# is non-trivial, including renaming MACHDEP=darwin to macosx
++# and including the deployment target (or current OS version if
++# not set). Here we always force an override based on the target
++# triple. We do this in all build configurations because historically
++# the automatic resolution has been brittle.
++case "$host" in
++aarch64-apple-darwin*)
++  _PYTHON_HOST_PLATFORM="macosx-${MACOSX_DEPLOYMENT_TARGET}-arm64"
++  ;;
++x86_64-apple-darwin*)
++  _PYTHON_HOST_PLATFORM="macosx-${MACOSX_DEPLOYMENT_TARGET}-x86_64"
++  ;;
++esac
++
  # Some systems cannot stand _XOPEN_SOURCE being defined at all; they
+ # disable features if it is defined, without any means to access these
+ # features as extensions. For these systems, we skip the definition of
 @@ -1507,7 +1546,7 @@ if test $enable_shared = "yes"; then
  	  BLDLIBRARY='-Wl,+b,$(LIBDIR) -L. -lpython$(LDVERSION)'
  	  RUNSHARED=SHLIB_PATH=`pwd`${SHLIB_PATH:+:${SHLIB_PATH}}
