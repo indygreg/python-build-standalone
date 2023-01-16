@@ -65,7 +65,10 @@ rm -rf pip-tmp
 
 # If we are cross-compiling, we need to build a host Python to use during
 # the build.
-if [ -n "${CROSS_COMPILING}" ]; then
+#
+# We also build a host Python for 3.11+ to avoid complexity with building a
+# bootstrap Python during regular build.
+if [[ -n "${CROSS_COMPILING}" || -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]]; then
   pushd "Python-${PYTHON_VERSION}"
 
   # Same patch as below. See comment there.
@@ -157,6 +160,14 @@ if [ "${CC}" = "clang" ]; then
     else
         patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
     fi
+fi
+
+# Python 3.11 supports using a provided Python to use during bootstrapping
+# (e.g. freezing). Normally it only uses this Python during cross-compiling.
+# This patch forces always using it. See comment related to
+# `--with-build-python` for more.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+    patch -p1 -i ${ROOT}/patch-always-build-python-for-freeze.patch
 fi
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
@@ -347,6 +358,13 @@ if [ -n "${CPYTHON_LTO}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-lto"
 fi
 
+# Python 3.11 introduces a --with-build-python to denote the host Python.
+# It is required when cross-compiling. But we always build a host Python
+# to avoid complexity with the bootstrap Python binary.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-python=${TOOLS_PATH}/pyhost/bin/python${PYTHON_MAJMIN_VERSION}"
+fi
+
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # Configure may detect libintl from non-system sources, such
     # as Homebrew or MacPorts. So nerf the check to prevent this.
@@ -429,11 +447,6 @@ else
 fi
 
 if [ -n "${CROSS_COMPILING}" ]; then
-    # Python 3.11 require a --with-build-python to denote the host Python.
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
-        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-python=${TOOLS_PATH}/pyhost/bin/python${PYTHON_MAJMIN_VERSION}"
-    fi
-
     # configure doesn't like a handful of scenarios when cross-compiling.
     #
     # getaddrinfo buggy test fails for some reason. So we short-circuit it.
