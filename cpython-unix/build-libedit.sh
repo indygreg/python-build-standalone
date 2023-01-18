@@ -89,7 +89,7 @@ if [ "${CC}" = "musl-clang" ]; then
 fi
 
 # Install to /tools/deps/libedit so it doesn't conflict with readline's files.
-CLFAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="${ldflags}" \
+CFLAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="${ldflags}" \
     ./configure \
         --build=${BUILD_TRIPLE} \
         --host=${TARGET_TRIPLE} \
