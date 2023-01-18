@@ -13,7 +13,7 @@ tar -xf patchelf-${PATCHELF_VERSION}.tar.bz2
 
 pushd patchelf-0.12.20200827.8d3a16e
 
-CC="${HOST_CC}" CXX="${HOST_CXX}" CLFAGS="${EXTRA_HOST_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_HOST_CFLAGS} -fPIC" \
+CC="${HOST_CC}" CXX="${HOST_CXX}" CFLAGS="${EXTRA_HOST_CFLAGS} -fPIC" CPPFLAGS="${EXTRA_HOST_CFLAGS} -fPIC" \
     ./configure \
         --build=${BUILD_TRIPLE} \
         --host=${TARGET_TRIPLE} \
