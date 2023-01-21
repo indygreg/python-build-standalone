@@ -992,14 +992,29 @@ struct MachOSymbol {
     weak: bool,
 }
 
+/// Parses an integer with nibbles xxxx.yy.zz into a [semver::Version].
+fn parse_version_nibbles(v: u32) -> semver::Version {
+    let major = v >> 16;
+    let minor = v << 16 >> 24;
+    let patch = v & 0xff;
+
+    semver::Version::new(major as _, minor as _, patch as _)
+}
+
 fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     context: &mut ValidationContext,
     target_triple: &str,
     python_major_minor: &str,
+    advertised_target_version: &str,
+    advertised_sdk_version: &str,
     path: &Path,
     header: &Mach,
     bytes: &[u8],
 ) -> Result<()> {
+    let advertised_target_version =
+        semver::Version::parse(&format!("{}.0", advertised_target_version))?;
+    let advertised_sdk_version = semver::Version::parse(&format!("{}.0", advertised_sdk_version))?;
+
     let endian = header.endian()?;
 
     let wanted_cpu_type = match target_triple {
@@ -1030,9 +1045,28 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
 
     let mut dylib_names = vec![];
     let mut undefined_symbols = vec![];
+    let mut target_version = None;
+    let mut sdk_version = None;
 
     while let Some(load_command) = load_commands.next()? {
         match load_command.variant()? {
+            LoadCommandVariant::BuildVersion(v) => {
+                // Sometimes the SDK version is advertised as 0.0.0. In that case just ignore it.
+                let version = parse_version_nibbles(v.sdk.get(endian));
+                if version > semver::Version::new(0, 0, 0) {
+                    sdk_version = Some(version);
+                }
+
+                target_version = Some(parse_version_nibbles(v.minos.get(endian)));
+            }
+            LoadCommandVariant::VersionMin(v) => {
+                let version = parse_version_nibbles(v.sdk.get(endian));
+                if version > semver::Version::new(0, 0, 0) {
+                    sdk_version = Some(version);
+                }
+
+                target_version = Some(parse_version_nibbles(v.version.get(endian)));
+            }
             LoadCommandVariant::Dylib(command) => {
                 let raw_string = load_command.string(endian, command.dylib.name.clone())?;
                 let lib = String::from_utf8(raw_string.to_vec())?;
@@ -1131,6 +1165,28 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                 }
             }
             _ => {}
+        }
+    }
+
+    if let Some(actual_target_version) = target_version {
+        if actual_target_version != advertised_target_version {
+            context.errors.push(format!(
+                "{} targets SDK {} but JSON advertises SDK {}",
+                path.display(),
+                actual_target_version,
+                advertised_target_version
+            ));
+        }
+    }
+
+    if let Some(actual_sdk_version) = sdk_version {
+        if actual_sdk_version != advertised_sdk_version {
+            context.errors.push(format!(
+                "{} was built with SDK {} but JSON advertises SDK {}",
+                path.display(),
+                actual_sdk_version,
+                advertised_sdk_version,
+            ))
         }
     }
 
@@ -1248,6 +1304,12 @@ fn validate_possible_object_file(
                     &mut context,
                     triple,
                     python_major_minor,
+                    json.apple_sdk_deployment_target
+                        .as_ref()
+                        .expect("apple_sdk_deployment_target should be set"),
+                    json.apple_sdk_version
+                        .as_ref()
+                        .expect("apple_sdk_version should be set"),
                     path.as_ref(),
                     header,
                     &data,
@@ -1260,6 +1322,12 @@ fn validate_possible_object_file(
                     &mut context,
                     triple,
                     python_major_minor,
+                    json.apple_sdk_deployment_target
+                        .as_ref()
+                        .expect("apple_sdk_deployment_target should be set"),
+                    json.apple_sdk_version
+                        .as_ref()
+                        .expect("apple_sdk_version should be set"),
                     path.as_ref(),
                     header,
                     &data,
