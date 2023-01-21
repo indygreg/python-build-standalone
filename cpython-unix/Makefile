@@ -111,9 +111,6 @@ $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(
 $(OUTDIR)/expat-$(EXPAT_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-expat.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) expat
 
-$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-gdbm.sh
-	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) gdbm
-
 $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-inputproto.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) inputproto
 
@@ -248,7 +245,6 @@ PYTHON_DEPENDS := \
     $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_EXPAT),$(OUTDIR)/expat-$(EXPAT_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(if $(NEED_GDBM),$(OUTDIR)/gdbm-$(GDBM_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBFFI),$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_m4),$(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar) \

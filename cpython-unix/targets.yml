@@ -314,8 +314,6 @@ i686-unknown-linux-gnu:
     - bdb
     - binutils
     - bzip2
-    # TODO cross-compiling has issues.
-    # - gdbm
     - expat
     - libedit
     - libffi

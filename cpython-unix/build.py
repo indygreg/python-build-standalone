@@ -936,7 +936,6 @@ def main():
             "bdb",
             "bzip2",
             "expat",
-            "gdbm",
             "inputproto",
             "kbproto",
             "libffi",

@@ -79,15 +79,6 @@ DOWNLOADS = {
         "licenses": ["MIT"],
         "license_file": "LICENSE.expat.txt",
     },
-    "gdbm": {
-        "url": "https://ftp.gnu.org/gnu/gdbm/gdbm-1.21.tar.gz",
-        "size": 1005982,
-        "sha256": "b0b7dbdefd798de7ddccdd8edf6693a30494f7789777838042991ef107339cc2",
-        "version": "1.21",
-        "library_names": ["gdbm"],
-        "licenses": ["GPL-3.0-or-later"],
-        "license_file": "LICENSE.gdbm.txt",
-    },
     "inputproto": {
         "url": "https://www.x.org/archive/individual/proto/inputproto-2.3.2.tar.gz",
         "size": 244334,
