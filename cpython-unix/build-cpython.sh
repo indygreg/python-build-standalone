@@ -387,12 +387,12 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
                 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"
             done
         fi
-
-        # mkfifoat, mknodat introduced in SDK 13.0.
-        for symbol in mkfifoat mknodat; do
-            CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"
-        done
     fi
+
+    # mkfifoat, mknodat are not introduced until SDK 13.0.
+    for symbol in mkfifoat mknodat; do
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_${symbol}=no"
+    done
 
     if [ -n "${CROSS_COMPILING}" ]; then
         # Python's configure doesn't support cross-compiling on macOS. So we need
