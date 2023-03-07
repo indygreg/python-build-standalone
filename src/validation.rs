@@ -41,6 +41,7 @@ const RECOGNIZED_TRIPLES: &[&str] = &[
     "mips-unknown-linux-gnu",
     "mipsel-unknown-linux-gnu",
     "mips64el-unknown-linux-gnuabi64",
+    "ppc64le-unknown-linux-gnu",
     "s390x-unknown-linux-gnu",
     "thumbv7k-apple-watchos",
     "x86_64-apple-darwin",
@@ -154,6 +155,10 @@ static GLIBC_MAX_VERSION_BY_TRIPLE: Lazy<HashMap<&'static str, version_compare::
         versions.insert(
             "mips64el-unknown-linux-gnuabi64",
             version_compare::Version::from("2.19").unwrap(),
+        );
+        versions.insert(
+            "ppc64le-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
         );
         versions.insert(
             "s390x-unknown-linux-gnu",
