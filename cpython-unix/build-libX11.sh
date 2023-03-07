@@ -66,6 +66,9 @@ if [ -n "${CROSS_COMPILING}" ]; then
     mips64el-unknown-linux-gnuabi64)
       EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
       ;;
+    ppc64le-unknown-linux-gnu)
+      EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
+      ;;
     s390x-unknown-linux-gnu)
       EXTRA_FLAGS="${EXTRA_FLAGS} --enable-malloc0returnsnull"
       ;;

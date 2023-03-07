@@ -325,6 +325,37 @@ jobs:
             py: 'cpython-3.11'
             optimizations: 'lto'
 
+          # Cross-compiles can't do PGO and require Python 3.9.
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'debug'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'noopt'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.9'
+            optimizations: 'lto'
+
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'debug'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'noopt'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.10'
+            optimizations: 'lto'
+
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.11'
+            optimizations: 'debug'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.11'
+            optimizations: 'noopt'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.11'
+            optimizations: 'lto'
+
           # We don't publish noopt builds when PGO is available.
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.8'

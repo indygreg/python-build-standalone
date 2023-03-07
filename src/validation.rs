@@ -41,6 +41,7 @@ const RECOGNIZED_TRIPLES: &[&str] = &[
     "mips-unknown-linux-gnu",
     "mipsel-unknown-linux-gnu",
     "mips64el-unknown-linux-gnuabi64",
+    "ppc64le-unknown-linux-gnu",
     "s390x-unknown-linux-gnu",
     "thumbv7k-apple-watchos",
     "x86_64-apple-darwin",
@@ -156,6 +157,10 @@ static GLIBC_MAX_VERSION_BY_TRIPLE: Lazy<HashMap<&'static str, version_compare::
             version_compare::Version::from("2.19").unwrap(),
         );
         versions.insert(
+            "ppc64le-unknown-linux-gnu",
+            version_compare::Version::from("2.17").unwrap(),
+        );
+        versions.insert(
             "s390x-unknown-linux-gnu",
             version_compare::Version::from("2.17").unwrap(),
         );
@@ -212,6 +217,7 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
             ("mips-unknown-linux-gnu", vec!["ld.so.1"]),
             ("mipsel-unknown-linux-gnu", vec!["ld.so.1"]),
             ("mips64el-unknown-linux-gnuabi64", vec![]),
+            ("ppc64le-unknown-linux-gnu", vec!["ld64.so.1"]),
             ("s390x-unknown-linux-gnu", vec!["ld64.so.1"]),
             ("x86_64-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
             ("x86_64_v2-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
@@ -426,6 +432,7 @@ static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy:
         ("mips-unknown-linux-gnu", "linux-mips"),
         ("mipsel-unknown-linux-gnu", "linux-mipsel"),
         ("mips64el-unknown-linux-gnuabi64", "todo"),
+        ("ppc64le-unknown-linux-gnu", "linux-powerpc64le"),
         ("s390x-unknown-linux-gnu", "linux-s390x"),
         ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
         ("x86_64-apple-ios", "iOS-x86_64"),
@@ -777,6 +784,7 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
         "mips-unknown-linux-gnu" => object::elf::EM_MIPS,
         "mipsel-unknown-linux-gnu" => object::elf::EM_MIPS,
         "mips64el-unknown-linux-gnuabi64" => 0,
+        "ppc64le-unknown-linux-gnu" => object::elf::EM_PPC64,
         "s390x-unknown-linux-gnu" => object::elf::EM_S390,
         "x86_64-unknown-linux-gnu" => object::elf::EM_X86_64,
         "x86_64_v2-unknown-linux-gnu" => object::elf::EM_X86_64,
