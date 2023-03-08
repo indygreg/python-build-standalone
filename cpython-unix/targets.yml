@@ -421,7 +421,7 @@ ppc64le-unknown-linux-gnu:
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
-  target_cc: /usr/bin/ppc64le-linux-gnu-gcc
+  target_cc: /usr/bin/powerpc64le-linux-gnu-gcc
   needs:
     - autoconf
     - bdb
@@ -446,7 +446,7 @@ ppc64le-unknown-linux-gnu:
     - xorgproto
     - xz
     - zlib
-  openssl_target: linux64-ppc64le
+  openssl_target: linux-ppc64le
 
 s390x-unknown-linux-gnu:
   host_platforms:
