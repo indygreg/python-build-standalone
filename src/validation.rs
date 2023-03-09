@@ -432,7 +432,7 @@ static PLATFORM_TAG_BY_TRIPLE: Lazy<HashMap<&'static str, &'static str>> = Lazy:
         ("mips-unknown-linux-gnu", "linux-mips"),
         ("mipsel-unknown-linux-gnu", "linux-mipsel"),
         ("mips64el-unknown-linux-gnuabi64", "todo"),
-        ("ppc64le-unknown-linux-gnu", "linux-ppc64le"),
+        ("ppc64le-unknown-linux-gnu", "linux-powerpc64le"),
         ("s390x-unknown-linux-gnu", "linux-s390x"),
         ("x86_64-apple-darwin", "macosx-10.9-x86_64"),
         ("x86_64-apple-ios", "iOS-x86_64"),
