@@ -23,6 +23,11 @@ chmod +x configure
 
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -DUSE_INTERP_RESULT"
 
+# Error by default in Clang 16.
+if [ "${CC}" = "clang" ]; then
+    CFLAGS="${CFLAGS} -Wno-error=implicit-function-declaration -Wno-error=incompatible-function-pointer-types"
+fi
+
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/include"
     EXTRA_CONFIGURE_FLAGS="--without-x"
