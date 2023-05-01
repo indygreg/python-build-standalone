@@ -774,27 +774,31 @@ def hack_props(
         for line in fh:
             line = line.rstrip()
 
-            if b"<bz2Dir>" in line:
+            # The syntax of these lines changed in 3.10+. 3.10 backport commit
+            # 3139ea33ed84190e079d6ff4859baccdad778dae. Once we drop support for
+            # Python 3.9 we can pass these via properties instead of editing the
+            # properties file.
+            if b"<bz2Dir" in line:
                 line = b"<bz2Dir>%s\\</bz2Dir>" % bzip2_path
 
-            elif b"<libffiOutDir>" in line:
+            elif b"<libffiOutDir" in line:
                 line = b"<libffiOutDir>%s\\</libffiOutDir>" % libffi_path
 
-            elif b"<lzmaDir>" in line:
+            elif b"<lzmaDir" in line:
                 line = b"<lzmaDir>%s\\</lzmaDir>" % xz_path
 
-            elif b"<opensslIncludeDir>" in line:
+            elif b"<opensslIncludeDir" in line:
                 line = (
                     b"<opensslIncludeDir>%s</opensslIncludeDir>" % openssl_include_path
                 )
 
-            elif b"<opensslOutDir>" in line:
+            elif b"<opensslOutDir" in line:
                 line = b"<opensslOutDir>%s\\</opensslOutDir>" % openssl_libs_path
 
-            elif b"<sqlite3Dir>" in line:
+            elif b"<sqlite3Dir" in line:
                 line = b"<sqlite3Dir>%s\\</sqlite3Dir>" % sqlite_path
 
-            elif b"<zlibDir>" in line:
+            elif b"<zlibDir" in line:
                 line = b"<zlibDir>%s\\</zlibDir>" % zlib_path
 
             lines.append(line)
@@ -804,11 +808,21 @@ def hack_props(
 
     tcltkprops_path = pcbuild_path / "tcltk.props"
 
-    static_replace_in_file(
-        tcltkprops_path,
-        rb"<tcltkDir>$(ExternalsDir)tcltk-$(TclMajorVersion).$(TclMinorVersion).$(TclPatchLevel).$(TclRevision)\$(ArchName)\</tcltkDir>",
-        rb"<tcltkDir>%s\$(ArchName)\</tcltkDir>" % tcltk_path,
-    )
+    # Later versions of 3.10 and 3.11 enabled support for defining paths via properties.
+    # See CPython commit 3139ea33ed84190e079d6ff4859baccdad778dae.
+    # Once we drop support for CPython 3.9 we can replace this with passing properties.
+    try:
+        static_replace_in_file(
+            tcltkprops_path,
+            rb"""<tcltkDir Condition="$(tcltkDir) == ''">$(ExternalsDir)tcltk-$(TclVersion)\$(ArchName)\</tcltkDir>""",
+            rb"<tcltkDir>%s\$(ArchName)\</tcltkDir>" % tcltk_path,
+        )
+    except NoSearchStringError:
+        static_replace_in_file(
+            tcltkprops_path,
+            rb"<tcltkDir>$(ExternalsDir)tcltk-$(TclMajorVersion).$(TclMinorVersion).$(TclPatchLevel).$(TclRevision)\$(ArchName)\</tcltkDir>",
+            rb"<tcltkDir>%s\$(ArchName)\</tcltkDir>" % tcltk_path,
+        )
 
     # We want to statically link against OpenSSL. This requires using our own
     # OpenSSL build. This requires some hacking of various files.
