@@ -24,11 +24,9 @@ use {
 
 async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Result<bytes::Bytes> {
     println!("downloading {}", artifact.name);
-    let res = client
-        .execute(client.request_builder(artifact.archive_download_url, reqwest::Method::GET))
-        .await?;
+    let res = client._get(artifact.archive_download_url.as_str()).await?;
 
-    Ok(res.bytes().await?)
+    Ok(hyper::body::to_bytes(res.into_body()).await?)
 }
 
 async fn upload_release_artifact(
@@ -54,11 +52,13 @@ async fn upload_release_artifact(
 
     println!("uploading to {}", url);
 
-    let request = client
-        .request_builder(url, reqwest::Method::POST)
+    let request = hyper::http::request::Builder::new()
+        .method(reqwest::Method::POST)
+        .uri(url.as_str())
         .header("Content-Length", data.len())
-        .header("Content-Type", "application/x-tar")
-        .body(data);
+        .header("Content-Type", "application/x-tar");
+
+    let request = client.build_request(request, Some(&data))?;
 
     if dry_run {
         return Ok(());
