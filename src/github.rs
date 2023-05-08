@@ -26,6 +26,17 @@ async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Re
     println!("downloading {}", artifact.name);
     let res = client._get(artifact.archive_download_url.as_str()).await?;
 
+    let res = if res.status().is_redirection() {
+        let location = res
+            .headers()
+            .get("Location")
+            .ok_or_else(|| anyhow!("no Location header to follow redirect"))?;
+
+        client._get(location.to_str()?).await?
+    } else {
+        res
+    };
+
     Ok(hyper::body::to_bytes(res.into_body()).await?)
 }
 
