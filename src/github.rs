@@ -24,20 +24,11 @@ use {
 
 async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Result<bytes::Bytes> {
     println!("downloading {}", artifact.name);
-    let res = client._get(artifact.archive_download_url.as_str()).await?;
+    let res = client
+        .execute(client.request_builder(artifact.archive_download_url, reqwest::Method::GET))
+        .await?;
 
-    let res = if res.status().is_redirection() {
-        let location = res
-            .headers()
-            .get("Location")
-            .ok_or_else(|| anyhow!("no Location header to follow redirect"))?;
-
-        client._get(location.to_str()?).await?
-    } else {
-        res
-    };
-
-    Ok(hyper::body::to_bytes(res.into_body()).await?)
+    Ok(res.bytes().await?)
 }
 
 async fn upload_release_artifact(
@@ -63,13 +54,11 @@ async fn upload_release_artifact(
 
     println!("uploading to {}", url);
 
-    let request = hyper::http::request::Builder::new()
-        .method(reqwest::Method::POST)
-        .uri(url.as_str())
+    let request = client
+        .request_builder(url, reqwest::Method::POST)
         .header("Content-Length", data.len())
-        .header("Content-Type", "application/x-tar");
-
-    let request = client.build_request(request, Some(&data))?;
+        .header("Content-Type", "application/x-tar")
+        .body(data);
 
     if dry_run {
         return Ok(());
