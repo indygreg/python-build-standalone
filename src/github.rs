@@ -414,10 +414,32 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         &client,
         &release,
         "SHA256SUMS".to_string(),
-        shasums.into_bytes(),
+        shasums.clone().into_bytes(),
         dry_run,
     )
     .await?;
+
+    // Check that content wasn't munged as part of uploading. This once happened
+    // and created a busted release. Never again.
+    let release = releases
+        .get_by_tag(tag)
+        .await
+        .map_err(|_| anyhow!("could not find release; this should not happen!"))?;
+    let shasums_asset = release
+        .assets
+        .into_iter()
+        .find(|x| x.name == "SHA256SUMS")
+        .ok_or_else(|| anyhow!("unable to find SHA256SUMs release asset"))?;
+
+    let asset_bytes = client
+        .execute(client.request_builder(shasums_asset.browser_download_url, reqwest::Method::GET))
+        .await?
+        .bytes()
+        .await?;
+
+    if shasums != asset_bytes {
+        return Err(anyhow!("SHA256SUM content mismatch; release might be bad!"));
+    }
 
     Ok(())
 }
