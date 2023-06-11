@@ -385,8 +385,10 @@ def derive_setup_local(
 
     # Translate our YAML metadata into Setup lines.
 
-    # All extensions are statically linked.
-    dest_lines = [b"*static*"]
+    section_lines = {
+        "disabled": [],
+        "static": [],
+    }
 
     # makesetup parses lines with = as extra config options. There appears
     # to be no easy way to define e.g. -Dfoo=bar in Setup.local. We hack
@@ -397,7 +399,11 @@ def derive_setup_local(
     enabled_extensions = {}
 
     for name, info in sorted(extension_modules.items()):
-        if name in disabled or name in ignored:
+        if name in ignored:
+            continue
+
+        if name in disabled:
+            section_lines["disabled"].append(name.encode("ascii"))
             continue
 
         enabled_extensions[name] = dict(info)
@@ -420,6 +426,8 @@ def derive_setup_local(
             log(f"extension {name} enabled through config.c")
             enabled_extensions[name]["setup_line"] = name.encode("ascii")
             continue
+
+        section = "static"
 
         # Presumably this means the extension comes from the distribution's
         # Setup. Lack of sources means we don't need to derive a Setup.local
@@ -535,11 +543,14 @@ def derive_setup_local(
                 "makesetup: %s" % line.decode("utf-8")
             )
 
-        dest_lines.append(line)
+        section_lines[section].append(line)
         enabled_extensions[name]["setup_line"] = line
 
-    dest_lines.append(b"\n*disabled*\n")
-    dest_lines.extend(sorted(x.encode("ascii") for x in disabled))
+    dest_lines = []
+
+    for section, lines in sorted(section_lines.items()):
+        dest_lines.append(b"\n*%s*\n" % section.encode("ascii"))
+        dest_lines.extend(lines)
 
     dest_lines.append(b"")
 
