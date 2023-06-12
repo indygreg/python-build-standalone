@@ -707,6 +707,9 @@ const GLOBAL_EXTENSIONS_WINDOWS: &[&str] = &[
 /// Extension modules not present in Windows static builds.
 const GLOBAL_EXTENSIONS_WINDOWS_NO_STATIC: &[&str] = &["_testinternalcapi", "_tkinter"];
 
+/// Extension modules that should be built as shared libraries.
+const SHARED_LIBRARY_EXTENSIONS: &[&str] = &["_crypt"];
+
 const PYTHON_VERIFICATIONS: &str = include_str!("verify_distribution.py");
 
 fn allowed_dylibs_for_triple(triple: &str) -> Vec<MachOAllowedDylib> {
@@ -1742,13 +1745,49 @@ fn validate_distribution(
         }
     }
 
-    // Validate extension module initialization functions are present.
-    //
-    // Note that we export PyInit_* functions from libpython on POSIX whereas these
-    // aren't exported from official Python builds. We may want to consider changing
-    // this.
+    // Validate extension module metadata.
     for (name, variants) in json.as_ref().unwrap().build_info.extensions.iter() {
         for ext in variants {
+            if let Some(shared) = &ext.shared_lib {
+                if !seen_paths.contains(&PathBuf::from("python").join(shared)) {
+                    context.errors.push(format!(
+                        "extension module {} references missing shared library path {}",
+                        name, shared
+                    ));
+                }
+            }
+
+            // Static builds never have shared library extension modules.
+            let want_shared = if is_static {
+                false
+            // Extension modules in libpython core are never shared libraries.
+            } else if ext.in_core {
+                false
+            // All remaining extensions are shared on Windows.
+            } else if triple.contains("windows") {
+                true
+            // On POSIX platforms we maintain a list.
+            } else {
+                SHARED_LIBRARY_EXTENSIONS.contains(&name.as_str())
+            };
+
+            if want_shared && ext.shared_lib.is_none() {
+                context.errors.push(format!(
+                    "extension module {} does not have a shared library",
+                    name
+                ));
+            } else if !want_shared && ext.shared_lib.is_some() {
+                context.errors.push(format!(
+                    "extension module {} contains a shared library unexpectedly",
+                    name
+                ));
+            }
+
+            // Ensure initialization functions are exported.
+
+            // Note that we export PyInit_* functions from libpython on POSIX whereas these
+            // aren't exported from official Python builds. We may want to consider changing
+            // this.
             if ext.init_fn == "NULL" {
                 continue;
             }
@@ -1756,10 +1795,20 @@ fn validate_distribution(
             let exported = context.libpython_exported_symbols.contains(&ext.init_fn);
 
             // Static distributions never export symbols.
+            let wanted = if is_static {
+                false
+            // For some strange reason _PyWarnings_Init is exported as part of the ABI.
+            } else if name == "_warnings" {
+                true
             // Windows dynamic doesn't export extension module init functions.
-            // And for some strange reason _PyWarnings_Init is exported as part of the ABI.
-            let wanted =
-                !(is_static || triple.contains("-windows-")) || (!is_static && name == "_warnings");
+            } else if triple.contains("-windows-") {
+                false
+            // Presence of a shared library extension implies no export.
+            } else if ext.shared_lib.is_some() {
+                false
+            } else {
+                true
+            };
 
             if exported != wanted {
                 context.errors.push(format!(

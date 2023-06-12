@@ -365,24 +365,34 @@ artifacts.
 Missing ``libcrypt.so.1``
 =========================
 
-Some Linux environments may complain about a missing ``libcrypt.so.1`` shared
-library dependency.
+Linux distributions in the 20230507 release and earlier had a hard dependency
+on ``libcrypt.so.1`` due to static linking of the ``_crypt`` extension module,
+which imports it.
 
-``libcrypt.so.1`` is mandated as part of the Linux Standard Base Core
-Specification and therefore should be present in Linux environments conforming
-to this specification. Most Linux distributions attempt to conform to this
-specification.
+Presence of ``libcrypt.so.1`` is mandated as part of the Linux Standard Base
+Core Specification and therefore should be present in Linux environments
+conforming to this specification. Most Linux distributions historically
+attempted to conform to this specification.
 
-There was a time period when RedHat-maintained Linux distributions (Fedora,
-CentOS, RHEL) and their derivatives shipped a base OS environment that didn't
-include ``libcrypt.so.1``. See
-https://github.com/indygreg/python-build-standalone/issues/113 and
-https://bugzilla.redhat.com/show_bug.cgi?id=2055953 for more background. On
-these distributions, you can manually install the ``libxcrypt-compat`` package
-to provide the missing ``libcrypt.so.1`` library. Modern versions of these
-distros should install this package automatically when installing
-``redhat-lsb-core`` (or a similarly named) package. This package should be
-present in the base OS install.
+In 2022, various Linux distributions stopped shipping ``libcrypt.so.1``
+(it appears glibc is ceasing to provide this functionality and Linux
+distributions aren't backfilling ``libcrypt.so.1`` in the base install
+to remain compatible with the Linux Standard Base Core Specification).
+
+In reaction to Linux distributions no longer providing ``libcrypt.so.1`` by
+default, we changed the configuration of the ``_crypt`` extension module so
+it is compiled/distributed as a standalone shared library and not compiled
+into libpython. This means a missing ``libcrypt.so.1`` is only relevant if
+the Python interpreter imports the ``crypt`` / ``_crypt`` modules.
+
+If you are using an older release of this project with a hard dependency
+on ``libcrypt.so.1`` and don't want to upgrade, you can instruct end-users
+to install a ``libxcrypt-compat`` (or comparable) package to provide the
+missing ``libcrypt.so.1``.
+
+See https://github.com/indygreg/python-build-standalone/issues/113 and
+https://github.com/indygreg/python-build-standalone/issues/173 for additional
+context on this matter.
 
 .. _quirk_references_to_build_paths:
 

@@ -14,6 +14,7 @@ from pythonbuild.logging import log
 EXTENSION_MODULE_SCHEMA = {
     "type": "object",
     "properties": {
+        "build-mode": {"type": "string"},
         "config-c-only": {"type": "boolean"},
         "defines": {"type": "array", "items": {"type": "string"}},
         "defines-conditional": {
@@ -228,6 +229,9 @@ def derive_setup_local(
             python_version, info.get("maximum-python-version", "100.0")
         )
 
+        if info.get("build-mode") not in (None, "shared", "static"):
+            raise Exception("unsupported build-mode for extension module %s" % name)
+
         if not (python_min_match and python_max_match):
             log(f"ignoring extension module {name} because Python version incompatible")
             ignored.add(name)
@@ -387,6 +391,7 @@ def derive_setup_local(
 
     section_lines = {
         "disabled": [],
+        "shared": [],
         "static": [],
     }
 
@@ -427,7 +432,13 @@ def derive_setup_local(
             enabled_extensions[name]["setup_line"] = name.encode("ascii")
             continue
 
-        section = "static"
+        # musl is static only. Ignore build-mode override.
+        if "musl" in target_triple:
+            section = "static"
+        else:
+            section = info.get("build-mode", "static")
+
+        enabled_extensions[name]["build-mode"] = section
 
         # Presumably this means the extension comes from the distribution's
         # Setup. Lack of sources means we don't need to derive a Setup.local
@@ -549,6 +560,9 @@ def derive_setup_local(
     dest_lines = []
 
     for section, lines in sorted(section_lines.items()):
+        if not lines:
+            continue
+
         dest_lines.append(b"\n*%s*\n" % section.encode("ascii"))
         dest_lines.extend(lines)
 

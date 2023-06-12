@@ -582,6 +582,11 @@ def python_build_info(
             "variant": d["variant"],
         }
 
+        if info.get("build-mode") == "shared":
+            shared_dir = extra_metadata["python_config_vars"]["DESTSHARED"].strip("/")
+            extension_suffix = extra_metadata["python_config_vars"]["EXT_SUFFIX"]
+            entry["shared_lib"] = "%s/%s%s" % (shared_dir, extension, extension_suffix)
+
         add_licenses_to_extension_entry(entry)
 
         bi["extensions"].setdefault(extension, []).append(entry)

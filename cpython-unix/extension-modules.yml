@@ -67,6 +67,7 @@ _contextvars:
     - _contextvarsmodule.c
 
 _crypt:
+  build-mode: shared
   sources:
     - _cryptmodule.c
   links-conditional:

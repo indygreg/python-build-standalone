@@ -174,12 +174,10 @@ fi
 # invoke the host Python on our own.
 patch -p1 -i ${ROOT}/patch-write-python-for-build.patch
 
-# We build all extensions statically. So remove the auto-generated make
-# rules that produce shared libraries for them.
-if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
-    patch -p1 -i ${ROOT}/patch-remove-extension-module-shared-libraries.patch
-else
-    patch -p1 -i ${ROOT}/patch-remove-extension-module-shared-libraries-legacy.patch
+# Object files can get listed multiple times leading to duplicate symbols
+# when linking. Prevent this.
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_10}" ]; then
+  patch -p1 -i ${ROOT}/patch-makesetup-deduplicate-objs.patch
 fi
 
 # The default build rule for the macOS dylib doesn't pick up libraries
