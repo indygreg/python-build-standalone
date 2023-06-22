@@ -211,7 +211,16 @@ DOWNLOADS = {
         "version": "1.1.1v",
         "library_names": ["crypto", "ssl"],
         "licenses": ["OpenSSL"],
-        "license_file": "LICENSE.openssl.txt",
+        "license_file": "LICENSE.openssl-1.1.1.txt",
+    },
+    "openssl-1.1.1": {
+        "url": "https://www.openssl.org/source/openssl-1.1.1v.tar.gz",
+        "size": 9893443,
+        "sha256": "d6697e2871e77238460402e9362d47d18382b15ef9f246aba6c7bd780d38a6b0",
+        "version": "1.1.1v",
+        "library_names": ["crypto", "ssl"],
+        "licenses": ["OpenSSL"],
+        "license_file": "LICENSE.openssl-1.1.1.txt",
     },
     "nasm-windows-bin": {
         "url": "https://github.com/python/cpython-bin-deps/archive/nasm-2.11.06.tar.gz",
