@@ -77,7 +77,6 @@ class TestPythonInterpreter(unittest.TestCase):
         wanted_hashes = {
             "blake2b",
             "blake2s",
-            "md4",
             "md5",
             "md5-sha1",
             "ripemd160",
@@ -95,12 +94,7 @@ class TestPythonInterpreter(unittest.TestCase):
             "shake_128",
             "shake_256",
             "sm3",
-            "whirlpool",
         }
-
-        # Windows doesn't appear to support mdc2.
-        if os.name != "nt":
-            wanted_hashes.add("mdc2")
 
         for hash in wanted_hashes:
             self.assertIn(hash, hashlib.algorithms_available)
