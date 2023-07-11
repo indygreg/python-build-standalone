@@ -275,6 +275,11 @@ fi
 CFLAGS="${EXTRA_TARGET_CFLAGS} -fPIC -I${TOOLS_PATH}/deps/include -I${TOOLS_PATH}/deps/include/ncursesw"
 LDFLAGS="${EXTRA_TARGET_LDFLAGS} -L${TOOLS_PATH}/deps/lib"
 
+# OpenSSL 3.0 outputs to lib64 on some platforms
+if [ -d "${TOOLS_PATH}/deps/lib64" ]; then
+    LDFLAGS="${LDFLAGS} -L${TOOLS_PATH}/deps/lib64"
+fi
+
 # Some target configurations use `-fvisibility=hidden`. Python's configure handles
 # symbol visibility properly itself. So let it do its thing.
 CFLAGS=${CFLAGS//-fvisibility=hidden/}
