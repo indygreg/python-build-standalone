@@ -106,6 +106,15 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     );
 
     h.insert(
+        "s390x-unknown-linux-gnu",
+        TripleRelease {
+            suffixes: linux_suffixes_nopgo.clone(),
+            install_only_suffix: "lto",
+            python_version_requirement: None,
+        },
+    );
+    
+    h.insert(
         "i686-unknown-linux-gnu",
         TripleRelease {
             suffixes: linux_suffixes_pgo.clone(),
