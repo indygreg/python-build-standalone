@@ -220,10 +220,10 @@ DOWNLOADS = {
         "version": "2.11.06",
     },
     "patchelf": {
-        "url": "https://github.com/NixOS/patchelf/releases/download/0.12/patchelf-0.12.tar.bz2",
-        "size": 165069,
-        "sha256": "699a31cf52211cf5ad6e35a8801eb637bc7f3c43117140426400d67b7babd792",
-        "version": "0.12",
+        "url": "https://github.com/NixOS/patchelf/releases/download/0.13.1/patchelf-0.13.1.tar.bz2",
+        "size": 173598,
+        "sha256": "39e8aeccd7495d54df094d2b4a7c08010ff7777036faaf24f28e07777d1598e2",
+        "version": "0.13.1",
     },
     "pip": {
         "url": "https://files.pythonhosted.org/packages/02/65/f15431ddee78562355ccb39097bf9160a1689f2db40dc418754be98806a1/pip-23.2-py3-none-any.whl",
