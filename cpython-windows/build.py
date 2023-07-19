@@ -2608,7 +2608,7 @@ def main():
     parser.add_argument(
         "--python",
         choices={"cpython-3.8", "cpython-3.9", "cpython-3.10", "cpython-3.11"},
-        default="cpython-3.10",
+        default="cpython-3.11",
         help="Python distribution to build",
     )
     parser.add_argument(
