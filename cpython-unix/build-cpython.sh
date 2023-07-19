@@ -241,6 +241,14 @@ if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" && -n "${PYTHON_MEETS_MAXIMUM_VER
     patch -p1 -i ${ROOT}/patch-posixmodule-remove-system.patch
 fi
 
+# posixmodule.c unconditionally includes linux/limits.h on musl. This breaks
+# because we're building with old Linux headers not having this file. This is
+# effectively a revert of CPython commit 8be8101bca34b60481ec3d7ecaea4a3379fb7dbb.
+# Upstream bug report: https://github.com/python/cpython/issues/106881.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+  patch -p1 -i ${ROOT}/patch-posixmodule-musl-limits.patch
+fi
+
 # Python 3.11 has configure support for configuring extension modules. We really,
 # really, really want to use this feature because it looks promising. But at the
 # time we added this code the functionality didn't support all extension modules
