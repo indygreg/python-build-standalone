@@ -52,6 +52,8 @@ jobs:
           - xcb
           - xcb.cross
     runs-on: ubuntu-22.04
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
 
@@ -60,9 +62,41 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Build Image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Dockerfiles
         run: |
-          ./build-linux.py --make-target toolchain-image-${{ matrix.image }}
+          ./build-linux.py --make-target empty
+
+      - name: Build Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: build/${{ matrix.image }}.Dockerfile
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          # Cache from/to the current branch of the current repo as the primary cache key.
+          # Cache from the default branch of the current repo so branches can have cache hits.
+          # Cache from the default branch of the canonical repo so forks can have cache hits.
+          # Ignore errors on cache writes so CI of forks works without a valid GHCR config.
+          cache-from: |
+            type=registry,ref=ghcr.io/indygreg/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }}
+            type=registry,ref=ghcr.io/indygreg/${{ github.repository }}:${{ matrix.image }}-main
+            type=registry,ref=ghcr.io/indygreg/python-build-standalone:${{ matrix.image }}-main
+          cache-to: |
+            type=registry,ref=ghcr.io/indygreg/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }},ignore-errors=true
+          outputs: |
+            type=docker,dest=build/image-${{ matrix.image }}.tar
+
+      - name: Compress Image
+        run: |
           zstd -v -T0 -6 --rm build/image-*.tar
 
       - name: Upload Docker Image
