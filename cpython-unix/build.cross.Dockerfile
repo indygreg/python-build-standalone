@@ -17,8 +17,9 @@ ENV HOME=/build \
 CMD ["/bin/bash", "--login"]
 WORKDIR '/build'
 
+# Stretch stopped publishing snapshots in April 2023.
 RUN for s in debian_stretch debian_stretch-updates debian-security_stretch/updates; do \
-      echo "deb http://snapshot.debian.org/archive/${s%_*}/20221105T150728Z/ ${s#*_} main"; \
+      echo "deb http://snapshot.debian.org/archive/${s%_*}/20230423T032533Z/ ${s#*_} main"; \
     done > /etc/apt/sources.list && \
     ( echo 'quiet "true";'; \
       echo 'APT::Get::Assume-Yes "true";'; \

@@ -18,8 +18,9 @@ CMD ["/bin/bash", "--login"]
 WORKDIR '/build'
 
 # Jessie's signing keys expired in late 2022. So need to add [trusted=yes] to force trust.
+# Jessie stopped publishing snapshots in March 2023.
 RUN for s in debian_jessie debian_jessie-updates debian-security_jessie/updates; do \
-      echo "deb [trusted=yes] http://snapshot.debian.org/archive/${s%_*}/20221105T150728Z/ ${s#*_} main"; \
+      echo "deb [trusted=yes] http://snapshot.debian.org/archive/${s%_*}/20230322T152120Z/ ${s#*_} main"; \
     done > /etc/apt/sources.list && \
     ( echo 'quiet "true";'; \
       echo 'APT::Get::Assume-Yes "true";'; \
