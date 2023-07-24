@@ -87,11 +87,11 @@ jobs:
           # Cache from the default branch of the canonical repo so forks can have cache hits.
           # Ignore errors on cache writes so CI of forks works without a valid GHCR config.
           cache-from: |
-            type=registry,ref=ghcr.io/indygreg/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }}
-            type=registry,ref=ghcr.io/indygreg/${{ github.repository }}:${{ matrix.image }}-main
+            type=registry,ref=ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }}
+            type=registry,ref=ghcr.io/${{ github.repository }}:${{ matrix.image }}-main
             type=registry,ref=ghcr.io/indygreg/python-build-standalone:${{ matrix.image }}-main
           cache-to: |
-            type=registry,ref=ghcr.io/indygreg/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }},ignore-errors=true
+            type=registry,ref=ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }},ignore-errors=true
           outputs: |
             type=docker,dest=build/image-${{ matrix.image }}.tar
 
