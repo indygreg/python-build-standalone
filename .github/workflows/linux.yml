@@ -75,23 +75,27 @@ jobs:
       - name: Generate Dockerfiles
         run: |
           ./build-linux.py --make-target empty
+          repo_name=$(echo "${GITHUB_REPOSITORY,,}" | sed 's|\.|_|g')
+          git_ref_name=$(echo "${GITHUB_REF_NAME,,}" | sed 's|[^a-z0-9_-]|_|g')
+          echo "REPO_NAME=${repo_name}" >> "${GITHUB_ENV}"
+          echo "GIT_REF_NAME=${git_ref_name}" >> "${GITHUB_ENV}"
 
       - name: Build Image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: build/${{ matrix.image }}.Dockerfile
-          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          labels: org.opencontainers.image.source=https://github.com/${{ env.REPO_NAME }}
           # Cache from/to the current branch of the current repo as the primary cache key.
           # Cache from the default branch of the current repo so branches can have cache hits.
           # Cache from the default branch of the canonical repo so forks can have cache hits.
           # Ignore errors on cache writes so CI of forks works without a valid GHCR config.
           cache-from: |
-            type=registry,ref=ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }}
-            type=registry,ref=ghcr.io/${{ github.repository }}:${{ matrix.image }}-main
+            type=registry,ref=ghcr.io/${{ env.REPO_NAME }}:${{ matrix.image }}-${{ env.GIT_REF_NAME }}
+            type=registry,ref=ghcr.io/${{ env.REPO_NAME }}:${{ matrix.image }}-main
             type=registry,ref=ghcr.io/indygreg/python-build-standalone:${{ matrix.image }}-main
           cache-to: |
-            type=registry,ref=ghcr.io/${{ github.repository }}:${{ matrix.image }}-${{ github.ref_name }},ignore-errors=true
+            type=registry,ref=ghcr.io/${{ env.REPO_NAME }}:${{ matrix.image }}-${{ env.GIT_REF_NAME }},ignore-errors=true
           outputs: |
             type=docker,dest=build/image-${{ matrix.image }}.tar
 
