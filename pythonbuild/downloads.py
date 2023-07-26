@@ -226,10 +226,10 @@ DOWNLOADS = {
         "version": "0.13.1",
     },
     "pip": {
-        "url": "https://files.pythonhosted.org/packages/02/65/f15431ddee78562355ccb39097bf9160a1689f2db40dc418754be98806a1/pip-23.2-py3-none-any.whl",
-        "size": 2085968,
-        "sha256": "78e5353a9dda374b462f2054f83a7b63f3f065c98236a68361845c1b0ee7e35f",
-        "version": "23.2",
+        "url": "https://files.pythonhosted.org/packages/50/c2/e06851e8cc28dcad7c155f4753da8833ac06a5c704c109313b8d5a62968a/pip-23.2.1-py3-none-any.whl",
+        "size": 2086091,
+        "sha256": "7ccf472345f20d35bdc9d1841ff5f313260c2c33fe417f48c30ac46cccabf5be",
+        "version": "23.2.1",
     },
     "readline": {
         "url": "https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz",
