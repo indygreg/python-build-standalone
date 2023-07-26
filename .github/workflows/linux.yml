@@ -81,6 +81,7 @@ jobs:
           echo "GIT_REF_NAME=${git_ref_name}" >> "${GITHUB_ENV}"
 
       - name: Build Image
+        id: build-image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -101,6 +102,7 @@ jobs:
 
       - name: Compress Image
         run: |
+          echo ${{ steps.build-image.outputs.imageid }} > build/image-${{ matrix.image }}
           zstd -v -T0 -6 --rm build/image-*.tar
 
       - name: Upload Docker Image
