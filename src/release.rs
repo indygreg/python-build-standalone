@@ -110,10 +110,10 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         TripleRelease {
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
-            python_version_requirement: None,
+            python_version_requirement: Some(VersionReq::parse(">=3.9").unwrap()),
         },
     );
-    
+
     h.insert(
         "i686-unknown-linux-gnu",
         TripleRelease {
