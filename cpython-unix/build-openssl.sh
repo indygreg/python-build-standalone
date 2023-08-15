@@ -27,7 +27,7 @@ esac
 # TODO disable secure memory is a bit scary. We should look into a proper
 # workaround.
 if [ "${CC}" = "musl-clang" ]; then
-    EXTRA_FLAGS="${EXTRA_FLAGS} no-async -DOPENSSL_NO_ASYNC -D__STDC_NO_ATOMICS__=1 no-engine -DOPENSSL_NO_SECURE_MEMORY"
+    EXTRA_FLAGS="${EXTRA_FLAGS} no-async -DOPENSSL_NO_ASYNC -D__STDC_NO_ATOMICS__=1 no-engine no-module -DOPENSSL_NO_SECURE_MEMORY"
 fi
 
 # The -arch cflags confuse Configure. And OpenSSL adds them anyway.
