@@ -30,6 +30,12 @@ if [ "${CC}" = "musl-clang" ]; then
     EXTRA_FLAGS="${EXTRA_FLAGS} no-async -DOPENSSL_NO_ASYNC -D__STDC_NO_ATOMICS__=1 no-engine no-module -DOPENSSL_NO_SECURE_MEMORY"
 fi
 
+# atomic operations are not available natively on some architectures
+# other option is to link libatomic
+if [ "${OPENSSL_TARGET}" = "linux-mips32" ] || [ "${OPENSSL_TARGET}" = "linux-x86-clang" ]; then
+    EXTRA_FLAGS="${EXTRA_FLAGS} -D__STDC_NO_ATOMICS__=1"
+fi
+
 # The -arch cflags confuse Configure. And OpenSSL adds them anyway.
 # Strip them.
 EXTRA_TARGET_CFLAGS=${EXTRA_TARGET_CFLAGS/\-arch arm64/}
