@@ -20,10 +20,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.bdb.txt",
     },
     "binutils": {
-        "url": "https://ftp.gnu.org/gnu/binutils/binutils-2.40.tar.xz",
-        "size": 25241484,
-        "sha256": "0f8a4c272d7f17f369ded10a4aca28b8e304828e95526da482b0ccc4dfc9d8e1",
-        "version": "2.40",
+        "url": "https://ftp.gnu.org/gnu/binutils/binutils-2.41.tar.xz",
+        "size": 26765692,
+        "sha256": "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450",
+        "version": "2.41",
     },
     "bzip2": {
         "url": "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz",
