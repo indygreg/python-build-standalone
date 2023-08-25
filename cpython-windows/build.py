@@ -859,17 +859,24 @@ def hack_props(
         )
     else:
         if arch == "amd64":
-            suffix = b"x64"
+            suffix = b"-x64"
         elif arch == "win32":
-            suffix = None
+            suffix = b""
         else:
             raise Exception("unhandled architecture: %s" % arch)
 
-        if suffix:
+        try:
+            # CPython 3.11+ builds with OpenSSL 3.0 by default.
+            static_replace_in_file(
+                openssl_props,
+                b"<_DLLSuffix>-3</_DLLSuffix>",
+                b"<_DLLSuffix>-1_1%s</_DLLSuffix>" % suffix,
+            )
+        except NoSearchStringError:
             static_replace_in_file(
                 openssl_props,
                 b"<_DLLSuffix>-1_1</_DLLSuffix>",
-                b"<_DLLSuffix>-1_1-%s</_DLLSuffix>" % suffix,
+                b"<_DLLSuffix>-1_1%s</_DLLSuffix>" % suffix,
             )
 
     libffi_props = pcbuild_path / "libffi.props"
