@@ -147,7 +147,10 @@ def write_triples_makefiles(
 
                 lines = []
                 for need in settings.get("needs", []):
-                    lines.append("NEED_%s := 1\n" % need.upper())
+                    lines.append(
+                        "NEED_%s := 1\n"
+                        % need.upper().replace("-", "_").replace(".", "_")
+                    )
 
                 image_suffix = settings.get("docker_image_suffix", "")
 

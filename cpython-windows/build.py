@@ -109,7 +109,7 @@ EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY = {
     "_hashlib": ["openssl"],
     "_lzma": ["xz"],
     "_sqlite3": ["sqlite"],
-    "_ssl": ["openssl"],
+    "_ssl": ["openssl-1.1"],
     "_tkinter": ["tcl", "tk", "tix"],
     "_uuid": ["uuid"],
     "zlib": ["zlib"],
@@ -1571,7 +1571,7 @@ def build_openssl_for_arch(
     *,
     jom_archive,
 ):
-    openssl_version = DOWNLOADS["openssl"]["version"]
+    openssl_version = DOWNLOADS["openssl-1.1"]["version"]
     nasm_version = DOWNLOADS["nasm-windows-bin"]["version"]
 
     log("extracting %s to %s" % (openssl_archive, build_root))
@@ -1666,7 +1666,7 @@ def build_openssl(
     """Build OpenSSL from sources using the Perl executable specified."""
 
     # First ensure the dependencies are in place.
-    openssl_archive = download_entry("openssl", BUILD)
+    openssl_archive = download_entry("openssl-1.1", BUILD)
     nasm_archive = download_entry("nasm-windows-bin", BUILD)
     jom_archive = download_entry("jom-windows-bin", BUILD)
 

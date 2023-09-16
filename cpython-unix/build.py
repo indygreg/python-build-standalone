@@ -252,12 +252,15 @@ def simple_build(
         build_env.copy_file(SUPPORT / ("build-%s.sh" % entry))
 
         env = {
-            "%s_VERSION" % entry.upper().replace("-", "_"): DOWNLOADS[entry]["version"],
+            "%s_VERSION"
+            % entry.upper()
+            .replace("-", "_")
+            .replace(".", "_"): DOWNLOADS[entry]["version"],
         }
 
         add_target_env(env, host_platform, target_triple, build_env)
 
-        if entry == "openssl":
+        if entry == "openssl-1.1":
             settings = get_targets(TARGETS_CONFIG)[target_triple]
             env["OPENSSL_TARGET"] = settings["openssl_target"]
 
@@ -948,7 +951,7 @@ def main():
             "m4",
             "mpdecimal",
             "ncurses",
-            "openssl",
+            "openssl-1.1",
             "patchelf",
             "sqlite",
             "tcl",
