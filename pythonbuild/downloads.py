@@ -214,6 +214,19 @@ DOWNLOADS = {
         "licenses": ["OpenSSL"],
         "license_file": "LICENSE.openssl-1.1.txt",
     },
+    # We use OpenSSL 3.0 because it is an LTS release and has a longer support
+    # window. If CPython ends up gaining support for 3.1+ releases, we can consider
+    # using the latest available.
+    # Remember to update OPENSSL_VERSION_INFO in verify_distribution.py whenever upgrading.
+    "openssl-3.0": {
+        "url": "https://www.openssl.org/source/openssl-3.0.10.tar.gz",
+        "size": 15194904,
+        "sha256": "1761d4f5b13a1028b9b6f3d4b8e17feb0cedc9370f6afe61d7193d2cdce83323",
+        "version": "3.0.10",
+        "library_names": ["crypto", "ssl"],
+        "licenses": ["Apache-2.0"],
+        "license_file": "LICENSE.openssl-3.txt",
+    },
     "nasm-windows-bin": {
         "url": "https://github.com/python/cpython-bin-deps/archive/nasm-2.11.06.tar.gz",
         "size": 384826,

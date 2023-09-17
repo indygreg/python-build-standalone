@@ -77,7 +77,6 @@ class TestPythonInterpreter(unittest.TestCase):
         wanted_hashes = {
             "blake2b",
             "blake2s",
-            "md4",
             "md5",
             "md5-sha1",
             "ripemd160",
@@ -101,12 +100,11 @@ class TestPythonInterpreter(unittest.TestCase):
             "shake_128",
             "shake_256",
             "sm3",
-            "whirlpool",
         }
 
-        # Windows doesn't appear to support mdc2.
-        if os.name != "nt":
-            wanted_hashes.add("mdc2")
+        if os.name == "nt":
+            wanted_hashes.add("md4")
+            wanted_hashes.add("whirlpool")
 
         for hash in wanted_hashes:
             self.assertIn(hash, hashlib.algorithms_available)
@@ -131,7 +129,12 @@ class TestPythonInterpreter(unittest.TestCase):
         self.assertTrue(ssl.HAS_TLSv1_2)
         self.assertTrue(ssl.HAS_TLSv1_3)
 
-        self.assertEqual(ssl.OPENSSL_VERSION_INFO, (1, 1, 1, 23, 15))
+        if os.name == "nt":
+            wanted_version = (1, 1, 1, 23, 15)
+        else:
+            wanted_version = (3, 0, 0, 10, 0)
+
+        self.assertEqual(ssl.OPENSSL_VERSION_INFO, wanted_version)
 
         ssl.create_default_context()
 

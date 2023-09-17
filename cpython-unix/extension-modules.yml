@@ -267,6 +267,15 @@ _hashlib:
     - include
   links:
     - crypto
+  links-conditional:
+    # Clang built OpenSSL 3.x depends on libatomic. We force linking against
+    # a static library so there isn't a runtime dependency.
+    - name: ':libatomic.a'
+      targets:
+        - i686-unknown-linux-gnu
+        - mips-unknown-linux-gnu
+        - mipsel-unknown-linux-gnu
+        - x86_64.*-unknown-linux-gnu
 
 _heapq:
   sources:
@@ -438,6 +447,15 @@ _ssl:
   links:
     - ssl
     - crypto
+  links-conditional:
+    # Clang built OpenSSL 3.x depends on libatomic. We force linking against
+    # a static library so there isn't a runtime dependency.
+    - name: ':libatomic.a'
+      targets:
+        - i686-unknown-linux-gnu
+        - mips-unknown-linux-gnu
+        - mipsel-unknown-linux-gnu
+        - x86_64.*-unknown-linux-gnu
 
 _statistics:
   sources:

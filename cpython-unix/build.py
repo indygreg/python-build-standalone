@@ -260,7 +260,7 @@ def simple_build(
 
         add_target_env(env, host_platform, target_triple, build_env)
 
-        if entry == "openssl-1.1":
+        if entry in ("openssl-1.1", "openssl-3.0"):
             settings = get_targets(TARGETS_CONFIG)[target_triple]
             env["OPENSSL_TARGET"] = settings["openssl_target"]
 
@@ -562,6 +562,11 @@ def python_build_info(
             links.append({"name": framework, "framework": True})
 
         for libname in sorted(d["links"]):
+            # Explicitly annotated .a files are statically linked and don't need
+            # annotations.
+            if libname.endswith(".a"):
+                continue
+
             log("adding library %s for extension %s" % (libname, extension))
 
             if libname in libraries:
@@ -952,6 +957,7 @@ def main():
             "mpdecimal",
             "ncurses",
             "openssl-1.1",
+            "openssl-3.0",
             "patchelf",
             "sqlite",
             "tcl",
