@@ -204,11 +204,12 @@ DOWNLOADS = {
         "licenses": ["X11"],
         "license_file": "LICENSE.ncurses.txt",
     },
+    # Remember to update OPENSSL_VERSION_INFO in verify_distribution.py whenever upgrading.
     "openssl-1.1": {
-        "url": "https://www.openssl.org/source/openssl-1.1.1v.tar.gz",
-        "size": 9893443,
-        "sha256": "d6697e2871e77238460402e9362d47d18382b15ef9f246aba6c7bd780d38a6b0",
-        "version": "1.1.1v",
+        "url": "https://www.openssl.org/source/openssl-1.1.1w.tar.gz",
+        "size": 9893384,
+        "sha256": "cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8",
+        "version": "1.1.1w",
         "library_names": ["crypto", "ssl"],
         "licenses": ["OpenSSL"],
         "license_file": "LICENSE.openssl-1.1.txt",
