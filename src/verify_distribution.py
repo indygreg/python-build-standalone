@@ -102,7 +102,8 @@ class TestPythonInterpreter(unittest.TestCase):
             "sm3",
         }
 
-        if os.name == "nt":
+        # Legacy algorithms only present on OpenSSL 1.1.
+        if os.name == "nt" and sys.version_info[0:2] < (3, 11):
             wanted_hashes.add("md4")
             wanted_hashes.add("whirlpool")
 
@@ -129,7 +130,9 @@ class TestPythonInterpreter(unittest.TestCase):
         self.assertTrue(ssl.HAS_TLSv1_2)
         self.assertTrue(ssl.HAS_TLSv1_3)
 
-        if os.name == "nt":
+        # OpenSSL 1.1 on older CPython versions on Windows. 3.0 everywhere
+        # else.
+        if os.name == "nt" and sys.version_info[0:2] < (3, 11):
             wanted_version = (1, 1, 1, 23, 15)
         else:
             wanted_version = (3, 0, 0, 10, 0)

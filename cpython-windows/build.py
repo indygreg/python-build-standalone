@@ -109,7 +109,7 @@ EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY = {
     "_hashlib": ["openssl"],
     "_lzma": ["xz"],
     "_sqlite3": ["sqlite"],
-    "_ssl": ["openssl-1.1"],
+    "_ssl": ["openssl"],
     "_tkinter": ["tcl", "tk", "tix"],
     "_uuid": ["uuid"],
     "zlib": ["zlib"],
@@ -870,7 +870,7 @@ def hack_props(
             static_replace_in_file(
                 openssl_props,
                 b"<_DLLSuffix>-3</_DLLSuffix>",
-                b"<_DLLSuffix>-1_1%s</_DLLSuffix>" % suffix,
+                b"<_DLLSuffix>-3%s</_DLLSuffix>" % suffix,
             )
         except NoSearchStringError:
             static_replace_in_file(
@@ -1565,13 +1565,13 @@ def build_openssl_for_arch(
     perl_path,
     arch: str,
     openssl_archive,
+    openssl_version: str,
     nasm_archive,
     build_root: pathlib.Path,
     profile: str,
     *,
     jom_archive,
 ):
-    openssl_version = DOWNLOADS["openssl-1.1"]["version"]
     nasm_version = DOWNLOADS["nasm-windows-bin"]["version"]
 
     log("extracting %s to %s" % (openssl_archive, build_root))
@@ -1661,12 +1661,18 @@ def build_openssl_for_arch(
 
 
 def build_openssl(
-    perl_path: pathlib.Path, arch: str, profile: str, dest_archive: pathlib.Path
+    entry: str,
+    perl_path: pathlib.Path,
+    arch: str,
+    profile: str,
+    dest_archive: pathlib.Path,
 ):
     """Build OpenSSL from sources using the Perl executable specified."""
 
+    openssl_version = DOWNLOADS[entry]["version"]
+
     # First ensure the dependencies are in place.
-    openssl_archive = download_entry("openssl-1.1", BUILD)
+    openssl_archive = download_entry(entry, BUILD)
     nasm_archive = download_entry("nasm-windows-bin", BUILD)
     jom_archive = download_entry("jom-windows-bin", BUILD)
 
@@ -1682,6 +1688,7 @@ def build_openssl(
                 perl_path,
                 "x86",
                 openssl_archive,
+                openssl_version,
                 nasm_archive,
                 root_32,
                 profile,
@@ -1693,6 +1700,7 @@ def build_openssl(
                 perl_path,
                 "amd64",
                 openssl_archive,
+                openssl_version,
                 nasm_archive,
                 root_64,
                 profile,
@@ -1843,6 +1851,7 @@ def collect_python_build_artifacts(
     arch: str,
     config: str,
     static: bool,
+    openssl_entry: str,
 ):
     """Collect build artifacts from Python.
 
@@ -2087,6 +2096,9 @@ def collect_python_build_artifacts(
             license_public_domain = False
 
             for name in EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY[ext]:
+                if name == "openssl":
+                    name = openssl_entry
+
                 download_entry = DOWNLOADS[name]
 
                 # This will raise if no license metadata defined. This is
@@ -2145,6 +2157,7 @@ def build_cpython(
     windows_sdk_version: str,
     openssl_archive,
     libffi_archive,
+    openssl_entry: str,
 ):
     static = "static" in profile
     pgo = "-pgo" in profile
@@ -2439,6 +2452,7 @@ def build_cpython(
             build_directory,
             artifact_config,
             static=static,
+            openssl_entry=openssl_entry,
         )
 
         for ext, init_fn in sorted(builtin_extensions.items()):
@@ -2648,12 +2662,27 @@ def main():
             arch = "amd64"
 
         # TODO need better dependency checking.
-        openssl_archive = BUILD / ("openssl-%s-%s.tar" % (target_triple, args.profile))
+
+        # CPython 3.11+ have native support for OpenSSL 3.x. We anticipate this
+        # will change in a future minor release once OpenSSL 1.1 goes out of support.
+        # But who knows.
+        if args.python in ("cpython-3.8", "cpython-3.9", "cpython-3.10"):
+            openssl_entry = "openssl-1.1"
+        else:
+            openssl_entry = "openssl-3.0"
+
+        openssl_archive = BUILD / (
+            "%s-%s-%s.tar" % (openssl_entry, target_triple, args.profile)
+        )
         if not openssl_archive.exists():
             perl_path = fetch_strawberry_perl() / "perl" / "bin" / "perl.exe"
             LOG_PREFIX[0] = "openssl"
             build_openssl(
-                perl_path, arch, profile=args.profile, dest_archive=openssl_archive
+                openssl_entry,
+                perl_path,
+                arch,
+                profile=args.profile,
+                dest_archive=openssl_archive,
             )
 
         libffi_archive = BUILD / ("libffi-%s-%s.tar" % (target_triple, args.profile))
@@ -2677,6 +2706,7 @@ def main():
             windows_sdk_version=args.windows_sdk_version,
             openssl_archive=openssl_archive,
             libffi_archive=libffi_archive,
+            openssl_entry=openssl_entry,
         )
 
         if "PYBUILD_RELEASE_TAG" in os.environ:

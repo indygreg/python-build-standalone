@@ -111,9 +111,13 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     // Our libraries.
     "libcrypto-1_1.dll",
     "libcrypto-1_1-x64.dll",
+    "libcrypto-3.dll",
+    "libcrypto-3-x64.dll",
     "libffi-8.dll",
     "libssl-1_1.dll",
     "libssl-1_1-x64.dll",
+    "libssl-3.dll",
+    "libssl-3-x64.dll",
     "python3.dll",
     "python38.dll",
     "python39.dll",
