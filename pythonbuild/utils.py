@@ -269,10 +269,10 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
                 raise
         except http.client.HTTPException as e:
             print(f"HTTP exception on {url}; retrying: {e}")
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
         except urllib.error.URLError as e:
             print(f"urllib error on {url}; retrying: {e}")
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
     else:
         raise Exception("download failed after multiple retries")
 
@@ -381,7 +381,7 @@ def normalize_tar_archive(data: io.BytesIO) -> io.BytesIO:
 
     dest = io.BytesIO()
     with tarfile.open(fileobj=dest, mode="w") as tf:
-        for (ti, filedata) in members:
+        for ti, filedata in members:
             tf.addfile(ti, filedata)
 
     dest.seek(0)
