@@ -91,6 +91,8 @@ _ctypes:
     - source: _ctypes/darwin/dlfcn_simple.c
       targets:
         - .*-apple-.*
+      # Functionality removed in 3.12.
+      maximum-python-version: "3.11"
     - source: _ctypes/malloc_closure.c
       targets:
         - .*-apple-.*
@@ -312,6 +314,16 @@ _lzma:
 _md5:
   sources:
     - md5module.c
+  includes:
+    - Modules/_hacl/include
+  sources-conditional:
+    - source: _hacl/Hacl_Hash_MD5.c
+      minimum-python-version: "3.12"
+  defines-conditional:
+    - define: _BSD_SOURCE
+      minimum-python-version: "3.12"
+    - define: _DEFAULT_SOURCE
+      minimum-python-version: "3.12"
 
 _multibytecodec:
   sources:
@@ -377,18 +389,63 @@ _scproxy:
 _sha1:
   sources:
     - sha1module.c
+  sources-conditional:
+    - source: _hacl/Hacl_Hash_SHA1.c
+      minimum-python-version: "3.12"
+  includes:
+    - Modules/_hacl/include
+  defines-conditional:
+    - define: _BSD_SOURCE
+      minimum-python-version: "3.12"
+    - define: _DEFAULT_SOURCE
+      minimum-python-version: "3.12"
+
+# _sha256 refactored and renamed to _sha2 in 3.12
 
 _sha256:
+  maximum-python-version: "3.11"
   sources:
     - sha256module.c
 
-_sha3:
+_sha2:
+  minimum-python-version: "3.12"
   sources:
-    - _sha3/sha3module.c
+    - sha2module.c
+  includes:
+    - Modules/_hacl/include
+    - Modules/_hacl/internal
+  defines:
+    - _BSD_SOURCE
+    - _DEFAULT_SOURCE
+  links:
+    # Use the colon syntax to prevent the library dependency from getting
+    # recorded in JSON metadata. This relies on setting up a linker library
+    # path (-L) in LDFLAGS.
+    - ":libHacl_Hash_SHA2.a"
+
+_sha3:
+  sources-conditional:
+    # _sha3/sha3module.c -> sha3module.c in 3.12.
+    - source: _sha3/sha3module.c
+      maximum-python-version: "3.11"
+    - source: sha3module.c
+      minimum-python-version: "3.12"
+
+    - source: _hacl/Hacl_Hash_SHA3.c
+      minimum-python-version: "3.12"
+  includes:
+    - Modules/_hacl/include
+  defines-conditional:
+    - define: _BSD_SOURCE
+      minimum-python-version: "3.12"
+    - define: _DEFAULT_SOURCE
+      minimum-python-version: "3.12"
 
 _sha512:
   sources:
     - sha512module.c
+  # Refactored into other modules in 3.12.
+  maximum-python-version: "3.11"
 
 _signal:
   setup-enabled: true
@@ -507,6 +564,11 @@ _testmultiphase:
   sources:
     - _testmultiphase.c
 
+_testsinglephase:
+  minimum-python-version: '3.12'
+  sources:
+    - _testsinglephase.c
+
 _thread:
   setup-enabled: true
   required-targets:
@@ -569,6 +631,9 @@ _tracemalloc:
 
 _typing:
   minimum-python-version: "3.11"
+  setup-enabled-conditional:
+    - enabled: true
+      minimum-python-version: "3.12"
   sources:
     - _typingmodule.c
 
@@ -591,6 +656,11 @@ _weakref:
   setup-enabled: true
   required-targets:
     - .*
+
+_xxinterpchannels:
+  minimum-python-version: '3.12'
+  sources:
+    - _xxinterpchannelsmodule.c
 
 _xxsubinterpreters:
   minimum-python-version: '3.9'
@@ -801,7 +871,11 @@ xxlimited_35:
     - .*
 
 xxsubtype:
-  setup-enabled: true
+  setup-enabled-conditional:
+    - enabled: true
+      maximum-python-version: "3.11"
+  sources:
+    - xxsubtype.c
 
 # xx is a demo extension. So disable globally.
 xx:

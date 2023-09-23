@@ -69,10 +69,26 @@ case "${BUILD_TRIPLE}" in
     ;;
 esac
 
+EXTRA_CONFIGURE_FLAGS=
+
+# We may not have a usable libraries to build against. Forcefully disable extensions
+# that may not build.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+    for m in _hashlib _ssl; do
+      EXTRA_CONFIGURE_FLAGS="${EXTRA_CONFIGURE_FLAGS} py_cv_module_${m}=n/a"
+    done
+  fi
+
 CC="${HOST_CC}" CXX="${HOST_CXX}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure \
   --prefix /tools/host \
-  --without-ensurepip
+  --without-ensurepip \
+  ${EXTRA_CONFIGURE_FLAGS}
 
-make -j "${NUM_CPUS}" install DESTDIR=${ROOT}/out
+# Ideally we'd do `make install` here and be done with it. But there's a race
+# condition in CPython's build system related to directory creation that gets
+# tickled when we do this. https://github.com/python/cpython/issues/109796.
+make -j "${NUM_CPUS}"
+make -j sharedinstall DESTDIR=${ROOT}/out
+make -j install DESTDIR=${ROOT}/out
 
 popd

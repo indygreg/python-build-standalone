@@ -73,6 +73,19 @@ EXTENSION_MODULE_SCHEMA = {
         "maximum-python-version": {"type": "string"},
         "required-targets": {"type": "array", "items": {"type": "string"}},
         "setup-enabled": {"type": "boolean"},
+        "setup-enabled-conditional": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "enabled": {"type": "boolean"},
+                    "minimum-python-version": {"type": "string"},
+                    "maximum-python-version": {"type": "string"},
+                },
+                "additionalProperties": False,
+                "required": ["enabled"],
+            },
+        },
         "sources": {"type": "array", "items": {"type": "string"}},
         "sources-conditional": {
             "type": "array",
@@ -176,8 +189,14 @@ def parse_setup_line(line: bytes, python_version: str):
 def link_for_target(lib: str, target_triple: str) -> str:
     # TODO use -Wl,-hidden-lbz2?
     # TODO use -Wl,--exclude-libs,libfoo.a?
+
     if "-apple-" in target_triple:
-        return f"-Xlinker -hidden-l{lib}"
+        # The -l:filename syntax doesn't appear to work on Apple.
+        # just give the library name and hope it turns out OK.
+        if lib.startswith(":lib") and lib.endswith(".a"):
+            return f"-Xlinker -hidden-l{lib[4:-2]}"
+        else:
+            return f"-Xlinker -hidden-l{lib}"
     else:
         return f"-l{lib}"
 
@@ -247,6 +266,19 @@ def derive_setup_local(
 
         if info.get("setup-enabled", False):
             setup_enabled_wanted.add(name)
+
+        for entry in info.get("setup-enabled-conditional", []):
+            python_min_match_setup = meets_python_minimum_version(
+                python_version, entry.get("minimum-python-version", "1.0")
+            )
+            python_max_match_setup = meets_python_maximum_version(
+                python_version, entry.get("maximum-python-version", "100.0")
+            )
+
+            if entry.get("enabled", False) and (
+                python_min_match_setup and python_max_match_setup
+            ):
+                setup_enabled_wanted.add(name)
 
         if info.get("config-c-only"):
             config_c_only_wanted.add(name)
@@ -443,7 +475,7 @@ def derive_setup_local(
         # Presumably this means the extension comes from the distribution's
         # Setup. Lack of sources means we don't need to derive a Setup.local
         # line.
-        if "sources" not in info:
+        if "sources" not in info and "sources-conditional" not in info:
             if name not in setup_enabled_lines:
                 raise Exception(
                     f"found a sourceless extension ({name}) with no Setup entry"

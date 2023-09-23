@@ -99,6 +99,7 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "NETAPI32.dll",
     "ole32.dll",
     "OLEAUT32.dll",
+    "PROPSYS.dll",
     "RPCRT4.dll",
     "SHELL32.dll",
     "SHLWAPI.dll",
@@ -123,6 +124,7 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "python39.dll",
     "python310.dll",
     "python311.dll",
+    "python312.dll",
     "sqlite3.dll",
     "tcl86t.dll",
     "tk86t.dll",
@@ -221,7 +223,7 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
             ("mips-unknown-linux-gnu", vec!["ld.so.1"]),
             ("mipsel-unknown-linux-gnu", vec!["ld.so.1"]),
             ("mips64el-unknown-linux-gnuabi64", vec![]),
-            ("ppc64le-unknown-linux-gnu", vec!["ld64.so.1"]),
+            ("ppc64le-unknown-linux-gnu", vec!["ld64.so.1", "ld64.so.2"]),
             ("s390x-unknown-linux-gnu", vec!["ld64.so.1"]),
             ("x86_64-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
             ("x86_64_v2-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
@@ -273,6 +275,16 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.11d.dylib".to_string(),
                 max_compatibility_version: "3.11.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.12.dylib".to_string(),
+                max_compatibility_version: "3.12.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.12d.dylib".to_string(),
+                max_compatibility_version: "3.12.0".try_into().unwrap(),
                 required: false,
             },
             MachOAllowedDylib {
@@ -606,9 +618,7 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
     "_queue",
     "_random",
     "_sha1",
-    "_sha256",
     "_sha3",
-    "_sha512",
     "_signal",
     "_socket",
     "_sqlite3",
@@ -650,26 +660,48 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 // parser removed in 3.10.
 // _tokenize added in 3.11.
 // _typing added in 3.11.
+// _testsinglephase added in 3.12.
+// _sha256 and _sha512 merged into _sha2 in 3.12.
+// _xxinterpchannels added in 3.12.
 
 // We didn't build ctypes_test until 3.9.
 // We didn't build some test extensions until 3.9.
 
-const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["parser"];
+const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &[
+    "_sha256",
+    "_sha512",
+    "parser"];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
     "_peg_parser",
+    "_sha256",
+    "_sha512",
     "_uuid",
     "_xxsubinterpreters",
     "_zoneinfo",
     "parser",
 ];
 
-const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &["_uuid", "_xxsubinterpreters", "_zoneinfo"];
+const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
+    "_sha256",
+    "_sha512",
+    "_uuid", "_xxsubinterpreters", "_zoneinfo"];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
+    "_sha256",
+    "_sha512",
     "_tokenize",
     "_typing",
     "_uuid",
+    "_xxsubinterpreters",
+    "_zoneinfo",
+];
+
+const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
+    "_sha2",
+    "_tokenize",
+    "_typing",
+    "_xxinterpchannels",
     "_xxsubinterpreters",
     "_zoneinfo",
 ];
@@ -1404,6 +1436,9 @@ fn validate_extension_modules(
         "3.11" => {
             wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_11);
         }
+        "3.12" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_12);
+        }
         _ => {
             panic!("unhandled Python version: {}", python_major_minor);
         }
@@ -1433,13 +1468,17 @@ fn validate_extension_modules(
         }
     }
 
-    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10" | "3.11") {
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
         wanted.extend([
             "_testbuffer",
             "_testimportmultiple",
             "_testmultiphase",
             "_xxtestfuzz",
         ]);
+    }
+
+    if (is_linux || is_macos) && python_major_minor == "3.12" {
+        wanted.insert("_testsinglephase");
     }
 
     // _uuid is POSIX only on 3.8. On 3.9, it is global.
@@ -1449,6 +1488,12 @@ fn validate_extension_modules(
         }
     } else {
         wanted.insert("_uuid");
+    }
+
+
+    // _wmi is Windows only on 3.12+.
+    if python_major_minor == "3.12" && is_windows {
+        wanted.insert("_wmi");
     }
 
     for extra in have_extensions.difference(&wanted) {
@@ -1572,6 +1617,8 @@ fn validate_distribution(
         "3.10"
     } else if dist_filename.starts_with("cpython-3.11.") {
         "3.11"
+    } else if dist_filename.starts_with("cpython-3.12.") {
+        "3.12"
     } else {
         return Err(anyhow!("could not parse Python version from filename"));
     };

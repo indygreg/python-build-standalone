@@ -85,6 +85,10 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     },
     "_queue": {},
     "_uuid": {"ignore_missing": True},
+    "_wmi": {
+        # Introduced in 3.12.
+        "ignore_missing": True,
+    },
     "_zoneinfo": {"ignore_missing": True},
     "pyexpat": {},
     "select": {},
@@ -1023,6 +1027,15 @@ def hack_project_files(
         rb'<ClCompile Include="$(opensslIncludeDir)\openssl\applink.c">',
     )
 
+    # We're still on the pre-built tk-windows-bin 8.6.12 which doesn't have a
+    # standalone zlib DLL. So remove references to it from 3.12+.
+    if meets_python_minimum_version(python_version, "3.12"):
+        static_replace_in_file(
+            pcbuild_path / "_tkinter.vcxproj",
+            rb'<_TclTkDLL Include="$(tcltkdir)\bin\$(tclZlibDllName)" />',
+            rb"",
+        )
+
     pythoncore_proj = pcbuild_path / "pythoncore.vcxproj"
 
     if static:
@@ -1399,9 +1412,12 @@ def hack_source_files(source_path: pathlib.Path, static: bool, python_version: s
         # Modules/getpath.c unconditionally refers to PyWin_DLLhModule, which is
         # conditionally defined behind Py_ENABLE_SHARED. Change its usage
         # accordingly. This regressed as part of upstream commit
-        # 99fcf1505218464c489d419d4500f126b6d6dc28.
-        # TODO send this patch upstream.
-        if meets_python_minimum_version(python_version, "3.11"):
+        # 99fcf1505218464c489d419d4500f126b6d6dc28. But it was fixed
+        # in 3.12 by c6858d1e7f4cd3184d5ddea4025ad5dfc7596546.
+        # TODO send this patch upstream? or encourage backporting of fix in 3.12?
+        if meets_python_minimum_version(
+            python_version, "3.11"
+        ) and not meets_python_minimum_version(python_version, "3.12"):
             static_replace_in_file(
                 source_path / "Modules" / "getpath.c",
                 b"#ifdef MS_WINDOWS\n    extern HMODULE PyWin_DLLhModule;",
@@ -1894,10 +1910,12 @@ def collect_python_build_artifacts(
         "_ctypes_test",
         "_testbuffer",
         "_testcapi",
+        "_testclinic",
         "_testconsole",
         "_testembed",
         "_testimportmultiple",
         "_testinternalcapi",
+        "_testsinglephase",
         "_testmultiphase",
         "xxlimited",
         "xxlimited_35",
@@ -2374,11 +2392,14 @@ def build_cpython(
             "--temp",
             str(layout_tmp),
             "--include-dev",
-            "--include-distutils",
             "--include-symbols",
             "--include-tests",
             "--include-venv",
         ]
+
+        # CPython 3.12 removed distutils.
+        if not meets_python_minimum_version(python_version, "3.12"):
+            args.append("--include-distutils")
 
         if static:
             args.append("--flat-dlls")
@@ -2628,7 +2649,13 @@ def main():
     )
     parser.add_argument(
         "--python",
-        choices={"cpython-3.8", "cpython-3.9", "cpython-3.10", "cpython-3.11"},
+        choices={
+            "cpython-3.8",
+            "cpython-3.9",
+            "cpython-3.10",
+            "cpython-3.11",
+            "cpython-3.12",
+        },
         default="cpython-3.11",
         help="Python distribution to build",
     )
