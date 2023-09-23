@@ -23,6 +23,7 @@ export AUTOM4TE=${TOOLS_PATH}/host/bin/autom4te
 export autom4te_perllibdir=${TOOLS_PATH}/host/share/autoconf
 export AC_MACRODIR=${TOOLS_PATH}/host/share/autoconf
 export M4=${TOOLS_PATH}/host/bin/m4
+export trailer_m4=${TOOLS_PATH}/host/share/autoconf/autoconf/trailer.m4
 
 # The share/autoconf/autom4te.cfg file also hard-codes some paths. Rewrite
 # those to the real tools path.
