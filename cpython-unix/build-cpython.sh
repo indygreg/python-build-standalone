@@ -72,7 +72,11 @@ cat Makefile.extra
 pushd Python-${PYTHON_VERSION}
 
 # configure doesn't support cross-compiling on Apple. Teach it.
-patch -p1 -i ${ROOT}/patch-apple-cross.patch
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+    patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
+else
+    patch -p1 -i ${ROOT}/patch-apple-cross.patch
+fi
 
 # This patch is slightly different on Python 3.10+.
 if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_10}" ]; then
@@ -83,7 +87,9 @@ fi
 
 # LIBTOOL_CRUFT is unused and breaks cross-compiling on macOS. Nuke it.
 # Submitted upstream at https://github.com/python/cpython/pull/101048.
-patch -p1 -i ${ROOT}/patch-configure-remove-libtool-cruft.patch
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_11}" ]; then
+    patch -p1 -i ${ROOT}/patch-configure-remove-libtool-cruft.patch
+fi
 
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
@@ -116,7 +122,11 @@ fi
 
 # Add a make target to write the PYTHON_FOR_BUILD variable so we can
 # invoke the host Python on our own.
-patch -p1 -i ${ROOT}/patch-write-python-for-build.patch
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+    patch -p1 -i ${ROOT}/patch-write-python-for-build-3.12.patch
+else
+    patch -p1 -i ${ROOT}/patch-write-python-for-build.patch
+fi
 
 # Object files can get listed multiple times leading to duplicate symbols
 # when linking. Prevent this.
@@ -191,7 +201,11 @@ fi
 # disable the functionality and require our auto-generated Setup.local to provide
 # everything.
 if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
-    patch -p1 -i ${ROOT}/patch-configure-disable-stdlib-mod.patch
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+        patch -p1 -i ${ROOT}/patch-configure-disable-stdlib-mod-3.12.patch
+    else
+        patch -p1 -i ${ROOT}/patch-configure-disable-stdlib-mod.patch
+    fi
 
     # This hack also prevents the conditional definition of the pwd module in
     # Setup.bootstrap.in from working. So we remove that conditional.
@@ -201,7 +215,18 @@ fi
 # The optimization make targets are both phony and non-phony. This leads
 # to PGO targets getting reevaluated after a build when you use multiple
 # make invocations. e.g. `make install` like we do below. Fix that.
-patch -p1 -i ${ROOT}/patch-pgo-make-targets.patch
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_11}" ]; then
+    patch -p1 -i ${ROOT}/patch-pgo-make-targets.patch
+fi
+
+# There's a post-build Python script that verifies modules were
+# built correctly. Ideally we'd invoke this. But our nerfing of
+# the configure-based module building and replacing it with our
+# own Setup-derived version completely breaks assumptions in this
+# script. So leave it off for now... at our own peril.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+    patch -p1 -i ${ROOT}/patch-checksharedmods-disable.patch
+fi
 
 # We patched configure.ac above. Reflect those changes.
 autoconf
@@ -250,6 +275,20 @@ if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
     if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_10}" ]; then
         EXTRA_CONFIGURE_FLAGS="${EXTRA_CONFIGURE_FLAGS} --with-readline=editline"
     fi
+fi
+
+# On Python 3.12 we need to link the special hacl library provided some SHA-256
+# implementations. Since we hack up the regular extension building mechanism, we
+# need to reinvent this wheel.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+    LDFLAGS="${LDFLAGS} -LModules/_hacl"
+fi
+
+# On PPC we need to prevent the glibc 2.22 __tls_get_addr_opt symbol
+# from being introduced to preserve runtime compatibility with older
+# glibc.
+if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" && "${TARGET_TRIPLE}" = "ppc64le-unknown-linux-gnu" ]]; then
+    LDFLAGS="${LDFLAGS} -Wl,--no-tls-get-addr-optimize"
 fi
 
 CPPFLAGS=$CFLAGS
@@ -405,6 +444,7 @@ CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
 cat ../Makefile.extra >> Makefile
 
 make -j ${NUM_CPUS}
+make -j ${NUM_CPUS} sharedinstall DESTDIR=${ROOT}/out/python
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
 if [ -n "${CPYTHON_DEBUG}" ]; then
@@ -712,7 +752,7 @@ ${BUILD_PYTHON} ${ROOT}/fix_shebangs.py ${ROOT}/out/python/install
 # downstream consumers.
 OBJECT_DIRS="Objects Parser Parser/pegen Programs Python"
 OBJECT_DIRS="${OBJECT_DIRS} Modules"
-for ext in _blake2 cjkcodecs _ctypes _ctypes/darwin _decimal _expat _io _multiprocessing _sha3 _sqlite _sre _xxtestfuzz ; do
+for ext in _blake2 cjkcodecs _ctypes _ctypes/darwin _decimal _expat _hacl _io _multiprocessing _sha3 _sqlite _sre _xxtestfuzz ; do
     OBJECT_DIRS="${OBJECT_DIRS} Modules/${ext}"
 done
 
