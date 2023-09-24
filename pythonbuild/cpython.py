@@ -492,7 +492,7 @@ def derive_setup_local(
                 python_version, entry.get("minimum-python-version", "1.0")
             )
             python_max_match = meets_python_maximum_version(
-                python_version, entry.get("minimum-python-version", "100.0")
+                python_version, entry.get("maximum-python-version", "100.0")
             )
 
             if target_match and (python_min_match and python_max_match):
