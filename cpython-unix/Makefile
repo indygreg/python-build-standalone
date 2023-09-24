@@ -240,10 +240,30 @@ $(OUTDIR)/xz-$(XZ_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/
 $(OUTDIR)/zlib-$(ZLIB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-zlib.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) zlib
 
+PYTHON_HOST_DEPENDS := \
+  $(PYTHON_DEP_DEPENDS) \
+  $(HERE)/build-cpython-host.sh \
+  $(OUTDIR)/autoconf-$(AUTOCONF_VERSION)-$(PACKAGE_SUFFIX).tar \
+  $(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar \
+  $(NULL)
+
+$(OUTDIR)/cpython-3.8-$(CPYTHON_3.8_VERSION)-$(HOST_PLATFORM).tar: $(PYTHON_HOST_DEPENDS)
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.8-host
+
+$(OUTDIR)/cpython-3.9-$(CPYTHON_3.9_VERSION)-$(HOST_PLATFORM).tar: $(PYTHON_HOST_DEPENDS)
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.9-host
+
+$(OUTDIR)/cpython-3.10-$(CPYTHON_3.10_VERSION)-$(HOST_PLATFORM).tar: $(PYTHON_HOST_DEPENDS)
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.10-host
+
+$(OUTDIR)/cpython-3.11-$(CPYTHON_3.11_VERSION)-$(HOST_PLATFORM).tar: $(PYTHON_HOST_DEPENDS)
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.11-host
+
 PYTHON_DEPENDS := \
     $(PYTHON_SUPPORT_FILES) \
     $(OUTDIR)/versions/VERSION.pip \
     $(OUTDIR)/versions/VERSION.setuptools \
+    $(OUTDIR)/cpython-$(PYBUILD_PYTHON_MAJOR_VERSION)-$(PYBUILD_PYTHON_VERSION)-$(HOST_PLATFORM).tar \
     $(if $(NEED_AUTOCONF),$(OUTDIR)/autoconf-$(AUTOCONF_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \

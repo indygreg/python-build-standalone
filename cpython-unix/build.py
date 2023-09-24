@@ -404,6 +404,70 @@ def build_tix(
         build_env.get_tools_archive(dest_archive, "deps")
 
 
+def build_cpython_host(
+    client,
+    image,
+    entry,
+    host_platform: str,
+    target_triple: str,
+    optimizations: str,
+    dest_archive,
+):
+    """Build binutils in the Docker image."""
+    archive = download_entry(entry, DOWNLOADS_PATH)
+
+    with build_environment(client, image) as build_env:
+        python_version = DOWNLOADS[entry]["version"]
+
+        build_env.install_toolchain(
+            BUILD,
+            host_platform,
+            target_triple,
+            binutils=install_binutils(host_platform),
+            clang=True,
+        )
+
+        build_env.copy_file(archive)
+
+        support = {
+            "build-cpython-host.sh",
+            "patch-disable-multiarch.patch",
+            "patch-disable-multiarch-legacy.patch",
+        }
+        for s in sorted(support):
+            build_env.copy_file(SUPPORT / s)
+
+        packages = {
+            "autoconf",
+            "m4",
+        }
+        for p in sorted(packages):
+            build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
+
+        env = {
+            "PYTHON_VERSION": python_version,
+        }
+
+        add_target_env(env, host_platform, target_triple, build_env)
+
+        # Set environment variables allowing convenient testing for Python
+        # version ranges.
+        for v in ("3.8", "3.9", "3.10", "3.11"):
+            normal_version = v.replace(".", "_")
+
+            if meets_python_minimum_version(python_version, v):
+                env[f"PYTHON_MEETS_MINIMUM_VERSION_{normal_version}"] = "1"
+            if meets_python_maximum_version(python_version, v):
+                env[f"PYTHON_MEETS_MAXIMUM_VERSION_{normal_version}"] = "1"
+
+        build_env.run(
+            "build-cpython-host.sh",
+            environment=env,
+        )
+
+        build_env.get_tools_archive(dest_archive, "host")
+
+
 def python_build_info(
     build_env,
     version,
@@ -659,6 +723,8 @@ def build_cpython(
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
 
+        build_env.install_toolchain_archive(BUILD, entry_name, host_platform)
+
         for p in (
             python_archive,
             setuptools_archive,
@@ -877,6 +943,8 @@ def main():
         log_name = "image-%s" % action
     elif args.toolchain:
         log_name = "%s-%s" % (action, host_platform)
+    elif args.action.startswith("cpython-") and args.action.endswith("-host"):
+        log_name = args.action
     else:
         entry = DOWNLOADS[action]
         log_name = "%s-%s-%s-%s" % (
@@ -1078,6 +1146,17 @@ def main():
                 optimizations=optimizations,
                 dest_archive=dest_archive,
                 extra_archives=extra_archives,
+            )
+
+        elif action.startswith("cpython-") and action.endswith("-host"):
+            build_cpython_host(
+                client,
+                get_image(client, ROOT, BUILD, docker_image),
+                action[:-5],
+                host_platform=host_platform,
+                target_triple=target_triple,
+                optimizations=optimizations,
+                dest_archive=dest_archive,
             )
 
         elif action in ("cpython-3.8", "cpython-3.9", "cpython-3.10", "cpython-3.11"):

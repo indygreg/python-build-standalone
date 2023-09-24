@@ -64,63 +64,6 @@ zip -r "${PIP_WHEEL}" *
 popd
 rm -rf pip-tmp
 
-# If we are cross-compiling, we need to build a host Python to use during
-# the build.
-#
-# We also build a host Python for 3.11+ to avoid complexity with building a
-# bootstrap Python during regular build.
-if [[ -n "${CROSS_COMPILING}" || -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]]; then
-  pushd "Python-${PYTHON_VERSION}"
-
-  # Same patch as below. See comment there.
-  if [ "${CC}" = "clang" ]; then
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
-      patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
-    else
-      patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
-    fi
-  fi
-
-  autoconf
-
-  # When cross-compiling, we need to build a host Python that has working zlib
-  # and ctypes extensions, otherwise various things fail. (`make install` fails
-  # without zlib and setuptools / pip used by target install fail due to missing
-  # ctypes.)
-  #
-  # On Apple, the dependencies are present in the Apple SDK and missing extensions
-  # are built properly by setup.py. However, on other platforms, we need to teach
-  # the host build system where to find things.
-  #
-  # Adding /usr paths on Linux is a bit funky. This is a side-effect or our
-  # custom Clang purposefully omitting default system search paths to help
-  # prevent unwanted dependencies from sneaking in.
-  case "${BUILD_TRIPLE}" in
-    x86_64-unknown-linux-gnu)
-      EXTRA_HOST_CFLAGS="${EXTRA_HOST_CFLAGS} -I/usr/include/x86_64-linux-gnu"
-      EXTRA_HOST_CPPFLAGS="${EXTRA_HOST_CPPFLAGS} -I/usr/include/x86_64-linux-gnu"
-      EXTRA_HOST_LDFLAGS="${EXTRA_HOST_LDFLAGS} -L/usr/lib/x86_64-linux-gnu"
-      ;;
-    *)
-      ;;
-  esac
-
-  CC="${HOST_CC}" CXX="${HOST_CXX}" CFLAGS="${EXTRA_HOST_CFLAGS}" CPPFLAGS="${EXTRA_HOST_CFLAGS}" LDFLAGS="${EXTRA_HOST_LDFLAGS}" ./configure \
-    --prefix "${TOOLS_PATH}/pyhost" \
-    --without-ensurepip
-
-  make -j "${NUM_CPUS}" install
-
-  # configure will look for a pythonX.Y executable. Install our host Python
-  # at the front of PATH.
-  export PATH="${TOOLS_PATH}/pyhost/bin:${PATH}"
-
-  popd
-  # Nuke and re-pave the source directory out of paranoia.
-  rm -rf "Python-${PYTHON_VERSION}"
-  tar -xf "Python-${PYTHON_VERSION}.tar.xz"
-fi
-
 cat Setup.local
 mv Setup.local Python-${PYTHON_VERSION}/Modules/Setup.local
 
@@ -361,7 +304,7 @@ fi
 # It is required when cross-compiling. But we always build a host Python
 # to avoid complexity with the bootstrap Python binary.
 if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
-    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-python=${TOOLS_PATH}/pyhost/bin/python${PYTHON_MAJMIN_VERSION}"
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-build-python=${TOOLS_PATH}/host/bin/python${PYTHON_MAJMIN_VERSION}"
 fi
 
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
