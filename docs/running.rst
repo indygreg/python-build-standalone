@@ -165,6 +165,11 @@ like any normal archive::
 (The ``-a`` argument tells tar to guess the compression format by
 the file extension.)
 
+If your ``tar`` doesn't support ``-a`` (e.g. the default macOS ``tar``),
+try::
+
+   $ tar xvf path/to/distribution.tar.zstd
+
 If you do not have ``tar``, you can install and use the ``zstd``
 tool (typically available via a ``zstd`` or ``zstandard`` system
 package)::
