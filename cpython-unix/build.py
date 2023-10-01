@@ -93,6 +93,9 @@ def add_target_env(env, build_platform, target_triple, build_env):
     env["HOST_CXX"] = settings["host_cxx"]
     env["CC"] = settings["target_cc"]
 
+    if settings.get("bolt_capable"):
+        env["BOLT_CAPABLE"] = "1"
+
     env["PYBUILD_PLATFORM"] = build_platform
     env["TOOLS_PATH"] = build_env.tools_path
 

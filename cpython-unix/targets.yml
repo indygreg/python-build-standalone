@@ -45,6 +45,9 @@
 #
 # openssl_target
 #    Name of OpenSSL platform build target.
+#
+# bolt_capable
+#    Whether the target is capable of performing BOLT optimizations.
 
 ---
 
@@ -720,6 +723,8 @@ x86_64-unknown-linux-gnu:
   target_cc: clang
   target_cflags:
     - '-fvisibility=hidden'
+    # Needed to prevent BOLT from crashing.
+    - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
@@ -745,6 +750,7 @@ x86_64-unknown-linux-gnu:
     - xz
     - zlib
   openssl_target: linux-x86_64
+  bolt_capable: true
 
 x86_64_v2-unknown-linux-gnu:
   host_platforms:
@@ -762,6 +768,8 @@ x86_64_v2-unknown-linux-gnu:
   target_cflags:
     - '-march=x86-64-v2'
     - '-fvisibility=hidden'
+    # Needed to prevent BOLT from crashing.
+    - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
@@ -787,6 +795,7 @@ x86_64_v2-unknown-linux-gnu:
     - xz
     - zlib
   openssl_target: linux-x86_64
+  bolt_capable: true
 
 x86_64_v3-unknown-linux-gnu:
   host_platforms:
@@ -804,6 +813,8 @@ x86_64_v3-unknown-linux-gnu:
   target_cflags:
     - '-march=x86-64-v3'
     - '-fvisibility=hidden'
+    # Needed to prevent BOLT from crashing.
+    - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
@@ -829,6 +840,7 @@ x86_64_v3-unknown-linux-gnu:
     - xz
     - zlib
   openssl_target: linux-x86_64
+  bolt_capable: true
 
 x86_64_v4-unknown-linux-gnu:
   host_platforms:
@@ -846,6 +858,8 @@ x86_64_v4-unknown-linux-gnu:
   target_cflags:
     - '-march=x86-64-v4'
     - '-fvisibility=hidden'
+    # Needed to prevent BOLT from crashing.
+    - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
@@ -871,6 +885,7 @@ x86_64_v4-unknown-linux-gnu:
     - xz
     - zlib
   openssl_target: linux-x86_64
+  bolt_capable: true
 
 x86_64-unknown-linux-musl:
   host_platforms:

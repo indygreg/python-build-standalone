@@ -138,6 +138,9 @@ Common configurations include:
 ``pgo``
    Profile guided optimization.
 
+   Starting with CPython 3.12, BOLT is also applied alongside traditional
+   PGO on platforms supporting BOLT. (Currently just Linux x86-64.)
+
 ``lto``
    Link-time optimization.
 

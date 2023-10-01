@@ -333,6 +333,9 @@ fi
 
 if [ -n "${CPYTHON_OPTIMIZED}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations"
+    if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" && -n "${BOLT_CAPABLE}" ]]; then
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-bolt"
+    fi
 fi
 
 if [ -n "${CPYTHON_LTO}" ]; then
