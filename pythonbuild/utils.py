@@ -577,3 +577,16 @@ def validate_python_json(info, extension_modules):
                     "Missing license annotations for extension %s for library files %s"
                     % (name, ", ".join(sorted(local_links)))
                 )
+
+
+def release_download_statistics():
+    with urllib.request.urlopen(
+        "https://api.github.com/repos/indygreg/python-build-standalone/releases"
+    ) as fh:
+        data = json.load(fh)
+
+    for release in data:
+        tag = release["tag_name"]
+
+        for asset in release["assets"]:
+            print("%d\t%s\t%s" % (asset["download_count"], tag, asset["name"]))

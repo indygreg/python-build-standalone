@@ -87,3 +87,5 @@ release token commit tag:
   just release-upload-distributions {{token}} ${datetime} {{tag}}
   just release-set-latest-release {{tag}}
 
+download-stats:
+    build/venv.*/bin/python3 -c 'import pythonbuild.utils as u; u.release_download_statistics()'
