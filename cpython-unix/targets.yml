@@ -724,7 +724,7 @@ x86_64-unknown-linux-gnu:
   target_cflags:
     - '-fvisibility=hidden'
     # Needed to prevent BOLT from crashing.
-    - '-fdebug-default-version=4'
+    # - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
@@ -769,7 +769,7 @@ x86_64_v2-unknown-linux-gnu:
     - '-march=x86-64-v2'
     - '-fvisibility=hidden'
     # Needed to prevent BOLT from crashing.
-    - '-fdebug-default-version=4'
+    # - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
@@ -814,7 +814,7 @@ x86_64_v3-unknown-linux-gnu:
     - '-march=x86-64-v3'
     - '-fvisibility=hidden'
     # Needed to prevent BOLT from crashing.
-    - '-fdebug-default-version=4'
+    # - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
@@ -859,7 +859,7 @@ x86_64_v4-unknown-linux-gnu:
     - '-march=x86-64-v4'
     - '-fvisibility=hidden'
     # Needed to prevent BOLT from crashing.
-    - '-fdebug-default-version=4'
+    # - '-fdebug-default-version=4'
   needs:
     - autoconf
     - bdb
