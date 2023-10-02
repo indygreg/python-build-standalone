@@ -107,7 +107,7 @@ class TestPythonInterpreter(unittest.TestCase):
     def test_sqlite(self):
         import sqlite3
 
-        self.assertEqual(sqlite3.sqlite_version_info, (3, 43, 0))
+        self.assertEqual(sqlite3.sqlite_version_info, (3, 43, 1))
 
         # Optional SQLite3 features are enabled.
         conn = sqlite3.connect(":memory:")
@@ -129,7 +129,7 @@ class TestPythonInterpreter(unittest.TestCase):
         if os.name == "nt" and sys.version_info[0:2] < (3, 11):
             wanted_version = (1, 1, 1, 23, 15)
         else:
-            wanted_version = (3, 0, 0, 10, 0)
+            wanted_version = (3, 0, 0, 11, 0)
 
         self.assertEqual(ssl.OPENSSL_VERSION_INFO, wanted_version)
 
