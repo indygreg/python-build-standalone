@@ -39,7 +39,7 @@ release-build-macos tag:
 
   rm -rf build dist
   git checkout {{tag}}
-  for py in cpython-3.8 cpython-3.9 cpython-3.10 cpython-3.11; do
+  for py in cpython-3.8 cpython-3.9 cpython-3.10 cpython-3.11 cpython-3.12; do
     for opt in pgo pgo+lto; do
       ./build-macos.py --python $py --optimizations $opt || ./build-macos.py --python $py --optimizations $opt
     done
