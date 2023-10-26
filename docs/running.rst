@@ -245,6 +245,19 @@ likely from MSVC 2015 (``vcruntime140.dll``). This dependency is not
 provided in the distribution and will need to be provided by downstream
 distributors.
 
+Extra Python Software
+=====================
+
+Python installations have some additional software pre-installed:
+
+* `pip <https://pypi.org/project/pip/>`_
+* `setuptools <https://pypi.org/project/setuptools/>`_
+
+The intent of the pre-installed software is to facilitate end-user
+package installation without having to first bootstrap a packaging
+tool via an insecure installation technique (such as `curl | sh`
+patterns).
+
 Licensing
 =========
 
