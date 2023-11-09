@@ -228,10 +228,10 @@ DOWNLOADS = {
     # using the latest available.
     # Remember to update OPENSSL_VERSION_INFO in verify_distribution.py whenever upgrading.
     "openssl-3.0": {
-        "url": "https://www.openssl.org/source/openssl-3.0.11.tar.gz",
-        "size": 15198318,
-        "sha256": "b3425d3bb4a2218d0697eb41f7fc0cdede016ed19ca49d168b78e8d947887f55",
-        "version": "3.0.11",
+        "url": "https://www.openssl.org/source/openssl-3.0.12.tar.gz",
+        "size": 15204575,
+        "sha256": "f93c9e8edde5e9166119de31755fc87b4aa34863662f67ddfcba14d0b6b69b61",
+        "version": "3.0.12",
         "library_names": ["crypto", "ssl"],
         "licenses": ["Apache-2.0"],
         "license_file": "LICENSE.openssl-3.txt",
