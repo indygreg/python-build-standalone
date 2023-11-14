@@ -438,6 +438,15 @@ if [ -n "${CROSS_COMPILING}" ]; then
     # The /dev/* check also fails for some reason.
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptc=no"
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_file__dev_ptmx=no"
+
+    # When cross-compiling, configure cannot detect if the target system has a
+    # working tzset function in C. This influences whether or not the compiled
+    # python will end up with the time.tzset function or not. All linux targets,
+    # however, should have a working tzset function via libc. So we manually
+    # indicate this to the configure script.
+    if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
+        CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_working_tzset=yes"
+    fi
 fi
 
 CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
