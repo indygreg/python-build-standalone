@@ -95,8 +95,8 @@ jobs:
             type=registry,ref=ghcr.io/${{ env.REPO_NAME }}:${{ matrix.image }}-${{ env.GIT_REF_NAME }}
             type=registry,ref=ghcr.io/${{ env.REPO_NAME }}:${{ matrix.image }}-main
             type=registry,ref=ghcr.io/indygreg/python-build-standalone:${{ matrix.image }}-main
-          cache-to: |
-            type=registry,ref=ghcr.io/${{ env.REPO_NAME }}:${{ matrix.image }}-${{ env.GIT_REF_NAME }},ignore-errors=true
+          # cache-to: |
+          #   type=registry,ref=ghcr.io/${{ env.REPO_NAME }}:${{ matrix.image }}-${{ env.GIT_REF_NAME }},ignore-errors=true
           outputs: |
             type=docker,dest=build/image-${{ matrix.image }}.tar
 
