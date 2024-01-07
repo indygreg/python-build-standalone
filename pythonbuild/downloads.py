@@ -127,10 +127,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.libffi.txt",
     },
     "libpthread-stubs": {
-        "url": "https://www.x.org/archive/individual/lib/libpthread-stubs-0.1.tar.gz",
-        "size": 301448,
-        "sha256": "f8f7ca635fa54bcaef372fd5fd9028f394992a743d73453088fcadc1dbf3a704",
-        "version": "0.1",
+        "url": "https://www.x.org/archive/individual/lib/libpthread-stubs-0.5.tar.gz",
+        "size": 74938,
+        "sha256": "593196cc746173d1e25cb54a93a87fd749952df68699aab7e02c085530e87747",
+        "version": "0.5",
     },
     "libX11": {
         "url": "https://www.x.org/archive/individual/lib/libX11-1.6.12.tar.gz",
