@@ -228,6 +228,13 @@ if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
     patch -p1 -i ${ROOT}/patch-checksharedmods-disable.patch
 fi
 
+# CPython < 3.11 always linked against libcrypt. We backport part of
+# upstream commit be21706f3760bec8bd11f85ce02ed6792b07f51f to avoid this
+# behavior.
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_10}" ]; then
+    patch -p1 -i ${ROOT}/patch-configure-crypt-no-modify-libs.patch
+fi
+
 # We patched configure.ac above. Reflect those changes.
 autoconf
 

@@ -62,7 +62,6 @@ const RECOGNIZED_TRIPLES: &[&str] = &[
 const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     // LSB set.
     "libc.so.6",
-    "libcrypt.so.1",
     "libdl.so.2",
     "libm.so.6",
     "libpthread.so.0",
@@ -863,6 +862,14 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
         "$ORIGIN/../lib/libpython{}d.so.1.0",
         python_major_minor
     ));
+
+    // Allow the _crypt extension module - and only it - to link against libcrypt,
+    // which is no longer universally present in Linux distros.
+    if let Some(filename) = path.file_name() {
+        if filename.to_string_lossy().starts_with("_crypt") {
+            allowed_libraries.push("libcrypt.so.1".to_string());
+        }
+    }
 
     let wanted_glibc_max_version = GLIBC_MAX_VERSION_BY_TRIPLE
         .get(target_triple)
