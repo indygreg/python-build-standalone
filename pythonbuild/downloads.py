@@ -349,6 +349,8 @@ DOWNLOADS = {
         "sha256": "1b1bcdf91221e78c6c33738667a57bd9aaa63d5953174ad8ed9929296741c9f5",
         "version": "7.3.0",
     },
+    # Newer versions from at least 2023 have build failures for reasons we haven't
+    # fully investigated.
     "xorgproto": {
         "url": "https://www.x.org/archive/individual/proto/xorgproto-2019.1.tar.gz",
         "size": 1119813,
