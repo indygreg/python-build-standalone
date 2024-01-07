@@ -1517,18 +1517,19 @@ def hack_source_files(source_path: pathlib.Path, static: bool, python_version: s
     # which it isn't in static builds. We know what the version should be, so
     # we go ahead and set it.
     if static:
+        majmin = ".".join(python_version.split(".")[0:2])
         # Source changed in 3.10.
         try:
             static_replace_in_file(
                 source_path / "Python" / "sysmodule.c",
                 SYSMODULE_WINVER_SEARCH,
-                SYSMODULE_WINVER_REPLACE % python_version[0:3].encode("ascii"),
+                SYSMODULE_WINVER_REPLACE % majmin.encode("ascii"),
             )
         except NoSearchStringError:
             static_replace_in_file(
                 source_path / "Python" / "sysmodule.c",
                 SYSMODULE_WINVER_SEARCH_38,
-                SYSMODULE_WINVER_REPLACE_38 % python_version[0:3].encode("ascii"),
+                SYSMODULE_WINVER_REPLACE_38 % majmin.encode("ascii"),
             )
 
     # Producing statically linked binaries invalidates assumptions in the
