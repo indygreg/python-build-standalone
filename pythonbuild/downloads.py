@@ -362,10 +362,10 @@ DOWNLOADS = {
         "version": "7.0.31",
     },
     "xtrans": {
-        "url": "https://www.x.org/archive/individual/lib/xtrans-1.4.0.tar.gz",
-        "size": 225941,
-        "sha256": "48ed850ce772fef1b44ca23639b0a57e38884045ed2cbb18ab137ef33ec713f9",
-        "version": "1.4.0",
+        "url": "https://www.x.org/archive/individual/lib/xtrans-1.5.0.tar.gz",
+        "size": 230197,
+        "sha256": "a806f8a92f879dcd0146f3f1153fdffe845f2fc0df9b1a26c19312b7b0a29c86",
+        "version": "1.5.0",
     },
     "xz": {
         "url": "https://tukaani.org/xz/xz-5.2.12.tar.gz",
