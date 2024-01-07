@@ -150,11 +150,13 @@ DOWNLOADS = {
         "licenses": ["MIT"],
         "license_file": "LICENSE.libXau.txt",
     },
+    # Newer versions of libxcb require a modern Python to build. We can take this
+    # dependency once we feel like doing the work.
     "libxcb": {
-        "url": "https://xcb.freedesktop.org/dist/libxcb-1.13.1.tar.gz",
-        "size": 636748,
-        "sha256": "f09a76971437780a602303170fd51b5f7474051722bc39d566a272d2c4bde1b5",
-        "version": "1.13.1",
+        "url": "https://xcb.freedesktop.org/dist/libxcb-1.14.tar.gz",
+        "size": 640322,
+        "sha256": "2c7fcddd1da34d9b238c9caeda20d3bd7486456fc50b3cc6567185dbd5b0ad02",
+        "version": "1.14",
         "library_names": ["xcb"],
         "licenses": ["MIT"],
         "license_file": "LICENSE.libxcb.txt",
