@@ -332,10 +332,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.libuuid.txt",
     },
     "x11-util-macros": {
-        "url": "https://www.x.org/archive/individual/util/util-macros-1.19.2.tar.gz",
-        "size": 103001,
-        "sha256": "9225c45c3de60faf971979a55a5536f3562baa4b6f02246c23e98ac0c09a75b7",
-        "version": "1.19.2",
+        "url": "https://www.x.org/archive/individual/util/util-macros-1.20.0.tar.gz",
+        "size": 104931,
+        "sha256": "8daf36913d551a90fd1013cb078401375dabae021cb4713b9b256a70f00eeb74",
+        "version": "1.20.0",
     },
     "xcb-proto": {
         "url": "https://www.x.org/archive/individual/proto/xcb-proto-1.14.1.tar.gz",
