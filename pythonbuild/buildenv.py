@@ -44,7 +44,7 @@ class ContainerContext(object):
 
         p = build_dir / basename
         self.copy_file(p)
-        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name], user="root")
+        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name])
 
     def install_artifact_archive(
         self, build_dir, package_name, target_triple, optimizations
@@ -60,7 +60,7 @@ class ContainerContext(object):
         p = build_dir / basename
 
         self.copy_file(p)
-        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name], user="root")
+        self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name])
 
     def install_toolchain(
         self,
