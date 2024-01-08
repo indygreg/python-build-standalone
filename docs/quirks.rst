@@ -454,3 +454,12 @@ distros like Debian/Ubuntu and RedHat).
 Until we have a better solution here, just understand that anything looking
 at ``sysconfig`` could resolve non-existent paths or names of binaries that
 don't exist on the current machine.
+
+Starting with the Linux and macOS distributions released in 2024, we do
+normalize some values in these files at build time. Normalizations include:
+
+* Removing compiler flags that are non-portable.
+* Removing references to build paths (e.g. ``/tools`` on Linux).
+
+If there is a build time normalization that you think should be performed to
+make distributions more portable, please file a GitHub issue.

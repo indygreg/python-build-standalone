@@ -550,6 +550,69 @@ fi
 ${BUILD_PYTHON} "${PIP_WHEEL}/pip" install --prefix="${ROOT}/out/python/install" --no-cache-dir --no-index "${PIP_WHEEL}"
 ${BUILD_PYTHON} "${PIP_WHEEL}/pip" install --prefix="${ROOT}/out/python/install" --no-cache-dir --no-index "${SETUPTOOLS_WHEEL}"
 
+# Hack up the system configuration settings to aid portability.
+#
+# The goal here is to make the system configuration as generic as possible so
+# that a) it works on as many machines as possible b) doesn't leak details
+# about the build environment, which is non-portable.
+cat > ${ROOT}/hack_sysconfig.py << EOF
+import os
+import sys
+import sysconfig
+
+ROOT = sys.argv[1]
+
+MAJMIN = ".".join([str(sys.version_info[0]), str(sys.version_info[1])])
+PYTHON_CONFIG = os.path.join(ROOT, "install", "bin", "python%s-config" % MAJMIN)
+PLATFORM_CONFIG = os.path.join(ROOT, sysconfig.get_config_var("LIBPL").lstrip("/"))
+MAKEFILE = os.path.join(PLATFORM_CONFIG, "Makefile")
+SYSCONFIGDATA = os.path.join(
+    ROOT,
+    "install",
+    "lib",
+    "python%s" % MAJMIN,
+    "%s.py" % sysconfig._get_sysconfigdata_name(),
+)
+
+def replace_in_file(path, search, replace):
+    with open(path, "rb") as fh:
+        data = fh.read()
+
+    if search.encode("utf-8") in data:
+        print("replacing '%s' in %s with '%s'" % (search, path, replace))
+    else:
+        print("warning: '%s' not in %s" % (search, path))
+
+    data = data.replace(search.encode("utf-8"), replace.encode("utf-8"))
+
+    with open(path, "wb") as fh:
+        fh.write(data)
+
+
+def replace_in_all(search, replace):
+    replace_in_file(PYTHON_CONFIG, search, replace)
+    replace_in_file(MAKEFILE, search, replace)
+    replace_in_file(SYSCONFIGDATA, search, replace)
+
+
+# -fdebug-default-version is Clang only. Strip so compiling works on GCC.
+replace_in_all("-fdebug-default-version=4", "")
+
+# Remove some build environment paths.
+# This is /tools on Linux but can be a dynamic path / temp directory on macOS
+# and when not using container builds.
+tools_path = os.environ["TOOLS_PATH"]
+replace_in_all("-I%s/deps/include/ncursesw" % tools_path, "")
+replace_in_all("-I%s/deps/include/uuid" % tools_path, "")
+replace_in_all("-I%s/deps/include" % tools_path, "")
+replace_in_all("-I%s/deps/libedit/include" % tools_path, "")
+replace_in_all("-L%s/deps/libedit/lib" % tools_path, "")
+replace_in_all("-L%s/deps/lib" % tools_path, "")
+
+EOF
+
+${BUILD_PYTHON} ${ROOT}/hack_sysconfig.py ${ROOT}/out/python
+
 # Emit metadata to be used in PYTHON.json.
 cat > ${ROOT}/generate_metadata.py << EOF
 import codecs
