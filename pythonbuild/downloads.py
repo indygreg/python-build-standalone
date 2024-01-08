@@ -168,10 +168,10 @@ DOWNLOADS = {
         "version": "14.0.3+20220508",
     },
     "llvm-17-x86_64-linux": {
-        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20230926/llvm-17.0.1+20230926-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
-        "size": 229558479,
-        "sha256": "427cc6f515f1fff87710cc264fb235570e245678fe0f655fad26d78f61fcb016",
-        "version": "17.0.1+20230926",
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240107/llvm-17.0.6+20240107-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
+        "size": 229334033,
+        "sha256": "bf8fd56f0e56eba4f3d4b8c10d5e83b314878c3b4bae442a049adf2aeeed2784",
+        "version": "17.0.6+20240107",
     },
     "llvm-aarch64-macos": {
         "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20230506/llvm-16.0.3+20230506-aarch64-apple-darwin.tar.zst",
