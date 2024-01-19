@@ -382,7 +382,7 @@ DOWNLOADS = {
         "license_public_domain": True,
     },
     "zlib": {
-        "url": "https://zlib.net/fossils/zlib-1.2.13.tar.gz",
+        "url": "https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.gz",
         "size": 1497445,
         "sha256": "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
         "version": "1.2.13",
