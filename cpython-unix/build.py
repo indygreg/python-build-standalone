@@ -1023,6 +1023,7 @@ def main():
             "inputproto",
             "kbproto",
             "libffi-3.3",
+            "libffi",
             "libpthread-stubs",
             "m4",
             "mpdecimal",

@@ -92,7 +92,7 @@ aarch64-apple-darwin:
     - autoconf
     - bzip2
     - expat
-    - libffi-3.3
+    - libffi
     - m4
     - mpdecimal
     - openssl-3.0
@@ -136,7 +136,7 @@ aarch64-apple-ios:
     - autoconf
     - bzip2
     - expat
-    - libffi-3.3
+    - libffi
     - m4
     - mpdecimal
     - openssl-3.0
@@ -164,7 +164,7 @@ aarch64-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -242,7 +242,7 @@ armv7-unknown-linux-gnueabi:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -280,7 +280,7 @@ armv7-unknown-linux-gnueabihf:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -324,7 +324,7 @@ i686-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -362,7 +362,7 @@ mips-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -400,7 +400,7 @@ mipsel-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -438,7 +438,7 @@ ppc64le-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -476,7 +476,7 @@ s390x-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -576,7 +576,7 @@ x86_64-apple-darwin:
     - autoconf
     - bzip2
     - expat
-    - libffi-3.3
+    - libffi
     - m4
     - mpdecimal
     - openssl-3.0
@@ -620,7 +620,7 @@ x86_64-apple-ios:
     - autoconf
     - bzip2
     - expat
-    - libffi-3.3
+    - libffi
     - m4
     - mpdecimal
     - openssl-3.0
@@ -732,7 +732,7 @@ x86_64-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -777,7 +777,7 @@ x86_64_v2-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -822,7 +822,7 @@ x86_64_v3-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
@@ -867,7 +867,7 @@ x86_64_v4-unknown-linux-gnu:
     - bzip2
     - expat
     - libedit
-    - libffi-3.3
+    - libffi
     - libX11
     - libXau
     - libxcb
