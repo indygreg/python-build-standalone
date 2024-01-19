@@ -117,8 +117,8 @@ $(OUTDIR)/inputproto-$(INPUTPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_D
 $(OUTDIR)/kbproto-$(KBPROTO_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-kbproto.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) kbproto
 
-$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi.sh
-	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libffi
+$(OUTDIR)/libffi-3.3-$(LIBFFI_3.3_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libffi-3.3.sh
+	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libffi-3.3
 
 $(OUTDIR)/libpthread-stubs-$(LIBPTHREAD_STUBS_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-libpthread-stubs.sh $(OUTDIR)/image-$(DOCKER_IMAGE_BUILD).tar
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) libpthread-stubs
@@ -273,7 +273,7 @@ PYTHON_DEPENDS := \
     $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_EXPAT),$(OUTDIR)/expat-$(EXPAT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(if $(NEED_LIBFFI),$(OUTDIR)/libffi-$(LIBFFI_VERSION)-$(PACKAGE_SUFFIX).tar) \
+    $(if $(NEED_LIBFFI_3_3),$(OUTDIR)/libffi-3.3-$(LIBFFI_3.3_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_m4),$(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_MPDECIMAL),$(OUTDIR)/mpdecimal-$(MPDECIMAL_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_NCURSES),$(OUTDIR)/ncurses-$(NCURSES_VERSION)-$(PACKAGE_SUFFIX).tar) \

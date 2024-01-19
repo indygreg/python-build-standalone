@@ -9,9 +9,9 @@ ROOT=`pwd`
 
 export PATH=${TOOLS_PATH}/${TOOLCHAIN}/bin:${TOOLS_PATH}/host/bin:$PATH
 
-tar -xf libffi-${LIBFFI_VERSION}.tar.gz
+tar -xf libffi-${LIBFFI_3_3_VERSION}.tar.gz
 
-pushd libffi-${LIBFFI_VERSION}
+pushd libffi-${LIBFFI_3_3_VERSION}
 
 EXTRA_CONFIGURE=
 

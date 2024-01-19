@@ -1022,7 +1022,7 @@ def main():
             "expat",
             "inputproto",
             "kbproto",
-            "libffi",
+            "libffi-3.3",
             "libpthread-stubs",
             "m4",
             "mpdecimal",
