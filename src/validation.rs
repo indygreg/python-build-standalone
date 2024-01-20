@@ -476,6 +476,8 @@ const MACHO_ALLOWED_WEAK_SYMBOLS_38_NON_AARCH64: &[&str] = &[
     // Internal to Apple SDK. However, the symbol isn't guarded properly in some Apple
     // SDKs. See https://github.com/indygreg/PyOxidizer/issues/373.
     "___darwin_check_fd_set_overflow",
+    // Used by compiler-rt in 17.0.0. LLVM commit b653a2823fe4b4c9c6d85cfe119f31d8e70c2fa0.
+    "__availability_version_check",
     // Appears to get inserted by Clang.
     "_dispatch_once_f",
     // Used by CPython. But is has runtime availability guards in 3.8 (one of the few
