@@ -1,3 +1,5 @@
+name: Linux Python build
+
 on:
   push:
   pull_request:
