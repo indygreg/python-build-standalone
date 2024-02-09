@@ -1,3 +1,5 @@
+name: MacOS Python build
+
 on:
   push:
   pull_request:
