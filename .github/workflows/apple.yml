@@ -195,9 +195,9 @@ jobs:
           ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
       - name: Upload Distributions
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
+          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}-${{ matrix.build.optimizations }}
           path: dist/*
 
       - uses: actions/checkout@v4

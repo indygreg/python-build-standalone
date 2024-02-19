@@ -92,7 +92,7 @@ jobs:
           .\pythonbuild.exe validate-distribution --run $Dists
 
       - name: Upload Distributions
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.py }}-${{ matrix.vcvars }}
+          name: ${{ matrix.py }}-${{ matrix.vcvars }}-${{ matrix.profile }}
           path: dist/*
