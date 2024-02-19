@@ -106,9 +106,9 @@ jobs:
           zstd -v -T0 -6 --rm build/image-*.tar
 
       - name: Upload Docker Image
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: images
+          name: image-${{ matrix.image }}
           path: build/image-*
 
   build:
@@ -908,10 +908,11 @@ jobs:
           path: build
 
       - name: Download images
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: images
+          pattern: image-*
           path: build
+          merge-multiple: true
 
       - name: Load Docker Images
         run: |
