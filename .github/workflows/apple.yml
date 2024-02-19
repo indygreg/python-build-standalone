@@ -7,7 +7,7 @@ jobs:
   pythonbuild:
     runs-on: 'macos-11'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@v1
@@ -164,7 +164,7 @@ jobs:
       - pythonbuild
     runs-on: 'macos-11'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -194,7 +194,7 @@ jobs:
 
           ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: 'phracker/MacOSX-SDKs'
           ref: master

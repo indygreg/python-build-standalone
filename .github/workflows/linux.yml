@@ -12,7 +12,7 @@ jobs:
           sudo apt update
           sudo apt install -y --no-install-recommends libssl-dev pkg-config
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@v1
@@ -55,7 +55,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -892,7 +892,7 @@ jobs:
       - image
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
