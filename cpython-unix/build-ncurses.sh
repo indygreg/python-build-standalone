@@ -20,7 +20,7 @@ if [[ -n "${CROSS_COMPILING}" && "${PYBUILD_PLATFORM}" != "macos" ]]; then
   echo "building host ncurses to provide modern tic for cross-compile"
 
   pushd ncurses-${NCURSES_VERSION}
-  CC="${HOST_CC}" ./configure --prefix=${TOOLS_PATH}/host --without-cxx --without-tests --without-manpages --enable-widec
+  CC="${HOST_CC}" ./configure --prefix=${TOOLS_PATH}/host --without-cxx --without-tests --without-manpages --enable-widec --with-terminfo-dirs=/usr/share/terminfo:/lib/terminfo
   make -j ${NUM_CPUS}
   make -j ${NUM_CPUS} install
 
