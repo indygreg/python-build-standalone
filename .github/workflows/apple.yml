@@ -5,7 +5,7 @@ on:
     - cron: '13 11 * * *'
 jobs:
   pythonbuild:
-    runs-on: 'macos-11'
+    runs-on: 'macos-13'
     steps:
       - uses: actions/checkout@v4
 
@@ -130,87 +130,87 @@ jobs:
           # noopt because it doesn't provide any compelling advantages over PGO
           # or LTO builds.
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.8'
             optimizations: 'debug'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.8'
             optimizations: 'lto'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.8'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.8'
             optimizations: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.9'
             optimizations: 'debug'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.9'
             optimizations: 'lto'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.9'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.9'
             optimizations: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.10'
             optimizations: 'debug'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.10'
             optimizations: 'lto'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.10'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.10'
             optimizations: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.11'
             optimizations: 'debug'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.11'
             optimizations: 'lto'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.11'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.11'
             optimizations: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.12'
             optimizations: 'debug'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.12'
             optimizations: 'lto'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.12'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
-            runner: macos-11
+            runner: macos-13
             py: 'cpython-3.12'
             optimizations: 'pgo+lto'
     needs:
@@ -237,7 +237,7 @@ jobs:
           if [ "${{ matrix.build.target_triple }}" = "aarch64-apple-darwin" ]; then
             export APPLE_SDK_PATH=/Applications/Xcode_15.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk
           elif [ "${{ matrix.build.target_triple }}" = "x86_64-apple-darwin" ]; then
-            export APPLE_SDK_PATH=/Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+            export APPLE_SDK_PATH=/Applications/Xcode_15.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk
           else
             echo "unhandled target triple: ${{ matrix.build.target_triple }}"
             exit 1
