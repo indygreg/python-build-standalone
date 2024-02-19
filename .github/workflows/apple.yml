@@ -194,6 +194,12 @@ jobs:
 
           ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
 
+      - name: Upload Distributions
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
+          path: dist/*
+
       - uses: actions/checkout@v4
         with:
           repository: 'phracker/MacOSX-SDKs'
@@ -209,9 +215,3 @@ jobs:
           fi
 
           build/pythonbuild validate-distribution --macos-sdks-path macosx-sdks ${EXTRA_ARGS} dist/*.tar.zst
-
-      - name: Upload Distributions
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}
-          path: dist/*
