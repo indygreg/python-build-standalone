@@ -36,7 +36,7 @@ jobs:
           cargo build --release
 
       - name: Upload pythonbuild Executable
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pythonbuild
           path: target/release/pythonbuild
@@ -902,7 +902,7 @@ jobs:
           python-version: '3.11'
 
       - name: Download pythonbuild
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pythonbuild
           path: build
