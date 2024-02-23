@@ -281,11 +281,11 @@ DOWNLOADS = {
     },
     # Remember to update verify_distribution.py when version changed.
     "sqlite": {
-        "url": "https://www.sqlite.org/2024/sqlite-autoconf-3450000.tar.gz",
-        "size": 3231697,
-        "sha256": "72887d57a1d8f89f52be38ef84a6353ce8c3ed55ada7864eb944abd9a495e436",
-        "version": "3450000",
-        "actual_version": "3.45.0.0",
+        "url": "https://www.sqlite.org/2024/sqlite-autoconf-3450100.tar.gz",
+        "size": 3232682,
+        "sha256": "cd9c27841b7a5932c9897651e20b86c701dd740556989b01ca596fcfa3d49a0a",
+        "version": "3450100",
+        "actual_version": "3.45.1.0",
         "library_names": ["sqlite3"],
         "licenses": [],
         "license_file": "LICENSE.sqlite.txt",
