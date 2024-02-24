@@ -668,10 +668,7 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 // We didn't build ctypes_test until 3.9.
 // We didn't build some test extensions until 3.9.
 
-const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &[
-    "_sha256",
-    "_sha512",
-    "parser"];
+const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["_sha256", "_sha512", "parser"];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
     "_peg_parser",
@@ -686,7 +683,10 @@ const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
 const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
     "_sha256",
     "_sha512",
-    "_uuid", "_xxsubinterpreters", "_zoneinfo"];
+    "_uuid",
+    "_xxsubinterpreters",
+    "_zoneinfo",
+];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
     "_sha256",
@@ -1499,7 +1499,6 @@ fn validate_extension_modules(
         wanted.insert("_uuid");
     }
 
-
     // _wmi is Windows only on 3.12+.
     if python_major_minor == "3.12" && is_windows {
         wanted.insert("_wmi");
@@ -1542,10 +1541,9 @@ fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<
         }
     }
 
-    let wanted_platform_tag = PLATFORM_TAG_BY_TRIPLE
+    let wanted_platform_tag = *PLATFORM_TAG_BY_TRIPLE
         .get(triple)
-        .ok_or_else(|| anyhow!("platform tag not defined for triple {}", triple))?
-        .clone();
+        .ok_or_else(|| anyhow!("platform tag not defined for triple {}", triple))?;
 
     if json.python_platform_tag != wanted_platform_tag {
         errors.push(format!(
