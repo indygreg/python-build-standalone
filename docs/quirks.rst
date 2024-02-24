@@ -13,6 +13,12 @@ If you attempt to run ``python`` and the backspace key doesn't
 erase characters or the arrow keys don't work as expected, this
 is because the executable can't find the *terminfo database*.
 
+A telltale sign of this is the Python REPL printing the following
+on startup::
+
+   Cannot read termcap database;
+   using dumb terminal settings.
+
 When you type a special key like the backspace key, this is
 registered as a key press. There is special software (typically
 ``readline`` or ``libedit``) that most interactive programs use
@@ -59,6 +65,20 @@ e.g.::
 The macOS distributions built with this project should automatically
 use the terminfo database in ``/usr/share/terminfo``. Please file
 a bug report if the macOS distributions do not behave as expected.
+
+Starting in the first release after 20240107, the Linux distributions are
+configured to automatically use the terminfo database in ``/etc/terminfo``,
+``/lib/terminfo``, and ``/usr/share/terminfo``.
+
+Also starting in the first release after 20240107, the terminfo database
+is distributed in the ``share/terminfo`` directory (``../../share/terminfo``
+relative to the ``bin/python3`` executable) in Linux distributions. Note
+that ncurses and derived libraries don't know how to find this directory
+since they are configured to use absolute paths to the terminfo database
+and the absolute path of the Python distribution is obviously not known
+at build time! So actually using this bundled terminfo database will
+require custom code setting ``TERMINFO_DIRS`` before
+ncurses/libedit/readline are loaded.
 
 .. _quirk_tcl:
 

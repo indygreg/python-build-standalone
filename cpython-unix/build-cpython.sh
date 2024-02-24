@@ -884,6 +884,11 @@ if [ -d "${TOOLS_PATH}/deps/lib/tcl8" ]; then
     fi
 fi
 
+# Copy the terminfo database if present.
+if [ -d "${TOOLS_PATH}/deps/usr/share/terminfo" ]; then
+  cp -av ${TOOLS_PATH}/deps/usr/share/terminfo ${ROOT}/out/python/install/share/
+fi
+
 # config.c defines _PyImport_Inittab and extern references to modules, which
 # downstream consumers may want to strip. We bundle config.c and config.c.in so
 # a custom one can be produced downstream.
