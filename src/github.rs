@@ -2,13 +2,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use bytes::Bytes;
+use std::str::FromStr;
+use tokio::net::TcpStream;
 use {
     crate::release::{produce_install_only, RELEASE_TRIPLES},
     anyhow::{anyhow, Result},
     clap::ArgMatches,
     futures::StreamExt,
+    http::Method,
     octocrab::{
         models::{repos::Release, workflows::WorkflowListArtifact},
+        params::actions::ArchiveFormat,
         Octocrab, OctocrabBuilder,
     },
     rayon::prelude::*,
@@ -22,20 +27,27 @@ use {
     zip::ZipArchive,
 };
 
-async fn fetch_artifact(client: &Octocrab, artifact: WorkflowListArtifact) -> Result<bytes::Bytes> {
+async fn fetch_artifact(
+    client: &Octocrab,
+    org: &str,
+    repo: &str,
+    artifact: WorkflowListArtifact,
+) -> Result<bytes::Bytes> {
     println!("downloading {}", artifact.name);
+
     let res = client
-        .execute(client.request_builder(artifact.archive_download_url, reqwest::Method::GET))
+        .actions()
+        .download_artifact(org, repo, artifact.id, ArchiveFormat::Zip)
         .await?;
 
-    Ok(res.bytes().await?)
+    Ok(res)
 }
 
 async fn upload_release_artifact(
-    client: &Octocrab,
+    auth_token: String,
     release: &Release,
     filename: String,
-    data: Vec<u8>,
+    data: Bytes,
     dry_run: bool,
 ) -> Result<()> {
     if release.assets.iter().any(|asset| asset.name == filename) {
@@ -54,17 +66,34 @@ async fn upload_release_artifact(
 
     println!("uploading to {}", url);
 
-    let request = client
-        .request_builder(url, reqwest::Method::POST)
+    // Octocrab doesn't yet support release artifact upload. And the low-level HTTP API
+    // forces the use of strings on us. So we have to make our own HTTP client.
+
+    let uri = hyper::Uri::from_str(url.as_str())?;
+
+    let request = http::request::Builder::new()
+        .method(Method::PUT)
+        .uri(uri)
+        .header("Authorization", format!("Bearer {auth_token}"))
         .header("Content-Length", data.len())
         .header("Content-Type", "application/x-tar")
-        .body(data);
+        .body(http_body_util::Full::new(data))?;
 
     if dry_run {
         return Ok(());
     }
 
-    let response = client.execute(request).await?;
+    let host = url.host().ok_or_else(|| anyhow!("no host in URL"))?;
+    let port = url.port().unwrap_or(443);
+    let address = format!("{host}:{port}");
+
+    let stream = TcpStream::connect(address).await?;
+    let io = hyper_util::rt::TokioIo::new(stream);
+    let (mut sender, conn) = hyper::client::conn::http1::handshake(io).await?;
+
+    conn.await?;
+
+    let response = sender.send_request(request).await?;
 
     if !response.status().is_success() {
         return Err(anyhow!("HTTP {}", response.status()));
@@ -167,7 +196,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                 continue;
             }
 
-            fs.push(fetch_artifact(&client, artifact));
+            fs.push(fetch_artifact(&client, org, repo, artifact));
         }
     }
 
@@ -349,9 +378,11 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         return Err(anyhow!("missing release artifacts"));
     }
 
-    let client = OctocrabBuilder::new().personal_token(token).build()?;
-    let repo = client.repos(organization, repo);
-    let releases = repo.releases();
+    let client = OctocrabBuilder::new()
+        .personal_token(token.clone())
+        .build()?;
+    let repo_handler = client.repos(organization, repo);
+    let releases = repo_handler.releases();
 
     let release = if let Ok(release) = releases.get_by_tag(tag).await {
         release
@@ -371,7 +402,7 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
             continue;
         }
 
-        let file_data = std::fs::read(dist_dir.join(&source))?;
+        let file_data = Bytes::copy_from_slice(&std::fs::read(dist_dir.join(&source))?);
 
         let mut digest = Sha256::new();
         digest.update(&file_data);
@@ -381,17 +412,17 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         digests.insert(dest.clone(), digest.clone());
 
         fs.push(upload_release_artifact(
-            &client,
+            token.clone(),
             &release,
             dest.clone(),
             file_data,
             dry_run,
         ));
         fs.push(upload_release_artifact(
-            &client,
+            token.clone(),
             &release,
             format!("{}.sha256", dest),
-            format!("{}\n", digest).into_bytes(),
+            Bytes::copy_from_slice(format!("{}\n", digest).as_bytes()),
             dry_run,
         ));
     }
@@ -411,10 +442,10 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     std::fs::write(dist_dir.join("SHA256SUMS"), shasums.as_bytes())?;
 
     upload_release_artifact(
-        &client,
+        token.clone(),
         &release,
         "SHA256SUMS".to_string(),
-        shasums.clone().into_bytes(),
+        Bytes::copy_from_slice(shasums.as_bytes()),
         dry_run,
     )
     .await?;
@@ -431,13 +462,19 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         .find(|x| x.name == "SHA256SUMS")
         .ok_or_else(|| anyhow!("unable to find SHA256SUMs release asset"))?;
 
-    let asset_bytes = client
-        .execute(client.request_builder(shasums_asset.browser_download_url, reqwest::Method::GET))
-        .await?
-        .bytes()
+    let mut stream = client
+        .repos(organization, repo)
+        .releases()
+        .stream_asset(shasums_asset.id)
         .await?;
 
-    if shasums != asset_bytes {
+    let mut asset_bytes = Vec::<u8>::new();
+
+    while let Some(chunk) = stream.next().await {
+        asset_bytes.extend(chunk?.as_ref());
+    }
+
+    if shasums.as_bytes() != asset_bytes {
         return Err(anyhow!("SHA256SUM content mismatch; release might be bad!"));
     }
 
