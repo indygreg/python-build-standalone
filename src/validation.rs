@@ -6,6 +6,7 @@ use {
     crate::{json::*, macho::*},
     anyhow::{anyhow, Context, Result},
     clap::ArgMatches,
+    normalize_path::NormalizePath,
     object::{
         elf::{
             FileHeader32, FileHeader64, ET_DYN, ET_EXEC, STB_GLOBAL, STB_WEAK, STV_DEFAULT,
@@ -1675,7 +1676,9 @@ fn validate_distribution(
         seen_paths.insert(path.clone());
 
         if let Some(link_name) = entry.link_name()? {
-            seen_symlink_targets.insert(path.parent().unwrap().join(link_name));
+            let target = path.parent().unwrap().join(link_name).normalize();
+
+            seen_symlink_targets.insert(target);
         }
 
         // If this path starts with a path referenced in wanted_python_paths,
