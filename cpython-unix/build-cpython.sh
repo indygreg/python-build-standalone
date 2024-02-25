@@ -772,6 +772,10 @@ if [ ! -f ${ROOT}/out/python/install/bin/python3 ]; then
     exit 1
 fi
 
+ln -sf \
+    "$(readlink ${ROOT}/out/python/install/bin/python3)" \
+    ${ROOT}/out/python/install/bin/python
+
 # Fixup shebangs in Python scripts to reference the local python interpreter.
 cat > ${ROOT}/fix_shebangs.py << EOF
 import os

@@ -1669,6 +1669,9 @@ fn validate_distribution(
         ));
     }
 
+    let mut bin_python = None;
+    let mut bin_python3 = None;
+
     for entry in entries {
         let mut entry = entry.map_err(|e| anyhow!("failed to iterate over archive: {}", e))?;
         let path = entry.path()?.to_path_buf();
@@ -1742,6 +1745,53 @@ fn validate_distribution(
             context
                 .errors
                 .push("python/PYTHON.json seen twice".to_string());
+        }
+
+        if path == PathBuf::from("python/install/bin/python") {
+            if let Some(link) = entry.link_name()? {
+                bin_python = Some(link.to_string_lossy().to_string());
+            } else {
+                context
+                    .errors
+                    .push("python/install/bin/python is not a symlink".to_string());
+            }
+        }
+
+        if path == PathBuf::from("python/install/bin/python3") {
+            if let Some(link) = entry.link_name()? {
+                bin_python3 = Some(link.to_string_lossy().to_string());
+            } else {
+                context
+                    .errors
+                    .push("python/install/bin/python3 is not a symlink".to_string());
+            }
+        }
+    }
+
+    match (bin_python, bin_python3) {
+        (None, None) => {
+            if !triple.contains("-windows-") {
+                context
+                    .errors
+                    .push("install/bin/python and python3 entries missing".to_string());
+            }
+        }
+        (None, Some(_)) => {
+            context
+                .errors
+                .push("install/bin/python symlink missing".to_string());
+        }
+        (Some(_), None) => {
+            context
+                .errors
+                .push("install/bin/python3 symlink missing".to_string());
+        }
+        (Some(python), Some(python3)) => {
+            if python != python3 {
+                context.errors.push(format!(
+                    "symlink targets of install/bin/python and python3 vary: {python} !+ {python3}"
+                ));
+            }
         }
     }
 
