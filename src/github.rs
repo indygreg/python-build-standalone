@@ -2,15 +2,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use bytes::Bytes;
-use std::str::FromStr;
-use tokio::net::TcpStream;
 use {
     crate::release::{produce_install_only, RELEASE_TRIPLES},
     anyhow::{anyhow, Result},
+    bytes::Bytes,
     clap::ArgMatches,
     futures::StreamExt,
-    http::Method,
     octocrab::{
         models::{repos::Release, workflows::WorkflowListArtifact},
         params::actions::ArchiveFormat,
@@ -69,31 +66,19 @@ async fn upload_release_artifact(
     // Octocrab doesn't yet support release artifact upload. And the low-level HTTP API
     // forces the use of strings on us. So we have to make our own HTTP client.
 
-    let uri = hyper::Uri::from_str(url.as_str())?;
-
-    let request = http::request::Builder::new()
-        .method(Method::PUT)
-        .uri(uri)
-        .header("Authorization", format!("Bearer {auth_token}"))
-        .header("Content-Length", data.len())
-        .header("Content-Type", "application/x-tar")
-        .body(http_body_util::Full::new(data))?;
-
     if dry_run {
         return Ok(());
     }
 
-    let host = url.host().ok_or_else(|| anyhow!("no host in URL"))?;
-    let port = url.port().unwrap_or(443);
-    let address = format!("{host}:{port}");
-
-    let stream = TcpStream::connect(address).await?;
-    let io = hyper_util::rt::TokioIo::new(stream);
-    let (mut sender, conn) = hyper::client::conn::http1::handshake(io).await?;
-
-    conn.await?;
-
-    let response = sender.send_request(request).await?;
+    let response = reqwest::Client::builder()
+        .build()?
+        .put(url)
+        .header("Authorization", format!("Bearer {auth_token}"))
+        .header("Content-Length", data.len())
+        .header("Content-Type", "application/x-tar")
+        .body(data)
+        .send()
+        .await?;
 
     if !response.status().is_success() {
         return Err(anyhow!("HTTP {}", response.status()));
