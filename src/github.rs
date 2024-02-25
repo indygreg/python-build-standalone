@@ -418,7 +418,7 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         ));
     }
 
-    let mut buffered = futures::stream::iter(fs).buffer_unordered(6);
+    let mut buffered = futures::stream::iter(fs).buffer_unordered(16);
 
     while let Some(res) = buffered.next().await {
         res?;
