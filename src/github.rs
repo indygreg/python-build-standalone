@@ -171,7 +171,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
         }
     }
 
-    let mut buffered = futures::stream::iter(fs).buffer_unordered(4);
+    let mut buffered = futures::stream::iter(fs).buffer_unordered(8);
 
     let mut install_paths = vec![];
 
