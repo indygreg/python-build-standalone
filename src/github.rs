@@ -130,7 +130,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
         .into_iter()
         .filter_map(|wf| {
             if matches!(
-                wf.name.as_str(),
+                wf.path.as_str(),
                 ".github/workflows/apple.yml"
                     | ".github/workflows/linux.yml"
                     | ".github/workflows/windows.yml"
@@ -143,6 +143,12 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
             }
         })
         .collect::<Vec<_>>();
+
+    if workflow_ids.is_empty() {
+        return Err(anyhow!(
+            "failed to find any workflows; this should not happen"
+        ));
+    }
 
     let mut runs: Vec<octocrab::models::workflows::Run> = vec![];
 
