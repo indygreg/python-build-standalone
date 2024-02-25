@@ -377,6 +377,7 @@ DOWNLOADS = {
         "sha256": "a806f8a92f879dcd0146f3f1153fdffe845f2fc0df9b1a26c19312b7b0a29c86",
         "version": "1.5.0",
     },
+    # TODO upgrade to 5.6+.
     "xz": {
         "url": "https://tukaani.org/xz/xz-5.2.12.tar.gz",
         "size": 2190541,
