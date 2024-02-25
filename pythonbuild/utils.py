@@ -318,8 +318,8 @@ def extract_zip_to_directory(source: pathlib.Path, dest: pathlib.Path):
         zf.extractall(dest)
 
 
-# 2021-01-01T00:00:00
-DEFAULT_MTIME = 1609488000
+# 2024-01-01T00:00:00Z
+DEFAULT_MTIME = 1704067200
 
 
 def normalize_tar_archive(data: io.BytesIO) -> io.BytesIO:
