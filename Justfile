@@ -58,6 +58,8 @@ release token commit tag:
   #!/bin/bash
   set -eo pipefail
 
+  gh release create --prerelease --notes TBD --title {{ tag }} --target {{ commit }} {{ tag }}
+
   rm -rf dist
   just release-download-distributions {{token}} {{commit}}
   datetime=$(ls dist/cpython-3.10.*-x86_64-unknown-linux-gnu-install_only-*.tar.gz  | awk -F- '{print $8}' | awk -F. '{print $1}')
