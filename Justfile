@@ -66,5 +66,25 @@ release token commit tag:
   just release-upload-distributions {{token}} ${datetime} {{tag}}
   just release-set-latest-release {{tag}}
 
+_download-stats mode:
+    build/venv.*/bin/python3 -c 'import pythonbuild.utils as u; u.release_download_statistics(mode="{{mode}}")'
+
+# Show download counts of every release asset.
 download-stats:
-    build/venv.*/bin/python3 -c 'import pythonbuild.utils as u; u.release_download_statistics()'
+    just _download-stats by_asset
+
+# Show download counts of release assets by build configuration.
+download-stats-by-build:
+    just _download-stats by_build
+
+# Show download counts of "install only" release assets by build configuration.
+download-stats-by-build-install-only:
+    just _download-stats by_build_install_only
+
+# Show download counts of release assets by release tag.
+download-stats-by-tag:
+    just _download-stats by_tag
+
+# Show a total count of all release asset downloads.
+download-stats-total:
+    just _download-stats total

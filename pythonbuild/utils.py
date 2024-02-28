@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import collections
 import gzip
 import hashlib
 import http.client
@@ -579,14 +580,49 @@ def validate_python_json(info, extension_modules):
                 )
 
 
-def release_download_statistics():
+def release_download_statistics(mode="by_asset"):
     with urllib.request.urlopen(
         "https://api.github.com/repos/indygreg/python-build-standalone/releases"
     ) as fh:
         data = json.load(fh)
 
+    by_tag = collections.Counter()
+    by_build = collections.Counter()
+    by_build_install_only = collections.Counter()
+
     for release in data:
         tag = release["tag_name"]
 
         for asset in release["assets"]:
-            print("%d\t%s\t%s" % (asset["download_count"], tag, asset["name"]))
+            name = asset["name"]
+            count = asset["download_count"]
+
+            by_tag[tag] += count
+
+            if name.endswith(".tar.zst"):
+                # cpython-3.10.2-aarch64-apple-darwin-debug-20220220T1113.tar.zst
+                build_parts = name.split("-")
+                build = "-".join(build_parts[2:-1])
+                by_build[build] += count
+            elif name.endswith("install_only.tar.gz"):
+                # cpython-3.10.13+20240224-x86_64-apple-darwin-install_only.tar.gz
+                build_parts = name.split("-")
+                build = "-".join(build_parts[2:-1])
+                by_build_install_only[build] += count
+
+            if mode == "by_asset":
+                print("%d\t%s\t%s" % (count, tag, name))
+
+    if mode == "by_build":
+        for build, count in sorted(by_build.items()):
+            print("%d\t%s" % (count, build))
+    elif mode == "by_build_install_only":
+        for build, count in sorted(by_build_install_only.items()):
+            print("%d\t%s" % (count, build))
+    elif mode == "by_tag":
+        for tag, count in sorted(by_tag.items()):
+            print("%d\t%s"% (count, tag))
+    elif mode == "total":
+        print("%d" % by_tag.total())
+    else:
+        raise Exception("unhandled display mode: %s" % mode)
