@@ -28,7 +28,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     let mut h = BTreeMap::new();
 
     // macOS.
-    let macos_suffixes = vec!["debug", "lto", "pgo", "pgo+lto"];
+    let macos_suffixes = vec!["debug", "pgo", "pgo+lto"];
     h.insert(
         "aarch64-apple-darwin",
         TripleRelease {
@@ -84,7 +84,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     );
 
     // Linux.
-    let linux_suffixes_pgo = vec!["debug", "lto", "pgo", "pgo+lto"];
+    let linux_suffixes_pgo = vec!["debug", "pgo", "pgo+lto"];
     let linux_suffixes_nopgo = vec!["debug", "lto", "noopt"];
 
     h.insert(

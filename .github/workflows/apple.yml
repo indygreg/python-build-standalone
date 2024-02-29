@@ -50,10 +50,6 @@ jobs:
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.8'
-            optimizations: 'lto'
-          - target_triple: 'aarch64-apple-darwin'
-            runner: macos-14
-            py: 'cpython-3.8'
             optimizations: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
@@ -67,10 +63,6 @@ jobs:
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.9'
-            optimizations: 'lto'
-          - target_triple: 'aarch64-apple-darwin'
-            runner: macos-14
-            py: 'cpython-3.9'
             optimizations: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
@@ -84,10 +76,6 @@ jobs:
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.10'
-            optimizations: 'lto'
-          - target_triple: 'aarch64-apple-darwin'
-            runner: macos-14
-            py: 'cpython-3.10'
             optimizations: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
@@ -101,10 +89,6 @@ jobs:
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.11'
-            optimizations: 'lto'
-          - target_triple: 'aarch64-apple-darwin'
-            runner: macos-14
-            py: 'cpython-3.11'
             optimizations: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
@@ -115,10 +99,6 @@ jobs:
             runner: macos-14
             py: 'cpython-3.12'
             optimizations: 'debug'
-          - target_triple: 'aarch64-apple-darwin'
-            runner: macos-14
-            py: 'cpython-3.12'
-            optimizations: 'lto'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.12'
@@ -138,10 +118,6 @@ jobs:
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.8'
-            optimizations: 'lto'
-          - target_triple: 'x86_64-apple-darwin'
-            runner: macos-13
-            py: 'cpython-3.8'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
@@ -155,10 +131,6 @@ jobs:
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.9'
-            optimizations: 'lto'
-          - target_triple: 'x86_64-apple-darwin'
-            runner: macos-13
-            py: 'cpython-3.9'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
@@ -172,10 +144,6 @@ jobs:
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.10'
-            optimizations: 'lto'
-          - target_triple: 'x86_64-apple-darwin'
-            runner: macos-13
-            py: 'cpython-3.10'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
@@ -189,10 +157,6 @@ jobs:
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.11'
-            optimizations: 'lto'
-          - target_triple: 'x86_64-apple-darwin'
-            runner: macos-13
-            py: 'cpython-3.11'
             optimizations: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
@@ -203,10 +167,6 @@ jobs:
             runner: macos-13
             py: 'cpython-3.12'
             optimizations: 'debug'
-          - target_triple: 'x86_64-apple-darwin'
-            runner: macos-13
-            py: 'cpython-3.12'
-            optimizations: 'lto'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.12'
