@@ -422,10 +422,6 @@ jobs:
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.8'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.8'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
@@ -439,10 +435,6 @@ jobs:
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.9'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.9'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
@@ -456,10 +448,6 @@ jobs:
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.10'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.10'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
@@ -470,10 +458,6 @@ jobs:
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.11'
             optimizations: 'debug'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.11'
-            optimizations: 'lto'
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.11'
@@ -490,10 +474,6 @@ jobs:
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.12'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.12'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64-unknown-linux-gnu'
@@ -507,10 +487,6 @@ jobs:
             run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.9'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.9'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
@@ -524,10 +500,6 @@ jobs:
             run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.10'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.10'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
@@ -538,10 +510,6 @@ jobs:
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.11'
             optimizations: 'debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.11'
-            optimizations: 'lto'
             run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.11'
@@ -558,10 +526,6 @@ jobs:
             run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.12'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.12'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
@@ -575,10 +539,6 @@ jobs:
             run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.9'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.9'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
@@ -592,10 +552,6 @@ jobs:
             run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.10'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.10'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
@@ -609,10 +565,6 @@ jobs:
             run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.11'
-            optimizations: 'lto'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.11'
             optimizations: 'pgo'
             run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
@@ -623,10 +575,6 @@ jobs:
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.12'
             optimizations: 'debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.12'
-            optimizations: 'lto'
             run: true
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.12'
