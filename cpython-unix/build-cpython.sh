@@ -273,10 +273,6 @@ fi
 # Always build against libedit instead of the default of readline.
 # macOS always uses the system libedit, so no tweaks are needed.
 if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
-    # On Linux, we need to add our custom libedit to search paths.
-    CFLAGS="${CFLAGS} -I${TOOLS_PATH}/deps/libedit/include"
-    LDFLAGS="${LDFLAGS} -L${TOOLS_PATH}/deps/libedit/lib"
-
     # CPython 3.10 introduced proper configure support for libedit, so add configure
     # flag there.
     if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_10}" ]; then
@@ -605,8 +601,6 @@ tools_path = os.environ["TOOLS_PATH"]
 replace_in_all("-I%s/deps/include/ncursesw" % tools_path, "")
 replace_in_all("-I%s/deps/include/uuid" % tools_path, "")
 replace_in_all("-I%s/deps/include" % tools_path, "")
-replace_in_all("-I%s/deps/libedit/include" % tools_path, "")
-replace_in_all("-L%s/deps/libedit/lib" % tools_path, "")
 replace_in_all("-L%s/deps/lib" % tools_path, "")
 
 EOF
@@ -855,10 +849,6 @@ done
 # library files as well.
 mkdir ${ROOT}/out/python/build/lib
 cp -av ${TOOLS_PATH}/deps/lib/*.a ${ROOT}/out/python/build/lib/
-
-if [ -d "${TOOLS_PATH}/deps/libedit" ]; then
-    cp -av ${TOOLS_PATH}/deps/libedit/lib/*.a ${ROOT}/out/python/build/lib/
-fi
 
 # On Apple, Python 3.9+ uses __builtin_available() to sniff for feature
 # availability. This symbol is defined by clang_rt, which isn't linked
