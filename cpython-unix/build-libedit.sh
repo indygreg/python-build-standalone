@@ -88,20 +88,19 @@ if [ "${CC}" = "musl-clang" ]; then
     cflags="${cflags} -D__STDC_ISO_10646__=201103L"
 fi
 
-# Install to /tools/deps/libedit so it doesn't conflict with readline's files.
 CFLAGS="${cflags}" CPPFLAGS="${cflags}" LDFLAGS="${ldflags}" \
     ./configure \
         --build=${BUILD_TRIPLE} \
         --host=${TARGET_TRIPLE} \
-        --prefix=/tools/deps/libedit \
+        --prefix=/tools/deps \
         --disable-shared
 
 make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out
 
 # Alias readline/{history.h, readline.h} for readline compatibility.
-if [ -e ${ROOT}/out/tools/deps/libedit/include ]; then
-    mkdir ${ROOT}/out/tools/deps/libedit/include/readline
-    ln -s ../editline/readline.h ${ROOT}/out/tools/deps/libedit/include/readline/readline.h
-    ln -s ../editline/readline.h ${ROOT}/out/tools/deps/libedit/include/readline/history.h
+if [ -e ${ROOT}/out/tools/deps/include ]; then
+    mkdir ${ROOT}/out/tools/deps/include/readline
+    ln -s ../editline/readline.h ${ROOT}/out/tools/deps/include/readline/readline.h
+    ln -s ../editline/readline.h ${ROOT}/out/tools/deps/include/readline/history.h
 fi
