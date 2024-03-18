@@ -1633,8 +1633,7 @@ fn validate_distribution(
 
     let is_debug = dist_filename.contains("-debug-");
 
-    let is_static = triple.contains("unknown-linux-musl")
-        || (triple.contains("-windows-") && dist_path.to_string_lossy().contains("-static-"));
+    let is_static = triple.contains("unknown-linux-musl");
 
     let mut tf = crate::open_distribution_archive(&dist_path)?;
 
