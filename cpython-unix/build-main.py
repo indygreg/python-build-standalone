@@ -72,6 +72,11 @@ def main():
         help="Python distribution to build",
     )
     parser.add_argument(
+        "--python-source",
+        default=None,
+        help="A custom path to CPython source files to use",
+    )
+    parser.add_argument(
         "--break-on-failure",
         action="store_true",
         help="Enter a Python debugger if an error occurs",
@@ -118,6 +123,12 @@ def main():
         )
         return 1
 
+    python_source = (
+        (str(pathlib.Path(args.python_source).resolve()))
+        if args.python_source
+        else "null"
+    )
+
     musl = "musl" in target_triple
 
     env = dict(os.environ)
@@ -125,6 +136,7 @@ def main():
     env["PYBUILD_HOST_PLATFORM"] = host_platform
     env["PYBUILD_TARGET_TRIPLE"] = target_triple
     env["PYBUILD_OPTIMIZATIONS"] = args.optimizations
+    env["PYBUILD_PYTHON_SOURCE"] = python_source
     if musl:
         env["PYBUILD_MUSL"] = "1"
     if args.break_on_failure:
@@ -132,9 +144,18 @@ def main():
     if args.no_docker:
         env["PYBUILD_NO_DOCKER"] = "1"
 
-    entry = DOWNLOADS[args.python]
-    env["PYBUILD_PYTHON_VERSION"] = entry["version"]
-    env["PYBUILD_PYTHON_MAJOR_VERSION"] = ".".join(entry["version"].split(".")[0:2])
+    if not args.python_source:
+        entry = DOWNLOADS[args.python]
+        env["PYBUILD_PYTHON_VERSION"] = cpython_version = entry["version"]
+    else:
+        # TODO consider parsing version from source checkout. Or defining version
+        # from CLI argument.
+        if "PYBUILD_PYTHON_VERSION" not in env:
+            print("PYBUILD_PYTHON_VERSION must be set when using `--python-source`")
+            return 1
+        cpython_version = env["PYBUILD_PYTHON_VERSION"]
+
+    env["PYBUILD_PYTHON_MAJOR_VERSION"] = ".".join(cpython_version.split(".")[0:2])
 
     if "PYBUILD_RELEASE_TAG" in os.environ:
         release_tag = os.environ["PYBUILD_RELEASE_TAG"]
@@ -142,7 +163,7 @@ def main():
         release_tag = release_tag_from_git()
 
     archive_components = [
-        "cpython-%s" % entry["version"],
+        "cpython-%s" % cpython_version,
         target_triple,
         args.optimizations,
     ]

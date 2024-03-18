@@ -1830,6 +1830,7 @@ def main() -> None:
             "cpython-3.10",
             "cpython-3.11",
             "cpython-3.12",
+            "cpython-3.13",
         },
         default="cpython-3.11",
         help="Python distribution to build",
