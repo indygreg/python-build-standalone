@@ -17,6 +17,10 @@ ifndef PYBUILD_HOST_PLATFORM
     $(error PYBUILD_HOST_PLATFORM not defined)
 endif
 
+ifndef PYBUILD_PYTHON_SOURCE
+    $(error PYBUILD_PYTHON_SOURCE not defined)
+endif
+
 ifndef PYBUILD_PYTHON_VERSION
     $(error PYBUILD_PYTHON_VERSION not defined)
 endif
@@ -33,6 +37,7 @@ RUN_BUILD = $(BUILD) \
     --host-platform $(HOST_PLATFORM) \
     --target-triple $(TARGET_TRIPLE) \
     --optimizations $(PYBUILD_OPTIMIZATIONS) \
+    --python-source $(PYBUILD_PYTHON_SOURCE) \
     --dest-archive $@ \
     $(NULL)
 

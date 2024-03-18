@@ -152,9 +152,15 @@ class TempdirContext(object):
         log("copying %s to %s/%s" % (source, dest_dir, dest_name))
         shutil.copy(source, dest_dir / dest_name)
 
-    def install_toolchain_archive(self, build_dir, package_name, host_platform):
+    def install_toolchain_archive(
+        self, build_dir, package_name, host_platform, version=None
+    ):
         entry = DOWNLOADS[package_name]
-        basename = "%s-%s-%s.tar" % (package_name, entry["version"], host_platform)
+        basename = "%s-%s-%s.tar" % (
+            package_name,
+            version or entry["version"],
+            host_platform,
+        )
 
         p = build_dir / basename
         dest_path = self.td / "tools"
