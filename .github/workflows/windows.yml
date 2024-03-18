@@ -52,7 +52,6 @@ jobs:
           - 'vcvars32.bat'
           - 'vcvars64.bat'
         profile:
-          - 'static-noopt'
           - 'shared-pgo'
     needs: pythonbuild
     runs-on: 'windows-2019'

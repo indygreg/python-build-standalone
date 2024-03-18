@@ -55,7 +55,6 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     "_bz2": {},
     "_ctypes": {
         "shared_depends": ["libffi-8"],
-        "static_depends_no_project": ["libffi"],
     },
     "_decimal": {},
     "_elementtree": {},
@@ -65,22 +64,19 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     },
     "_lzma": {
         "ignore_additional_depends": {"$(OutDir)liblzma$(PyDebugExt).lib"},
-        "static_depends": ["liblzma"],
     },
     "_msi": {},
     "_overlapped": {},
     "_multiprocessing": {},
     "_socket": {},
-    "_sqlite3": {"shared_depends": ["sqlite3"], "static_depends": ["sqlite3"]},
+    "_sqlite3": {"shared_depends": ["sqlite3"]},
     # See the one-off calls to copy_link_to_lib() and elsewhere to hack up
     # project files.
     "_ssl": {
         "shared_depends_amd64": ["libcrypto-1_1-x64", "libssl-1_1-x64"],
         "shared_depends_win32": ["libcrypto-1_1", "libssl-1_1"],
-        "static_depends_no_project": ["libcrypto_static", "libssl_static"],
     },
     "_tkinter": {
-        "ignore_static": True,
         "shared_depends": ["tcl86t", "tk86t"],
     },
     "_queue": {},
@@ -275,41 +271,6 @@ def find_vcvarsall_path(msvc_version):
     )
 
 
-def find_vctools_path():
-    vswhere = find_vswhere()
-
-    p = subprocess.check_output(
-        [
-            str(vswhere),
-            "-latest",
-            "-products",
-            "*",
-            "-requires",
-            "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-            "-property",
-            "installationPath",
-        ]
-    )
-
-    # Strictly speaking the output may not be UTF-8.
-    p = pathlib.Path(p.strip().decode("utf-8"))
-
-    version_path = (
-        p / "VC" / "Auxiliary" / "Build" / "Microsoft.VCToolsVersion.default.txt"
-    )
-
-    with version_path.open("r", encoding="utf-8") as fh:
-        tools_version = fh.read().strip()
-
-    tools_path = p / "VC" / "Tools" / "MSVC" / tools_version / "bin" / "Hostx64" / "x64"
-
-    if not tools_path.exists():
-        print("%s does not exist" % tools_path)
-        sys.exit(1)
-
-    return tools_path
-
-
 class NoSearchStringError(Exception):
     """Represents a missing search string when replacing content in a file."""
 
@@ -333,373 +294,6 @@ def static_replace_in_file(p: pathlib.Path, search, replace):
 
     with p.open("wb") as fh:
         fh.write(data)
-
-
-def add_to_config_c(source_path: pathlib.Path, extension: str, init_fn: str):
-    """Add an extension to PC/config.c"""
-
-    config_c_path = source_path / "PC" / "config.c"
-
-    lines = []
-
-    with config_c_path.open("r", encoding="utf8") as fh:
-        for line in fh:
-            line = line.rstrip()
-
-            # Insert the init function declaration before the _inittab struct.
-            if line.startswith("struct _inittab"):
-                log("adding %s declaration to config.c" % init_fn)
-                lines.append("extern PyObject* %s(void);" % init_fn)
-
-            # Insert the extension in the _inittab struct.
-            if line.lstrip().startswith("/* Sentinel */"):
-                log("marking %s as a built-in extension module" % extension)
-                lines.append('{"%s", %s},' % (extension, init_fn))
-
-            lines.append(line)
-
-    with config_c_path.open("w", encoding="utf8") as fh:
-        fh.write("\n".join(lines))
-
-
-def remove_from_extension_modules(source_path: pathlib.Path, extension: str):
-    """Remove an extension from the set of extension/external modules.
-
-    Call this when an extension will be compiled into libpython instead of
-    compiled as a standalone extension.
-    """
-
-    RE_EXTENSION_MODULES = re.compile('<(Extension|External)Modules Include="([^"]+)"')
-
-    pcbuild_proj_path = source_path / "PCbuild" / "pcbuild.proj"
-
-    lines = []
-
-    with pcbuild_proj_path.open("r", encoding="utf8") as fh:
-        for line in fh:
-            line = line.rstrip()
-
-            m = RE_EXTENSION_MODULES.search(line)
-
-            if m:
-                modules = [m for m in m.group(2).split(";") if m != extension]
-
-                # Ignore line if new value is empty.
-                if not modules:
-                    continue
-
-                line = line.replace(m.group(2), ";".join(modules))
-
-            lines.append(line)
-
-    with pcbuild_proj_path.open("w", encoding="utf8") as fh:
-        fh.write("\n".join(lines))
-
-
-def make_project_static_library(source_path: pathlib.Path, project: str):
-    """Turn a project file into a static library."""
-
-    proj_path = source_path / "PCbuild" / ("%s.vcxproj" % project)
-    lines = []
-
-    found_config_type = False
-    found_target_ext = False
-
-    with proj_path.open("r", encoding="utf8") as fh:
-        for line in fh:
-            line = line.rstrip()
-
-            # Change the project configuration to a static library.
-            if "<ConfigurationType>DynamicLibrary</ConfigurationType>" in line:
-                log("changing %s to a static library" % project)
-                found_config_type = True
-                line = line.replace("DynamicLibrary", "StaticLibrary")
-
-            elif "<ConfigurationType>StaticLibrary</ConfigurationType>" in line:
-                log("%s is already a static library" % project)
-                return
-
-            # Change the output file name from .pyd to .lib because it is no
-            # longer an extension.
-            if "<TargetExt>.pyd</TargetExt>" in line:
-                log("changing output of %s to a .lib" % project)
-                found_target_ext = True
-                line = line.replace(".pyd", ".lib")
-
-            lines.append(line)
-
-    if not found_config_type:
-        log("failed to adjust config type for %s" % project)
-        sys.exit(1)
-
-    if not found_target_ext:
-        log("failed to adjust target extension for %s" % project)
-        sys.exit(1)
-
-    with proj_path.open("w", encoding="utf8") as fh:
-        fh.write("\n".join(lines))
-
-
-def convert_to_static_library(
-    source_path: pathlib.Path,
-    extension: str,
-    entry: dict,
-    honor_allow_missing_preprocessor: bool,
-):
-    """Converts an extension to a static library."""
-
-    proj_path = source_path / "PCbuild" / ("%s.vcxproj" % extension)
-
-    if not proj_path.exists() and entry.get("ignore_missing"):
-        return False
-
-    # Make the extension's project emit a static library so we can link
-    # against libpython.
-    make_project_static_library(source_path, extension)
-
-    # And do the same thing for its dependencies.
-    for project in entry.get("static_depends", []):
-        make_project_static_library(source_path, project)
-
-    copy_link_to_lib(proj_path)
-
-    lines = []
-
-    RE_PREPROCESSOR_DEFINITIONS = re.compile(
-        "<PreprocessorDefinitions[^>]*>([^<]+)</PreprocessorDefinitions>"
-    )
-
-    found_preprocessor = False
-    itemgroup_line = None
-    itemdefinitiongroup_line = None
-
-    with proj_path.open("r", encoding="utf8") as fh:
-        for i, line in enumerate(fh):
-            line = line.rstrip()
-
-            # Add Py_BUILD_CORE_BUILTIN to preprocessor definitions so linkage
-            # data is correct.
-            m = RE_PREPROCESSOR_DEFINITIONS.search(line)
-
-            # But don't do it if it is an annotation for an individual source file.
-            if m and "<ClCompile Include=" not in lines[i - 1]:
-                log("adding Py_BUILD_CORE_BUILTIN to %s" % extension)
-                found_preprocessor = True
-                line = line.replace(m.group(1), "Py_BUILD_CORE_BUILTIN;%s" % m.group(1))
-
-            # Find the first <ItemGroup> entry.
-            if "<ItemGroup>" in line and not itemgroup_line:
-                itemgroup_line = i
-
-            # Find the first <ItemDefinitionGroup> entry.
-            if "<ItemDefinitionGroup>" in line and not itemdefinitiongroup_line:
-                itemdefinitiongroup_line = i
-
-            lines.append(line)
-
-    if not found_preprocessor:
-        if honor_allow_missing_preprocessor and entry.get("allow_missing_preprocessor"):
-            log("not adjusting preprocessor definitions for %s" % extension)
-        else:
-            log("introducing <PreprocessorDefinitions> to %s" % extension)
-            lines[itemgroup_line:itemgroup_line] = [
-                "  <ItemDefinitionGroup>",
-                "    <ClCompile>",
-                "      <PreprocessorDefinitions>Py_BUILD_CORE_BUILTIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>",
-                "    </ClCompile>",
-                "  </ItemDefinitionGroup>",
-            ]
-
-            itemdefinitiongroup_line = itemgroup_line + 1
-
-    if "static_depends" in entry:
-        if not itemdefinitiongroup_line:
-            log("unable to find <ItemDefinitionGroup> for %s" % extension)
-            sys.exit(1)
-
-        log("changing %s to automatically link library dependencies" % extension)
-        lines[itemdefinitiongroup_line + 1 : itemdefinitiongroup_line + 1] = [
-            "    <ProjectReference>",
-            "      <LinkLibraryDependencies>true</LinkLibraryDependencies>",
-            "    </ProjectReference>",
-        ]
-
-    # Ensure the extension project doesn't depend on pythoncore: as a built-in
-    # extension, pythoncore will depend on it.
-
-    # This logic is a bit hacky. Ideally we'd parse the file as XML and operate
-    # in the XML domain. But that is more work. The goal here is to strip the
-    # <ProjectReference>...</ProjectReference> containing the
-    # <Project>{pythoncore ID}</Project>. This could leave an item <ItemGroup>.
-    # That should be fine.
-    start_line, end_line = None, None
-    for i, line in enumerate(lines):
-        if "<Project>{cf7ac3d1-e2df-41d2-bea6-1e2556cdea26}</Project>" in line:
-            for j in range(i, 0, -1):
-                if "<ProjectReference" in lines[j]:
-                    start_line = j
-                    break
-
-            for j in range(i, len(lines) - 1):
-                if "</ProjectReference>" in lines[j]:
-                    end_line = j
-                    break
-
-            break
-
-    if start_line is not None and end_line is not None:
-        log("stripping pythoncore dependency from %s" % extension)
-        for line in lines[start_line : end_line + 1]:
-            log(line)
-
-        lines = lines[:start_line] + lines[end_line + 1 :]
-
-    with proj_path.open("w", encoding="utf8") as fh:
-        fh.write("\n".join(lines))
-
-    # Tell pythoncore to link against the static .lib.
-    RE_ADDITIONAL_DEPENDENCIES = re.compile(
-        "<AdditionalDependencies>([^<]+)</AdditionalDependencies>"
-    )
-
-    pythoncore_path = source_path / "PCbuild" / "pythoncore.vcxproj"
-    lines = []
-
-    with pythoncore_path.open("r", encoding="utf8") as fh:
-        for line in fh:
-            line = line.rstrip()
-
-            m = RE_ADDITIONAL_DEPENDENCIES.search(line)
-
-            if m:
-                log("changing pythoncore to link against %s.lib" % extension)
-                # TODO we shouldn't need this with static linking if the
-                # project is configured to link library dependencies.
-                # But removing it results in unresolved external symbols
-                # when linking the python project. There /might/ be a
-                # visibility issue with the PyMODINIT_FUNC macro.
-                line = line.replace(
-                    m.group(1), r"$(OutDir)%s.lib;%s" % (extension, m.group(1))
-                )
-
-            lines.append(line)
-
-    with pythoncore_path.open("w", encoding="utf8") as fh:
-        fh.write("\n".join(lines))
-
-    # Change pythoncore to depend on the extension project.
-
-    # pcbuild.proj is the file that matters for msbuild. And order within
-    # matters. We remove the extension from the "ExtensionModules" set of
-    # projects. Then we re-add the project to before "pythoncore."
-    remove_from_extension_modules(source_path, extension)
-
-    pcbuild_proj_path = source_path / "PCbuild" / "pcbuild.proj"
-
-    with pcbuild_proj_path.open("r", encoding="utf8") as fh:
-        data = fh.read()
-
-    data = data.replace(
-        '<Projects Include="pythoncore.vcxproj">',
-        '    <Projects Include="%s.vcxproj" />\n    <Projects Include="pythoncore.vcxproj">'
-        % extension,
-    )
-
-    with pcbuild_proj_path.open("w", encoding="utf8") as fh:
-        fh.write(data)
-
-    # We don't technically need to modify the solution since msbuild doesn't
-    # use it. But it enables debugging inside Visual Studio, which is
-    # convenient.
-    RE_PROJECT = re.compile(
-        'Project\("\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942\}"\) = "([^"]+)", "[^"]+", "{([^\}]+)\}"'
-    )
-
-    pcbuild_sln_path = source_path / "PCbuild" / "pcbuild.sln"
-    lines = []
-
-    extension_id = None
-    pythoncore_line = None
-
-    with pcbuild_sln_path.open("r", encoding="utf8") as fh:
-        # First pass buffers the file, finds the ID of the extension project,
-        # and finds where the pythoncore project is defined.
-        for i, line in enumerate(fh):
-            line = line.rstrip()
-
-            m = RE_PROJECT.search(line)
-
-            if m and m.group(1) == extension:
-                extension_id = m.group(2)
-
-            if m and m.group(1) == "pythoncore":
-                pythoncore_line = i
-
-            lines.append(line)
-
-    # Not all projects are in the solution(!!!). Since we don't use the
-    # solution for building, that's fine to ignore.
-    if not extension_id:
-        log("failed to find project %s in solution" % extension)
-
-    if not pythoncore_line:
-        log("failed to find pythoncore project in solution")
-
-    if extension_id and pythoncore_line:
-        log("making pythoncore depend on %s" % extension)
-
-        needs_section = (
-            not lines[pythoncore_line + 1].lstrip().startswith("ProjectSection")
-        )
-        offset = 1 if needs_section else 2
-
-        lines.insert(
-            pythoncore_line + offset, "\t\t{%s} = {%s}" % (extension_id, extension_id)
-        )
-
-        if needs_section:
-            lines.insert(
-                pythoncore_line + 1,
-                "\tProjectSection(ProjectDependencies) = postProject",
-            )
-            lines.insert(pythoncore_line + 3, "\tEndProjectSection")
-
-        with pcbuild_sln_path.open("w", encoding="utf8") as fh:
-            fh.write("\n".join(lines))
-
-    return True
-
-
-def copy_link_to_lib(p: pathlib.Path):
-    """Copy the contents of a <Link> section to a <Lib> section."""
-
-    lines = []
-    copy_lines = []
-    copy_active = False
-
-    with p.open("r", encoding="utf8") as fh:
-        for line in fh:
-            line = line.rstrip()
-
-            lines.append(line)
-
-            if "<Link>" in line:
-                copy_active = True
-                continue
-
-            elif "</Link>" in line:
-                copy_active = False
-
-                log("duplicating <Link> section in %s" % p)
-                lines.append("    <Lib>")
-                lines.extend(copy_lines)
-                lines.append("    </Lib>")
-
-            if copy_active:
-                copy_lines.append(line)
-
-    with p.open("w", encoding="utf8") as fh:
-        fh.write("\n".join(lines))
 
 
 OPENSSL_PROPS_REMOVE_RULES_LEGACY = b"""
@@ -747,7 +341,6 @@ def hack_props(
     td: pathlib.Path,
     pcbuild_path: pathlib.Path,
     arch: str,
-    static: bool,
 ):
     # TODO can we pass props into msbuild.exe?
 
@@ -832,56 +425,26 @@ def hack_props(
     # OpenSSL build. This requires some hacking of various files.
     openssl_props = pcbuild_path / "openssl.props"
 
-    if static:
-        # We don't need the install rules to copy the libcrypto and libssl DLLs.
-        # 3.11 added a `SkipCopySSLDLL` property to nerf these rules. But we still
-        # disable that variant because doing so enables us to build in Visual Studio
-        # without having to pass a custom property. We could define a new property
-        # globally. But meh.
-        try:
-            static_replace_in_file(
-                openssl_props,
-                OPENSSL_PROPS_REMOVE_RULES.strip().replace(b"\n", b"\r\n"),
-                b"",
-            )
-        except NoSearchStringError:
-            static_replace_in_file(
-                openssl_props,
-                OPENSSL_PROPS_REMOVE_RULES_LEGACY.strip().replace(b"\n", b"\r\n"),
-                b"",
-            )
+    if arch == "amd64":
+        suffix = b"-x64"
+    elif arch == "win32":
+        suffix = b""
+    else:
+        raise Exception("unhandled architecture: %s" % arch)
 
-        # We need to copy linking settings for dynamic libraries to static libraries.
-        copy_link_to_lib(pcbuild_path / "libffi.props")
-        copy_link_to_lib(pcbuild_path / "openssl.props")
-
-        # We should look against the static library variants.
+    try:
+        # CPython 3.11+ builds with OpenSSL 3.0 by default.
         static_replace_in_file(
             openssl_props,
-            b"libcrypto.lib;libssl.lib;",
-            b"libcrypto_static.lib;libssl_static.lib;",
+            b"<_DLLSuffix>-3</_DLLSuffix>",
+            b"<_DLLSuffix>-3%s</_DLLSuffix>" % suffix,
         )
-    else:
-        if arch == "amd64":
-            suffix = b"-x64"
-        elif arch == "win32":
-            suffix = b""
-        else:
-            raise Exception("unhandled architecture: %s" % arch)
-
-        try:
-            # CPython 3.11+ builds with OpenSSL 3.0 by default.
-            static_replace_in_file(
-                openssl_props,
-                b"<_DLLSuffix>-3</_DLLSuffix>",
-                b"<_DLLSuffix>-3%s</_DLLSuffix>" % suffix,
-            )
-        except NoSearchStringError:
-            static_replace_in_file(
-                openssl_props,
-                b"<_DLLSuffix>-1_1</_DLLSuffix>",
-                b"<_DLLSuffix>-1_1%s</_DLLSuffix>" % suffix,
-            )
+    except NoSearchStringError:
+        static_replace_in_file(
+            openssl_props,
+            b"<_DLLSuffix>-1_1</_DLLSuffix>",
+            b"<_DLLSuffix>-1_1%s</_DLLSuffix>" % suffix,
+        )
 
     libffi_props = pcbuild_path / "libffi.props"
 
@@ -900,28 +463,12 @@ def hack_props(
     except NoSearchStringError:
         pass
 
-    if static:
-        # For some reason the built .lib doesn't have the -8 suffix in
-        # static build mode. This is possibly a side-effect of CPython's
-        # libffi build script not officially supporting static-only builds.
-        static_replace_in_file(
-            libffi_props,
-            b"<AdditionalDependencies>libffi-8.lib;%(AdditionalDependencies)</AdditionalDependencies>",
-            b"<AdditionalDependencies>libffi.lib;%(AdditionalDependencies)</AdditionalDependencies>",
-        )
-
-        static_replace_in_file(
-            libffi_props, LIBFFI_PROPS_REMOVE_RULES.strip().replace(b"\n", b"\r\n"), b""
-        )
-
 
 def hack_project_files(
     td: pathlib.Path,
     cpython_source_path: pathlib.Path,
     build_directory: str,
     python_version: str,
-    static: bool,
-    honor_allow_missing_preprocessor: bool,
 ):
     """Hacks Visual Studio project files to work with our build."""
 
@@ -931,24 +478,7 @@ def hack_project_files(
         td,
         pcbuild_path,
         build_directory,
-        static=static,
     )
-
-    # Python 3.11 removed various redundant ffi_* symbol definitions as part of commit
-    # 38f331d4656394ae0f425568e26790ace778e076. We were relying on these symbol
-    # definitions in older Python versions. (See also our commit
-    # c3fa21f89c696bc17aec686dee2d13969cca7aa2 for some history with treatment of libffi
-    # linkage.)
-    #
-    # Here, we add FFI_BUILDING to the preprocessor. This feeds into libffi's ffi.h in
-    # order to set up symbol / linkage __declspec fu properly in static builds.
-    if static and meets_python_minimum_version(python_version, "3.11"):
-        ctypes_path = pcbuild_path / "_ctypes.vcxproj"
-        static_replace_in_file(
-            ctypes_path,
-            b"<PreprocessorDefinitions>USING_MALLOC_CLOSURE_DOT_C=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>",
-            b"<PreprocessorDefinitions>USING_MALLOC_CLOSURE_DOT_C=1;FFI_BUILDING;%(PreprocessorDefinitions)</PreprocessorDefinitions>",
-        )
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
@@ -1036,66 +566,6 @@ def hack_project_files(
             rb"",
         )
 
-    pythoncore_proj = pcbuild_path / "pythoncore.vcxproj"
-
-    if static:
-        for extension, entry in sorted(CONVERT_TO_BUILTIN_EXTENSIONS.items()):
-            if entry.get("ignore_static"):
-                log("ignoring extension %s in static builds" % extension)
-                continue
-
-            init_fn = entry.get("init", "PyInit_%s" % extension)
-
-            if convert_to_static_library(
-                cpython_source_path, extension, entry, honor_allow_missing_preprocessor
-            ):
-                add_to_config_c(cpython_source_path, extension, init_fn)
-
-    # pythoncore.vcxproj produces libpython. Typically pythonXY.dll. We change
-    # it to produce a static library.
-    pyproject_props = pcbuild_path / "pyproject.props"
-
-    # Need to replace Py_ENABLE_SHARED with Py_NO_ENABLE_SHARED so symbol
-    # visibility is proper.
-
-    # Replacing it in the global properties file has the most bang for our buck.
-    if static:
-        static_replace_in_file(
-            pyproject_props,
-            b"<PreprocessorDefinitions>WIN32;",
-            b"<PreprocessorDefinitions>Py_NO_ENABLE_SHARED;WIN32;",
-        )
-
-        static_replace_in_file(
-            pythoncore_proj, b"Py_ENABLE_SHARED", b"Py_NO_ENABLE_SHARED"
-        )
-
-    # Disable whole program optimization because it interferes with the format
-    # of object files and makes it so we can't easily consume their symbols.
-    # TODO this /might/ be OK once we figure out symbol exporting issues.
-    if static:
-        static_replace_in_file(
-            pyproject_props,
-            b"<WholeProgramOptimization>true</WholeProgramOptimization>",
-            b"<WholeProgramOptimization>false</WholeProgramOptimization>",
-        )
-
-    # Make libpython a static library and disable linker warnings for duplicate symbols.
-    if static:
-        static_replace_in_file(
-            pythoncore_proj,
-            b"<ConfigurationType>DynamicLibrary</ConfigurationType>",
-            b"<ConfigurationType>StaticLibrary</ConfigurationType>",
-        )
-
-        copy_link_to_lib(pythoncore_proj)
-
-        static_replace_in_file(
-            pythoncore_proj,
-            b"</AdditionalDependencies>\r\n    </Lib>",
-            b"</AdditionalDependencies>\r\n    <AdditionalOptions>/IGNORE:4006</AdditionalOptions>\r\n    </Lib>",
-        )
-
     # We don't need to produce python_uwp.exe and its *w variant. Or the
     # python3.dll, pyshellext, or pylauncher.
     # Cut them from the build to save time and so their presence doesn't
@@ -1108,10 +578,6 @@ def hack_project_files(
         b'<Projects2 Include="python_uwp.vcxproj;pythonw_uwp.vcxproj" Condition="$(IncludeUwp)" />',
         b"",
     )
-    if static:
-        static_replace_in_file(
-            pcbuild_proj, b'<Projects Include="python3dll.vcxproj" />', b""
-        )
     static_replace_in_file(
         pcbuild_proj,
         b'<Projects Include="pylauncher.vcxproj;pywlauncher.vcxproj" />',
@@ -1138,18 +604,6 @@ def hack_project_files(
     except NoSearchStringError:
         pass
 
-    # Switch to the static version of the run-time library.
-    if static:
-        static_replace_in_file(
-            pcbuild_path / "pyproject.props",
-            b"<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>",
-            b"<RuntimeLibrary>MultiThreaded</RuntimeLibrary>",
-        )
-        static_replace_in_file(
-            pcbuild_path / "pyproject.props",
-            b"<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>",
-            b"<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>",
-        )
 
 
 PYPORT_EXPORT_SEARCH_39 = b"""
@@ -1376,179 +830,11 @@ SYSMODULE_WINVER_REPLACE_38 = b"""
 """
 
 
-def hack_source_files(source_path: pathlib.Path, static: bool, python_version: str):
-    """Apply source modifications to make things work."""
-
-    # The PyAPI_FUNC, PyAPI_DATA, and PyMODINIT_FUNC macros define symbol
-    # visibility. By default, pyport.h looks at Py_ENABLE_SHARED, __CYGWIN__,
-    # Py_BUILD_CORE, Py_BUILD_CORE_BUILTIN, etc to determine what the macros
-    # should be. The logic assumes that Python is being built in a certain
-    # manner - notably that extensions are standalone dynamic libraries.
-    #
-    # We force the use of __declspec(dllexport) in all cases to ensure that
-    # API symbols are exported. This annotation becomes embedded within the
-    # object file. When that object file is linked, the symbol is exported
-    # from the final binary. For statically linked binaries, this behavior
-    # may not be needed. However, by exporting the symbols we allow downstream
-    # consumers of the object files to produce a binary that can be
-    # dynamically linked. This is a useful property to have.
-    if static:
-        pyport_h = source_path / "Include" / "pyport.h"
-        try:
-            static_replace_in_file(
-                pyport_h, PYPORT_EXPORT_SEARCH_39, PYPORT_EXPORT_REPLACE_NEW
-            )
-        except NoSearchStringError:
-            try:
-                static_replace_in_file(
-                    pyport_h, PYPORT_EXPORT_SEARCH_38, PYPORT_EXPORT_REPLACE_OLD
-                )
-            except NoSearchStringError:
-                static_replace_in_file(
-                    pyport_h, PYPORT_EXPORT_SEARCH_37, PYPORT_EXPORT_REPLACE_OLD
-                )
-
-    if static:
-        # Modules/getpath.c unconditionally refers to PyWin_DLLhModule, which is
-        # conditionally defined behind Py_ENABLE_SHARED. Change its usage
-        # accordingly. This regressed as part of upstream commit
-        # 99fcf1505218464c489d419d4500f126b6d6dc28. But it was fixed
-        # in 3.12 by c6858d1e7f4cd3184d5ddea4025ad5dfc7596546.
-        # TODO send this patch upstream? or encourage backporting of fix in 3.12?
-        if meets_python_minimum_version(
-            python_version, "3.11"
-        ) and not meets_python_minimum_version(python_version, "3.12"):
-            static_replace_in_file(
-                source_path / "Modules" / "getpath.c",
-                b"#ifdef MS_WINDOWS\n    extern HMODULE PyWin_DLLhModule;",
-                b"#if defined MS_WINDOWS && defined Py_ENABLE_SHARED\n    extern HMODULE PyWin_DLLhModule;",
-            )
-
-    # Similar deal as above. Regression also introduced in upstream commit
-    # 99fcf1505218464c489d419d4500f126b6d6dc28.
-    # TODO send this patch upstream.
-    if static:
-        if meets_python_minimum_version(python_version, "3.11"):
-            static_replace_in_file(
-                source_path / "Python" / "dynload_win.c",
-                b"extern HMODULE PyWin_DLLhModule;\n",
-                b"#ifdef Py_ENABLE_SHARED\nextern HMODULE PyWin_DLLhModule;\n#else\n#define PyWin_DLLhModule NULL\n#endif\n",
-            )
-
-    # Modules/_winapi.c and Modules/overlapped.c both define an
-    # ``OverlappedType`` symbol. We rename one to make the symbol conflict
-    # go away.
-    # TODO send this patch upstream.
-    if static:
-        overlapped_c = source_path / "Modules" / "overlapped.c"
-        static_replace_in_file(overlapped_c, b"OverlappedType", b"OOverlappedType")
-
-    # Modules/ctypes/callbacks.c has lines like the following:
-    # #ifndef Py_NO_ENABLE_SHARED
-    # BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvRes)
-    # We currently define Py_ENABLE_SHARED. And I /think/ this check should
-    # also check against Py_BUILD_CORE_BUILTIN because Py_BUILD_CORE_BUILTIN
-    # with Py_ENABLE_SHARED is theoretically a valid configuration.
-    # TODO send this patch upstream.
-    if static:
-        callbacks_c = source_path / "Modules" / "_ctypes" / "callbacks.c"
-        static_replace_in_file(
-            callbacks_c,
-            b"#ifndef Py_NO_ENABLE_SHARED\nBOOL WINAPI DllMain(",
-            b"#if !defined(Py_NO_ENABLE_SHARED) && !defined(Py_BUILD_CORE_BUILTIN)\nBOOL WINAPI DllMain(",
-        )
-
-    # Lib/ctypes/__init__.py needs to populate the Python API version. On
-    # Windows, it assumes a ``pythonXY`` is available. On Cygwin, a
-    # ``libpythonXY`` DLL. The former assumes that ``sys.dllhandle`` is
-    # available. And ``sys.dllhandle`` is only populated if ``MS_COREDLL``
-    # (a deprecated symbol) is defined. And ``MS_COREDLL`` is not defined
-    # if ``Py_NO_ENABLE_SHARED`` is defined. The gist of it is that ctypes
-    # assumes that Python on Windows will use a Python DLL.
-    #
-    # The ``pythonapi`` handle obtained in ``ctypes/__init__.py`` needs to
-    # expose a handle on the Python API. If we have a static library, that
-    # handle should be the current binary. So all the fancy logic to find
-    # the DLL can be simplified.
-    #
-    # But, ``PyDLL(None)`` doesn't work out of the box because this is
-    # translated into a call to ``LoadLibrary(NULL)``. Unlike ``dlopen()``,
-    # ``LoadLibrary()`` won't accept a NULL value. So, we need a way to
-    # get an ``HMODULE`` for the current executable. Arguably the best way
-    # to do this is with ``GetModuleHandleEx()`` using the following C code:
-    #
-    #   HMODULE hModule = NULL;
-    #   GetModuleHandleEx(
-    #     GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-    #     (LPCSTR)SYMBOL_IN_CURRENT_MODULE,
-    #     &hModule);
-    #
-    # The ``ctypes`` module has handles on function pointers in the current
-    # binary. One would think we'd be able to use ``ctypes.cast()`` +
-    # ``ctypes.addressof()`` to get a pointer to a symbol in the current
-    # executable. But the addresses appear to be to heap allocated PyObject
-    # instances, which won't work.
-    #
-    # An ideal solution would be to expose the ``HMODULE`` of the current
-    # module. We /should/ be able to change the behavior of ``sys.dllhandle``
-    # to facilitate this. But this is a bit more work. Our hack is to instead
-    # use ``sys.executable`` with ``LoadLibrary()``. This should hopefully be
-    # "good enough."
-    #
-    # TODO improve the logic upstream
-    if static:
-        ctypes_init = source_path / "Lib" / "ctypes" / "__init__.py"
-        static_replace_in_file(
-            ctypes_init,
-            CTYPES_INIT_REPLACE.strip(),
-            b"pythonapi = PyDLL(_sys.executable)",
-        )
-
-    # Python 3.11 made _Py_IDENTIFIER hidden by default. Source files need to
-    # opt in to unmasking it. Our static build tickles this into not working.
-    if static:
-        static_replace_in_file(
-            source_path / "PC" / "_msi.c",
-            b"#include <Python.h>\n",
-            b"#define NEEDS_PY_IDENTIFIER\n#include <Python.h>\n",
-        )
-
-    # The `sys` module only populates `sys.winver` if MS_COREDLL is defined,
-    # which it isn't in static builds. We know what the version should be, so
-    # we go ahead and set it.
-    if static:
-        majmin = ".".join(python_version.split(".")[0:2])
-        # Source changed in 3.10.
-        try:
-            static_replace_in_file(
-                source_path / "Python" / "sysmodule.c",
-                SYSMODULE_WINVER_SEARCH,
-                SYSMODULE_WINVER_REPLACE % majmin.encode("ascii"),
-            )
-        except NoSearchStringError:
-            static_replace_in_file(
-                source_path / "Python" / "sysmodule.c",
-                SYSMODULE_WINVER_SEARCH_38,
-                SYSMODULE_WINVER_REPLACE_38 % majmin.encode("ascii"),
-            )
-
-    # Producing statically linked binaries invalidates assumptions in the
-    # layout tool. Update the tool accordingly.
-    layout_main = source_path / "PC" / "layout" / "main.py"
-
-    # We no longer have a pythonXX.dll file.
-    if static:
-        static_replace_in_file(
-            layout_main, b"    yield from in_build(PYTHON_DLL_NAME)\n", b""
-        )
-
-
 def run_msbuild(
     msbuild: pathlib.Path,
     pcbuild_path: pathlib.Path,
     configuration: str,
     platform: str,
-    static: bool,
     python_version: str,
     windows_sdk_version: str,
 ):
@@ -1563,10 +849,8 @@ def run_msbuild(
         "/verbosity:normal",
         "/property:IncludeExternals=true",
         "/property:IncludeSSL=true",
-        # TODO support tkinter in static builds.
-        "/property:IncludeTkinter=%s" % ("false" if static else "true"),
-        # TODO support test extensions in static builds.
-        "/property:IncludeTests=%s" % ("false" if static else "true"),
+        "/property:IncludeTkinter=true",
+        "/property:IncludeTests=true",
         "/property:OverrideVersion=%s" % python_version,
         "/property:IncludeCTypes=true",
         # We pin the Windows 10 SDK version to make builds more deterministic.
@@ -1654,9 +938,6 @@ def build_openssl_for_arch(
         },
     )
 
-    if "static" in profile:
-        static_replace_in_file(source_root / "Makefile", b"/MD", b"/MT")
-
     # exec_and_log(["nmake"], source_root, env)
     exec_and_log(
         [str(jom_path / "jom"), "/J", str(multiprocessing.cpu_count())],
@@ -1743,7 +1024,6 @@ def build_libffi(
     sh_exe: pathlib.Path,
     msvc_version: str,
     dest_archive: pathlib.Path,
-    static: bool,
 ):
     with tempfile.TemporaryDirectory(prefix="libffi-build-") as td:
         td = pathlib.Path(td)
@@ -1792,39 +1072,6 @@ def build_libffi(
             / "prepare_libffi.bat"
         )
 
-        if static:
-            # We replace FFI_BUILDING_DLL with FFI_BUILDING so
-            # declspec(dllexport) isn't used.
-            # We add USE_STATIC_RTL to force static linking of the crt.
-            static_replace_in_file(
-                prepare_libffi,
-                b"CPPFLAGS='-DFFI_BUILDING_DLL'",
-                b"CPPFLAGS='-DFFI_BUILDING -DUSE_STATIC_RTL'",
-            )
-
-            # We also need to tell configure to only build a static library.
-            static_replace_in_file(
-                prepare_libffi,
-                b"--build=$BUILD --host=$HOST;",
-                b"--build=$BUILD --host=$HOST --disable-shared;",
-            )
-
-            # Remove references to copying .dll and .pdb files.
-            try:
-                static_replace_in_file(
-                    prepare_libffi,
-                    b"copy %ARTIFACTS%\.libs\libffi-*.dll %_LIBFFI_OUT% || exit /B 1",
-                    b"",
-                )
-                static_replace_in_file(
-                    prepare_libffi,
-                    b"copy %ARTIFACTS%\.libs\libffi-*.lib %_LIBFFI_OUT% || exit /B 1",
-                    b"",
-                )
-            except NoSearchStringError:
-                # This patch is only needed on CPython 3.9+.
-                pass
-
         env = dict(os.environ)
         env["LIBFFI_SOURCE"] = str(ffi_source_path)
         env["VCVARSALL"] = str(find_vcvarsall_path(msvc_version))
@@ -1867,7 +1114,6 @@ def collect_python_build_artifacts(
     python_majmin: str,
     arch: str,
     config: str,
-    static: bool,
     openssl_entry: str,
 ):
     """Collect build artifacts from Python.
@@ -1923,8 +1169,7 @@ def collect_python_build_artifacts(
     }
 
     other_projects = {"pythoncore"}
-    if not static:
-        other_projects.add("python3dll")
+    other_projects.add("python3dll")
 
     # Projects providing dependencies.
     depends_projects = set()
@@ -1935,9 +1180,6 @@ def collect_python_build_artifacts(
     dirs = {p for p in os.listdir(intermediates_path)}
 
     for extension, entry in CONVERT_TO_BUILTIN_EXTENSIONS.items():
-        if static and entry.get("ignore_static"):
-            continue
-
         if extension not in dirs:
             if entry.get("ignore_missing"):
                 continue
@@ -1946,14 +1188,12 @@ def collect_python_build_artifacts(
                 sys.exit(1)
 
         extension_projects.add(extension)
-        if static:
-            depends_projects |= set(entry.get("static_depends", []))
 
-    if not static:
-        depends_projects |= {
-            "liblzma",
-            "sqlite3",
-        }
+
+    depends_projects |= {
+        "liblzma",
+        "sqlite3",
+    }
 
     known_projects = (
         ignore_projects | other_projects | depends_projects | extension_projects
@@ -2016,10 +1256,7 @@ def collect_python_build_artifacts(
     res["inittab_source"] = "build/core/config.c"
     res["inittab_cflags"] = ["-DNDEBUG", "-DPy_BUILD_CORE"]
 
-    if static:
-        exts = ("lib",)
-    else:
-        exts = ("lib", "exp")
+    exts = ("lib", "exp")
 
     for ext in exts:
         source = outputs_path / ("python%s.%s" % (python_majmin, ext))
@@ -2027,10 +1264,7 @@ def collect_python_build_artifacts(
         log("copying %s" % source)
         shutil.copyfile(source, dest)
 
-    if static:
-        res["core"]["static_lib"] = "build/core/python%s.lib" % python_majmin
-    else:
-        res["core"]["shared_lib"] = "install/python%s.dll" % python_majmin
+    res["core"]["shared_lib"] = "install/python%s.dll" % python_majmin
 
     # We hack up pythoncore.vcxproj and the list in it when this function
     # runs isn't totally accurate. We hardcode the list from the CPython
@@ -2079,35 +1313,19 @@ def collect_python_build_artifacts(
         for obj in process_project(ext, dest_dir):
             entry["objs"].append("build/extensions/%s/%s" % (ext, obj))
 
-        if static:
-            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
-                "static_depends", []
-            ):
-                entry["links"].append(
-                    {"name": lib, "path_static": "build/lib/%s.lib" % lib}
-                )
-        else:
-            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
-                "shared_depends", []
-            ):
-                entry["links"].append(
-                    {"name": lib, "path_dynamic": "install/DLLs/%s.dll" % lib}
-                )
+        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
+            "shared_depends", []
+        ):
+            entry["links"].append(
+                {"name": lib, "path_dynamic": "install/DLLs/%s.dll" % lib}
+            )
 
-            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
-                "shared_depends_%s" % arch, []
-            ):
-                entry["links"].append(
-                    {"name": lib, "path_dynamic": "install/DLLs/%s.dll" % lib}
-                )
-
-        if static:
-            for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
-                "static_depends_no_project", []
-            ):
-                entry["links"].append(
-                    {"name": lib, "path_static": "build/lib/%s.lib" % lib}
-                )
+        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
+            "shared_depends_%s" % arch, []
+        ):
+            entry["links"].append(
+                {"name": lib, "path_dynamic": "install/DLLs/%s.dll" % lib}
+            )
 
         if ext in EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY:
             licenses = set()
@@ -2139,13 +1357,7 @@ def collect_python_build_artifacts(
         log("copying static extension %s" % ext_static)
         shutil.copyfile(ext_static, dest)
 
-        if static:
-            res["extensions"][ext][0]["static_lib"] = "build/extensions/%s/%s.lib" % (
-                ext,
-                ext,
-            )
-        else:
-            res["extensions"][ext][0]["shared_lib"] = "install/DLLs/%s.pyd" % ext
+        res["extensions"][ext][0]["shared_lib"] = "install/DLLs/%s.pyd" % ext
 
     lib_dir = out_dir / "build" / "lib"
     lib_dir.mkdir()
@@ -2178,7 +1390,6 @@ def build_cpython(
     libffi_archive,
     openssl_entry: str,
 ):
-    static = "static" in profile
     pgo = "-pgo" in profile
 
     msbuild = find_msbuild(msvc_version)
@@ -2236,20 +1447,19 @@ def build_cpython(
 
         # We need all the OpenSSL library files in the same directory to appease
         # install rules.
-        if not static:
-            openssl_arch = {"amd64": "amd64", "x86": "win32"}[arch]
-            openssl_root = td / "openssl" / openssl_arch
-            openssl_bin_path = openssl_root / "bin"
-            openssl_lib_path = openssl_root / "lib"
+        openssl_arch = {"amd64": "amd64", "x86": "win32"}[arch]
+        openssl_root = td / "openssl" / openssl_arch
+        openssl_bin_path = openssl_root / "bin"
+        openssl_lib_path = openssl_root / "lib"
 
-            for f in sorted(os.listdir(openssl_bin_path)):
-                if not f.startswith("lib"):
-                    continue
+        for f in sorted(os.listdir(openssl_bin_path)):
+            if not f.startswith("lib"):
+                continue
 
-                source = openssl_bin_path / f
-                dest = openssl_lib_path / f
-                log("copying %s to %s" % (source, dest))
-                shutil.copyfile(source, dest)
+            source = openssl_bin_path / f
+            dest = openssl_lib_path / f
+            log("copying %s to %s" % (source, dest))
+            shutil.copyfile(source, dest)
 
         cpython_source_path = td / ("Python-%s" % python_version)
         pcbuild_path = cpython_source_path / "PCbuild"
@@ -2272,11 +1482,6 @@ def build_cpython(
             cpython_source_path,
             build_directory,
             python_version=python_version,
-            static=static,
-            honor_allow_missing_preprocessor=python_entry_name == "cpython-3.8",
-        )
-        hack_source_files(
-            cpython_source_path, static=static, python_version=python_version
         )
 
         if pgo:
@@ -2285,7 +1490,6 @@ def build_cpython(
                 pcbuild_path,
                 configuration="PGInstrument",
                 platform=build_platform,
-                static=static,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
             )
@@ -2351,7 +1555,6 @@ def build_cpython(
                 pcbuild_path,
                 configuration="PGUpdate",
                 platform=build_platform,
-                static=static,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
             )
@@ -2363,7 +1566,6 @@ def build_cpython(
                 pcbuild_path,
                 configuration="Release",
                 platform=build_platform,
-                static=static,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
             )
@@ -2402,10 +1604,7 @@ def build_cpython(
         if not meets_python_minimum_version(python_version, "3.12"):
             args.append("--include-distutils")
 
-        if static:
-            args.append("--flat-dlls")
-        else:
-            args.extend(["--include-idle", "--include-stable", "--include-tcltk"])
+        args.extend(["--include-idle", "--include-stable", "--include-tcltk"])
 
         exec_and_log(
             args,
@@ -2473,7 +1672,6 @@ def build_cpython(
             "".join(entry["version"].split(".")[0:2]),
             build_directory,
             artifact_config,
-            static=static,
             openssl_entry=openssl_entry,
         )
 
@@ -2498,19 +1696,9 @@ def build_cpython(
             for record in entries:
                 record["required"] = extension in REQUIRED_EXTENSIONS
 
-        # Copy libffi static library as a one-off.
-        if static:
-            source = td / "libffi" / "libffi.lib"
-            dest = out_dir / "python" / "build" / "lib" / "libffi.lib"
-            log("copying %s to %s" % (source, dest))
-            shutil.copyfile(source, dest)
-
         # Copy OpenSSL libraries as a one-off.
         for lib in ("crypto", "ssl"):
-            if static:
-                name = "lib%s_static.lib" % lib
-            else:
-                name = "lib%s.lib" % lib
+            name = "lib%s.lib" % lib
 
             source = td / "openssl" / build_directory / "lib" / name
             dest = out_dir / "python" / "build" / "lib" / name
@@ -2528,21 +1716,13 @@ def build_cpython(
             if f.startswith("LICENSE.") and f.endswith(".txt"):
                 shutil.copyfile(ROOT / f, licenses_dir / f)
 
-        extension_module_loading = ["builtin"]
-
-        # Static builds do not support loading extension modules, since Python
-        # symbols are not exported.
-        if not static:
-            extension_module_loading.append("shared-library")
+        extension_module_loading = ["builtin", "shared-library"]
 
         # Patches to CPython above (search for __declspec) always force
         # __declspec(dllexport), even for static distributions.
         python_symbol_visibility = "dllexport"
 
-        if static:
-            crt_features = ["static"]
-        else:
-            crt_features = ["vcruntime:140"]
+        crt_features = ["vcruntime:140"]
 
         if "pgo" in profile:
             optimizations = "pgo"
@@ -2559,7 +1739,7 @@ def build_cpython(
             "python_symbol_visibility": python_symbol_visibility,
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "python_extension_module_loading": extension_module_loading,
-            "libpython_link_mode": "static" if static else "shared",
+            "libpython_link_mode": "shared",
             "crt_features": crt_features,
             "build_info": build_info,
             "licenses": entry["licenses"],
@@ -2587,16 +1767,15 @@ def build_cpython(
 
         python_info.update(metadata)
 
-        if not static:
-            python_info["tcl_library_path"] = "install/tcl"
-            python_info["tcl_library_paths"] = [
-                "dde1.4",
-                "reg1.3",
-                "tcl8.6",
-                "tk8.6",
-                "tcl8",
-                "tix8.4.3",
-            ]
+        python_info["tcl_library_path"] = "install/tcl"
+        python_info["tcl_library_paths"] = [
+            "dde1.4",
+            "reg1.3",
+            "tcl8.6",
+            "tk8.6",
+            "tcl8",
+            "tix8.4.3",
+        ]
 
         validate_python_json(python_info, extension_modules=None)
 
@@ -2662,7 +1841,7 @@ def main():
     )
     parser.add_argument(
         "--profile",
-        choices={"static-noopt", "shared-noopt", "shared-pgo"},
+        choices={"shared-noopt", "shared-pgo"},
         default="shared-noopt",
         help="How to compile Python",
     )
@@ -2721,7 +1900,6 @@ def main():
                 pathlib.Path(args.sh),
                 args.vs,
                 libffi_archive,
-                "static" in args.profile,
             )
 
         LOG_PREFIX[0] = "cpython"

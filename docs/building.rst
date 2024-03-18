@@ -92,15 +92,12 @@ If building CPython 3.8+, there are the following additional requirements:
 * An installation of Cywgin with the ``autoconf``, ``automake``, ``libtool``,
   and ``make`` packages installed. (``libffi`` build dependency.)
 
-To build a Python distribution for Windows x64::
+To build a dynamically linked Python distribution for Windows x64::
 
-   # From a Visual Studio 2017/2019 x64 native tools command prompt:
-   $ py.exe build-windows.py --profile static-noopt
+    $ py.exe build-windows.py --profile shared-noopt
 
-It is also possible to build a more traditional dynamically linked
-distribution, optionally with PGO optimizations::
+It's also possible to build with optional PGO optimizations::
 
-   $ py.exe build-windows.py --profile shared-noopt
    $ py.exe build-windows.py --profile shared-pgo
 
 If building CPython 3.8+, you will need to specify the path to a
