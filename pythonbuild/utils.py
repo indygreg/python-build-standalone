@@ -182,6 +182,17 @@ def write_package_versions(dest_path: pathlib.Path):
         write_if_different(p, content.encode("ascii"))
 
 
+def write_cpython_version(dest_path: pathlib.Path, version: str):
+    """Write a CPython version in a directory."""
+    dest_path.mkdir(parents=True, exist_ok=True)
+
+    major_minor = ".".join(version.split(".")[:2])
+    k = "cpython-%s" % major_minor
+    p = dest_path / ("VERSION.%s" % k)
+    content = "%s_VERSION := %s\n" % (k.upper().replace("-", "_"), version)
+    write_if_different(p, content.encode("ascii"))
+
+
 def write_target_settings(targets, dest_path: pathlib.Path):
     dest_path.mkdir(parents=True, exist_ok=True)
 
@@ -621,7 +632,7 @@ def release_download_statistics(mode="by_asset"):
             print("%d\t%s" % (count, build))
     elif mode == "by_tag":
         for tag, count in sorted(by_tag.items()):
-            print("%d\t%s"% (count, tag))
+            print("%d\t%s" % (count, tag))
     elif mode == "total":
         print("%d" % by_tag.total())
     else:

@@ -32,12 +32,14 @@ from pythonbuild.utils import (
     add_env_common,
     add_licenses_to_extension_entry,
     clang_toolchain,
+    create_tar_from_directory,
     download_entry,
     get_targets,
     get_target_settings,
     target_needs,
     validate_python_json,
     write_package_versions,
+    write_cpython_version,
     write_target_settings,
     write_triples_makefiles,
 )
@@ -62,8 +64,7 @@ def install_sccache(build_env):
     """
     candidates = [
         # Prefer a binary in the project itself.
-        ROOT
-        / "sccache",
+        ROOT / "sccache",
     ]
 
     # Look for sccache in $PATH, but only if the build environment
@@ -255,10 +256,9 @@ def simple_build(
         build_env.copy_file(SUPPORT / ("build-%s.sh" % entry))
 
         env = {
-            "%s_VERSION"
-            % entry.upper()
-            .replace("-", "_")
-            .replace(".", "_"): DOWNLOADS[entry]["version"],
+            "%s_VERSION" % entry.upper().replace("-", "_").replace(".", "_"): DOWNLOADS[
+                entry
+            ]["version"],
         }
 
         add_target_env(env, host_platform, target_triple, build_env)
@@ -684,13 +684,23 @@ def build_cpython(
     optimizations,
     dest_archive,
     version=None,
+    python_source=None,
 ):
     """Build CPython in a Docker image'"""
     entry_name = "cpython-%s" % version
     entry = DOWNLOADS[entry_name]
-    python_version = entry["version"]
+    if not python_source:
+        python_version = entry["version"]
+        python_archive = download_entry(entry_name, DOWNLOADS_PATH)
+    else:
+        python_version = os.environ["PYBUILD_PYTHON_VERSION"]
+        python_archive = DOWNLOADS_PATH / ("Python-%s.tar.xz" % python_version)
+        print("Compressing %s to %s" % (python_source, python_archive))
+        with python_archive.open("wb") as fh:
+            create_tar_from_directory(
+                fh, python_source, path_prefix="Python-%s" % python_version
+            )
 
-    python_archive = download_entry(entry_name, DOWNLOADS_PATH)
     setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
     pip_archive = download_entry("pip", DOWNLOADS_PATH)
 
@@ -726,7 +736,9 @@ def build_cpython(
         for p in sorted(packages):
             build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
 
-        build_env.install_toolchain_archive(BUILD, entry_name, host_platform)
+        build_env.install_toolchain_archive(
+            BUILD, entry_name, host_platform, version=python_version
+        )
 
         for p in (
             python_archive,
@@ -762,8 +774,8 @@ def build_cpython(
 
         env = {
             "PIP_VERSION": DOWNLOADS["pip"]["version"],
-            "PYTHON_VERSION": entry["version"],
-            "PYTHON_MAJMIN_VERSION": ".".join(entry["version"].split(".")[0:2]),
+            "PYTHON_VERSION": python_version,
+            "PYTHON_MAJMIN_VERSION": ".".join(python_version.split(".")[0:2]),
             "SETUPTOOLS_VERSION": DOWNLOADS["setuptools"]["version"],
             "TOOLCHAIN": "clang-%s" % host_platform,
         }
@@ -824,7 +836,7 @@ def build_cpython(
             "target_triple": target_triple,
             "optimizations": optimizations,
             "python_tag": entry["python_tag"],
-            "python_version": entry["version"],
+            "python_version": python_version,
             "python_stdlib_test_packages": sorted(STDLIB_TEST_PACKAGES),
             "python_symbol_visibility": python_symbol_visibility,
             "python_extension_module_loading": extension_module_loading,
@@ -924,6 +936,11 @@ def main():
         "--dest-archive", required=True, help="Path to archive that we are producing"
     )
     parser.add_argument("--docker-image", help="Docker image to use for building")
+    parser.add_argument(
+        "--python-source",
+        default=None,
+        help="A custom path to CPython source files to use",
+    )
     parser.add_argument("action")
 
     args = parser.parse_args()
@@ -933,6 +950,9 @@ def main():
     target_triple = args.target_triple
     host_platform = args.host_platform
     optimizations = args.optimizations
+    python_source = (
+        pathlib.Path(args.python_source) if args.python_source != "null" else None
+    )
     dest_archive = pathlib.Path(args.dest_archive)
     docker_image = args.docker_image
 
@@ -968,6 +988,12 @@ def main():
             write_triples_makefiles(targets, BUILD, SUPPORT)
             write_target_settings(targets, BUILD / "targets")
             write_package_versions(BUILD / "versions")
+
+            # Override the DOWNLOADS package entry for CPython for the local build
+            if python_source:
+                write_cpython_version(
+                    BUILD / "versions", os.environ["PYBUILD_PYTHON_VERSION"]
+                )
 
         elif action.startswith("image-"):
             image_name = action[6:]
@@ -1179,6 +1205,7 @@ def main():
                 optimizations=optimizations,
                 dest_archive=dest_archive,
                 version=action.split("-")[1],
+                python_source=python_source,
             )
 
         else:
