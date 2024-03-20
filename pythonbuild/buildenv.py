@@ -38,9 +38,15 @@ class ContainerContext(object):
         dest_path = dest_path or "/build"
         copy_file_to_container(source, self.container, dest_path, dest_name)
 
-    def install_toolchain_archive(self, build_dir, package_name, host_platform):
+    def install_toolchain_archive(
+        self, build_dir, package_name, host_platform, version=None
+    ):
         entry = DOWNLOADS[package_name]
-        basename = "%s-%s-%s.tar" % (package_name, entry["version"], host_platform)
+        basename = "%s-%s-%s.tar" % (
+            package_name,
+            version or entry["version"],
+            host_platform,
+        )
 
         p = build_dir / basename
         self.copy_file(p)
