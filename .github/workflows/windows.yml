@@ -51,11 +51,7 @@ jobs:
         vcvars:
           - 'vcvars32.bat'
           - 'vcvars64.bat'
-        # The 'shared-' prefix is no longer needed (i.e., both 'shared-pgo' and 'pgo' resolve to the
-        # same profile). However, we're double-publishing under both names during the transition
-        # period.
         profile:
-          - 'shared-pgo'
           - 'pgo'
     needs: pythonbuild
     runs-on: 'windows-2019'

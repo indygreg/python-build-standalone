@@ -1384,8 +1384,8 @@ def build_cpython(
     openssl_archive,
     libffi_archive,
     openssl_entry: str,
-):
-    pgo = profile in ("pgo", "shared-pgo")
+) -> pathlib.Path:
+    pgo = profile == "pgo"
 
     msbuild = find_msbuild(msvc_version)
     log("found MSBuild at %s" % msbuild)
@@ -1719,7 +1719,7 @@ def build_cpython(
 
         crt_features = ["vcruntime:140"]
 
-        if profile in ("pgo", "shared-pgo"):
+        if profile == "pgo":
             optimizations = "pgo"
         else:
             optimizations = "noopt"
@@ -1812,7 +1812,7 @@ def fetch_strawberry_perl() -> pathlib.Path:
     return strawberryperl
 
 
-def main():
+def main() -> None:
     BUILD.mkdir(exist_ok=True)
 
     parser = argparse.ArgumentParser()
@@ -1836,8 +1836,7 @@ def main():
     )
     parser.add_argument(
         "--profile",
-        # 'shared-pgo' is an alias for 'pgo'; 'shared-noopt' is an alias for 'noopt'.
-        choices={"noopt", "pgo", "shared-noopt", "shared-pgo"},
+        choices={"noopt", "pgo"},
         default="noopt",
         help="How to compile Python",
     )
@@ -1916,11 +1915,22 @@ def main():
         else:
             release_tag = release_tag_from_git()
 
-        compress_python_archive(
+        # Create, e.g., `cpython-3.10.13+20240224-x86_64-pc-windows-msvc-pgo.tar.zst`.
+        dest_path = compress_python_archive(
             tar_path,
             DIST,
             "%s-%s" % (tar_path.stem, release_tag),
         )
+
+        # Copy to, e.g., `cpython-3.10.13+20240224-x86_64-pc-windows-msvc-shared-pgo.tar.zst`.
+        # The 'shared-' prefix is no longer needed, but we're double-publishing under
+        # both names during the transition period.
+        filename: str = dest_path.name
+        if not filename.endswith("-%s-%s.tar.zst" % (args.profile, release_tag)):
+            raise ValueError("expected filename to end with profile: %s" % filename)
+        filename = filename.removesuffix("-%s-%s.tar.zst" % (args.profile, release_tag))
+        filename = filename + "-shared-%s-%s.tar.zst" % (args.profile, release_tag)
+        shutil.copy2(dest_path, dest_path.with_name(filename))
 
 
 if __name__ == "__main__":

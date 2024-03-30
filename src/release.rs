@@ -64,9 +64,8 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
         },
     );
 
-    // The 'shared-' prefix is no longer needed (i.e., both 'shared-pgo' and 'pgo' resolve to the
-    // same profile). However, we're double-publishing under both names during the transition
-    // period.
+    // The 'shared-' prefix is no longer needed, but we're double-publishing under both names during
+    // the transition period.
     h.insert(
         "i686-pc-windows-msvc-shared",
         TripleRelease {
