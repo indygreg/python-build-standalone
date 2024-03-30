@@ -94,16 +94,16 @@ If building CPython 3.8+, there are the following additional requirements:
 
 To build a dynamically linked Python distribution for Windows x64::
 
-    $ py.exe build-windows.py --profile shared-noopt
+    $ py.exe build-windows.py --profile noopt
 
 It's also possible to build with optional PGO optimizations::
 
-   $ py.exe build-windows.py --profile shared-pgo
+   $ py.exe build-windows.py --profile pgo
 
 If building CPython 3.8+, you will need to specify the path to a
 ``sh.exe`` installed from cygwin. e.g.
 
-   $ py.exe build-windows.py --python cpython-3.8 --sh c:\cygwin\bin\sh.exe --profile shared
+   $ py.exe build-windows.py --python cpython-3.8 --sh c:\cygwin\bin\sh.exe --profile noopt
 
 To build a 32-bit x86 binary, simply use an ``x86 Native Tools
 Command Prompt`` instead of ``x64``.

@@ -605,7 +605,6 @@ def hack_project_files(
         pass
 
 
-
 PYPORT_EXPORT_SEARCH_39 = b"""
 #if defined(__CYGWIN__)
 #       define HAVE_DECLSPEC_DLL
@@ -894,12 +893,11 @@ def build_openssl_for_arch(
     # uplink.c tries to find the OPENSSL_Applink function exported from the current
     # executable. However, it is exported from _ssl[_d].pyd in shared builds. So
     # update its sounce to look for it from there.
-    if "shared" in profile:
-        static_replace_in_file(
-            source_root / "ms" / "uplink.c",
-            b"((h = GetModuleHandle(NULL)) == NULL)",
-            b'((h = GetModuleHandleA("_ssl.pyd")) == NULL) if ((h = GetModuleHandleA("_ssl_d.pyd")) == NULL) if ((h = GetModuleHandle(NULL)) == NULL)',
-        )
+    static_replace_in_file(
+        source_root / "ms" / "uplink.c",
+        b"((h = GetModuleHandle(NULL)) == NULL)",
+        b'((h = GetModuleHandleA("_ssl.pyd")) == NULL) if ((h = GetModuleHandleA("_ssl_d.pyd")) == NULL) if ((h = GetModuleHandle(NULL)) == NULL)',
+    )
 
     if arch == "x86":
         configure = "VC-WIN32"
@@ -1189,7 +1187,6 @@ def collect_python_build_artifacts(
 
         extension_projects.add(extension)
 
-
     depends_projects |= {
         "liblzma",
         "sqlite3",
@@ -1313,9 +1310,7 @@ def collect_python_build_artifacts(
         for obj in process_project(ext, dest_dir):
             entry["objs"].append("build/extensions/%s/%s" % (ext, obj))
 
-        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get(
-            "shared_depends", []
-        ):
+        for lib in CONVERT_TO_BUILTIN_EXTENSIONS.get(ext, {}).get("shared_depends", []):
             entry["links"].append(
                 {"name": lib, "path_dynamic": "install/DLLs/%s.dll" % lib}
             )
@@ -1390,7 +1385,7 @@ def build_cpython(
     libffi_archive,
     openssl_entry: str,
 ):
-    pgo = "-pgo" in profile
+    pgo = profile in ("pgo", "shared-pgo")
 
     msbuild = find_msbuild(msvc_version)
     log("found MSBuild at %s" % msbuild)
@@ -1724,7 +1719,7 @@ def build_cpython(
 
         crt_features = ["vcruntime:140"]
 
-        if "pgo" in profile:
+        if profile in ("pgo", "shared-pgo"):
             optimizations = "pgo"
         else:
             optimizations = "noopt"
@@ -1841,8 +1836,9 @@ def main():
     )
     parser.add_argument(
         "--profile",
-        choices={"shared-noopt", "shared-pgo"},
-        default="shared-noopt",
+        # 'shared-pgo' is an alias for 'pgo'; 'shared-noopt' is an alias for 'noopt'.
+        choices={"noopt", "pgo", "shared-noopt", "shared-pgo"},
+        default="noopt",
         help="How to compile Python",
     )
     parser.add_argument(

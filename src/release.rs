@@ -47,8 +47,26 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     );
 
     // Windows.
+    h.insert(
+        "i686-pc-windows-msvc",
+        TripleRelease {
+            suffixes: vec!["pgo"],
+            install_only_suffix: "pgo",
+            python_version_requirement: None,
+        },
+    );
+    h.insert(
+        "x86_64-pc-windows-msvc",
+        TripleRelease {
+            suffixes: vec!["pgo"],
+            install_only_suffix: "pgo",
+            python_version_requirement: None,
+        },
+    );
 
-    // The -shared part of the triple is a lie. But the code handles it fine.
+    // The 'shared-' prefix is no longer needed (i.e., both 'shared-pgo' and 'pgo' resolve to the
+    // same profile). However, we're double-publishing under both names during the transition
+    // period.
     h.insert(
         "i686-pc-windows-msvc-shared",
         TripleRelease {
