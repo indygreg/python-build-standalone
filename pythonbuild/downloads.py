@@ -377,9 +377,10 @@ DOWNLOADS = {
         "sha256": "a806f8a92f879dcd0146f3f1153fdffe845f2fc0df9b1a26c19312b7b0a29c86",
         "version": "1.5.0",
     },
-    # TODO upgrade to 5.6+.
+    # IMPORTANT: xz 5.6 has a backdoor. Be extremely cautious before taking any xz
+    # upgrade since it isn't clear which versions are safe.
     "xz": {
-        "url": "https://tukaani.org/xz/xz-5.2.12.tar.gz",
+        "url": "https://github.com/indygreg/python-build-standalone/releases/download/20240224/xz-5.2.12.tar.gz",
         "size": 2190541,
         "sha256": "61bda930767dcb170a5328a895ec74cab0f5aac4558cdda561c83559db582a13",
         "version": "5.2.12",
