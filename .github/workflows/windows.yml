@@ -52,7 +52,7 @@ jobs:
           - 'vcvars32.bat'
           - 'vcvars64.bat'
         profile:
-          - 'shared-pgo'
+          - 'pgo'
     needs: pythonbuild
     runs-on: 'windows-2019'
     steps:
