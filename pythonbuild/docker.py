@@ -9,7 +9,7 @@ import os
 import pathlib
 import tarfile
 
-import docker
+import docker  # type: ignore
 import jinja2
 
 from .logging import log, log_raw
@@ -85,7 +85,7 @@ def get_image(client, source_dir: pathlib.Path, image_dir: pathlib.Path, name):
             return image_id
 
         else:
-            return build_docker_image(client, source_dir, image_dir, name)
+            return build_docker_image(client, str(source_dir).encode(), image_dir, name)
 
 
 def copy_file_to_container(path, container, container_path, archive_path=None):

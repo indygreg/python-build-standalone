@@ -49,6 +49,7 @@ def run():
     #   Unused variable
     check_args = ["--select", "I,F401,F841"]
     format_args = []
+    mypy_args = ["pythonbuild"]
 
     if args.fix:
         check_args.append("--fix")
@@ -61,8 +62,13 @@ def run():
     format_result = subprocess.run(
         ["ruff", "format"] + format_args, stdout=sys.stdout, stderr=sys.stderr
     )
+    mypy_result = subprocess.run(
+        ["mypy"] + mypy_args, stdout=sys.stdout, stderr=sys.stderr
+    )
 
-    sys.exit(check_result.returncode + format_result.returncode)
+    sys.exit(
+        check_result.returncode + format_result.returncode + mypy_result.returncode
+    )
 
 
 if __name__ == "__main__":
