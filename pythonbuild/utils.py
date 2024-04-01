@@ -289,7 +289,7 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
             print(f"urllib error on {url}; retrying: {e}")
             time.sleep(2**attempt)
     else:
-        raise Exception("download failed after multiple retries")
+        raise Exception("download failed after multiple retries: %s" % url)
 
     tmp.rename(path)
     print("successfully downloaded %s" % url)
