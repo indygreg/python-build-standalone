@@ -5,6 +5,7 @@
 import os
 import sys
 import unittest
+import io
 
 
 TERMINFO_DIRS = [
@@ -45,6 +46,9 @@ class TestPythonInterpreter(unittest.TestCase):
         self.assertTrue(lzma.is_check_supported(lzma.CHECK_CRC64))
         self.assertTrue(lzma.is_check_supported(lzma.CHECK_SHA256))
 
+        bz2.compress(b"test")
+        zlib.compress(b"test")
+
     def test_ctypes(self):
         import ctypes
 
@@ -62,6 +66,7 @@ class TestPythonInterpreter(unittest.TestCase):
     @unittest.skipIf(os.name == "nt", "curses not available on Windows")
     def test_curses_import(self):
         import curses
+        assert curses is not None
 
     @unittest.skipIf(os.name == "nt", "curses not available on Windows")
     @unittest.skipIf("TERM" not in os.environ, "TERM not set")
