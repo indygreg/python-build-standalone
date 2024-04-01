@@ -3,6 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+from __future__ import annotations
+
 import argparse
 import os
 import pathlib
@@ -31,6 +33,15 @@ def bootstrap():
     os.execv(str(PYTHON), args)
 
 
+def run_command(command: list[str]) -> int:
+    print("$ " + " ".join(command))
+    returncode = subprocess.run(
+        command, stdout=sys.stdout, stderr=sys.stderr
+    ).returncode
+    print()
+    return returncode
+
+
 def run():
     env = dict(os.environ)
     env["PYTHONUNBUFFERED"] = "1"
@@ -49,26 +60,28 @@ def run():
     #   Unused variable
     check_args = ["--select", "I,F401,F841"]
     format_args = []
-    mypy_args = ["pythonbuild"]
+    mypy_args = [
+        "pythonbuild",
+        "check.py",
+        "build-linux.py",
+        "build-macos.py",
+        "build-windows.py",
+    ]
 
     if args.fix:
         check_args.append("--fix")
     else:
         format_args.append("--check")
 
-    check_result = subprocess.run(
-        ["ruff", "check"] + check_args, stdout=sys.stdout, stderr=sys.stderr
-    )
-    format_result = subprocess.run(
-        ["ruff", "format"] + format_args, stdout=sys.stdout, stderr=sys.stderr
-    )
-    mypy_result = subprocess.run(
-        ["mypy"] + mypy_args, stdout=sys.stdout, stderr=sys.stderr
-    )
+    check_result = run_command(["ruff", "check"] + check_args)
+    format_result = run_command(["ruff", "format"] + format_args)
+    mypy_result = run_command(["mypy"] + mypy_args)
 
-    sys.exit(
-        check_result.returncode + format_result.returncode + mypy_result.returncode
-    )
+    if check_result + format_result + mypy_result:
+        print("Checks failed!")
+        sys.exit(1)
+    else:
+        print("Checks passed!")
 
 
 if __name__ == "__main__":
