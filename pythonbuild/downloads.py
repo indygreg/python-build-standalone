@@ -36,7 +36,7 @@ DOWNLOADS = {
     },
     "cpython-3.8": {
         "url": "https://www.python.org/ftp/python/3.8.19/Python-3.8.19.tar.xz",
-        "size": 20696952,
+        "size": 18975156,
         "sha256": "d2807ac69f69b84fd46a0b93bbd02a4fa48d3e70f4b2835ff0f72a2885040076",
         "version": "3.8.19",
         "licenses": ["Python-2.0", "CNRI-Python"],
@@ -45,7 +45,7 @@ DOWNLOADS = {
     },
     "cpython-3.9": {
         "url": "https://www.python.org/ftp/python/3.9.19/Python-3.9.19.tar.xz",
-        "size": 19673928,
+        "size": 19682840,
         "sha256": "d4892cd1618f6458cb851208c030df1482779609d0f3939991bd38184f8c679e",
         "version": "3.9.19",
         "licenses": ["Python-2.0", "CNRI-Python"],
@@ -54,7 +54,7 @@ DOWNLOADS = {
     },
     "cpython-3.10": {
         "url": "https://www.python.org/ftp/python/3.10.14/Python-3.10.14.tar.xz",
-        "size": 19663088,
+        "size": 19600188,
         "sha256": "9c50481faa8c2832329ba0fc8868d0a606a680fc4f60ec48d26ce8e076751fda",
         "version": "3.10.14",
         "licenses": ["Python-2.0", "CNRI-Python"],
