@@ -1,13 +1,10 @@
 docker
 jinja2
 jsonschema
-mypy
 PyYAML
 # Undeclared dependency in docker 5.0 package.
 six
 # This is a transitive dependency that doesn't get picked up when running on
 # modern Python. So include to force it in requirements.txt.
 tomli
-types-jsonschema
-types-PyYAML
 zstandard
