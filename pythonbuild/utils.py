@@ -17,9 +17,9 @@ import subprocess
 import sys
 import tarfile
 import time
-import zipfile
 import urllib.error
 import urllib.request
+import zipfile
 
 import yaml
 import zstandard

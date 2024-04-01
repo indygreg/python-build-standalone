@@ -4,8 +4,8 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import argparse
-import os
 import multiprocessing
+import os
 import pathlib
 import platform
 import subprocess

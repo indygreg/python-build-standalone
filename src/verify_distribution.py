@@ -5,8 +5,6 @@
 import os
 import sys
 import unittest
-import io
-
 
 TERMINFO_DIRS = [
     "/etc/terminfo",
@@ -41,7 +39,9 @@ if "TERMINFO_DIRS" not in os.environ:
 
 class TestPythonInterpreter(unittest.TestCase):
     def test_compression(self):
-        import bz2, lzma, zlib
+        import bz2
+        import lzma
+        import zlib
 
         self.assertTrue(lzma.is_check_supported(lzma.CHECK_CRC64))
         self.assertTrue(lzma.is_check_supported(lzma.CHECK_SHA256))
@@ -66,6 +66,7 @@ class TestPythonInterpreter(unittest.TestCase):
     @unittest.skipIf(os.name == "nt", "curses not available on Windows")
     def test_curses_import(self):
         import curses
+
         assert curses is not None
 
     @unittest.skipIf(os.name == "nt", "curses not available on Windows")
