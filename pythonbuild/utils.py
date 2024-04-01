@@ -202,9 +202,9 @@ def write_target_settings(targets, dest_path: pathlib.Path):
         for key in ("host_cc", "host_cxx", "target_cc", "target_cflags"):
             payload[key] = settings.get(key)
 
-        payload = json.dumps(payload, indent=4).encode("utf-8")
+        serialized_payload = json.dumps(payload, indent=4).encode("utf-8")
 
-        write_if_different(dest_path / triple, payload)
+        write_if_different(dest_path / triple, serialized_payload)
 
 
 class IntegrityError(Exception):
@@ -298,11 +298,17 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
 def download_entry(key: str, dest_path: pathlib.Path, local_name=None) -> pathlib.Path:
     entry = DOWNLOADS[key]
     url = entry["url"]
+    size = entry["size"]
+    sha256 = entry["sha256"]
+
+    assert isinstance(url, str)
+    assert isinstance(size, int)
+    assert isinstance(sha256, str)
 
     local_name = local_name or url[url.rindex("/") + 1 :]
 
     local_path = dest_path / local_name
-    download_to_path(url, local_path, entry["size"], entry["sha256"])
+    download_to_path(url, local_path, size, sha256)
 
     return local_path
 
