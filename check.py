@@ -10,7 +10,6 @@ import subprocess
 import sys
 import venv
 
-
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent
 VENV = ROOT / "venv.dev"
 PIP = VENV / "bin" / "pip"
@@ -56,8 +55,12 @@ def run():
     else:
         format_args.append("--check")
 
-    check_result = subprocess.run(["ruff", "check"] + check_args, stdout=sys.stdout, stderr=sys.stderr)
-    format_result = subprocess.run(["ruff", "format"] + format_args, stdout=sys.stdout, stderr=sys.stderr)
+    check_result = subprocess.run(
+        ["ruff", "check"] + check_args, stdout=sys.stdout, stderr=sys.stderr
+    )
+    format_result = subprocess.run(
+        ["ruff", "format"] + format_args, stdout=sys.stdout, stderr=sys.stderr
+    )
 
     sys.exit(check_result.returncode + format_result.returncode)
 

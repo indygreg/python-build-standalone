@@ -9,7 +9,6 @@ import subprocess
 import sys
 import venv
 
-
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent
 BUILD = ROOT / "build"
 VENV = BUILD / "venv.macos"

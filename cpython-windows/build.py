@@ -7,6 +7,7 @@ import argparse
 import concurrent.futures
 import io
 import json
+import multiprocessing
 import os
 import pathlib
 import re
@@ -15,20 +16,19 @@ import subprocess
 import sys
 import tempfile
 import zipfile
-import multiprocessing
 
-from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.cpython import (
-    parse_config_c,
     STDLIB_TEST_PACKAGES,
     meets_python_minimum_version,
+    parse_config_c,
 )
+from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.utils import (
+    compress_python_archive,
     create_tar_from_directory,
     download_entry,
     extract_tar_to_directory,
     extract_zip_to_directory,
-    compress_python_archive,
     normalize_tar_archive,
     release_tag_from_git,
     validate_python_json,

@@ -18,12 +18,12 @@ import zstandard
 
 from pythonbuild.buildenv import build_environment
 from pythonbuild.cpython import (
+    STDLIB_TEST_PACKAGES,
     derive_setup_local,
     extension_modules_config,
-    meets_python_minimum_version,
     meets_python_maximum_version,
+    meets_python_minimum_version,
     parse_setup_line,
-    STDLIB_TEST_PACKAGES,
 )
 from pythonbuild.docker import build_docker_image, get_image, write_dockerfiles
 from pythonbuild.downloads import DOWNLOADS
@@ -34,12 +34,12 @@ from pythonbuild.utils import (
     clang_toolchain,
     create_tar_from_directory,
     download_entry,
-    get_targets,
     get_target_settings,
+    get_targets,
     target_needs,
     validate_python_json,
-    write_package_versions,
     write_cpython_version,
+    write_package_versions,
     write_target_settings,
     write_triples_makefiles,
 )
@@ -490,10 +490,10 @@ def python_build_info(
     binary_suffix = ""
 
     if platform == "linux64":
-        bi["core"][
-            "static_lib"
-        ] = "install/lib/python{version}/config-{version}{binary_suffix}-x86_64-linux-gnu/libpython{version}{binary_suffix}.a".format(
-            version=version, binary_suffix=binary_suffix
+        bi["core"]["static_lib"] = (
+            "install/lib/python{version}/config-{version}{binary_suffix}-x86_64-linux-gnu/libpython{version}{binary_suffix}.a".format(
+                version=version, binary_suffix=binary_suffix
+            )
         )
 
         if not musl:
@@ -513,10 +513,10 @@ def python_build_info(
         else:
             object_file_format = "elf"
     elif platform == "macos":
-        bi["core"][
-            "static_lib"
-        ] = "install/lib/python{version}/config-{version}{binary_suffix}-darwin/libpython{version}{binary_suffix}.a".format(
-            version=version, binary_suffix=binary_suffix
+        bi["core"]["static_lib"] = (
+            "install/lib/python{version}/config-{version}{binary_suffix}-darwin/libpython{version}{binary_suffix}.a".format(
+                version=version, binary_suffix=binary_suffix
+            )
         )
         bi["core"]["shared_lib"] = "install/lib/libpython%s%s.dylib" % (
             version,
