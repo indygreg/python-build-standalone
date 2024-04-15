@@ -204,7 +204,9 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
 
             let name = zf.name().to_string();
 
-            if let Some((triple, release)) = RELEASE_TRIPLES.iter().find_map(|(triple, release)| {
+            // Iterate over `RELEASE_TRIPLES` in reverse-order to ensure that if any triple is a
+            // substring of another, the longest match is used.
+            if let Some((triple, release)) = RELEASE_TRIPLES.iter().rev().find_map(|(triple, release)| {
                 if name.contains(triple) {
                     Some((triple, release))
                 } else {
