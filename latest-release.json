@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "tag": "d09ff921d92d6da8d8a608eaa850dc8c0f638194",
-  "release_url": "https://github.com/indygreg/python-build-standalone/releases/tag/d09ff921d92d6da8d8a608eaa850dc8c0f638194",
-  "asset_url_prefix": "https://github.com/indygreg/python-build-standalone/releases/download/d09ff921d92d6da8d8a608eaa850dc8c0f638194"
+  "tag": "20240224",
+  "release_url": "https://github.com/indygreg/python-build-standalone/releases/tag/20240224",
+  "asset_url_prefix": "https://github.com/indygreg/python-build-standalone/releases/download/20240224"
 }
