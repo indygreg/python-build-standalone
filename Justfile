@@ -38,7 +38,9 @@ release-set-latest-release tag:
   #!/usr/bin/env bash
   set -euxo pipefail
 
+  git fetch origin
   git switch latest-release
+  git reset --hard origin/latest-release
   cat << EOF > latest-release.json
   {
     "version": 1,
