@@ -72,7 +72,10 @@ cat Makefile.extra
 pushd Python-${PYTHON_VERSION}
 
 # configure doesn't support cross-compiling on Apple. Teach it.
-if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.13" ]; then
+    # TODO: Add support for cross-compiling on 3.13
+    :
+elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
     patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
 else
     patch -p1 -i ${ROOT}/patch-apple-cross.patch
@@ -94,7 +97,9 @@ fi
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+        patch -p1 -i ${ROOT}/patch-dont-clear-runshared-13.patch
+    elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared.patch
     else
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared-legacy.patch
@@ -105,11 +110,18 @@ fi
 # configure. This is reported as https://bugs.python.org/issue45405. We nerf the
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+        patch -p1 -i ${ROOT}/patch-disable-multiarch-13.patch
+    elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
         patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     else
         patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
     fi
+elif [ "${CC}" = "musl-clang" ]; then
+  # Similarly, this is a problem for musl Clang on Python 3.13+
+  if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    patch -p1 -i ${ROOT}/patch-disable-multiarch-13.patch
+  fi
 fi
 
 # Python 3.11 supports using a provided Python to use during bootstrapping
@@ -134,9 +146,19 @@ if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_10}" ]; then
   patch -p1 -i ${ROOT}/patch-makesetup-deduplicate-objs.patch
 fi
 
+# testembed links against Tcl/Tk and libpython which already includes Tcl/Tk leading duplicate
+# symbols and warnings from objc (which then causes failures in `test_embed` during PGO).
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+  patch -p1 -i ${ROOT}/patch-make-testembed-nolink-tcltk.patch
+fi
+
 # The default build rule for the macOS dylib doesn't pick up libraries
 # from modules / makesetup. So patch it accordingly.
-patch -p1 -i ${ROOT}/patch-macos-link-extension-modules.patch
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    patch -p1 -i ${ROOT}/patch-macos-link-extension-modules-13.patch
+else
+    patch -p1 -i ${ROOT}/patch-macos-link-extension-modules.patch
+fi
 
 # Also on macOS, the `python` executable is linked against libraries defined by statically
 # linked modules. But those libraries should only get linked into libpython, not the
@@ -280,7 +302,7 @@ if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
     fi
 fi
 
-# On Python 3.12 we need to link the special hacl library provided some SHA-256
+# On Python 3.12+ we need to link the special hacl library provided some SHA-256
 # implementations. Since we hack up the regular extension building mechanism, we
 # need to reinvent this wheel.
 if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
@@ -336,7 +358,12 @@ fi
 
 if [ -n "${CPYTHON_OPTIMIZED}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations"
-    if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" && -n "${BOLT_CAPABLE}" ]]; then
+    if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" && -n "${BOLT_CAPABLE}" ]]; then
+        # Due to a SEGFAULT when running `test_embed` with BOLT instrumented binaries, we can't use
+        # BOLT on Python 3.13+.
+        # TODO: Find a fix for this or consider skipping these tests specifically
+        echo "BOLT is disabled on Python 3.13+"
+    elif [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" && -n "${BOLT_CAPABLE}" ]]; then
         CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-bolt"
     fi
 fi
@@ -424,6 +451,11 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # to expose MACOSX_DEPLOYMENT_TARGET everywhere so the value percolates
     # into platform tag.
     export MACOSX_DEPLOYMENT_TARGET="${APPLE_MIN_DEPLOYMENT_TARGET}"
+fi
+
+# ptsrname_r is only available in SDK 13.4+, but we target a lower version for compatibility.
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_ptsname_r=no"
 fi
 
 # We use ndbm on macOS and BerkeleyDB elsewhere.
@@ -742,7 +774,13 @@ s390x-unknown-linux-gnu)
     PYTHON_ARCH="s390x-linux-gnu"
     ;;
 x86_64-unknown-linux-*)
-    PYTHON_ARCH="x86_64-linux-gnu"
+    # In Python 3.13+, the musl target is identified in cross compiles and the output directory
+    # is named accordingly.
+    if [ "${CC}" = "musl-clang" ] && [ "${PYTHON_MAJMIN_VERSION}" = "3.13" ]; then
+        PYTHON_ARCH="x86_64-linux-musl"
+    else
+        PYTHON_ARCH="x86_64-linux-gnu"
+    fi
     ;;
 *)
     echo "unhandled target triple: ${TARGET_TRIPLE}"
@@ -832,7 +870,7 @@ ${BUILD_PYTHON} ${ROOT}/fix_shebangs.py ${ROOT}/out/python/install
 # downstream consumers.
 OBJECT_DIRS="Objects Parser Parser/pegen Programs Python"
 OBJECT_DIRS="${OBJECT_DIRS} Modules"
-for ext in _blake2 cjkcodecs _ctypes _ctypes/darwin _decimal _expat _hacl _io _multiprocessing _sha3 _sqlite _sre _xxtestfuzz ; do
+for ext in _blake2 cjkcodecs _ctypes _ctypes/darwin _decimal _expat _hacl _io _multiprocessing _sha3 _sqlite _sre _testinternalcapi _xxtestfuzz ; do
     OBJECT_DIRS="${OBJECT_DIRS} Modules/${ext}"
 done
 
@@ -895,7 +933,12 @@ cp -av Python/frozen.c ${ROOT}/out/python/build/Python/
 cp -av Modules/Setup* ${ROOT}/out/python/build/Modules/
 
 # Copy the test hardness runner for convenience.
-cp -av Tools/scripts/run_tests.py ${ROOT}/out/python/build/
+# As of Python 3.13, the test harness runner has been removed so we provide a compatibility script
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    cp -av ${ROOT}/run_tests-13.py ${ROOT}/out/python/build/run_tests.py
+else
+    cp -av Tools/scripts/run_tests.py ${ROOT}/out/python/build/
+fi
 
 mkdir ${ROOT}/out/python/licenses
 cp ${ROOT}/LICENSE.*.txt ${ROOT}/out/python/licenses/

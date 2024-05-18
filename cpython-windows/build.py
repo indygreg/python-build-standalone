@@ -65,7 +65,10 @@ CONVERT_TO_BUILTIN_EXTENSIONS = {
     "_lzma": {
         "ignore_additional_depends": {"$(OutDir)liblzma$(PyDebugExt).lib"},
     },
-    "_msi": {},
+    "_msi": {
+        # Removed in 3.13.
+        "ignore_missing": True,
+    },
     "_overlapped": {},
     "_multiprocessing": {},
     "_socket": {},
@@ -352,6 +355,7 @@ def hack_props(
     xz_version = DOWNLOADS["xz"]["version"]
     zlib_version = DOWNLOADS["zlib"]["version"]
     tcltk_commit = DOWNLOADS["tk-windows-bin"]["git_commit"]
+    mpdecimal_version = DOWNLOADS["mpdecimal"]["version"]
 
     sqlite_path = td / ("sqlite-autoconf-%s" % sqlite_version)
     bzip2_path = td / ("bzip2-%s" % bzip2_version)
@@ -359,6 +363,7 @@ def hack_props(
     tcltk_path = td / ("cpython-bin-deps-%s" % tcltk_commit)
     xz_path = td / ("xz-%s" % xz_version)
     zlib_path = td / ("zlib-%s" % zlib_version)
+    mpdecimal_path = td / ("mpdecimal-%s" % mpdecimal_version)
 
     openssl_root = td / "openssl" / arch
     openssl_libs_path = openssl_root / "lib"
@@ -397,6 +402,9 @@ def hack_props(
 
             elif b"<zlibDir" in line:
                 line = b"<zlibDir>%s\\</zlibDir>" % zlib_path
+
+            elif b"<mpdecimalDir" in line:
+                line = b"<mpdecimalDir>%s\\</mpdecimalDir>" % mpdecimal_path
 
             lines.append(line)
 
@@ -1155,15 +1163,17 @@ def collect_python_build_artifacts(
         "_ctypes_test",
         "_testbuffer",
         "_testcapi",
+        "_testclinic_limited",
         "_testclinic",
         "_testconsole",
         "_testembed",
         "_testimportmultiple",
         "_testinternalcapi",
-        "_testsinglephase",
+        "_testlimitedcapi",
         "_testmultiphase",
-        "xxlimited",
+        "_testsinglephase",
         "xxlimited_35",
+        "xxlimited",
     }
 
     other_projects = {"pythoncore"}
@@ -1409,6 +1419,14 @@ def build_cpython(
     setuptools_wheel = download_entry("setuptools", BUILD)
     pip_wheel = download_entry("pip", BUILD)
 
+    # CPython 3.13+ no longer uses a bundled `mpdecimal` version so we build it
+    if meets_python_minimum_version(python_version, "3.13"):
+        mpdecimal_archive = download_entry("mpdecimal", BUILD)
+    else:
+        # TODO: Consider using the built mpdecimal for earlier versions as well,
+        # as we do for Unix builds.
+        mpdecimal_archive = None
+
     if arch == "amd64":
         build_platform = "x64"
         build_directory = "amd64"
@@ -1426,12 +1444,16 @@ def build_cpython(
             for a in (
                 python_archive,
                 bzip2_archive,
+                mpdecimal_archive,
                 openssl_archive,
                 sqlite_archive,
                 tk_bin_archive,
                 xz_archive,
                 zlib_archive,
             ):
+                if a is None:
+                    continue
+
                 log("extracting %s to %s" % (a, td))
                 fs.append(e.submit(extract_tar_to_directory, a, td))
 
@@ -1700,10 +1722,18 @@ def build_cpython(
             log("copying %s to %s" % (source, dest))
             shutil.copyfile(source, dest)
 
-        shutil.copyfile(
-            cpython_source_path / "Tools" / "scripts" / "run_tests.py",
-            out_dir / "python" / "build" / "run_tests.py",
-        )
+        # CPython 3.13 removed `run_tests.py`, we provide a compatibility script
+        # for now.
+        if meets_python_minimum_version(python_version, "3.13"):
+            shutil.copyfile(
+                SUPPORT / "run_tests-13.py",
+                out_dir / "python" / "build" / "run_tests.py",
+            )
+        else:
+            shutil.copyfile(
+                cpython_source_path / "Tools" / "scripts" / "run_tests.py",
+                out_dir / "python" / "build" / "run_tests.py",
+            )
 
         licenses_dir = out_dir / "python" / "licenses"
         licenses_dir.mkdir()

@@ -38,10 +38,17 @@ pushd "Python-${PYTHON_VERSION}"
 # configure. This is reported as https://bugs.python.org/issue45405. We nerf the
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
-  if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
+  if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    patch -p1 -i ${ROOT}/patch-disable-multiarch-13.patch
+  elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
     patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
   else
     patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
+  fi
+elif [ "${CC}" = "musl-clang" ]; then
+  # Similarly, this is a problem for musl Clang on Python 3.13+
+  if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    patch -p1 -i ${ROOT}/patch-disable-multiarch-13.patch
   fi
 fi
 

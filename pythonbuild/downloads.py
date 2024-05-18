@@ -79,6 +79,15 @@ DOWNLOADS = {
         "license_file": "LICENSE.cpython.txt",
         "python_tag": "cp312",
     },
+    "cpython-3.13": {
+        "url": "https://www.python.org/ftp/python/3.13.0/Python-3.13.0rc1.tar.xz",
+        "size": 20881016,
+        "sha256": "678b884775eec0224d5159fa900879020baca2a36ce942fd95febfa1adb4a6bd",
+        "version": "3.13.0rc1",
+        "licenses": ["Python-2.0", "CNRI-Python"],
+        "license_file": "LICENSE.cpython.txt",
+        "python_tag": "cp313",
+    },
     "expat": {
         "url": "https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.xz",
         "size": 460560,
