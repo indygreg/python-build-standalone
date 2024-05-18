@@ -1,0 +1,138 @@
+diff a/Modules/_ctypes/clinic/_ctypes.c.h b/Modules/_ctypes/clinic/_ctypes.c.h
+--- a/Modules/_ctypes/clinic/_ctypes.c.h
++++ b/Modules/_ctypes/clinic/_ctypes.c.h
+@@ -2,6 +2,9 @@
+ preserve
+ [clinic start generated code]*/
+ 
++#if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
++#endif
+ #include "pycore_abstract.h"      // _PyNumber_Index()
+ #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+ 
+diff a/Modules/_io/clinic/bufferedio.c.h b/Modules/_io/clinic/bufferedio.c.h
+--- a/Modules/_io/clinic/bufferedio.c.h
++++ b/Modules/_io/clinic/bufferedio.c.h
+@@ -4,7 +4,7 @@ preserve
+ 
+ #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+ #  include "pycore_gc.h"          // PyGC_Head
+-#  include "pycore_runtime.h"     // _Py_ID()
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
+ #endif
+ #include "pycore_abstract.h"      // _PyNumber_Index()
+ #include "pycore_critical_section.h"// Py_BEGIN_CRITICAL_SECTION()
+diff a/Modules/_io/clinic/iobase.c.h b/Modules/_io/clinic/iobase.c.h
+--- a/Modules/_io/clinic/iobase.c.h
++++ b/Modules/_io/clinic/iobase.c.h
+@@ -2,6 +2,9 @@
+ preserve
+ [clinic start generated code]*/
+ 
++#if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
++#endif
+ #include "pycore_abstract.h"      // _Py_convert_optional_to_ssize_t()
+ #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+ 
+diff a/Modules/_io/clinic/textio.c.h b/Modules/_io/clinic/textio.c.h
+--- a/Modules/_io/clinic/textio.c.h
++++ b/Modules/_io/clinic/textio.c.h
+@@ -4,7 +4,7 @@ preserve
+ 
+ #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+ #  include "pycore_gc.h"          // PyGC_Head
+-#  include "pycore_runtime.h"     // _Py_ID()
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
+ #endif
+ #include "pycore_abstract.h"      // _Py_convert_optional_to_ssize_t()
+ #include "pycore_critical_section.h"// Py_BEGIN_CRITICAL_SECTION()
+diff a/Modules/clinic/_curses_panel.c.h b/Modules/clinic/_curses_panel.c.h
+--- a/Modules/clinic/_curses_panel.c.h
++++ b/Modules/clinic/_curses_panel.c.h
+@@ -2,6 +2,9 @@
+ preserve
+ [clinic start generated code]*/
+ 
++#if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
++#endif
+ #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+ 
+ PyDoc_STRVAR(_curses_panel_panel_bottom__doc__,
+diff a/Modules/clinic/_dbmmodule.c.h b/Modules/clinic/_dbmmodule.c.h
+--- a/Modules/clinic/_dbmmodule.c.h
++++ b/Modules/clinic/_dbmmodule.c.h
+@@ -2,6 +2,9 @@
+ preserve
+ [clinic start generated code]*/
+ 
++#if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
++#endif
+ #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+ 
+ PyDoc_STRVAR(_dbm_dbm_close__doc__,
+diff a/Modules/clinic/_elementtree.c.h b/Modules/clinic/_elementtree.c.h
+--- a/Modules/clinic/_elementtree.c.h
++++ b/Modules/clinic/_elementtree.c.h
+@@ -4,7 +4,7 @@ preserve
+ 
+ #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+ #  include "pycore_gc.h"          // PyGC_Head
+-#  include "pycore_runtime.h"     // _Py_ID()
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
+ #endif
+ #include "pycore_abstract.h"      // _PyNumber_Index()
+ #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+diff a/Modules/clinic/_gdbmmodule.c.h b/Modules/clinic/_gdbmmodule.c.h
+--- a/Modules/clinic/_gdbmmodule.c.h
++++ b/Modules/clinic/_gdbmmodule.c.h
+@@ -2,6 +2,9 @@
+ preserve
+ [clinic start generated code]*/
+ 
++#if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
++#endif
+ #include "pycore_modsupport.h"    // _PyArg_CheckPositional()
+ 
+ PyDoc_STRVAR(_gdbm_gdbm_get__doc__,
+diff a/Modules/clinic/_pickle.c.h b/Modules/clinic/_pickle.c.h
+--- a/Modules/clinic/_pickle.c.h
++++ b/Modules/clinic/_pickle.c.h
+@@ -4,7 +4,7 @@ preserve
+ 
+ #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+ #  include "pycore_gc.h"          // PyGC_Head
+-#  include "pycore_runtime.h"     // _Py_ID()
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
+ #endif
+ #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+ 
+diff a/Modules/clinic/arraymodule.c.h b/Modules/clinic/arraymodule.c.h
+--- a/Modules/clinic/arraymodule.c.h
++++ b/Modules/clinic/arraymodule.c.h
+@@ -2,6 +2,9 @@
+ preserve
+ [clinic start generated code]*/
+ 
++#if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
++#endif
+ #include "pycore_abstract.h"      // _PyNumber_Index()
+ #include "pycore_modsupport.h"    // _PyArg_CheckPositional()
+ 
+diff a/Modules/clinic/pyexpat.c.h b/Modules/clinic/pyexpat.c.h
+--- a/Modules/clinic/pyexpat.c.h
++++ b/Modules/clinic/pyexpat.c.h
+@@ -4,7 +4,7 @@ preserve
+ 
+ #if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
+ #  include "pycore_gc.h"          // PyGC_Head
+-#  include "pycore_runtime.h"     // _Py_ID()
++#  include "pycore_runtime.h"     // _Py_SINGLETON()
+ #endif
+ #include "pycore_modsupport.h"    // _PyArg_UnpackKeywords()
+ 

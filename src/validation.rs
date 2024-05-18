@@ -288,6 +288,16 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
                 required: false,
             },
             MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.13.dylib".to_string(),
+                max_compatibility_version: "3.13.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.13d.dylib".to_string(),
+                max_compatibility_version: "3.13.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
                 name: "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit".to_string(),
                 max_compatibility_version: "45.0.0".try_into().unwrap(),
                 required: true,
@@ -700,6 +710,15 @@ const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
+    "_sha2",
+    "_tokenize",
+    "_typing",
+    "_xxinterpchannels",
+    "_xxsubinterpreters",
+    "_zoneinfo",
+];
+
+const GLOBAL_EXTENSIONS_PYTHON_3_13: &[&str] = &[
     "_sha2",
     "_tokenize",
     "_typing",
@@ -1448,6 +1467,9 @@ fn validate_extension_modules(
         "3.12" => {
             wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_12);
         }
+        "3.13" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_13);
+        }
         _ => {
             panic!("unhandled Python version: {}", python_major_minor);
         }
@@ -1477,7 +1499,7 @@ fn validate_extension_modules(
         }
     }
 
-    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12" | "3.13") {
         wanted.extend([
             "_testbuffer",
             "_testimportmultiple",
@@ -1486,7 +1508,7 @@ fn validate_extension_modules(
         ]);
     }
 
-    if (is_linux || is_macos) && python_major_minor == "3.12" {
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.12" | "3.13") {
         wanted.insert("_testsinglephase");
     }
 
@@ -1500,7 +1522,7 @@ fn validate_extension_modules(
     }
 
     // _wmi is Windows only on 3.12+.
-    if python_major_minor == "3.12" && is_windows {
+    if matches!(python_major_minor, "3.12" | "3.13") && is_windows {
         wanted.insert("_wmi");
     }
 
@@ -1623,6 +1645,8 @@ fn validate_distribution(
         "3.11"
     } else if dist_filename.starts_with("cpython-3.12.") {
         "3.12"
+    } else if dist_filename.starts_with("cpython-3.13.") {
+        "3.13"
     } else {
         return Err(anyhow!("could not parse Python version from filename"));
     };

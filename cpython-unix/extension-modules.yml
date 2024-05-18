@@ -67,6 +67,7 @@ _contextvars:
     - _contextvarsmodule.c
 
 _crypt:
+  maximum-python-version: "3.12"
   build-mode: shared
   sources:
     - _cryptmodule.c
@@ -285,6 +286,21 @@ _heapq:
 
 _imp:
   config-c-only: true
+
+_interpchannels:
+  minimum-python-version: "3.13"
+  sources:
+    - _interpchannelsmodule.c
+
+_interpqueues:
+  minimum-python-version: "3.13"
+  sources:
+    - _interpqueuesmodule.c
+
+_interpreters:
+  minimum-python-version: "3.13"
+  sources:
+    - _interpretersmodule.c
 
 _io:
   setup-enabled: true
@@ -528,8 +544,20 @@ _struct:
   sources:
     - _struct.c
 
+_suggestions:
+  setup-enabled: true
+  minimum-python-version: '3.13'
+  sources:
+    - _suggestions.c
+
 _symtable:
   setup-enabled: true
+
+_sysconfig:
+  setup-enabled: true
+  minimum-python-version: '3.13'
+  sources:
+    - _sysconfig.c
 
 _testbuffer:
   minimum-python-version: '3.9'
@@ -545,6 +573,11 @@ _testcapi:
   sources:
     - _testcapimodule.c
 
+_testexternalinspection:
+  minimum-python-version: '3.13'
+  sources:
+    - _testexternalinspection.c
+
 _testimportmultiple:
   minimum-python-version: '3.9'
   sources:
@@ -558,6 +591,18 @@ _testinternalcapi:
     - Include/internal
   sources:
     - _testinternalcapi.c
+  includes-conditional:
+    - path: _testinternalcapi/parts.h
+      minimum-python-version: "3.13"
+  sources-conditional:
+    - source: _testinternalcapi/pytime.c
+      minimum-python-version: "3.13"
+    - source: _testinternalcapi/set.c
+      minimum-python-version: "3.13"
+    - source: _testinternalcapi/test_critical_sections.c
+      minimum-python-version: "3.13"
+    - source: _testinternalcapi/test_lock.c
+      minimum-python-version: "3.13"
 
 _testmultiphase:
   minimum-python-version: '3.9'
@@ -659,11 +704,13 @@ _weakref:
 
 _xxinterpchannels:
   minimum-python-version: '3.12'
+  maximum-python-version: '3.12'
   sources:
     - _xxinterpchannelsmodule.c
 
 _xxsubinterpreters:
   minimum-python-version: '3.9'
+  maximum-python-version: '3.12'
   sources:
     - _xxsubinterpretersmodule.c
 
@@ -687,6 +734,7 @@ atexit:
 
 # Modules/Setup comment is ambiguous as to whether this module actually works.
 audioop:
+  maximum-python-version: '3.12'
   sources:
     - audioop.c
 
@@ -745,6 +793,7 @@ mmap:
     - mmapmodule.c
 
 nis:
+  maximum-python-version: "3.12"
   disabled-targets:
     # NIS is not available on Apple OS.
     - aarch64-apple-.*
@@ -767,6 +816,7 @@ nis:
     - nsl
 
 ossaudiodev:
+  maximum-python-version: "3.12"
   disabled-targets:
     # ossaudiodev not available on Apple OS.
     - aarch64-apple-.*
@@ -806,6 +856,7 @@ readline:
     - readline.c
   defines:
     - USE_LIBEDIT=1
+    - Py_RL_STARTUP_HOOK_TAKES_ARGS
   includes-deps:
     - libedit/include
     - libedit/include/ncursesw
@@ -828,6 +879,7 @@ select:
     - selectmodule.c
 
 spwd:
+  maximum-python-version: "3.12"
   sources:
     - spwdmodule.c
 
