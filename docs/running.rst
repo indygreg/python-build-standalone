@@ -153,7 +153,9 @@ Common configurations include:
 The archive flavor denotes the content in the archive. See
 :ref:`distributions` for more. Casual users will likely want to use the
 ``install_only`` archive, as most users do not need the build artifacts
-present in the ``full`` archive.
+present in the ``full`` archive. The ``install_only`` archive doesn't
+include the build configuration in its file name. It's based on the fastest
+available build configuration for a given target.
 
 Extracting Distributions
 ========================
