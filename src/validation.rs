@@ -792,7 +792,7 @@ impl ValidationContext {
     }
 }
 
-fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
+fn validate_elf<Elf: FileHeader<Endian = Endianness>>(
     context: &mut ValidationContext,
     json: &PythonJsonMain,
     target_triple: &str,
@@ -985,20 +985,18 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
                     if let Some(version) = version_version {
                         let parts: Vec<&str> = version.splitn(2, '_').collect();
 
-                        if parts.len() == 2 {
-                            if parts[0] == "GLIBC" {
-                                let v = version_compare::Version::from(parts[1])
-                                    .expect("unable to parse version");
+                        if parts.len() == 2 && parts[0] == "GLIBC" {
+                            let v = version_compare::Version::from(parts[1])
+                                .expect("unable to parse version");
 
-                                if &v > wanted_glibc_max_version {
-                                    context.errors.push(format!(
-                                        "{} references too new glibc symbol {:?} ({} > {})",
-                                        path.display(),
-                                        name,
-                                        v,
-                                        wanted_glibc_max_version,
-                                    ));
-                                }
+                            if &v > wanted_glibc_max_version {
+                                context.errors.push(format!(
+                                    "{} references too new glibc symbol {:?} ({} > {})",
+                                    path.display(),
+                                    name,
+                                    v,
+                                    wanted_glibc_max_version,
+                                ));
                             }
                         }
                     }
@@ -1026,12 +1024,12 @@ fn validate_elf<'data, Elf: FileHeader<Endian = Endianness>>(
                     if let Some(filename) = path.file_name() {
                         let filename = filename.to_string_lossy();
 
-                        if filename.starts_with("libpython") && filename.ends_with(".so.1.0") {
-                            if matches!(symbol.st_bind(), STB_GLOBAL | STB_WEAK)
-                                && symbol.st_visibility() == STV_DEFAULT
-                            {
-                                context.libpython_exported_symbols.insert(name.to_string());
-                            }
+                        if filename.starts_with("libpython")
+                            && filename.ends_with(".so.1.0")
+                            && matches!(symbol.st_bind(), STB_GLOBAL | STB_WEAK)
+                            && symbol.st_visibility() == STV_DEFAULT
+                        {
+                            context.libpython_exported_symbols.insert(name.to_string());
                         }
                     }
                 }
@@ -1058,6 +1056,7 @@ fn parse_version_nibbles(v: u32) -> semver::Version {
     semver::Version::new(major as _, minor as _, patch as _)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     context: &mut ValidationContext,
     target_triple: &str,
@@ -1125,7 +1124,7 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                 target_version = Some(parse_version_nibbles(v.version.get(endian)));
             }
             LoadCommandVariant::Dylib(command) => {
-                let raw_string = load_command.string(endian, command.dylib.name.clone())?;
+                let raw_string = load_command.string(endian, command.dylib.name)?;
                 let lib = String::from_utf8(raw_string.to_vec())?;
 
                 dylib_names.push(lib.clone());
@@ -1336,9 +1335,9 @@ fn validate_possible_object_file(
                     json,
                     triple,
                     python_major_minor,
-                    path.as_ref(),
+                    path,
                     header,
-                    &data,
+                    data,
                 )?;
             }
             FileKind::Elf64 => {
@@ -1349,9 +1348,9 @@ fn validate_possible_object_file(
                     json,
                     triple,
                     python_major_minor,
-                    path.as_ref(),
+                    path,
                     header,
-                    &data,
+                    data,
                 )?;
             }
             FileKind::MachO32 => {
@@ -1367,9 +1366,9 @@ fn validate_possible_object_file(
                     json.apple_sdk_version
                         .as_ref()
                         .expect("apple_sdk_version should be set"),
-                    path.as_ref(),
+                    path,
                     header,
-                    &data,
+                    data,
                 )?;
             }
             FileKind::MachO64 => {
@@ -1385,9 +1384,9 @@ fn validate_possible_object_file(
                     json.apple_sdk_version
                         .as_ref()
                         .expect("apple_sdk_version should be set"),
-                    path.as_ref(),
+                    path,
                     header,
-                    &data,
+                    data,
                 )?;
             }
             FileKind::MachOFat32 | FileKind::MachOFat64 => {
@@ -1399,11 +1398,11 @@ fn validate_possible_object_file(
             }
             FileKind::Pe32 => {
                 let file = PeFile32::parse(data)?;
-                validate_pe(&mut context, path.as_ref(), &file)?;
+                validate_pe(&mut context, path, &file)?;
             }
             FileKind::Pe64 => {
                 let file = PeFile64::parse(data)?;
-                validate_pe(&mut context, path.as_ref(), &file)?;
+                validate_pe(&mut context, path, &file)?;
             }
             _ => {}
         }
@@ -1431,7 +1430,7 @@ fn validate_extension_modules(
         return Ok(errors);
     }
 
-    let mut wanted = BTreeSet::from_iter(GLOBAL_EXTENSIONS.iter().map(|x| *x));
+    let mut wanted = BTreeSet::from_iter(GLOBAL_EXTENSIONS.iter().copied());
 
     match python_major_minor {
         "3.8" => {
@@ -1576,15 +1575,12 @@ fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<
         .map(|x| x.as_str())
         .collect::<BTreeSet<_>>();
 
-    errors.extend(
-        validate_extension_modules(
-            &json.python_major_minor_version,
-            triple,
-            json.crt_features.contains(&"static".to_string()),
-            &have_extensions,
-        )?
-        .into_iter(),
-    );
+    errors.extend(validate_extension_modules(
+        &json.python_major_minor_version,
+        triple,
+        json.crt_features.contains(&"static".to_string()),
+        &have_extensions,
+    )?);
 
     Ok(errors)
 }
@@ -1635,7 +1631,7 @@ fn validate_distribution(
 
     let is_static = triple.contains("unknown-linux-musl");
 
-    let mut tf = crate::open_distribution_archive(&dist_path)?;
+    let mut tf = crate::open_distribution_archive(dist_path)?;
 
     // First entry in archive should be python/PYTHON.json.
     let mut entries = tf.entries()?;
@@ -1701,7 +1697,7 @@ fn validate_distribution(
         context.merge(validate_possible_object_file(
             json.as_ref().unwrap(),
             python_major_minor,
-            &triple,
+            triple,
             &path,
             &data,
         )?);
@@ -1726,9 +1722,9 @@ fn validate_distribution(
                 context.merge(validate_possible_object_file(
                     json.as_ref().unwrap(),
                     python_major_minor,
-                    &triple,
+                    triple,
                     &member_path,
-                    &member_data,
+                    member_data,
                 )?);
             }
         }
@@ -1841,9 +1837,7 @@ fn validate_distribution(
 
     // Ensure that some well known Python symbols are being exported from libpython.
     for symbol in PYTHON_EXPORTED_SYMBOLS {
-        let exported = context
-            .libpython_exported_symbols
-            .contains(&symbol.to_string());
+        let exported = context.libpython_exported_symbols.contains(*symbol);
         let wanted = !is_static;
 
         if exported != wanted {
@@ -1867,6 +1861,7 @@ fn validate_distribution(
                 }
             }
 
+            #[allow(clippy::if_same_then_else)]
             // Static builds never have shared library extension modules.
             let want_shared = if is_static {
                 false
@@ -1904,6 +1899,7 @@ fn validate_distribution(
 
             let exported = context.libpython_exported_symbols.contains(&ext.init_fn);
 
+            #[allow(clippy::needless_bool, clippy::if_same_then_else)]
             // Static distributions never export symbols.
             let wanted = if is_static {
                 false
@@ -1996,7 +1992,7 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
     tf.unpack(temp_dir.path())?;
 
     let python_json_path = temp_dir.path().join("python").join("PYTHON.json");
-    let python_json_data = std::fs::read(&python_json_path)?;
+    let python_json_data = std::fs::read(python_json_path)?;
     let python_json = parse_python_json(&python_json_data)?;
 
     let python_exe = temp_dir.path().join("python").join(python_json.python_exe);
@@ -2005,7 +2001,7 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
     std::fs::write(&test_file, PYTHON_VERIFICATIONS.as_bytes())?;
 
     eprintln!("  running interpreter tests (output should follow)");
-    let output = duct::cmd(&python_exe, &[test_file.display().to_string()])
+    let output = duct::cmd(python_exe, [test_file.display().to_string()])
         .stdout_to_stderr()
         .unchecked()
         .env("TARGET_TRIPLE", &python_json.target_triple)

@@ -108,7 +108,7 @@ impl PythonJsonMain {
 }
 
 pub fn parse_python_json(json_data: &[u8]) -> Result<PythonJsonMain> {
-    let v: PythonJsonMain = serde_json::from_slice(&json_data)?;
+    let v: PythonJsonMain = serde_json::from_slice(json_data)?;
 
     Ok(v)
 }
