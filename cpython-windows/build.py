@@ -224,8 +224,20 @@ def find_vswhere():
 
 
 def find_vs_path(path, msvc_version):
+    """
+    Attempts to find 'path' by invoking vswhere to identify where the
+    given msvc_version is installed.
+
+    vswhere is akin to things like 'pkg-config', it's an executable
+    that can be invoked to retrieve parameters of visual studio code
+    installations on the host machine.
+    """
     vswhere = find_vswhere()
 
+    # vswhere uses a math-like range expression for specifying the
+    # major release numbers.
+    #  16 = Visual Studio 2019,
+    #  17 = Visual Studio 2022,
     if msvc_version == "2019":
         version = "[16,17)"
     elif msvc_version == "2022":
@@ -233,26 +245,42 @@ def find_vs_path(path, msvc_version):
     else:
         raise ValueError(f"unsupported Visual Studio version: {msvc_version}")
 
-    p = subprocess.check_output(
-        [
-            str(vswhere),
-            # Visual Studio 2019.
-            "-version",
-            version,
-            "-property",
-            "installationPath",
-            "-products",
-            "*",
-        ]
-    )
+    # Assemble the command line into an argv list for a subprocess
+    # call, so if the command fails we can tell the user what command
+    # we tried and enable them to potentially investigate further.
+    cmdline = [
+        str(vswhere),
+        "-version",
+        version,
+        "-property",
+        "installationPath",
+        "-prerelease",
+        "-products",
+        "*",
+    ]
+    p = subprocess.check_output(cmdline)
+    if not p:
+        # add quotes around any of the terms with spaces in them, so that
+        # the user can copy-and-paste the command.
+        cmdline = ['"%s"' % term if " " in term else term for term in cmdline]
+        print("could not find visual studio (using '%s')" % cmdline)
+        sys.exit(1)
 
     # Strictly speaking the output may not be UTF-8.
-    p = pathlib.Path(p.strip().decode("utf-8"))
+    p = p.strip().decode("utf-8")
 
-    p = p / path
+    # vswhere can potentially report multiple installed versions,
+    # one per line. The above 'strip' will have removed any
+    # trailing newlines, so if there is still a newline, there
+    # is more than one option.
+    if "\n" in p:  # more than one line
+        print("found multiple matching instances of visual studio %s:" % msvc_version)
+        print(p)
+        sys.exit(1)
 
+    p = pathlib.Path(p, path)
     if not p.exists():
-        print("%s does not exist" % p)
+        print("%s does not exist for vs%s" % (p, msvc_version))
         sys.exit(1)
 
     return p
