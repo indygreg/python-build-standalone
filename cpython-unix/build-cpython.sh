@@ -906,7 +906,9 @@ cp -av Python/frozen.c ${ROOT}/out/python/build/Python/
 cp -av Modules/Setup* ${ROOT}/out/python/build/Modules/
 
 # Copy the test hardness runner for convenience.
-cp -av Tools/scripts/run_tests.py ${ROOT}/out/python/build/
+if [ -d Tools/scripts/run_tests.py ]; then 
+    cp -av Tools/scripts/run_tests.py ${ROOT}/out/python/build/
+fi
 
 mkdir ${ROOT}/out/python/licenses
 cp ${ROOT}/LICENSE.*.txt ${ROOT}/out/python/licenses/
