@@ -80,10 +80,10 @@ DOWNLOADS = {
         "python_tag": "cp312",
     },
     "cpython-3.13": {
-        "url": "https://www.python.org/ftp/python/3.13.0/Python-3.13.0b1.tar.xz",
+        "url": "https://www.python.org/ftp/python/3.13.0/Python-3.13.0b2.tar.xz",
         "size": 21054240,
-        "sha256": "ba716ac56b039b545ad4a90ce586a57aa97869364553746ef2445728ceec198e",
-        "version": "3.13.0b1",
+        "sha256": "bf11be01b42a07a3659e4e233591e03da631b7112aa61ee1e030eeb8c5dfd869",
+        "version": "3.13.0b2",
         "licenses": ["Python-2.0", "CNRI-Python"],
         "license_file": "LICENSE.cpython.txt",
         "python_tag": "cp313",

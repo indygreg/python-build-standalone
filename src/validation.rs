@@ -718,6 +718,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
     "_zoneinfo",
 ];
 
+// FIXME: ensure that this list is correct for 3.13
 const GLOBAL_EXTENSIONS_PYTHON_3_13: &[&str] = &[
     "_sha2",
     "_tokenize",
