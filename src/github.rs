@@ -120,7 +120,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                     | ".github/workflows/linux.yml"
                     | ".github/workflows/windows.yml"
             ) {
-                workflow_names.insert(wf.id.clone(), wf.name);
+                workflow_names.insert(wf.id, wf.name);
 
                 Some(wf.id)
             } else {
@@ -263,7 +263,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                     .to_string_lossy()
             );
 
-            let dest_path = produce_install_only(&path)?;
+            let dest_path = produce_install_only(path)?;
 
             println!(
                 "releasing {}",
@@ -302,8 +302,7 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
         .expect("repo should be specified");
     let dry_run = args.get_flag("dry_run");
 
-    let mut filenames = std::fs::read_dir(&dist_dir)?
-        .into_iter()
+    let mut filenames = std::fs::read_dir(dist_dir)?
         .map(|x| {
             let path = x?.path();
             let filename = path

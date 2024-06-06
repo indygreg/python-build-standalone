@@ -288,11 +288,8 @@ impl TbdMetadata {
             let stripped = symbols
                 .iter()
                 .filter_map(|x| {
-                    if let Some(stripped) = x.strip_prefix("R8289209$") {
-                        Some(stripped.to_string())
-                    } else {
-                        None
-                    }
+                    x.strip_prefix("R8289209$")
+                        .map(|stripped| stripped.to_string())
                 })
                 .collect::<Vec<_>>();
 
@@ -307,7 +304,7 @@ impl TbdMetadata {
 
         for (target, paths) in self.re_export_paths.iter_mut() {
             for path in paths.iter() {
-                let tbd_path = root_path.join(tbd_relative_path(&path)?);
+                let tbd_path = root_path.join(tbd_relative_path(path)?);
                 let tbd_info = TbdMetadata::from_path(&tbd_path)?;
 
                 if let Some(symbols) = tbd_info.symbols.get(target) {
@@ -409,10 +406,7 @@ impl IndexedSdks {
 
                         let empty = BTreeSet::new();
 
-                        let target_symbols = tbd_info
-                            .symbols
-                            .get(&symbol_target.to_string())
-                            .unwrap_or(&empty);
+                        let target_symbols = tbd_info.symbols.get(symbol_target).unwrap_or(&empty);
 
                         for (symbol, paths) in &symbols.symbols {
                             if !target_symbols.contains(symbol) {

@@ -241,8 +241,7 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
         // increases the size of the archive and isn't needed in most cases.
         if path_bytes
             .windows(b"/libpython".len())
-            .position(|x| x == b"/libpython")
-            .is_some()
+            .any(|x| x == b"/libpython")
             && path_bytes.ends_with(b".a")
         {
             continue;
@@ -303,7 +302,7 @@ pub fn produce_install_only(tar_zst_path: &Path) -> Result<PathBuf> {
     let install_only_name = install_only_name.replace(".tar.zst", ".tar.gz");
 
     let dest_path = tar_zst_path.with_file_name(install_only_name);
-    std::fs::write(&dest_path, &gz_data)?;
+    std::fs::write(&dest_path, gz_data)?;
 
     Ok(dest_path)
 }
