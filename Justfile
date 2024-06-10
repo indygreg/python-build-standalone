@@ -34,11 +34,19 @@ release-download-distributions token commit:
 release-upload-distributions token datetime tag:
   cargo run --release -- upload-release-distributions --token {{token}} --datetime {{datetime}} --tag {{tag}} --dist dist
 
+# "Upload" release artifacts to a GitHub release in dry-run mode (skip upload).
+release-upload-distributions-dry-run token datetime tag:
+  cargo run --release -- upload-release-distributions --token {{token}} --datetime {{datetime}} --tag {{tag}} --dist dist -n
+
+# Promote a tag to "latest" by pushing to the `latest-release` branch.
 release-set-latest-release tag:
   #!/usr/bin/env bash
   set -euxo pipefail
 
+  git fetch origin
   git switch latest-release
+  git reset --hard origin/latest-release
+
   cat << EOF > latest-release.json
   {
     "version": 1,
@@ -48,23 +56,37 @@ release-set-latest-release tag:
   }
   EOF
 
-  git commit -a -m 'set latest release to {{tag}}'
-  git switch main
+  # If the branch is dirty, we add and commit.
+  if ! git diff --quiet; then
+    git add latest-release.json
+    git commit -m 'set latest release to {{tag}}'
+    git switch main
 
-  git push origin latest-release
+    git push origin latest-release
+  else
+    echo "No changes to commit."
+  fi
 
-# Perform a release.
-release token commit tag:
+# Perform the release job. Assumes that the GitHub Release has been created.
+release-run token commit tag:
   #!/bin/bash
   set -eo pipefail
-
-  gh release create --prerelease --notes TBD --title {{ tag }} --target {{ commit }} {{ tag }}
 
   rm -rf dist
   just release-download-distributions {{token}} {{commit}}
   datetime=$(ls dist/cpython-3.10.*-x86_64-unknown-linux-gnu-install_only-*.tar.gz  | awk -F- '{print $8}' | awk -F. '{print $1}')
   just release-upload-distributions {{token}} ${datetime} {{tag}}
   just release-set-latest-release {{tag}}
+
+# Perform a release in dry-run mode.
+release-dry-run token commit tag:
+  #!/bin/bash
+  set -eo pipefail
+
+  rm -rf dist
+  just release-download-distributions {{token}} {{commit}}
+  datetime=$(ls dist/cpython-3.10.*-x86_64-unknown-linux-gnu-install_only-*.tar.gz  | awk -F- '{print $8}' | awk -F. '{print $1}')
+  just release-upload-distributions-dry-run {{token}} ${datetime} {{tag}}
 
 _download-stats mode:
     build/venv.*/bin/python3 -c 'import pythonbuild.utils as u; u.release_download_statistics(mode="{{mode}}")'

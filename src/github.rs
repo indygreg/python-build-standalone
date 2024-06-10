@@ -48,7 +48,7 @@ async fn upload_release_artifact(
     dry_run: bool,
 ) -> Result<()> {
     if release.assets.iter().any(|asset| asset.name == filename) {
-        println!("release asset {} already present; skipping", filename);
+        println!("release asset {filename} already present; skipping");
         return Ok(());
     }
 
@@ -61,14 +61,14 @@ async fn upload_release_artifact(
 
     url.query_pairs_mut().clear().append_pair("name", &filename);
 
-    println!("uploading to {}", url);
-
-    // Octocrab doesn't yet support release artifact upload. And the low-level HTTP API
-    // forces the use of strings on us. So we have to make our own HTTP client.
+    println!("uploading to {url}");
 
     if dry_run {
         return Ok(());
     }
+
+    // Octocrab doesn't yet support release artifact upload. And the low-level HTTP API
+    // forces the use of strings on us. So we have to make our own HTTP client.
 
     let response = reqwest::Client::builder()
         .build()?
@@ -138,26 +138,27 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
     let mut runs: Vec<octocrab::models::workflows::Run> = vec![];
 
     for workflow_id in workflow_ids {
+        let commit = args
+            .get_one::<String>("commit")
+            .expect("commit should be defined");
+        let workflow_name = workflow_names
+            .get(&workflow_id)
+            .expect("should have workflow name");
+
         runs.push(
             workflows
-                .list_runs(format!("{}", workflow_id))
+                .list_runs(format!("{workflow_id}"))
                 .event("push")
                 .status("success")
                 .send()
                 .await?
                 .into_iter()
                 .find(|run| {
-                    run.head_sha.as_str()
-                        == args
-                            .get_one::<String>("commit")
-                            .expect("commit should be defined")
+                    run.head_sha.as_str() == commit
                 })
                 .ok_or_else(|| {
                     anyhow!(
-                        "could not find workflow run for commit for workflow {}",
-                        workflow_names
-                            .get(&workflow_id)
-                            .expect("should have workflow name")
+                        "could not find workflow run for commit {commit} for workflow {workflow_name}",
                     )
                 })?,
         );
@@ -206,13 +207,15 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
 
             // Iterate over `RELEASE_TRIPLES` in reverse-order to ensure that if any triple is a
             // substring of another, the longest match is used.
-            if let Some((triple, release)) = RELEASE_TRIPLES.iter().rev().find_map(|(triple, release)| {
-                if name.contains(triple) {
-                    Some((triple, release))
-                } else {
-                    None
-                }
-            }) {
+            if let Some((triple, release)) =
+                RELEASE_TRIPLES.iter().rev().find_map(|(triple, release)| {
+                    if name.contains(triple) {
+                        Some((triple, release))
+                    } else {
+                        None
+                    }
+                })
+            {
                 let stripped_name = if let Some(s) = name.strip_suffix(".tar.zst") {
                     s
                 } else {
@@ -366,8 +369,10 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     for f in &missing {
         println!("missing release artifact: {}", f);
     }
-    if !missing.is_empty() && !ignore_missing {
-        return Err(anyhow!("missing release artifacts"));
+    if missing.is_empty() {
+        println!("found all {} release artifacts", wanted_filenames.len());
+    } else if !ignore_missing {
+        return Err(anyhow!("missing {} release artifacts", missing.len()));
     }
 
     let client = OctocrabBuilder::new()
@@ -379,10 +384,14 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     let release = if let Ok(release) = releases.get_by_tag(tag).await {
         release
     } else {
-        return Err(anyhow!(
-            "release {} does not exist; create it via GitHub web UI",
-            tag
-        ));
+        return if dry_run {
+            println!("release {tag} does not exist; exiting dry-run mode...");
+            Ok(())
+        } else {
+            Err(anyhow!(
+                "release {tag} does not exist; create it via GitHub web UI"
+            ))
+        };
     };
 
     let mut digests = BTreeMap::new();
@@ -444,6 +453,11 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
 
     // Check that content wasn't munged as part of uploading. This once happened
     // and created a busted release. Never again.
+    if dry_run {
+        println!("skipping SHA256SUMs check");
+        return Ok(());
+    }
+
     let release = releases
         .get_by_tag(tag)
         .await
