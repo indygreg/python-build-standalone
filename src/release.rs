@@ -2,6 +2,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use anyhow::Context;
+use object::elf::{FileHeader32, FileHeader64};
+use object::macho::{MachHeader32, MachHeader64};
+use object::read::pe::{PeFile32, PeFile64};
+use object::FileKind;
+use std::process::{Command, Stdio};
 use {
     crate::json::parse_python_json,
     anyhow::{anyhow, Result},
@@ -279,86 +285,98 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
     Ok(builder.into_inner()?.finish()?)
 }
 
+/// Run `llvm-strip` over the given data, returning the stripped data.
+fn llvm_strip(data: &[u8]) -> Result<Vec<u8>> {
+    let mut command = Command::new("/opt/homebrew/opt/llvm/bin/llvm-strip")
+        .arg("--strip-debug")
+        .arg("-")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .with_context(|| "failed to spawn llvm-strip")?;
+
+    command
+        .stdin
+        .as_mut()
+        .unwrap()
+        .write_all(data)
+        .with_context(|| "failed to write data to llvm-strip")?;
+
+    let output = command
+        .wait_with_output()
+        .with_context(|| "failed to wait for llvm-strip")?;
+    if !output.status.success() {
+        return Err(anyhow!("llvm-strip failed: {}", output.status));
+    }
+
+    Ok(output.stdout)
+}
+
 /// Given an install-only .tar.gz archive, strip the underlying build.
 pub fn convert_to_stripped<W: Write>(reader: impl BufRead, writer: W) -> Result<W> {
-    // Untar the reader to disk, so that we can run `strip` on the files in-place.
     let dctx = flate2::read::GzDecoder::new(reader);
+
     let mut tar_in = tar::Archive::new(dctx);
-    let temp_dir = tempfile::tempdir()?;
-    tar_in.unpack(temp_dir.path())?;
 
-    // On macOS, strip the `.dylib` files.
-    if cfg!(target_os = "macos") {
-        for file in std::fs::read_dir(temp_dir.path().join("python/lib"))? {
-            let file = file?;
-
-            if file.path().extension().is_some_and(|ext| ext == "dylib") {
-                let size_before = file.metadata()?.len();
-
-                let output = std::process::Command::new("strip")
-                    .arg("-S")
-                    .arg("-x")
-                    .arg(file.path())
-                    .output()?;
-                if !output.status.success() {
-                    return Err(anyhow!("strip failed: {:?}", output));
-                }
-
-                let size_after = file.metadata()?.len();
-                println!(
-                    "stripped {} from {size_before} to {size_after} bytes",
-                    file.path().strip_prefix(temp_dir.path()).unwrap().display(),
-                );
-            }
-        }
-    }
-
-    // On macOS, strip the `.dylib` files.
-    if cfg!(target_os = "linux") {
-        for file in std::fs::read_dir(temp_dir.path().join("python/lib"))? {
-            let file = file?;
-
-            if file.path().extension().is_some_and(|ext| ext == "so") {
-                let size_before = file.metadata()?.len();
-
-                let output = std::process::Command::new("strip")
-                    .arg("--strip-unneeded")
-                    .arg(file.path())
-                    .output()?;
-                if !output.status.success() {
-                    return Err(anyhow!("strip failed: {:?}", output));
-                }
-
-                let size_after = file.metadata()?.len();
-                println!(
-                    "stripped {} from {size_before} to {size_after} bytes",
-                    file.path().strip_prefix(temp_dir.path()).unwrap().display(),
-                );
-            }
-        }
-    }
-
-    // On Windows, remove `.pdb` files.
-    if cfg!(target_os = "windows") {
-        for file in std::fs::read_dir(temp_dir.path().join("python"))? {
-            let file = file?;
-            if file.path().extension().is_some_and(|ext| ext == "pdb") {
-                std::fs::remove_file(file.path())?;
-            }
-        }
-
-        for file in std::fs::read_dir(temp_dir.path().join("python/DLLs"))? {
-            let file = file?;
-            if file.path().extension().is_some_and(|ext| ext == "pdb") {
-                std::fs::remove_file(file.path())?;
-            }
-        }
-    }
-
-    // Tar the directory back up and write it to the writer.
     let writer = flate2::write::GzEncoder::new(writer, flate2::Compression::default());
+
     let mut builder = tar::Builder::new(writer);
-    builder.append_dir_all("python", temp_dir.path())?;
+
+    for entry in tar_in.entries()? {
+        let mut entry = entry?;
+
+        let mut data = vec![];
+        entry.read_to_end(&mut data)?;
+
+        let path = entry.path()?;
+
+        // Drop PDB files.
+        match pdb::PDB::open(std::io::Cursor::new(&data)) {
+            Ok(_) => {
+                println!("removed PDB file: {}", path.display());
+                continue;
+            }
+            Err(err) => {
+                if path.extension().is_some_and(|ext| ext == "pdb") {
+                    println!(
+                        "file with `.pdb` extension ({}) failed to parse as PDB :{err}",
+                        path.display()
+                    );
+                }
+            }
+        }
+
+        // If we have an ELF, Mach-O, or PE file, strip it in-memory with `llvm-strip`, and
+        // return the stripped data.
+        if matches!(
+            FileKind::parse(data.as_slice()),
+            Ok(FileKind::Elf32
+                | FileKind::Elf64
+                | FileKind::MachO32
+                | FileKind::MachO64
+                | FileKind::MachOFat32
+                | FileKind::MachOFat64
+                | FileKind::Pe32
+                | FileKind::Pe64)
+        ) {
+            let size_before = data.len();
+
+            let data =
+                llvm_strip(&data).with_context(|| format!("failed to strip {}", path.display()))?;
+
+            let size_after = data.len();
+
+            println!(
+                "stripped {} from {size_before} to {size_after} bytes",
+                path.display()
+            );
+        }
+
+        let header = entry.header().clone();
+
+        builder.append(&header, std::io::Cursor::new(data))?;
+    }
+
     Ok(builder.into_inner()?.finish()?)
 }
 
