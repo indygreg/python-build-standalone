@@ -4,4 +4,5 @@ docs/_build/
 dist/
 target/
 venv/
+llvm/
 __pycache__/

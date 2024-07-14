@@ -31,10 +31,6 @@ jobs:
 
       - uses: extractions/setup-just@v2
 
-      # Install `llvm-strip`.
-      - name: Install llvm-strip
-        run: sudo apt-get install -y llvm
-
       # Perform a release in dry-run mode.
       - run: just release-dry-run ${{ secrets.GITHUB_TOKEN }} ${{ github.event.inputs.sha }} ${{ github.event.inputs.tag }}
         if: ${{ github.event.inputs.dry-run == 'true' }}

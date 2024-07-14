@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::release::produce_install_only_stripped;
+use crate::release::{bootstrap_llvm, produce_install_only_stripped};
 use {
     crate::release::{produce_install_only, RELEASE_TRIPLES},
     anyhow::{anyhow, Result},
@@ -257,6 +257,8 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
         }
     }
 
+    let llvm_dir = bootstrap_llvm().await?;
+
     install_paths
         .par_iter()
         .try_for_each(|path| -> Result<()> {
@@ -287,7 +289,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                     .to_string_lossy()
             );
 
-            let dest_path = produce_install_only_stripped(&dest_path)?;
+            let dest_path = produce_install_only_stripped(&dest_path, &llvm_dir)?;
 
             println!(
                 "releasing {}",

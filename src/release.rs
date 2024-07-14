@@ -3,11 +3,11 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use anyhow::Context;
-use object::elf::{FileHeader32, FileHeader64};
-use object::macho::{MachHeader32, MachHeader64};
-use object::read::pe::{PeFile32, PeFile64};
+use futures::StreamExt;
+
 use object::FileKind;
 use std::process::{Command, Stdio};
+use url::Url;
 use {
     crate::json::parse_python_json,
     anyhow::{anyhow, Result},
@@ -286,8 +286,8 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
 }
 
 /// Run `llvm-strip` over the given data, returning the stripped data.
-fn llvm_strip(data: &[u8]) -> Result<Vec<u8>> {
-    let mut command = Command::new("/opt/homebrew/opt/llvm/bin/llvm-strip")
+fn llvm_strip(data: &[u8], llvm_dir: &Path) -> Result<Vec<u8>> {
+    let mut command = Command::new(llvm_dir.join("bin/llvm-strip"))
         .arg("--strip-debug")
         .arg("-")
         .stdin(Stdio::piped())
@@ -313,7 +313,11 @@ fn llvm_strip(data: &[u8]) -> Result<Vec<u8>> {
 }
 
 /// Given an install-only .tar.gz archive, strip the underlying build.
-pub fn convert_to_stripped<W: Write>(reader: impl BufRead, writer: W) -> Result<W> {
+pub fn convert_to_stripped<W: Write>(
+    reader: impl BufRead,
+    writer: W,
+    llvm_dir: &Path,
+) -> Result<W> {
     let dctx = flate2::read::GzDecoder::new(reader);
 
     let mut tar_in = tar::Archive::new(dctx);
@@ -333,7 +337,6 @@ pub fn convert_to_stripped<W: Write>(reader: impl BufRead, writer: W) -> Result<
         // Drop PDB files.
         match pdb::PDB::open(std::io::Cursor::new(&data)) {
             Ok(_) => {
-                println!("removed PDB file: {}", path.display());
                 continue;
             }
             Err(err) => {
@@ -359,20 +362,13 @@ pub fn convert_to_stripped<W: Write>(reader: impl BufRead, writer: W) -> Result<
                 | FileKind::Pe32
                 | FileKind::Pe64)
         ) {
-            let size_before = data.len();
-
-            let data =
-                llvm_strip(&data).with_context(|| format!("failed to strip {}", path.display()))?;
-
-            let size_after = data.len();
-
-            println!(
-                "stripped {} from {size_before} to {size_after} bytes",
-                path.display()
-            );
+            data = llvm_strip(&data, llvm_dir)
+                .with_context(|| format!("failed to strip {}", path.display()))?;
         }
 
-        let header = entry.header().clone();
+        let mut header = entry.header().clone();
+        header.set_size(data.len() as u64);
+        header.set_cksum();
 
         builder.append(&header, std::io::Cursor::new(data))?;
     }
@@ -409,11 +405,24 @@ pub fn produce_install_only(tar_zst_path: &Path) -> Result<PathBuf> {
     Ok(dest_path)
 }
 
-pub fn produce_install_only_stripped(tar_gz_path: &Path) -> Result<PathBuf> {
+pub fn produce_install_only_stripped(tar_gz_path: &Path, llvm_dir: &Path) -> Result<PathBuf> {
     let buf = std::fs::read(tar_gz_path)?;
 
-    let gz_data =
-        convert_to_stripped(std::io::Cursor::new(buf), std::io::Cursor::new(vec![]))?.into_inner();
+    let size_before = buf.len();
+
+    let gz_data = convert_to_stripped(
+        std::io::Cursor::new(buf),
+        std::io::Cursor::new(vec![]),
+        llvm_dir,
+    )?
+    .into_inner();
+
+    let size_after = gz_data.len();
+
+    println!(
+        "stripped {} from {size_before} to {size_after} bytes",
+        tar_gz_path.display()
+    );
 
     let filename = tar_gz_path
         .file_name()
@@ -435,4 +444,73 @@ pub fn produce_install_only_stripped(tar_gz_path: &Path) -> Result<PathBuf> {
     std::fs::write(&dest_path, gz_data)?;
 
     Ok(dest_path)
+}
+
+/// URL from which to download LLVM.
+///
+/// To be kept in sync with `pythonbuild/downloads.py`.
+static LLVM_URL: Lazy<Url> = Lazy::new(|| {
+    if cfg!(target_os = "macos") {
+        if std::env::consts::ARCH == "aarch64" {
+            Url::parse("https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-aarch64-apple-darwin.tar.zst").unwrap()
+        } else if std::env::consts::ARCH == "x86_64" {
+            Url::parse("https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-x86_64-apple-darwin.tar.zst").unwrap()
+        } else {
+            panic!("unsupported macOS architecture");
+        }
+    } else if cfg!(target_os = "linux") {
+        Url::parse("https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-gnu_only-x86_64-unknown-linux-gnu.tar.zst").unwrap()
+    } else {
+        panic!("unsupported platform");
+    }
+});
+
+/// Bootstrap `llvm` for the current platform.
+///
+/// Returns the path to the top-level `llvm` directory.
+pub async fn bootstrap_llvm() -> Result<PathBuf> {
+    let url = &*LLVM_URL;
+    let filename = url.path_segments().unwrap().last().unwrap();
+
+    let llvm_dir = PathBuf::from("llvm");
+
+    // If `llvm` is already available with the target version, return it.
+    if llvm_dir.join(filename).exists() {
+        return Ok(llvm_dir.join("llvm"));
+    }
+
+    println!("Downloading LLVM tarball from: {url}");
+
+    // Create a temporary directory to download and extract the LLVM tarball.
+    let temp_dir = tempfile::TempDir::new()?;
+
+    // Download the tarball.
+    let tarball_path = temp_dir
+        .path()
+        .join(url.path_segments().unwrap().last().unwrap());
+    let mut tarball_file = tokio::fs::File::create(&tarball_path).await?;
+    let mut bytes_stream = reqwest::Client::new()
+        .get(url.clone())
+        .send()
+        .await?
+        .bytes_stream();
+    while let Some(chunk) = bytes_stream.next().await {
+        tokio::io::copy(&mut chunk?.as_ref(), &mut tarball_file).await?;
+    }
+
+    // Decompress the tarball.
+    let tarball = std::fs::File::open(&tarball_path)?;
+    let tar = zstd::stream::Decoder::new(std::io::BufReader::new(tarball))?;
+    let mut archive = tar::Archive::new(tar);
+    archive.unpack(temp_dir.path())?;
+
+    // Persist the directory.
+    match tokio::fs::remove_dir_all(&llvm_dir).await {
+        Ok(_) => {}
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+        Err(err) => return Err(err).context("failed to remove existing llvm directory"),
+    }
+    tokio::fs::rename(temp_dir.into_path(), &llvm_dir).await?;
+
+    Ok(llvm_dir.join("llvm"))
 }

@@ -193,8 +193,13 @@ fn main_impl() -> Result<()> {
             Ok(())
         }
         Some(("convert-install-only-stripped", args)) => {
+            let llvm_dir = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(release::bootstrap_llvm())?;
             for path in args.get_many::<PathBuf>("path").unwrap() {
-                let dest_path = release::produce_install_only_stripped(path)?;
+                let dest_path = release::produce_install_only_stripped(path, &llvm_dir)?;
                 println!("wrote {}", dest_path.display());
             }
 
