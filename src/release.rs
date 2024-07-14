@@ -200,7 +200,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     h
 });
 
-/// Convert a .tar.zst archive to an install only .tar.gz archive.
+/// Convert a .tar.zst archive to an install-only .tar.gz archive.
 pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Result<W> {
     let dctx = zstd::stream::Decoder::new(reader)?;
 
@@ -279,6 +279,90 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
     Ok(builder.into_inner()?.finish()?)
 }
 
+/// Given an install-only .tar.gz archive, strip the underlying build.
+pub fn convert_to_stripped<W: Write>(reader: impl BufRead, writer: W) -> Result<W> {
+    // Untar the reader to disk, so that we can run `strip` on the files in-place.
+    let dctx = flate2::read::GzDecoder::new(reader);
+    let mut tar_in = tar::Archive::new(dctx);
+    let temp_dir = tempfile::tempdir()?;
+    tar_in.unpack(temp_dir.path())?;
+
+    // On macOS, strip the `.dylib` files.
+    if cfg!(target_os = "macos") {
+        for file in std::fs::read_dir(temp_dir.path().join("python/lib"))? {
+            let file = file?;
+
+            if file.path().extension().is_some_and(|ext| ext == "dylib") {
+                let size_before = file.metadata()?.len();
+
+                let output = std::process::Command::new("strip")
+                    .arg("-S")
+                    .arg("-x")
+                    .arg(file.path())
+                    .output()?;
+                if !output.status.success() {
+                    return Err(anyhow!("strip failed: {:?}", output));
+                }
+
+                let size_after = file.metadata()?.len();
+                println!(
+                    "stripped {} from {size_before} to {size_after} bytes",
+                    file.path().strip_prefix(temp_dir.path()).unwrap().display(),
+                );
+            }
+        }
+    }
+
+    // On macOS, strip the `.dylib` files.
+    if cfg!(target_os = "linux") {
+        for file in std::fs::read_dir(temp_dir.path().join("python/lib"))? {
+            let file = file?;
+
+            if file.path().extension().is_some_and(|ext| ext == "so") {
+                let size_before = file.metadata()?.len();
+
+                let output = std::process::Command::new("strip")
+                    .arg("--strip-unneeded")
+                    .arg(file.path())
+                    .output()?;
+                if !output.status.success() {
+                    return Err(anyhow!("strip failed: {:?}", output));
+                }
+
+                let size_after = file.metadata()?.len();
+                println!(
+                    "stripped {} from {size_before} to {size_after} bytes",
+                    file.path().strip_prefix(temp_dir.path()).unwrap().display(),
+                );
+            }
+        }
+    }
+
+    // On Windows, remove `.pdb` files.
+    if cfg!(target_os = "windows") {
+        for file in std::fs::read_dir(temp_dir.path().join("python"))? {
+            let file = file?;
+            if file.path().extension().is_some_and(|ext| ext == "pdb") {
+                std::fs::remove_file(file.path())?;
+            }
+        }
+
+        for file in std::fs::read_dir(temp_dir.path().join("python/DLLs"))? {
+            let file = file?;
+            if file.path().extension().is_some_and(|ext| ext == "pdb") {
+                std::fs::remove_file(file.path())?;
+            }
+        }
+    }
+
+    // Tar the directory back up and write it to the writer.
+    let writer = flate2::write::GzEncoder::new(writer, flate2::Compression::default());
+    let mut builder = tar::Builder::new(writer);
+    builder.append_dir_all("python", temp_dir.path())?;
+    Ok(builder.into_inner()?.finish()?)
+}
+
+/// Create an install-only .tar.gz archive from a .tar.zst archive.
 pub fn produce_install_only(tar_zst_path: &Path) -> Result<PathBuf> {
     let buf = std::fs::read(tar_zst_path)?;
 
@@ -302,6 +386,34 @@ pub fn produce_install_only(tar_zst_path: &Path) -> Result<PathBuf> {
     let install_only_name = install_only_name.replace(".tar.zst", ".tar.gz");
 
     let dest_path = tar_zst_path.with_file_name(install_only_name);
+    std::fs::write(&dest_path, gz_data)?;
+
+    Ok(dest_path)
+}
+
+pub fn produce_install_only_stripped(tar_gz_path: &Path) -> Result<PathBuf> {
+    let buf = std::fs::read(tar_gz_path)?;
+
+    let gz_data =
+        convert_to_stripped(std::io::Cursor::new(buf), std::io::Cursor::new(vec![]))?.into_inner();
+
+    let filename = tar_gz_path
+        .file_name()
+        .expect("should have filename")
+        .to_string_lossy();
+
+    let mut name_parts = filename
+        .split('-')
+        .map(|x| x.to_string())
+        .collect::<Vec<_>>();
+    let parts_len = name_parts.len();
+
+    name_parts[parts_len - 1] = "install_only_stripped".to_string();
+
+    let install_only_name = name_parts.join("-");
+    let install_only_name = format!("{install_only_name}.tar.gz");
+
+    let dest_path = tar_gz_path.with_file_name(install_only_name);
     std::fs::write(&dest_path, gz_data)?;
 
     Ok(dest_path)
