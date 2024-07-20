@@ -26,14 +26,15 @@ from pythonbuild.cpython import (
     parse_setup_line,
 )
 from pythonbuild.docker import build_docker_image, get_image, write_dockerfiles
-from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.logging import log, set_logger
 from pythonbuild.utils import (
+    Downloads,
     add_env_common,
     add_licenses_to_extension_entry,
     clang_toolchain,
     create_tar_from_directory,
     download_entry,
+    get_downloads,
     get_target_settings,
     get_targets,
     target_needs,
@@ -45,6 +46,7 @@ from pythonbuild.utils import (
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
+DOWNLOADS_FILE = ROOT / "downloads.yml"
 BUILD = ROOT / "build"
 DOWNLOADS_PATH = BUILD / "downloads"
 SUPPORT = ROOT / "cpython-unix"
@@ -212,8 +214,8 @@ def add_target_env(env, build_platform, target_triple, build_env):
     env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
 
 
-def toolchain_archive_path(package_name, host_platform):
-    entry = DOWNLOADS[package_name]
+def toolchain_archive_path(package_name, host_platform, downloads):
+    entry = downloads[package_name]
 
     basename = "%s-%s-%s.tar" % (package_name, entry["version"], host_platform)
 
@@ -232,11 +234,12 @@ def simple_build(
     host_platform,
     target_triple,
     optimizations,
+    downloads: Downloads,
     dest_archive,
     extra_archives=None,
     tools_path="deps",
 ):
-    archive = download_entry(entry, DOWNLOADS_PATH)
+    archive = download_entry(entry, DOWNLOADS_PATH, downloads)
 
     with build_environment(client, image) as build_env:
         if settings.get("needs_toolchain"):
@@ -256,7 +259,7 @@ def simple_build(
         build_env.copy_file(SUPPORT / ("build-%s.sh" % entry))
 
         env = {
-            "%s_VERSION" % entry.upper().replace("-", "_").replace(".", "_"): DOWNLOADS[
+            "%s_VERSION" % entry.upper().replace("-", "_").replace(".", "_"): downloads[
                 entry
             ]["version"],
         }
@@ -272,9 +275,9 @@ def simple_build(
         build_env.get_tools_archive(dest_archive, tools_path)
 
 
-def build_binutils(client, image, host_platform):
+def build_binutils(client, image, host_platform, downloads):
     """Build binutils in the Docker image."""
-    archive = download_entry("binutils", DOWNLOADS_PATH)
+    archive = download_entry("binutils", DOWNLOADS_PATH, downloads)
 
     with build_environment(client, image) as build_env:
         install_sccache(build_env)
@@ -282,7 +285,7 @@ def build_binutils(client, image, host_platform):
         build_env.copy_file(archive)
         build_env.copy_file(SUPPORT / "build-binutils.sh")
 
-        env = {"BINUTILS_VERSION": DOWNLOADS["binutils"]["version"]}
+        env = {"BINUTILS_VERSION": downloads["binutils"]["version"]}
 
         add_env_common(env)
 
@@ -292,16 +295,16 @@ def build_binutils(client, image, host_platform):
         )
 
         build_env.get_tools_archive(
-            toolchain_archive_path("binutils", host_platform), "host"
+            toolchain_archive_path("binutils", host_platform, downloads), "host"
         )
 
 
-def materialize_clang(host_platform: str, target_triple: str):
+def materialize_clang(host_platform: str, target_triple: str, downloads):
     entry = clang_toolchain(host_platform, target_triple)
-    tar_zst = download_entry(entry, DOWNLOADS_PATH)
+    tar_zst = download_entry(entry, DOWNLOADS_PATH, downloads)
     local_filename = "%s-%s-%s.tar" % (
         entry,
-        DOWNLOADS[entry]["version"],
+        downloads[entry]["version"],
         host_platform,
     )
 
@@ -312,8 +315,8 @@ def materialize_clang(host_platform: str, target_triple: str):
             dctx.copy_stream(ifh, ofh)
 
 
-def build_musl(client, image, host_platform: str, target_triple: str):
-    musl_archive = download_entry("musl", DOWNLOADS_PATH)
+def build_musl(client, image, host_platform: str, target_triple: str, downloads):
+    musl_archive = download_entry("musl", DOWNLOADS_PATH, downloads)
 
     with build_environment(client, image) as build_env:
         build_env.install_toolchain(
@@ -323,7 +326,7 @@ def build_musl(client, image, host_platform: str, target_triple: str):
         build_env.copy_file(SUPPORT / "build-musl.sh")
 
         env = {
-            "MUSL_VERSION": DOWNLOADS["musl"]["version"],
+            "MUSL_VERSION": downloads["musl"]["version"],
             "TOOLCHAIN": "llvm",
         }
 
@@ -335,9 +338,16 @@ def build_musl(client, image, host_platform: str, target_triple: str):
 
 
 def build_libedit(
-    settings, client, image, host_platform, target_triple, optimizations, dest_archive
+    settings,
+    client,
+    image,
+    host_platform,
+    target_triple,
+    optimizations,
+    dest_archive,
+    downloads: Downloads,
 ):
-    libedit_archive = download_entry("libedit", DOWNLOADS_PATH)
+    libedit_archive = download_entry("libedit", DOWNLOADS_PATH, downloads)
 
     with build_environment(client, image) as build_env:
         if settings.get("needs_toolchain"):
@@ -357,7 +367,7 @@ def build_libedit(
         build_env.copy_file(SUPPORT / "build-libedit.sh")
 
         env = {
-            "LIBEDIT_VERSION": DOWNLOADS["libedit"]["version"],
+            "LIBEDIT_VERSION": downloads["libedit"]["version"],
         }
 
         add_target_env(env, host_platform, target_triple, build_env)
@@ -367,11 +377,18 @@ def build_libedit(
 
 
 def build_tix(
-    settings, client, image, host_platform, target_triple, optimizations, dest_archive
+    settings,
+    client,
+    image,
+    host_platform,
+    target_triple,
+    optimizations,
+    dest_archive,
+    downloads: Downloads,
 ):
-    tcl_archive = download_entry("tcl", DOWNLOADS_PATH)
-    tk_archive = download_entry("tk", DOWNLOADS_PATH)
-    tix_archive = download_entry("tix", DOWNLOADS_PATH)
+    tcl_archive = download_entry("tcl", DOWNLOADS_PATH, downloads)
+    tk_archive = download_entry("tk", DOWNLOADS_PATH, downloads)
+    tix_archive = download_entry("tix", DOWNLOADS_PATH, downloads)
 
     with build_environment(client, image) as build_env:
         if settings.get("needs_toolchain"):
@@ -396,9 +413,9 @@ def build_tix(
 
         env = {
             "TOOLCHAIN": "clang-%s" % host_platform,
-            "TCL_VERSION": DOWNLOADS["tcl"]["version"],
-            "TIX_VERSION": DOWNLOADS["tix"]["version"],
-            "TK_VERSION": DOWNLOADS["tk"]["version"],
+            "TCL_VERSION": downloads["tcl"]["version"],
+            "TIX_VERSION": downloads["tix"]["version"],
+            "TK_VERSION": downloads["tk"]["version"],
         }
 
         add_target_env(env, host_platform, target_triple, build_env)
@@ -415,12 +432,13 @@ def build_cpython_host(
     target_triple: str,
     optimizations: str,
     dest_archive,
+    downloads: Downloads,
 ):
     """Build binutils in the Docker image."""
-    archive = download_entry(entry, DOWNLOADS_PATH)
+    archive = download_entry(entry, DOWNLOADS_PATH, downloads)
 
     with build_environment(client, image) as build_env:
-        python_version = DOWNLOADS[entry]["version"]
+        python_version = downloads[entry]["version"]
 
         build_env.install_toolchain(
             BUILD,
@@ -480,6 +498,7 @@ def python_build_info(
     optimizations,
     extensions,
     extra_metadata,
+    downloads: Downloads,
 ):
     """Obtain build metadata for the Python distribution."""
 
@@ -503,7 +522,7 @@ def python_build_info(
             )
 
         if optimizations in ("lto", "pgo+lto"):
-            llvm_version = DOWNLOADS[clang_toolchain(platform, target_triple)][
+            llvm_version = downloads[clang_toolchain(platform, target_triple)][
                 "version"
             ]
             if "+" in llvm_version:
@@ -525,7 +544,7 @@ def python_build_info(
 
         if optimizations in ("lto", "pgo+lto"):
             object_file_format = (
-                "llvm-bitcode:%s" % DOWNLOADS["llvm-aarch64-macos"]["version"]
+                "llvm-bitcode:%s" % downloads["llvm-aarch64-macos"]["version"]
             )
         else:
             object_file_format = "mach-o"
@@ -682,16 +701,17 @@ def build_cpython(
     host_platform,
     target_triple,
     optimizations,
+    downloads: Downloads,
     dest_archive,
     version=None,
     python_source=None,
 ):
     """Build CPython in a Docker image'"""
     entry_name = "cpython-%s" % version
-    entry = DOWNLOADS[entry_name]
+    entry = downloads[entry_name]
     if not python_source:
         python_version = entry["version"]
-        python_archive = download_entry(entry_name, DOWNLOADS_PATH)
+        python_archive = download_entry(entry_name, DOWNLOADS_PATH, downloads)
     else:
         python_version = os.environ["PYBUILD_PYTHON_VERSION"]
         python_archive = DOWNLOADS_PATH / ("Python-%s.tar.xz" % python_version)
@@ -701,8 +721,8 @@ def build_cpython(
                 fh, python_source, path_prefix="Python-%s" % python_version
             )
 
-    setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH)
-    pip_archive = download_entry("pip", DOWNLOADS_PATH)
+    setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH, downloads)
+    pip_archive = download_entry("pip", DOWNLOADS_PATH, downloads)
 
     ems = extension_modules_config(EXTENSION_MODULES)
 
@@ -773,10 +793,10 @@ def build_cpython(
             build_env.copy_file(fh.name, dest_name="Makefile.extra")
 
         env = {
-            "PIP_VERSION": DOWNLOADS["pip"]["version"],
+            "PIP_VERSION": downloads["pip"]["version"],
             "PYTHON_VERSION": python_version,
             "PYTHON_MAJMIN_VERSION": ".".join(python_version.split(".")[0:2]),
-            "SETUPTOOLS_VERSION": DOWNLOADS["setuptools"]["version"],
+            "SETUPTOOLS_VERSION": downloads["setuptools"]["version"],
             "TOOLCHAIN": "clang-%s" % host_platform,
         }
 
@@ -852,6 +872,7 @@ def build_cpython(
                 optimizations,
                 enabled_extensions,
                 extra_metadata,
+                downloads=downloads,
             ),
             "licenses": entry["licenses"],
             "license_path": "licenses/LICENSE.cpython.txt",
@@ -958,6 +979,8 @@ def main():
 
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
+    downloads = get_downloads(DOWNLOADS_FILE)
+
     if args.action == "dockerfiles":
         log_name = "dockerfiles"
     elif args.action == "makefiles":
@@ -969,7 +992,7 @@ def main():
     elif args.action.startswith("cpython-") and args.action.endswith("-host"):
         log_name = args.action
     else:
-        entry = DOWNLOADS[action]
+        entry = downloads[action]
         log_name = "%s-%s-%s-%s" % (
             action,
             entry["version"],
@@ -1004,10 +1027,15 @@ def main():
             build_docker_image(client, image_data, BUILD, image_name)
 
         elif action == "binutils":
-            build_binutils(client, get_image(client, ROOT, BUILD, "gcc"), host_platform)
+            build_binutils(
+                client,
+                get_image(client, ROOT, BUILD, "gcc"),
+                host_platform,
+                downloads=downloads,
+            )
 
         elif action == "clang":
-            materialize_clang(host_platform, target_triple)
+            materialize_clang(host_platform, target_triple, downloads=downloads)
 
         elif action == "musl":
             build_musl(
@@ -1015,6 +1043,7 @@ def main():
                 get_image(client, ROOT, BUILD, "gcc"),
                 host_platform,
                 target_triple,
+                downloads=downloads,
             )
 
         elif action == "autoconf":
@@ -1027,6 +1056,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
                 tools_path="host",
                 extra_archives=["m4"],
             )
@@ -1040,6 +1070,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
             )
 
         elif action in (
@@ -1079,6 +1110,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
                 tools_path=tools_path,
             )
 
@@ -1092,6 +1124,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
                 extra_archives={
                     "inputproto",
                     "kbproto",
@@ -1116,6 +1149,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
                 extra_archives={"x11-util-macros", "xproto"},
             )
 
@@ -1129,6 +1163,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
             )
 
         elif action == "libxcb":
@@ -1141,6 +1176,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
                 extra_archives={"libpthread-stubs", "libXau", "xcb-proto", "xproto"},
             )
 
@@ -1153,6 +1189,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
             )
 
         elif action == "tk":
@@ -1175,6 +1212,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
                 extra_archives=extra_archives,
             )
 
@@ -1187,6 +1225,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
             )
 
         elif action in (
@@ -1204,6 +1243,7 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
+                downloads=downloads,
                 version=action.split("-")[1],
                 python_source=python_source,
             )

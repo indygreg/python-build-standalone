@@ -1,0 +1,409 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+autoconf:
+  sha256: 431075ad0bf529ef13cb41e9042c542381103e80015686222b8a9d4abef42a1c
+  size: 2003781
+  url: https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz
+  version: '2.71'
+# 6.0.19 is the last version licensed under the Sleepycat license.
+bdb:
+  library_names:
+    - db
+  license_file: LICENSE.bdb.txt
+  licenses:
+    - Sleepycat
+  sha256: 2917c28f60903908c2ca4587ded1363b812c4e830a5326aaa77c9879d13ae18e
+  size: 36541923
+  url: https://ftp.osuosl.org/pub/blfs/conglomeration/db/db-6.0.19.tar.gz
+  version: 6.0.19
+binutils:
+  sha256: f6e4d41fd5fc778b06b7891457b3620da5ecea1006c6a4a41ae998109f85a800
+  size: 27567160
+  url: https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz
+  version: '2.42'
+bzip2:
+  library_names:
+    - bz2
+  license_file: LICENSE.bzip2.txt
+  licenses:
+    - bzip2-1.0.6
+  sha256: ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269
+  size: 810029
+  url: https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
+  version: 1.0.8
+cpython-3.10:
+  license_file: LICENSE.cpython.txt
+  licenses:
+    - Python-2.0
+    - CNRI-Python
+  python_tag: cp310
+  sha256: 9c50481faa8c2832329ba0fc8868d0a606a680fc4f60ec48d26ce8e076751fda
+  size: 19600188
+  url: https://www.python.org/ftp/python/3.10.14/Python-3.10.14.tar.xz
+  version: 3.10.14
+cpython-3.11:
+  license_file: LICENSE.cpython.txt
+  licenses:
+    - Python-2.0
+    - CNRI-Python
+  python_tag: cp311
+  sha256: 9b1e896523fc510691126c864406d9360a3d1e986acbda59cda57b5abda45b87
+  size: 20175816
+  url: https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tar.xz
+  version: 3.11.9
+cpython-3.12:
+  license_file: LICENSE.cpython.txt
+  licenses:
+    - Python-2.0
+    - CNRI-Python
+  python_tag: cp312
+  sha256: f6d419a6d8743ab26700801b4908d26d97e8b986e14f95de31b32de2b0e79554
+  size: 20659356
+  url: https://www.python.org/ftp/python/3.12.4/Python-3.12.4.tar.xz
+  version: 3.12.4
+cpython-3.8:
+  license_file: LICENSE.cpython.txt
+  licenses:
+    - Python-2.0
+    - CNRI-Python
+  python_tag: cp38
+  sha256: d2807ac69f69b84fd46a0b93bbd02a4fa48d3e70f4b2835ff0f72a2885040076
+  size: 18975156
+  url: https://www.python.org/ftp/python/3.8.19/Python-3.8.19.tar.xz
+  version: 3.8.19
+cpython-3.9:
+  license_file: LICENSE.cpython.txt
+  licenses:
+    - Python-2.0
+    - CNRI-Python
+  python_tag: cp39
+  sha256: d4892cd1618f6458cb851208c030df1482779609d0f3939991bd38184f8c679e
+  size: 19682840
+  url: https://www.python.org/ftp/python/3.9.19/Python-3.9.19.tar.xz
+  version: 3.9.19
+expat:
+  library_names:
+    - expat
+  license_file: LICENSE.expat.txt
+  licenses:
+    - MIT
+  sha256: ef2420f0232c087801abf705e89ae65f6257df6b7931d37846a193ef2e8cdcbe
+  size: 460560
+  url: https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.xz
+  version: 2.5.0
+inputproto:
+  sha256: 10eaadd531f38f7c92ab59ef0708ca195caf3164a75c4ed99f0c04f2913f6ef3
+  size: 244334
+  url: https://www.x.org/archive/individual/proto/inputproto-2.3.2.tar.gz
+  version: 2.3.2
+jom-windows-bin:
+  sha256: 128fdd846fe24f8594eed37d1d8929a0ea78df563537c0c1b1861a635013fff8
+  size: 1213852
+  url: http://download.qt.io/official_releases/jom/jom_1_1_3.zip
+  version: 1.1.3
+kbproto:
+  sha256: 828cb275b91268b1a3ea950d5c0c5eb076c678fdf005d517411f89cc8c3bb416
+  size: 325858
+  url: https://www.x.org/archive/individual/proto/kbproto-1.0.7.tar.gz
+  version: 1.0.7
+libX11:
+  library_names:
+    - X11
+    - X11-xcb
+  license_file: LICENSE.libX11.txt
+  licenses:
+    - MIT
+    - X11
+  sha256: 0fce5fc0a24a3dc728174eccd0cb8d6a1b37a2ec1654bd5628c84e5bc200d594
+  size: 3168158
+  url: https://www.x.org/archive/individual/lib/libX11-1.6.12.tar.gz
+  version: 1.6.12
+libXau:
+  library_names:
+    - Xau
+  license_file: LICENSE.libXau.txt
+  licenses:
+    - MIT
+  sha256: 3a321aaceb803577a4776a5efe78836eb095a9e44bbc7a465d29463e1a14f189
+  size: 404973
+  url: https://www.x.org/releases/individual/lib/libXau-1.0.11.tar.gz
+  version: 1.0.11
+# 20221009-3.1 fails to build on musl due to an includes issue.
+libedit:
+  library_names:
+    - edit
+  license_file: LICENSE.libedit.txt
+  licenses:
+    - BSD-3-Clause
+  sha256: 6792a6a992050762edcca28ff3318cdb7de37dccf7bc30db59fcd7017eed13c5
+  size: 524722
+  url: https://thrysoee.dk/editline/libedit-20210910-3.1.tar.gz
+  version: 20210910-3.1
+libffi:
+  library_names:
+    - ffi
+  license_file: LICENSE.libffi.txt
+  licenses:
+    - MIT
+  sha256: b0dea9df23c863a7a50e825440f3ebffabd65df1497108e5d437747843895a4e
+  size: 1391684
+  url: https://github.com/libffi/libffi/releases/download/v3.4.6/libffi-3.4.6.tar.gz
+  version: 3.4.6
+libffi-3.3:
+  library_names:
+    - ffi
+  license_file: LICENSE.libffi.txt
+  licenses:
+    - MIT
+  sha256: 72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056
+  size: 1305466
+  url: https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz
+  version: '3.3'
+libpthread-stubs:
+  sha256: 593196cc746173d1e25cb54a93a87fd749952df68699aab7e02c085530e87747
+  size: 74938
+  url: https://www.x.org/archive/individual/lib/libpthread-stubs-0.5.tar.gz
+  version: '0.5'
+# Newer versions of libxcb require a modern Python to build. We can take this
+# dependency once we feel like doing the work.
+libxcb:
+  library_names:
+    - xcb
+  license_file: LICENSE.libxcb.txt
+  licenses:
+    - MIT
+  sha256: 2c7fcddd1da34d9b238c9caeda20d3bd7486456fc50b3cc6567185dbd5b0ad02
+  size: 640322
+  url: https://xcb.freedesktop.org/dist/libxcb-1.14.tar.gz
+  version: '1.14'
+llvm-14-x86_64-linux:
+  sha256: 04cb77c660f09df017a57738ae9635ef23a506024789f2f18da1304b45af2023
+  size: 158614671
+  url: https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20220508/llvm-14.0.3+20220508-gnu_only-x86_64-unknown-linux-gnu.tar.zst
+  version: 14.0.3+20220508
+# Remember to update LLVM_URL in src/release.rs whenever upgrading.
+llvm-18-x86_64-linux:
+  sha256: 080c233fc7d75031b187bbfef62a4f9abc01188effb0c68fbc7dc4bc7370ee5b
+  size: 242840506
+  url: https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-gnu_only-x86_64-unknown-linux-gnu.tar.zst
+  version: 18.0.8+20240713
+# Remember to update LLVM_URL in src/release.rs whenever upgrading.
+llvm-aarch64-macos:
+  sha256: 320da8d639186e020e7d54cdc35b7a5473b36cef08fdf7b22c03b59a273ba593
+  size: 136598617
+  url: https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-aarch64-apple-darwin.tar.zst
+  version: 18.0.8+20240713
+# Remember to update LLVM_URL in src/release.rs whenever upgrading.
+llvm-x86_64-macos:
+  sha256: 3032161d1cadb8996b07fe5762444c956842b5a7d798b2fcfe5a04574fdf7549
+  size: 136599290
+  url: https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-x86_64-apple-darwin.tar.zst
+  version: 18.0.8+20240713
+m4:
+  sha256: 63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96
+  size: 1654908
+  url: https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
+  version: 1.4.19
+mpdecimal:
+  library_names:
+    - mpdec
+  license_file: LICENSE.mpdecimal.txt
+  licenses:
+    - BSD-2-Clause
+  sha256: 9f9cd4c041f99b5c49ffb7b59d9f12d95b683d88585608aa56a6307667b2b21f
+  size: 2584021
+  url: https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
+  version: 2.5.1
+musl:
+  sha256: a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4
+  size: 1080786
+  url: https://musl.libc.org/releases/musl-1.2.5.tar.gz
+  version: 1.2.5
+nasm-windows-bin:
+  sha256: 8af0ae5ceed63fa8a2ded611d44cc341027a91df22aaaa071efedc81437412a5
+  size: 384826
+  url: https://github.com/python/cpython-bin-deps/archive/nasm-2.11.06.tar.gz
+  version: 2.11.06
+ncurses:
+  library_names:
+    - ncurses
+    - ncursesw
+    - panel
+    - panelw
+  license_file: LICENSE.ncurses.txt
+  licenses:
+    - X11
+  sha256: 136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6
+  size: 3688489
+  url: https://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.5.tar.gz
+  version: '6.5'
+# Remember to update OPENSSL_VERSION_INFO in verify_distribution.py whenever upgrading.
+openssl-1.1:
+  library_names:
+    - crypto
+    - ssl
+  license_file: LICENSE.openssl-1.1.txt
+  licenses:
+    - OpenSSL
+  sha256: cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8
+  size: 9893384
+  url: https://www.openssl.org/source/openssl-1.1.1w.tar.gz
+  version: 1.1.1w
+# We use OpenSSL 3.0 because it is an LTS release and has a longer support
+# window. If CPython ends up gaining support for 3.1+ releases, we can consider
+# using the latest available.
+# Remember to update OPENSSL_VERSION_INFO in verify_distribution.py whenever upgrading.
+openssl-3.0:
+  library_names:
+    - crypto
+    - ssl
+  license_file: LICENSE.openssl-3.txt
+  licenses:
+    - Apache-2.0
+  sha256: eeca035d4dd4e84fc25846d952da6297484afa0650a6f84c682e39df3a4123ca
+  size: 15305497
+  url: https://www.openssl.org/source/openssl-3.0.14.tar.gz
+  version: 3.0.14
+patchelf:
+  sha256: 39e8aeccd7495d54df094d2b4a7c08010ff7777036faaf24f28e07777d1598e2
+  size: 173598
+  url: https://github.com/NixOS/patchelf/releases/download/0.13.1/patchelf-0.13.1.tar.bz2
+  version: 0.13.1
+pip:
+  sha256: 7cd207eed4c60b0f411b444cd1464198fe186671c323b6cd6d433ed80fc9d247
+  size: 1824406
+  url: https://files.pythonhosted.org/packages/e7/54/0c1c068542cee73d8863336e974fc881e608d0170f3af15d0c0f28644531/pip-24.1.2-py3-none-any.whl
+  version: 24.1.2
+readline:
+  library_names:
+    - readline
+  license_file: LICENSE.readline.txt
+  licenses:
+    - GPL-3.0-only
+  sha256: 3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35
+  size: 3043952
+  url: https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz
+  version: '8.2'
+setuptools:
+  sha256: fe384da74336c398e0d956d1cae0669bc02eed936cdb1d49b57de1990dc11ffc
+  size: 931070
+  url: https://files.pythonhosted.org/packages/ef/15/88e46eb9387e905704b69849618e699dc2f54407d8953cc4ec4b8b46528d/setuptools-70.3.0-py3-none-any.whl
+  version: 70.3.0
+# Remember to update verify_distribution.py when version changed.
+sqlite:
+  actual_version: 3.46.0.0
+  library_names:
+    - sqlite3
+  license_file: LICENSE.sqlite.txt
+  license_public_domain: true
+  sha256: 6f8e6a7b335273748816f9b3b62bbdc372a889de8782d7f048c653a447417a7d
+  size: 3265248
+  url: https://www.sqlite.org/2024/sqlite-autoconf-3460000.tar.gz
+  version: '3460000'
+strawberryperl:
+  sha256: 8b15c7c9574989568254a7859e473b7d5f68a1145d2e4418036600a81b13805c
+  size: 143242779
+  url: http://strawberryperl.com/download/5.28.1.1/strawberry-perl-5.28.1.1-32bit-portable.zip
+  version: 5.28.1.1
+tcl:
+  library_names:
+    - tcl8.6
+  license_file: LICENSE.tcl.txt
+  licenses:
+    - TCL
+  sha256: 26c995dd0f167e48b11961d891ee555f680c175f7173ff8cb829f4ebcde4c1a6
+  size: 10353486
+  url: https://prdownloads.sourceforge.net/tcl/tcl8.6.12-src.tar.gz
+  version: 8.6.12
+tix:
+  license_file: LICENSE.tix.txt
+  licenses:
+    - TCL
+  sha256: f7b21d115867a41ae5fd7c635a4c234d3ca25126c3661eb36028c6e25601f85e
+  size: 1836451
+  url: https://github.com/python/cpython-source-deps/archive/tix-8.4.3.6.tar.gz
+  version: 8.4.3.6
+tk:
+  library_names:
+    - tk8.6
+  license_file: LICENSE.tcl.txt
+  licenses:
+    - TCL
+  sha256: 12395c1f3fcb6bed2938689f797ea3cdf41ed5cb6c4766eec8ac949560310630
+  size: 4515393
+  url: https://prdownloads.sourceforge.net/tcl/tk8.6.12-src.tar.gz
+  version: 8.6.12
+tk-windows-bin:
+  git_commit: e3c3e9a2856124aa32b608632a52742d479eb7a9
+  sha256: 01ad9c663659224e075d487cbc33ea2fed7a225593965b79bed92ca7f79b676f
+  size: 6787654
+  url: https://github.com/python/cpython-bin-deps/archive/e3c3e9a2856124aa32b608632a52742d479eb7a9.tar.gz
+  version: 8.6.12
+uuid:
+  library_names:
+    - uuid
+  license_file: LICENSE.libuuid.txt
+  licenses:
+    - BSD-3-Clause
+  sha256: 46af3275291091009ad7f1b899de3d0cea0252737550e7919d17237997db5644
+  size: 318256
+  url: https://sourceforge.net/projects/libuuid/files/libuuid-1.0.3.tar.gz
+  version: 1.0.3
+x11-util-macros:
+  sha256: 8daf36913d551a90fd1013cb078401375dabae021cb4713b9b256a70f00eeb74
+  size: 104931
+  url: https://www.x.org/archive/individual/util/util-macros-1.20.0.tar.gz
+  version: 1.20.0
+xcb-proto:
+  sha256: 85cd21e9d9fbc341d0dbf11eace98d55d7db89fda724b0e598855fcddf0944fd
+  size: 194674
+  url: https://www.x.org/archive/individual/proto/xcb-proto-1.14.1.tar.gz
+  version: 1.14.1
+xextproto:
+  sha256: 1b1bcdf91221e78c6c33738667a57bd9aaa63d5953174ad8ed9929296741c9f5
+  size: 290814
+  url: https://www.x.org/archive/individual/proto/xextproto-7.3.0.tar.gz
+  version: 7.3.0
+# Newer versions from at least 2023 have build failures for reasons we haven't
+# fully investigated.
+xorgproto:
+  sha256: 38ad1d8316515785d53c5162b4b7022918e03c11d72a5bd9df0a176607f42bca
+  size: 1119813
+  url: https://www.x.org/archive/individual/proto/xorgproto-2019.1.tar.gz
+  version: '2019.1'
+xproto:
+  sha256: 6d755eaae27b45c5cc75529a12855fed5de5969b367ed05003944cf901ed43c7
+  size: 367979
+  url: https://www.x.org/archive/individual/proto/xproto-7.0.31.tar.gz
+  version: 7.0.31
+xtrans:
+  sha256: a806f8a92f879dcd0146f3f1153fdffe845f2fc0df9b1a26c19312b7b0a29c86
+  size: 230197
+  url: https://www.x.org/archive/individual/lib/xtrans-1.5.0.tar.gz
+  version: 1.5.0
+# IMPORTANT: xz 5.6 has a backdoor. Be extremely cautious before taking any xz
+# upgrade since it isn't clear which versions are safe.
+xz:
+  library_names:
+    - lzma
+  # liblzma is in the public domain. Other parts of code have licenses. But
+  # we only use liblzma.
+  licenses: []
+  license_file: LICENSE.liblzma.txt
+  license_public_domain: true
+  sha256: 61bda930767dcb170a5328a895ec74cab0f5aac4558cdda561c83559db582a13
+  size: 2190541
+  url: https://github.com/indygreg/python-build-standalone/releases/download/20240224/xz-5.2.12.tar.gz
+  version: 5.2.12
+zlib:
+  library_names:
+    - z
+  license_file: LICENSE.zlib.txt
+  licenses:
+    - Zlib
+  sha256: b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30
+  size: 1497445
+  url: https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.gz
+  version: 1.2.13

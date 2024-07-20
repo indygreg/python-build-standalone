@@ -22,19 +22,20 @@ from pythonbuild.cpython import (
     meets_python_minimum_version,
     parse_config_c,
 )
-from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.utils import (
     compress_python_archive,
     create_tar_from_directory,
     download_entry,
     extract_tar_to_directory,
     extract_zip_to_directory,
+    get_downloads,
     normalize_tar_archive,
     release_tag_from_git,
     validate_python_json,
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
+DOWNLOADS_FILE = ROOT / "downloads.yml"
 BUILD = ROOT / "build"
 DIST = ROOT / "dist"
 SUPPORT = ROOT / "cpython-windows"
@@ -341,17 +342,18 @@ def hack_props(
     td: pathlib.Path,
     pcbuild_path: pathlib.Path,
     arch: str,
+    downloads,
 ):
     # TODO can we pass props into msbuild.exe?
 
     # Our dependencies are in different directories from what CPython's
     # build system expects. Modify the config file appropriately.
 
-    bzip2_version = DOWNLOADS["bzip2"]["version"]
-    sqlite_version = DOWNLOADS["sqlite"]["version"]
-    xz_version = DOWNLOADS["xz"]["version"]
-    zlib_version = DOWNLOADS["zlib"]["version"]
-    tcltk_commit = DOWNLOADS["tk-windows-bin"]["git_commit"]
+    bzip2_version = downloads["bzip2"]["version"]
+    sqlite_version = downloads["sqlite"]["version"]
+    xz_version = downloads["xz"]["version"]
+    zlib_version = downloads["zlib"]["version"]
+    tcltk_commit = downloads["tk-windows-bin"]["git_commit"]
 
     sqlite_path = td / ("sqlite-autoconf-%s" % sqlite_version)
     bzip2_path = td / ("bzip2-%s" % bzip2_version)
@@ -469,6 +471,7 @@ def hack_project_files(
     cpython_source_path: pathlib.Path,
     build_directory: str,
     python_version: str,
+    downloads,
 ):
     """Hacks Visual Studio project files to work with our build."""
 
@@ -482,7 +485,7 @@ def hack_project_files(
 
     # Our SQLite directory is named weirdly. This throws off version detection
     # in the project file. Replace the parsing logic with a static string.
-    sqlite3_version = DOWNLOADS["sqlite"]["actual_version"].encode("ascii")
+    sqlite3_version = downloads["sqlite"]["actual_version"].encode("ascii")
     sqlite3_version_parts = sqlite3_version.split(b".")
     sqlite3_path = pcbuild_path / "sqlite3.vcxproj"
     static_replace_in_file(
@@ -868,11 +871,11 @@ def build_openssl_for_arch(
     openssl_version: str,
     nasm_archive,
     build_root: pathlib.Path,
-    profile: str,
+    downloads,
     *,
     jom_archive,
 ):
-    nasm_version = DOWNLOADS["nasm-windows-bin"]["version"]
+    nasm_version = downloads["nasm-windows-bin"]["version"]
 
     log("extracting %s to %s" % (openssl_archive, build_root))
     extract_tar_to_directory(openssl_archive, build_root)
@@ -960,17 +963,17 @@ def build_openssl(
     entry: str,
     perl_path: pathlib.Path,
     arch: str,
-    profile: str,
     dest_archive: pathlib.Path,
+    downloads,
 ):
     """Build OpenSSL from sources using the Perl executable specified."""
 
-    openssl_version = DOWNLOADS[entry]["version"]
+    openssl_version = downloads[entry]["version"]
 
     # First ensure the dependencies are in place.
-    openssl_archive = download_entry(entry, BUILD)
-    nasm_archive = download_entry("nasm-windows-bin", BUILD)
-    jom_archive = download_entry("jom-windows-bin", BUILD)
+    openssl_archive = download_entry(entry, downloads, BUILD)
+    nasm_archive = download_entry("nasm-windows-bin", downloads, BUILD)
+    jom_archive = download_entry("jom-windows-bin", downloads, BUILD)
 
     with tempfile.TemporaryDirectory(prefix="openssl-build-") as td:
         td = pathlib.Path(td)
@@ -987,7 +990,7 @@ def build_openssl(
                 openssl_version,
                 nasm_archive,
                 root_32,
-                profile,
+                downloads=downloads,
                 jom_archive=jom_archive,
             )
         elif arch == "amd64":
@@ -999,7 +1002,7 @@ def build_openssl(
                 openssl_version,
                 nasm_archive,
                 root_64,
-                profile,
+                downloads=downloads,
                 jom_archive=jom_archive,
             )
         else:
@@ -1022,6 +1025,7 @@ def build_libffi(
     sh_exe: pathlib.Path,
     msvc_version: str,
     dest_archive: pathlib.Path,
+    downloads,
 ):
     with tempfile.TemporaryDirectory(prefix="libffi-build-") as td:
         td = pathlib.Path(td)
@@ -1059,10 +1063,10 @@ def build_libffi(
         )
 
         # We build libffi by running the build script that CPython ships.
-        python_archive = download_entry(python, BUILD)
+        python_archive = download_entry(python, downloads, BUILD)
         extract_tar_to_directory(python_archive, td)
 
-        python_entry = DOWNLOADS[python]
+        python_entry = downloads[python]
         prepare_libffi = (
             td
             / ("Python-%s" % python_entry["version"])
@@ -1113,6 +1117,7 @@ def collect_python_build_artifacts(
     arch: str,
     config: str,
     openssl_entry: str,
+    downloads,
 ):
     """Collect build artifacts from Python.
 
@@ -1331,7 +1336,7 @@ def collect_python_build_artifacts(
                 if name == "openssl":
                     name = openssl_entry
 
-                download_entry = DOWNLOADS[name]
+                download_entry = downloads[name]
 
                 # This will raise if no license metadata defined. This is
                 # intentional because EXTENSION_TO_LIBRARY_DOWNLOADS_ENTRY is
@@ -1384,6 +1389,7 @@ def build_cpython(
     openssl_archive,
     libffi_archive,
     openssl_entry: str,
+    downloads,
 ) -> pathlib.Path:
     pgo = profile == "pgo"
 
@@ -1393,21 +1399,21 @@ def build_cpython(
     # The python.props file keys off MSBUILD, so it needs to be set.
     os.environ["MSBUILD"] = str(msbuild)
 
-    bzip2_archive = download_entry("bzip2", BUILD)
-    sqlite_archive = download_entry("sqlite", BUILD)
+    bzip2_archive = download_entry("bzip2", downloads, BUILD)
+    sqlite_archive = download_entry("sqlite", downloads, BUILD)
     tk_bin_archive = download_entry(
         "tk-windows-bin", BUILD, local_name="tk-windows-bin.tar.gz"
     )
-    xz_archive = download_entry("xz", BUILD)
-    zlib_archive = download_entry("zlib", BUILD)
+    xz_archive = download_entry("xz", downloads, BUILD)
+    zlib_archive = download_entry("zlib", downloads, BUILD)
 
-    python_archive = download_entry(python_entry_name, BUILD)
-    entry = DOWNLOADS[python_entry_name]
+    python_archive = download_entry(python_entry_name, downloads, BUILD)
+    entry = downloads[python_entry_name]
 
     python_version = entry["version"]
 
-    setuptools_wheel = download_entry("setuptools", BUILD)
-    pip_wheel = download_entry("pip", BUILD)
+    setuptools_wheel = download_entry("setuptools", downloads, BUILD)
+    pip_wheel = download_entry("pip", downloads, BUILD)
 
     if arch == "amd64":
         build_platform = "x64"
@@ -1668,6 +1674,7 @@ def build_cpython(
             build_directory,
             artifact_config,
             openssl_entry=openssl_entry,
+            downloads=downloads,
         )
 
         for ext, init_fn in sorted(builtin_extensions.items()):
@@ -1804,7 +1811,7 @@ def build_cpython(
 
 
 def fetch_strawberry_perl() -> pathlib.Path:
-    strawberryperl_zip = download_entry("strawberryperl", BUILD)
+    strawberryperl_zip = download_entry("strawberryperl", downloads, BUILD)
     strawberryperl = BUILD / "strawberry-perl"
     strawberryperl.mkdir(exist_ok=True)
     with zipfile.ZipFile(strawberryperl_zip) as zf:
@@ -1852,6 +1859,8 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    downloads = get_downloads(DOWNLOADS_FILE)
+
     log_path = BUILD / "build.log"
 
     with log_path.open("wb") as log_fh:
@@ -1884,8 +1893,8 @@ def main() -> None:
                 openssl_entry,
                 perl_path,
                 arch,
-                profile=args.profile,
                 dest_archive=openssl_archive,
+                downloads=downloads,
             )
 
         libffi_archive = BUILD / ("libffi-%s-%s.tar" % (target_triple, args.profile))
@@ -1896,6 +1905,7 @@ def main() -> None:
                 pathlib.Path(args.sh),
                 args.vs,
                 libffi_archive,
+                downloads=downloads,
             )
 
         LOG_PREFIX[0] = "cpython"
@@ -1909,6 +1919,7 @@ def main() -> None:
             openssl_archive=openssl_archive,
             libffi_archive=libffi_archive,
             openssl_entry=openssl_entry,
+            downloads=downloads,
         )
 
         if "PYBUILD_RELEASE_TAG" in os.environ:

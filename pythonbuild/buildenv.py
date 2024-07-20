@@ -12,7 +12,6 @@ import tarfile
 import tempfile
 
 from .docker import container_exec, container_get_archive, copy_file_to_container
-from .downloads import DOWNLOADS
 from .logging import log
 from .utils import (
     clang_toolchain,
@@ -39,9 +38,9 @@ class ContainerContext(object):
         copy_file_to_container(source, self.container, dest_path, dest_name)
 
     def install_toolchain_archive(
-        self, build_dir, package_name, host_platform, version=None
+        self, build_dir, package_name, host_platform, downloads, version=None
     ):
-        entry = DOWNLOADS[package_name]
+        entry = downloads[package_name]
         basename = "%s-%s-%s.tar" % (
             package_name,
             version or entry["version"],
@@ -53,9 +52,9 @@ class ContainerContext(object):
         self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name])
 
     def install_artifact_archive(
-        self, build_dir, package_name, target_triple, optimizations
+        self, build_dir, package_name, target_triple, optimizations, downloads
     ):
-        entry = DOWNLOADS[package_name]
+        entry = downloads[package_name]
         basename = "%s-%s-%s-%s.tar" % (
             package_name,
             entry["version"],
@@ -76,17 +75,19 @@ class ContainerContext(object):
         binutils=False,
         musl=False,
         clang=False,
+            *,
+            downloads,
     ):
         if binutils:
-            self.install_toolchain_archive(build_dir, "binutils", host_platform)
+            self.install_toolchain_archive(build_dir, "binutils", host_platform, downloads=downloads)
 
         if clang:
             self.install_toolchain_archive(
-                build_dir, clang_toolchain(host_platform, target_triple), host_platform
+                build_dir, clang_toolchain(host_platform, target_triple), host_platform, downloads=downloads
             )
 
         if musl:
-            self.install_toolchain_archive(build_dir, "musl", host_platform)
+            self.install_toolchain_archive(build_dir, "musl", host_platform, downloads=downloads)
 
     def run(self, program, user="build", environment=None):
         if isinstance(program, str) and not program.startswith("/"):
@@ -159,9 +160,9 @@ class TempdirContext(object):
         shutil.copy(source, dest_dir / dest_name)
 
     def install_toolchain_archive(
-        self, build_dir, package_name, host_platform, version=None
+        self, build_dir, package_name, host_platform, version=None, *, downloads
     ):
-        entry = DOWNLOADS[package_name]
+        entry = downloads[package_name]
         basename = "%s-%s-%s.tar" % (
             package_name,
             version or entry["version"],
@@ -174,9 +175,9 @@ class TempdirContext(object):
         extract_tar_to_directory(p, dest_path)
 
     def install_artifact_archive(
-        self, build_dir, package_name, target_triple, optimizations
+        self, build_dir, package_name, target_triple, optimizations, *, downloads
     ):
-        entry = DOWNLOADS[package_name]
+        entry = downloads[package_name]
         basename = "%s-%s-%s-%s.tar" % (
             package_name,
             entry["version"],
@@ -197,17 +198,19 @@ class TempdirContext(object):
         binutils=False,
         musl=False,
         clang=False,
+            *,
+            downloads,
     ):
         if binutils:
-            self.install_toolchain_archive(build_dir, "binutils", platform)
+            self.install_toolchain_archive(build_dir, "binutils", platform, downloads=downloads)
 
         if clang:
             self.install_toolchain_archive(
-                build_dir, clang_toolchain(platform, target_triple), platform
+                build_dir, clang_toolchain(platform, target_triple), platform, downloads=downloads
             )
 
         if musl:
-            self.install_toolchain_archive(build_dir, "musl", platform)
+            self.install_toolchain_archive(build_dir, "musl", platform, downloads=downloads)
 
     def run(self, program, user="build", environment=None):
         if user != "build":
