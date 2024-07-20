@@ -472,7 +472,7 @@ pub async fn bootstrap_llvm() -> Result<PathBuf> {
     let url = &*LLVM_URL;
     let filename = url.path_segments().unwrap().last().unwrap();
 
-    let llvm_dir = PathBuf::from("llvm");
+    let llvm_dir = Path::new("build").join("llvm");
 
     // If `llvm` is already available with the target version, return it.
     if llvm_dir.join(filename).exists() {
