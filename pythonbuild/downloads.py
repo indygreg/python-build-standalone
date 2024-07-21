@@ -175,18 +175,21 @@ DOWNLOADS = {
         "sha256": "04cb77c660f09df017a57738ae9635ef23a506024789f2f18da1304b45af2023",
         "version": "14.0.3+20220508",
     },
+    # Remember to update LLVM_URL in src/release.rs whenever upgrading.
     "llvm-18-x86_64-linux": {
         "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
         "size": 242840506,
         "sha256": "080c233fc7d75031b187bbfef62a4f9abc01188effb0c68fbc7dc4bc7370ee5b",
         "version": "18.0.8+20240713",
     },
+    # Remember to update LLVM_URL in src/release.rs whenever upgrading.
     "llvm-aarch64-macos": {
         "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-aarch64-apple-darwin.tar.zst",
         "size": 136598617,
         "sha256": "320da8d639186e020e7d54cdc35b7a5473b36cef08fdf7b22c03b59a273ba593",
         "version": "18.0.8+20240713",
     },
+    # Remember to update LLVM_URL in src/release.rs whenever upgrading.
     "llvm-x86_64-macos": {
         "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-x86_64-apple-darwin.tar.zst",
         "size": 136599290,

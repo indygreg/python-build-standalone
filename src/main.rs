@@ -86,6 +86,18 @@ fn main_impl() -> Result<()> {
     );
 
     let app = app.subcommand(
+        Command::new("convert-install-only-stripped")
+            .about("Convert an install_only .tar.gz archive to an install_only_stripped tar.gz archive")
+            .arg(
+                Arg::new("path")
+                    .required(true)
+                    .action(ArgAction::Append)
+                    .value_parser(value_parser!(PathBuf))
+                    .help("Path of archive to convert"),
+            ),
+    );
+
+    let app = app.subcommand(
         Command::new("upload-release-distributions")
             .about("Upload release distributions to a GitHub release")
             .arg(
@@ -174,7 +186,20 @@ fn main_impl() -> Result<()> {
     match matches.subcommand() {
         Some(("convert-install-only", args)) => {
             for path in args.get_many::<PathBuf>("path").unwrap() {
-                let dest_path = crate::release::produce_install_only(path)?;
+                let dest_path = release::produce_install_only(path)?;
+                println!("wrote {}", dest_path.display());
+            }
+
+            Ok(())
+        }
+        Some(("convert-install-only-stripped", args)) => {
+            let llvm_dir = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+                .block_on(release::bootstrap_llvm())?;
+            for path in args.get_many::<PathBuf>("path").unwrap() {
+                let dest_path = release::produce_install_only_stripped(path, &llvm_dir)?;
                 println!("wrote {}", dest_path.display());
             }
 
@@ -185,18 +210,16 @@ fn main_impl() -> Result<()> {
                 .enable_all()
                 .build()
                 .unwrap()
-                .block_on(crate::github::command_fetch_release_distributions(args))
+                .block_on(github::command_fetch_release_distributions(args))
         }
         Some(("upload-release-distributions", args)) => {
             tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
                 .unwrap()
-                .block_on(crate::github::command_upload_release_distributions(args))
+                .block_on(github::command_upload_release_distributions(args))
         }
-        Some(("validate-distribution", args)) => {
-            crate::validation::command_validate_distribution(args)
-        }
+        Some(("validate-distribution", args)) => validation::command_validate_distribution(args),
         _ => Err(anyhow!("invalid sub-command")),
     }
 }

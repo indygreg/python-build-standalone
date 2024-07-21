@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use crate::release::{bootstrap_llvm, produce_install_only_stripped};
 use {
     crate::release::{produce_install_only, RELEASE_TRIPLES},
     anyhow::{anyhow, Result},
@@ -256,9 +257,12 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
         }
     }
 
+    let llvm_dir = bootstrap_llvm().await?;
+
     install_paths
         .par_iter()
         .try_for_each(|path| -> Result<()> {
+            // Create the `install_only` archive.
             println!(
                 "producing install_only archive from {}",
                 path.file_name()
@@ -267,6 +271,25 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
             );
 
             let dest_path = produce_install_only(path)?;
+
+            println!(
+                "releasing {}",
+                dest_path
+                    .file_name()
+                    .expect("should have file name")
+                    .to_string_lossy()
+            );
+
+            // Create the `install_only_stripped` archive.
+            println!(
+                "producing install_only_stripped archive from {}",
+                dest_path
+                    .file_name()
+                    .expect("should have file name")
+                    .to_string_lossy()
+            );
+
+            let dest_path = produce_install_only_stripped(&dest_path, &llvm_dir)?;
 
             println!(
                 "releasing {}",
@@ -357,6 +380,17 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
                     version, triple, datetime
                 ),
                 format!("cpython-{}+{}-{}-install_only.tar.gz", version, tag, triple),
+            );
+
+            wanted_filenames.insert(
+                format!(
+                    "cpython-{}-{}-install_only-{}.tar.gz",
+                    version, triple, datetime
+                ),
+                format!(
+                    "cpython-{}+{}-{}-install_only_stripped.tar.gz",
+                    version, tag, triple
+                ),
             );
         }
     }
