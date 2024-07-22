@@ -473,6 +473,7 @@ pub async fn bootstrap_llvm() -> Result<PathBuf> {
     let filename = url.path_segments().unwrap().last().unwrap();
 
     let llvm_dir = Path::new("build").join("llvm");
+    std::fs::create_dir_all(&llvm_dir)?;
 
     // If `llvm` is already available with the target version, return it.
     if llvm_dir.join(filename).exists() {
