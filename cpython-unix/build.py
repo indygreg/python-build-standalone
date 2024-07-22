@@ -214,7 +214,7 @@ def add_target_env(env, build_platform, target_triple, build_env):
     env["EXTRA_TARGET_LDFLAGS"] = " ".join(extra_target_ldflags)
 
 
-def toolchain_archive_path(package_name, host_platform, downloads):
+def toolchain_archive_path(package_name, host_platform, *, downloads: Downloads):
     entry = downloads[package_name]
 
     basename = "%s-%s-%s.tar" % (package_name, entry["version"], host_platform)
@@ -222,8 +222,8 @@ def toolchain_archive_path(package_name, host_platform, downloads):
     return BUILD / basename
 
 
-def install_binutils(platform):
-    return platform != "macos"
+def install_binutils(host_platform):
+    return host_platform != "macos"
 
 
 def simple_build(
@@ -234,12 +234,13 @@ def simple_build(
     host_platform,
     target_triple,
     optimizations,
-    downloads: Downloads,
     dest_archive,
     extra_archives=None,
     tools_path="deps",
+    *,
+    downloads: Downloads,
 ):
-    archive = download_entry(entry, DOWNLOADS_PATH, downloads)
+    archive = download_entry(entry, DOWNLOADS_PATH, downloads=downloads)
 
     with build_environment(client, image) as build_env:
         if settings.get("needs_toolchain"):
@@ -250,10 +251,13 @@ def simple_build(
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
+                downloads=downloads,
             )
 
         for a in extra_archives or []:
-            build_env.install_artifact_archive(BUILD, a, target_triple, optimizations)
+            build_env.install_artifact_archive(
+                BUILD, a, target_triple, optimizations, downloads=downloads
+            )
 
         build_env.copy_file(archive)
         build_env.copy_file(SUPPORT / ("build-%s.sh" % entry))
@@ -275,9 +279,9 @@ def simple_build(
         build_env.get_tools_archive(dest_archive, tools_path)
 
 
-def build_binutils(client, image, host_platform, downloads):
+def build_binutils(client, image, host_platform, *, downloads: Downloads):
     """Build binutils in the Docker image."""
-    archive = download_entry("binutils", DOWNLOADS_PATH, downloads)
+    archive = download_entry("binutils", DOWNLOADS_PATH, downloads=downloads)
 
     with build_environment(client, image) as build_env:
         install_sccache(build_env)
@@ -295,13 +299,18 @@ def build_binutils(client, image, host_platform, downloads):
         )
 
         build_env.get_tools_archive(
-            toolchain_archive_path("binutils", host_platform, downloads), "host"
+            toolchain_archive_path(
+                "binutils",
+                host_platform,
+                downloads=downloads,
+            ),
+            "host",
         )
 
 
-def materialize_clang(host_platform: str, target_triple: str, downloads):
+def materialize_clang(host_platform: str, target_triple: str, *, downloads: Downloads):
     entry = clang_toolchain(host_platform, target_triple)
-    tar_zst = download_entry(entry, DOWNLOADS_PATH, downloads)
+    tar_zst = download_entry(entry, DOWNLOADS_PATH, downloads=downloads)
     local_filename = "%s-%s-%s.tar" % (
         entry,
         downloads[entry]["version"],
@@ -315,12 +324,24 @@ def materialize_clang(host_platform: str, target_triple: str, downloads):
             dctx.copy_stream(ifh, ofh)
 
 
-def build_musl(client, image, host_platform: str, target_triple: str, downloads):
-    musl_archive = download_entry("musl", DOWNLOADS_PATH, downloads)
+def build_musl(
+    client,
+    image,
+    host_platform: str,
+    target_triple: str,
+    *,
+    downloads: Downloads,
+):
+    musl_archive = download_entry("musl", DOWNLOADS_PATH, downloads=downloads)
 
     with build_environment(client, image) as build_env:
         build_env.install_toolchain(
-            BUILD, host_platform, target_triple, binutils=True, clang=True
+            BUILD,
+            host_platform,
+            target_triple,
+            binutils=True,
+            clang=True,
+            downloads=downloads,
         )
         build_env.copy_file(musl_archive)
         build_env.copy_file(SUPPORT / "build-musl.sh")
@@ -333,7 +354,12 @@ def build_musl(client, image, host_platform: str, target_triple: str, downloads)
         build_env.run("build-musl.sh", environment=env)
 
         build_env.get_tools_archive(
-            toolchain_archive_path("musl", host_platform), "host"
+            toolchain_archive_path(
+                "musl",
+                host_platform,
+                downloads=downloads,
+            ),
+            "host",
         )
 
 
@@ -345,9 +371,10 @@ def build_libedit(
     target_triple,
     optimizations,
     dest_archive,
+    *,
     downloads: Downloads,
 ):
-    libedit_archive = download_entry("libedit", DOWNLOADS_PATH, downloads)
+    libedit_archive = download_entry("libedit", DOWNLOADS_PATH, downloads=downloads)
 
     with build_environment(client, image) as build_env:
         if settings.get("needs_toolchain"):
@@ -358,10 +385,11 @@ def build_libedit(
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
+                downloads=downloads,
             )
 
         build_env.install_artifact_archive(
-            BUILD, "ncurses", target_triple, optimizations
+            BUILD, "ncurses", target_triple, optimizations, downloads=downloads
         )
         build_env.copy_file(libedit_archive)
         build_env.copy_file(SUPPORT / "build-libedit.sh")
@@ -384,11 +412,12 @@ def build_tix(
     target_triple,
     optimizations,
     dest_archive,
+    *,
     downloads: Downloads,
 ):
-    tcl_archive = download_entry("tcl", DOWNLOADS_PATH, downloads)
-    tk_archive = download_entry("tk", DOWNLOADS_PATH, downloads)
-    tix_archive = download_entry("tix", DOWNLOADS_PATH, downloads)
+    tcl_archive = download_entry("tcl", DOWNLOADS_PATH, downloads=downloads)
+    tk_archive = download_entry("tk", DOWNLOADS_PATH, downloads=downloads)
+    tix_archive = download_entry("tix", DOWNLOADS_PATH, downloads=downloads)
 
     with build_environment(client, image) as build_env:
         if settings.get("needs_toolchain"):
@@ -399,6 +428,7 @@ def build_tix(
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
+                downloads=downloads,
             )
 
         depends = {"tcl", "tk"}
@@ -406,7 +436,9 @@ def build_tix(
             depends |= {"libX11", "xorgproto"}
 
         for p in sorted(depends):
-            build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
+            build_env.install_artifact_archive(
+                BUILD, p, target_triple, optimizations, downloads=downloads
+            )
 
         for p in (tcl_archive, tk_archive, tix_archive, SUPPORT / "build-tix.sh"):
             build_env.copy_file(p)
@@ -432,10 +464,11 @@ def build_cpython_host(
     target_triple: str,
     optimizations: str,
     dest_archive,
+    *,
     downloads: Downloads,
 ):
     """Build binutils in the Docker image."""
-    archive = download_entry(entry, DOWNLOADS_PATH, downloads)
+    archive = download_entry(entry, DOWNLOADS_PATH, downloads=downloads)
 
     with build_environment(client, image) as build_env:
         python_version = downloads[entry]["version"]
@@ -446,6 +479,7 @@ def build_cpython_host(
             target_triple,
             binutils=install_binutils(host_platform),
             clang=True,
+            downloads=downloads,
         )
 
         build_env.copy_file(archive)
@@ -463,7 +497,9 @@ def build_cpython_host(
             "m4",
         }
         for p in sorted(packages):
-            build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
+            build_env.install_artifact_archive(
+                BUILD, p, target_triple, optimizations, downloads=downloads
+            )
 
         env = {
             "PYTHON_VERSION": python_version,
@@ -492,12 +528,13 @@ def build_cpython_host(
 def python_build_info(
     build_env,
     version,
-    platform,
+    host_platform,
     target_triple,
     musl,
     optimizations,
     extensions,
     extra_metadata,
+    *,
     downloads: Downloads,
 ):
     """Obtain build metadata for the Python distribution."""
@@ -508,7 +545,7 @@ def python_build_info(
 
     binary_suffix = ""
 
-    if platform == "linux64":
+    if host_platform == "linux64":
         bi["core"]["static_lib"] = (
             "install/lib/python{version}/config-{version}{binary_suffix}-x86_64-linux-gnu/libpython{version}{binary_suffix}.a".format(
                 version=version, binary_suffix=binary_suffix
@@ -522,7 +559,7 @@ def python_build_info(
             )
 
         if optimizations in ("lto", "pgo+lto"):
-            llvm_version = downloads[clang_toolchain(platform, target_triple)][
+            llvm_version = downloads[clang_toolchain(host_platform, target_triple)][
                 "version"
             ]
             if "+" in llvm_version:
@@ -531,7 +568,7 @@ def python_build_info(
             object_file_format = f"llvm-bitcode:%{llvm_version}"
         else:
             object_file_format = "elf"
-    elif platform == "macos":
+    elif host_platform == "macos":
         bi["core"]["static_lib"] = (
             "install/lib/python{version}/config-{version}{binary_suffix}-darwin/libpython{version}{binary_suffix}.a".format(
                 version=version, binary_suffix=binary_suffix
@@ -549,7 +586,7 @@ def python_build_info(
         else:
             object_file_format = "mach-o"
     else:
-        raise Exception("unsupported platform: %s" % platform)
+        raise Exception("unsupported platform: %s" % host_platform)
 
     bi["object_file_format"] = object_file_format
 
@@ -564,9 +601,9 @@ def python_build_info(
         if lib.startswith("-l"):
             lib = lib[2:]
 
-            if platform == "linux64" and lib not in LINUX_ALLOW_SYSTEM_LIBRARIES:
+            if host_platform == "linux64" and lib not in LINUX_ALLOW_SYSTEM_LIBRARIES:
                 raise Exception("unexpected library in LIBS (%s): %s" % (libs, lib))
-            elif platform == "macos" and lib not in MACOS_ALLOW_SYSTEM_LIBRARIES:
+            elif host_platform == "macos" and lib not in MACOS_ALLOW_SYSTEM_LIBRARIES:
                 raise Exception("unexpected library in LIBS (%s): %s" % (libs, lib))
 
             log("adding core system link library: %s" % lib)
@@ -681,7 +718,7 @@ def python_build_info(
             extension_suffix = extra_metadata["python_config_vars"]["EXT_SUFFIX"]
             entry["shared_lib"] = "%s/%s%s" % (shared_dir, extension, extension_suffix)
 
-        add_licenses_to_extension_entry(entry)
+        add_licenses_to_extension_entry(entry, downloads=downloads)
 
         bi["extensions"].setdefault(extension, []).append(entry)
 
@@ -701,17 +738,18 @@ def build_cpython(
     host_platform,
     target_triple,
     optimizations,
-    downloads: Downloads,
     dest_archive,
     version=None,
     python_source=None,
+    *,
+    downloads: Downloads,
 ):
     """Build CPython in a Docker image'"""
     entry_name = "cpython-%s" % version
     entry = downloads[entry_name]
     if not python_source:
         python_version = entry["version"]
-        python_archive = download_entry(entry_name, DOWNLOADS_PATH, downloads)
+        python_archive = download_entry(entry_name, DOWNLOADS_PATH, downloads=downloads)
     else:
         python_version = os.environ["PYBUILD_PYTHON_VERSION"]
         python_archive = DOWNLOADS_PATH / ("Python-%s.tar.xz" % python_version)
@@ -721,8 +759,10 @@ def build_cpython(
                 fh, python_source, path_prefix="Python-%s" % python_version
             )
 
-    setuptools_archive = download_entry("setuptools", DOWNLOADS_PATH, downloads)
-    pip_archive = download_entry("pip", DOWNLOADS_PATH, downloads)
+    setuptools_archive = download_entry(
+        "setuptools", DOWNLOADS_PATH, downloads=downloads
+    )
+    pip_archive = download_entry("pip", DOWNLOADS_PATH, downloads=downloads)
 
     ems = extension_modules_config(EXTENSION_MODULES)
 
@@ -746,6 +786,7 @@ def build_cpython(
                 binutils=install_binutils(host_platform),
                 clang=True,
                 musl="musl" in target_triple,
+                downloads=downloads,
             )
 
         packages = target_needs(TARGETS_CONFIG, target_triple, python_version)
@@ -754,10 +795,16 @@ def build_cpython(
         packages.discard("musl")
 
         for p in sorted(packages):
-            build_env.install_artifact_archive(BUILD, p, target_triple, optimizations)
+            build_env.install_artifact_archive(
+                BUILD, p, target_triple, optimizations, downloads=downloads
+            )
 
         build_env.install_toolchain_archive(
-            BUILD, entry_name, host_platform, version=python_version
+            BUILD,
+            entry_name,
+            host_platform,
+            version=python_version,
+            downloads=downloads,
         )
 
         for p in (
@@ -1008,9 +1055,9 @@ def main():
             write_dockerfiles(SUPPORT, BUILD)
         elif action == "makefiles":
             targets = get_targets(TARGETS_CONFIG)
-            write_triples_makefiles(targets, BUILD, SUPPORT)
+            write_triples_makefiles(targets, BUILD, SUPPORT, downloads=downloads)
             write_target_settings(targets, BUILD / "targets")
-            write_package_versions(BUILD / "versions")
+            write_package_versions(BUILD / "versions", downloads=downloads)
 
             # Override the DOWNLOADS package entry for CPython for the local build
             if python_source:
@@ -1056,9 +1103,9 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
-                downloads=downloads,
                 tools_path="host",
                 extra_archives=["m4"],
+                downloads=downloads,
             )
 
         elif action == "libedit":
@@ -1110,8 +1157,8 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
-                downloads=downloads,
                 tools_path=tools_path,
+                downloads=downloads,
             )
 
         elif action == "libX11":
@@ -1243,9 +1290,9 @@ def main():
                 target_triple=target_triple,
                 optimizations=optimizations,
                 dest_archive=dest_archive,
-                downloads=downloads,
                 version=action.split("-")[1],
                 python_source=python_source,
+                downloads=downloads,
             )
 
         else:
