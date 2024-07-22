@@ -424,6 +424,8 @@ pub fn produce_install_only_stripped(tar_gz_path: &Path, llvm_dir: &Path) -> Res
         tar_gz_path.display()
     );
 
+    // Given `cpython-3.12.4-x86_64_v3-unknown-linux-gnu-install_only-20240722T0909.tar.gz`,
+    // map to `cpython-3.12.4-x86_64_v3-unknown-linux-gnu-install_only_stripped-20240722T0909.tar.gz`.
     let filename = tar_gz_path
         .file_name()
         .expect("should have filename")
@@ -435,7 +437,7 @@ pub fn produce_install_only_stripped(tar_gz_path: &Path, llvm_dir: &Path) -> Res
         .collect::<Vec<_>>();
     let parts_len = name_parts.len();
 
-    name_parts[parts_len - 1] = "install_only_stripped".to_string();
+    name_parts[parts_len - 2] = "install_only_stripped".to_string();
 
     let install_only_name = name_parts.join("-");
     let install_only_name = format!("{install_only_name}.tar.gz");
