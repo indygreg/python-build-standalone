@@ -44,10 +44,10 @@ def supported_targets(yaml_path: pathlib.Path):
     targets = set()
 
     for target, settings in get_targets(yaml_path).items():
-        for platform in settings["host_platforms"]:
-            if sys.platform == "linux" and platform == "linux64":
+        for host_platform in settings["host_platforms"]:
+            if sys.platform == "linux" and host_platform == "linux64":
                 targets.add(target)
-            elif sys.platform == "darwin" and platform == "macos":
+            elif sys.platform == "darwin" and host_platform == "macos":
                 targets.add(target)
 
     return targets
@@ -305,9 +305,7 @@ def download_entry(key: str, dest_path: pathlib.Path, local_name=None) -> pathli
     assert isinstance(size, int)
     assert isinstance(sha256, str)
 
-    local_name = local_name or url[url.rindex("/") + 1 :]
-
-    local_path = dest_path / local_name
+    local_path = dest_path / (local_name or url[url.rindex("/") + 1 :])
     download_to_path(url, local_path, size, sha256)
 
     return local_path
@@ -466,7 +464,7 @@ def add_licenses_to_extension_entry(entry):
         if "path_static" in link or "path_dynamic" in link:
             have_local_link = True
 
-        for key, value in DOWNLOADS.items():
+        for value in DOWNLOADS.values():
             if name not in value.get("library_names", []):
                 continue
 
