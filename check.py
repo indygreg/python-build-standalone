@@ -54,19 +54,9 @@ def run():
     )
     args = parser.parse_args()
 
-    # Lints:
-    #   Sort imports
-    #   Unused import
-    #   Unused variable
-    check_args = ["--select", "I,F401,F841"]
+    check_args = []
     format_args = []
-    mypy_args = [
-        "pythonbuild",
-        "check.py",
-        "build-linux.py",
-        "build-macos.py",
-        "build-windows.py",
-    ]
+    mypy_args = []
 
     if args.fix:
         check_args.append("--fix")
