@@ -384,7 +384,7 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
 
             wanted_filenames.insert(
                 format!(
-                    "cpython-{}-{}-install_only-{}.tar.gz",
+                    "cpython-{}-{}-install_only_stripped-{}.tar.gz",
                     version, triple, datetime
                 ),
                 format!(
