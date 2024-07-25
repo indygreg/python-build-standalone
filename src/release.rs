@@ -440,7 +440,6 @@ pub fn produce_install_only_stripped(tar_gz_path: &Path, llvm_dir: &Path) -> Res
     name_parts[parts_len - 2] = "install_only_stripped".to_string();
 
     let install_only_name = name_parts.join("-");
-    let install_only_name = format!("{install_only_name}.tar.gz");
 
     let dest_path = tar_gz_path.with_file_name(install_only_name);
     std::fs::write(&dest_path, gz_data)?;
