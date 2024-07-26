@@ -11,15 +11,16 @@ import platform
 import subprocess
 import sys
 
-from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.utils import (
     compress_python_archive,
+    get_downloads,
     get_target_settings,
     release_tag_from_git,
     supported_targets,
 )
 
 ROOT = pathlib.Path(os.path.abspath(__file__)).parent.parent
+DOWNLOADS_FILE = ROOT / "downloads.yml"
 BUILD = ROOT / "build"
 DIST = ROOT / "dist"
 SUPPORT = ROOT / "cpython-unix"
@@ -114,6 +115,8 @@ def main():
 
     settings = get_target_settings(TARGETS_CONFIG, target_triple)
 
+    downloads = get_downloads(DOWNLOADS_FILE)
+
     supported_pythons = {"cpython-%s" % p for p in settings["pythons_supported"]}
 
     if args.python not in supported_pythons:
@@ -145,7 +148,7 @@ def main():
         env["PYBUILD_NO_DOCKER"] = "1"
 
     if not args.python_source:
-        entry = DOWNLOADS[args.python]
+        entry = downloads[args.python]
         env["PYBUILD_PYTHON_VERSION"] = cpython_version = entry["version"]
     else:
         # TODO consider parsing version from source checkout. Or defining version

@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import typing
 import urllib.error
 import urllib.request
 import zipfile
@@ -24,8 +25,15 @@ import zipfile
 import yaml
 import zstandard
 
-from .downloads import DOWNLOADS
 from .logging import log
+
+Downloads = dict[str, dict[str, typing.Any]]
+
+
+def get_downloads(downloads_path: pathlib.Path) -> Downloads:
+    """Obtain the parsed downloads YAML file."""
+    with downloads_path.open("rb") as fh:
+        return typing.cast(Downloads, yaml.load(fh, Loader=yaml.SafeLoader))
 
 
 def get_targets(yaml_path: pathlib.Path):
@@ -134,7 +142,11 @@ def write_if_different(p: pathlib.Path, data: bytes):
 
 
 def write_triples_makefiles(
-    targets, dest_dir: pathlib.Path, support_search_dir: pathlib.Path
+    targets,
+    dest_dir: pathlib.Path,
+    support_search_dir: pathlib.Path,
+    *,
+    downloads: Downloads,
 ):
     """Write out makefiles containing make variable settings derived from config."""
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -161,7 +173,7 @@ def write_triples_makefiles(
                 entry = clang_toolchain(host_platform, triple)
                 lines.append(
                     "CLANG_FILENAME := %s-%s-%s.tar\n"
-                    % (entry, DOWNLOADS[entry]["version"], host_platform)
+                    % (entry, downloads[entry]["version"], host_platform)
                 )
 
                 lines.append(
@@ -172,11 +184,11 @@ def write_triples_makefiles(
                 write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 
-def write_package_versions(dest_path: pathlib.Path):
+def write_package_versions(dest_path: pathlib.Path, *, downloads: Downloads):
     """Write out versions of packages to files in a directory."""
     dest_path.mkdir(parents=True, exist_ok=True)
 
-    for k, v in DOWNLOADS.items():
+    for k, v in downloads.items():
         p = dest_path / ("VERSION.%s" % k)
         content = "%s_VERSION := %s\n" % (k.upper().replace("-", "_"), v["version"])
         write_if_different(p, content.encode("ascii"))
@@ -295,8 +307,10 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
     print("successfully downloaded %s" % url)
 
 
-def download_entry(key: str, dest_path: pathlib.Path, local_name=None) -> pathlib.Path:
-    entry = DOWNLOADS[key]
+def download_entry(
+    key: str, dest_path: pathlib.Path, local_name=None, *, downloads: Downloads
+) -> pathlib.Path:
+    entry = downloads[key]
     url = entry["url"]
     size = entry["size"]
     sha256 = entry["sha256"]
@@ -449,7 +463,7 @@ def compress_python_archive(
     return dest_path
 
 
-def add_licenses_to_extension_entry(entry):
+def add_licenses_to_extension_entry(entry, *, downloads: Downloads):
     """Add licenses keys to a ``extensions`` entry for JSON distribution info."""
 
     have_licenses = False
@@ -464,7 +478,7 @@ def add_licenses_to_extension_entry(entry):
         if "path_static" in link or "path_dynamic" in link:
             have_local_link = True
 
-        for value in DOWNLOADS.values():
+        for value in downloads.values():
             if name not in value.get("library_names", []):
                 continue
 
