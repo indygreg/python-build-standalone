@@ -1700,10 +1700,18 @@ def build_cpython(
             log("copying %s to %s" % (source, dest))
             shutil.copyfile(source, dest)
 
-        shutil.copyfile(
-            cpython_source_path / "Tools" / "scripts" / "run_tests.py",
-            out_dir / "python" / "build" / "run_tests.py",
-        )
+        # CPython 3.13 removed `run_tests.py`.
+        if meets_python_minimum_version(python_version, "3.13"):
+            # TODO(zanieb): Write a script to invoke `python -m test --slow-ci`
+            # or update the metadata to not require `run_tests.py`
+            pathlib.Path(
+                out_dir / "python" / "build" / "run_tests.py",
+            ).touch()
+        else:
+            shutil.copyfile(
+                cpython_source_path / "Tools" / "scripts" / "run_tests.py",
+                out_dir / "python" / "build" / "run_tests.py",
+            )
 
         licenses_dir = out_dir / "python" / "licenses"
         licenses_dir.mkdir()

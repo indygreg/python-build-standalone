@@ -114,6 +114,19 @@ jobs:
             py: 'cpython-3.12'
             optimizations: 'pgo+lto'
 
+          - target_triple: 'aarch64-apple-darwin'
+            runner: macos-14
+            py: 'cpython-3.13'
+            optimizations: 'debug'
+          - target_triple: 'aarch64-apple-darwin'
+            runner: macos-14
+            py: 'cpython-3.13'
+            optimizations: 'pgo'
+          - target_triple: 'aarch64-apple-darwin'
+            runner: macos-14
+            py: 'cpython-3.13'
+            optimizations: 'pgo+lto'
+
           # macOS on Intel hardware. This is pretty straightforward. We exclude
           # noopt because it doesn't provide any compelling advantages over PGO
           # or LTO builds.
@@ -180,6 +193,19 @@ jobs:
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.12'
+            optimizations: 'pgo+lto'
+
+          - target_triple: 'x86_64-apple-darwin'
+            runner: macos-13
+            py: 'cpython-3.13'
+            optimizations: 'debug'
+          - target_triple: 'x86_64-apple-darwin'
+            runner: macos-13
+            py: 'cpython-3.13'
+            optimizations: 'pgo'
+          - target_triple: 'x86_64-apple-darwin'
+            runner: macos-13
+            py: 'cpython-3.13'
             optimizations: 'pgo+lto'
     needs:
       - pythonbuild

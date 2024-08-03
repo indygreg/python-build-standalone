@@ -288,6 +288,16 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
                 required: false,
             },
             MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.13.dylib".to_string(),
+                max_compatibility_version: "3.13.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.13d.dylib".to_string(),
+                max_compatibility_version: "3.13.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
                 name: "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit".to_string(),
                 max_compatibility_version: "45.0.0".try_into().unwrap(),
                 required: true,
@@ -638,7 +648,6 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
     "_weakref",
     "array",
     "atexit",
-    "audioop",
     "binascii",
     "builtins",
     "cmath",
@@ -665,13 +674,15 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 // _testsinglephase added in 3.12.
 // _sha256 and _sha512 merged into _sha2 in 3.12.
 // _xxinterpchannels added in 3.12.
+// audioop removed in 3.13.
 
 // We didn't build ctypes_test until 3.9.
 // We didn't build some test extensions until 3.9.
 
-const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["_sha256", "_sha512", "parser"];
+const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["audioop", "_sha256", "_sha512", "parser"];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
+    "audioop",
     "_peg_parser",
     "_sha256",
     "_sha512",
@@ -682,6 +693,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
+    "audioop",
     "_sha256",
     "_sha512",
     "_uuid",
@@ -690,6 +702,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
+    "audioop",
     "_sha256",
     "_sha512",
     "_tokenize",
@@ -700,11 +713,25 @@ const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
+    "audioop",
     "_sha2",
     "_tokenize",
     "_typing",
     "_xxinterpchannels",
     "_xxsubinterpreters",
+    "_zoneinfo",
+];
+
+const GLOBAL_EXTENSIONS_PYTHON_3_13: &[&str] = &[
+    "_interpchannels",
+    "_interpqueues",
+    "_interpreters",
+    "_sha2",
+    "_suggestions",
+    "_sysconfig",
+    "_testexternalinspection",
+    "_tokenize",
+    "_typing",
     "_zoneinfo",
 ];
 
@@ -729,7 +756,7 @@ const GLOBAL_EXTENSIONS_POSIX: &[&str] = &[
     "termios",
 ];
 
-const GLOBAL_EXTENSIONS_LINUX: &[&str] = &["spwd"];
+const GLOBAL_EXTENSIONS_LINUX_PRE_3_13: &[&str] = &["spwd"];
 
 const GLOBAL_EXTENSIONS_WINDOWS: &[&str] = &[
     "_msi",
@@ -1448,6 +1475,9 @@ fn validate_extension_modules(
         "3.12" => {
             wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_12);
         }
+        "3.13" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_13);
+        }
         _ => {
             panic!("unhandled Python version: {}", python_major_minor);
         }
@@ -1455,6 +1485,9 @@ fn validate_extension_modules(
 
     if is_macos {
         wanted.extend(GLOBAL_EXTENSIONS_POSIX);
+        if python_major_minor == "3.13" {
+            wanted.remove("_crypt");
+        }
         wanted.extend(GLOBAL_EXTENSIONS_MACOS);
     }
 
@@ -1470,14 +1503,25 @@ fn validate_extension_modules(
 
     if is_linux {
         wanted.extend(GLOBAL_EXTENSIONS_POSIX);
-        wanted.extend(GLOBAL_EXTENSIONS_LINUX);
+        if python_major_minor == "3.13" {
+            wanted.remove("_crypt");
+        }
+        if matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12") {
+            wanted.extend(GLOBAL_EXTENSIONS_LINUX_PRE_3_13);
+        }
 
-        if !is_linux_musl {
+        if !is_linux_musl && matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12")
+        {
             wanted.insert("ossaudiodev");
         }
     }
 
-    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
+    if (is_linux || is_macos)
+        && matches!(
+            python_major_minor,
+            "3.9" | "3.10" | "3.11" | "3.12" | "3.13"
+        )
+    {
         wanted.extend([
             "_testbuffer",
             "_testimportmultiple",
@@ -1486,7 +1530,7 @@ fn validate_extension_modules(
         ]);
     }
 
-    if (is_linux || is_macos) && python_major_minor == "3.12" {
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.12" | "3.13") {
         wanted.insert("_testsinglephase");
     }
 
@@ -1500,7 +1544,7 @@ fn validate_extension_modules(
     }
 
     // _wmi is Windows only on 3.12+.
-    if python_major_minor == "3.12" && is_windows {
+    if matches!(python_major_minor, "3.12" | "3.13") && is_windows {
         wanted.insert("_wmi");
     }
 
@@ -1623,6 +1667,8 @@ fn validate_distribution(
         "3.11"
     } else if dist_filename.starts_with("cpython-3.12.") {
         "3.12"
+    } else if dist_filename.starts_with("cpython-3.13.") {
+        "3.13"
     } else {
         return Err(anyhow!("could not parse Python version from filename"));
     };

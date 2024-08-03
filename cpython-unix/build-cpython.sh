@@ -72,7 +72,10 @@ cat Makefile.extra
 pushd Python-${PYTHON_VERSION}
 
 # configure doesn't support cross-compiling on Apple. Teach it.
-if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.13" ]; then
+    # FIXME: new patch may be required
+    :
+elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
     patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
 else
     patch -p1 -i ${ROOT}/patch-apple-cross.patch
@@ -94,7 +97,9 @@ fi
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+        patch -p1 -i ${ROOT}/patch-dont-clear-runshared-13.patch
+    elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared.patch
     else
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared-legacy.patch
@@ -105,7 +110,9 @@ fi
 # configure. This is reported as https://bugs.python.org/issue45405. We nerf the
 # check since we know what we're doing.
 if [ "${CC}" = "clang" ]; then
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+        patch -p1 -i ${ROOT}/patch-disable-multiarch-13.patch
+    elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
         patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     else
         patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
@@ -136,7 +143,11 @@ fi
 
 # The default build rule for the macOS dylib doesn't pick up libraries
 # from modules / makesetup. So patch it accordingly.
-patch -p1 -i ${ROOT}/patch-macos-link-extension-modules.patch
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    patch -p1 -i ${ROOT}/patch-macos-link-extension-modules-13.patch
+else
+    patch -p1 -i ${ROOT}/patch-macos-link-extension-modules.patch
+fi
 
 # Also on macOS, the `python` executable is linked against libraries defined by statically
 # linked modules. But those libraries should only get linked into libpython, not the
@@ -280,7 +291,7 @@ if [ "${PYBUILD_PLATFORM}" != "macos" ]; then
     fi
 fi
 
-# On Python 3.12 we need to link the special hacl library provided some SHA-256
+# On Python 3.12+ we need to link the special hacl library provided some SHA-256
 # implementations. Since we hack up the regular extension building mechanism, we
 # need to reinvent this wheel.
 if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_12}" ]; then
@@ -832,7 +843,7 @@ ${BUILD_PYTHON} ${ROOT}/fix_shebangs.py ${ROOT}/out/python/install
 # downstream consumers.
 OBJECT_DIRS="Objects Parser Parser/pegen Programs Python"
 OBJECT_DIRS="${OBJECT_DIRS} Modules"
-for ext in _blake2 cjkcodecs _ctypes _ctypes/darwin _decimal _expat _hacl _io _multiprocessing _sha3 _sqlite _sre _xxtestfuzz ; do
+for ext in _blake2 cjkcodecs _ctypes _ctypes/darwin _decimal _expat _hacl _io _multiprocessing _sha3 _sqlite _sre _testinternalcapi _xxtestfuzz ; do
     OBJECT_DIRS="${OBJECT_DIRS} Modules/${ext}"
 done
 
@@ -895,7 +906,9 @@ cp -av Python/frozen.c ${ROOT}/out/python/build/Python/
 cp -av Modules/Setup* ${ROOT}/out/python/build/Modules/
 
 # Copy the test hardness runner for convenience.
-cp -av Tools/scripts/run_tests.py ${ROOT}/out/python/build/
+if [ -d Tools/scripts/run_tests.py ]; then 
+    cp -av Tools/scripts/run_tests.py ${ROOT}/out/python/build/
+fi
 
 mkdir ${ROOT}/out/python/licenses
 cp ${ROOT}/LICENSE.*.txt ${ROOT}/out/python/licenses/
