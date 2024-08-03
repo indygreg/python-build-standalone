@@ -648,7 +648,6 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
     "_weakref",
     "array",
     "atexit",
-    "audioop",
     "binascii",
     "builtins",
     "cmath",
@@ -675,13 +674,15 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 // _testsinglephase added in 3.12.
 // _sha256 and _sha512 merged into _sha2 in 3.12.
 // _xxinterpchannels added in 3.12.
+// audioop removed in 3.13.
 
 // We didn't build ctypes_test until 3.9.
 // We didn't build some test extensions until 3.9.
 
-const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["_sha256", "_sha512", "parser"];
+const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["audioop", "_sha256", "_sha512", "parser"];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
+    "audioop",
     "_peg_parser",
     "_sha256",
     "_sha512",
@@ -692,6 +693,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
+    "audioop",
     "_sha256",
     "_sha512",
     "_uuid",
@@ -700,6 +702,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
+    "audioop",
     "_sha256",
     "_sha512",
     "_tokenize",
@@ -710,6 +713,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
+    "audioop",
     "_sha2",
     "_tokenize",
     "_typing",
@@ -718,13 +722,16 @@ const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
     "_zoneinfo",
 ];
 
-// FIXME: ensure that this list is correct for 3.13
 const GLOBAL_EXTENSIONS_PYTHON_3_13: &[&str] = &[
+    "_interpchannels",
+    "_interpqueues",
+    "_interpreters",
     "_sha2",
+    "_suggestions",
+    "_sysconfig",
+    "_testexternalinspection",
     "_tokenize",
     "_typing",
-    "_xxinterpchannels",
-    "_xxsubinterpreters",
     "_zoneinfo",
 ];
 
@@ -749,7 +756,7 @@ const GLOBAL_EXTENSIONS_POSIX: &[&str] = &[
     "termios",
 ];
 
-const GLOBAL_EXTENSIONS_LINUX: &[&str] = &["spwd"];
+const GLOBAL_EXTENSIONS_LINUX_PRE_3_13: &[&str] = &["spwd"];
 
 const GLOBAL_EXTENSIONS_WINDOWS: &[&str] = &[
     "_msi",
@@ -1478,6 +1485,9 @@ fn validate_extension_modules(
 
     if is_macos {
         wanted.extend(GLOBAL_EXTENSIONS_POSIX);
+        if python_major_minor == "3.13" {
+            wanted.remove("_crypt");
+        }
         wanted.extend(GLOBAL_EXTENSIONS_MACOS);
     }
 
@@ -1493,14 +1503,25 @@ fn validate_extension_modules(
 
     if is_linux {
         wanted.extend(GLOBAL_EXTENSIONS_POSIX);
-        wanted.extend(GLOBAL_EXTENSIONS_LINUX);
+        if python_major_minor == "3.13" {
+            wanted.remove("_crypt");
+        }
+        if matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12") {
+            wanted.extend(GLOBAL_EXTENSIONS_LINUX_PRE_3_13);
+        }
 
-        if !is_linux_musl {
+        if !is_linux_musl && matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12")
+        {
             wanted.insert("ossaudiodev");
         }
     }
 
-    if (is_linux || is_macos) && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12" | "3.13") {
+    if (is_linux || is_macos)
+        && matches!(
+            python_major_minor,
+            "3.9" | "3.10" | "3.11" | "3.12" | "3.13"
+        )
+    {
         wanted.extend([
             "_testbuffer",
             "_testimportmultiple",
