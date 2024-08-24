@@ -576,7 +576,12 @@ fi
 # simply use our pip to install self. Kinda crazy, but it works!
 
 ${BUILD_PYTHON} "${PIP_WHEEL}/pip" install --prefix="${ROOT}/out/python/install" --no-cache-dir --no-index "${PIP_WHEEL}"
-${BUILD_PYTHON} "${PIP_WHEEL}/pip" install --prefix="${ROOT}/out/python/install" --no-cache-dir --no-index "${SETUPTOOLS_WHEEL}"
+
+# Setuptools is only installed for Python 3.11 and older, for parity with
+# `ensurepip` and `venv`: https://github.com/python/cpython/pull/101039
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_11}" ]; then
+    ${BUILD_PYTHON} "${PIP_WHEEL}/pip" install --prefix="${ROOT}/out/python/install" --no-cache-dir --no-index "${SETUPTOOLS_WHEEL}"
+fi
 
 # Hack up the system configuration settings to aid portability.
 #
