@@ -107,9 +107,6 @@ AUTOCONF_DEPENDS = \
 $(OUTDIR)/autoconf-$(AUTOCONF_VERSION)-$(PACKAGE_SUFFIX).tar: $(AUTOCONF_DEPENDS)
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) autoconf
 
-$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bdb.sh
-	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) bdb
-
 $(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar: $(PYTHON_DEP_DEPENDS) $(HERE)/build-bzip2.sh
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) bzip2
 
@@ -277,7 +274,6 @@ PYTHON_DEPENDS := \
     $(OUTDIR)/versions/VERSION.setuptools \
     $(OUTDIR)/cpython-$(PYBUILD_PYTHON_MAJOR_VERSION)-$(PYBUILD_PYTHON_VERSION)-$(HOST_PLATFORM).tar \
     $(if $(NEED_AUTOCONF),$(OUTDIR)/autoconf-$(AUTOCONF_VERSION)-$(PACKAGE_SUFFIX).tar) \
-    $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_EXPAT),$(OUTDIR)/expat-$(EXPAT_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_LIBEDIT),$(OUTDIR)/libedit-$(LIBEDIT_VERSION)-$(PACKAGE_SUFFIX).tar) \

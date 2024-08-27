@@ -9,16 +9,6 @@ DOWNLOADS = {
         "sha256": "431075ad0bf529ef13cb41e9042c542381103e80015686222b8a9d4abef42a1c",
         "version": "2.71",
     },
-    # 6.0.19 is the last version licensed under the Sleepycat license.
-    "bdb": {
-        "url": "https://ftp.osuosl.org/pub/blfs/conglomeration/db/db-6.0.19.tar.gz",
-        "size": 36541923,
-        "sha256": "2917c28f60903908c2ca4587ded1363b812c4e830a5326aaa77c9879d13ae18e",
-        "version": "6.0.19",
-        "library_names": ["db"],
-        "licenses": ["Sleepycat"],
-        "license_file": "LICENSE.bdb.txt",
-    },
     "binutils": {
         "url": "https://ftp.gnu.org/gnu/binutils/binutils-2.42.tar.xz",
         "size": 27567160,

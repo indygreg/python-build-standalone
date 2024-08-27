@@ -159,7 +159,6 @@ aarch64-unknown-linux-gnu:
   target_cc: /usr/bin/aarch64-linux-gnu-gcc
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -237,7 +236,6 @@ armv7-unknown-linux-gnueabi:
   target_cc: /usr/bin/arm-linux-gnueabi-gcc
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -275,7 +273,6 @@ armv7-unknown-linux-gnueabihf:
   target_cc: /usr/bin/arm-linux-gnueabihf-gcc
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -319,7 +316,6 @@ i686-unknown-linux-gnu:
     - '-m32'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -357,7 +353,6 @@ mips-unknown-linux-gnu:
   target_cc: /usr/bin/mips-linux-gnu-gcc
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -395,7 +390,6 @@ mipsel-unknown-linux-gnu:
   target_cc: /usr/bin/mipsel-linux-gnu-gcc
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -433,7 +427,6 @@ ppc64le-unknown-linux-gnu:
   target_cc: /usr/bin/powerpc64le-linux-gnu-gcc
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -471,7 +464,6 @@ s390x-unknown-linux-gnu:
   target_cc: /usr/bin/s390x-linux-gnu-gcc
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -727,7 +719,6 @@ x86_64-unknown-linux-gnu:
     - '-fdebug-default-version=4'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -772,7 +763,6 @@ x86_64_v2-unknown-linux-gnu:
     - '-fdebug-default-version=4'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -817,7 +807,6 @@ x86_64_v3-unknown-linux-gnu:
     - '-fdebug-default-version=4'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -862,7 +851,6 @@ x86_64_v4-unknown-linux-gnu:
     - '-fdebug-default-version=4'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -904,7 +892,6 @@ x86_64-unknown-linux-musl:
     - '-fvisibility=hidden'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -947,7 +934,6 @@ x86_64_v2-unknown-linux-musl:
     - '-fvisibility=hidden'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -990,7 +976,6 @@ x86_64_v3-unknown-linux-musl:
     - '-fvisibility=hidden'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat
@@ -1033,7 +1018,6 @@ x86_64_v4-unknown-linux-musl:
     - '-fvisibility=hidden'
   needs:
     - autoconf
-    - bdb
     - binutils
     - bzip2
     - expat

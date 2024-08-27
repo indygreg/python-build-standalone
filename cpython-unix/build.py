@@ -1043,7 +1043,6 @@ def main():
             )
 
         elif action in (
-            "bdb",
             "bzip2",
             "expat",
             "inputproto",

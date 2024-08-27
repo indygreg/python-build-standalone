@@ -181,40 +181,9 @@ _datetime:
     - _datetimemodule.c
 
 _dbm:
-  sources:
-    - _dbmmodule.c
-  defines-conditional:
-    - define: HAVE_BERKDB_H
-      maximum-python-version: "3.10"
-      targets:
-        - .*-unknown-linux-.*
-    - define: DB_DBM_HSEARCH
-      maximum-python-version: "3.10"
-      targets:
-        - .*-unknown-linux-.*
-    - define: HAVE_NDBM_H
-      maximum-python-version: "3.10"
-      targets:
-        - .*-apple-.*
-
-    # It looks like CPython commit 0a9f69539be27acf1cddf1b58d02a88d02e5008d didn't
-    # fully implement BDB support in configure. So we add a missing define.
-    - define: USE_BERKDB
-      minimum-python-version: "3.11"
-      targets:
-        - .*-unknown-linux-.*
-    - define: USE_NDBM
-      minimum-python-version: "3.11"
-      targets:
-        - .*-apple-.*
-  includes-deps:
-    - include
-  links-conditional:
-    # macOS ships with an ndbm implementation in libSystem. CPython's setup.py will
-    # use it unless an ndbm or gdbm_compat library is present.
-    - name: db
-      targets:
-        - .*-unknown-linux-.*
+  # Disable DBM everywhere because Berkeley DB license is Sleepycat.
+  disabled-targets:
+    - .*
 
 _decimal:
   sources:
