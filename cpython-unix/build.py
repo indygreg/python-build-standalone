@@ -911,7 +911,7 @@ def main():
             client = docker.from_env()
             client.ping()
         except Exception as e:
-            print("unable to connect to Docker: %s" % e)
+            print("unable to connect to Docker: %s" % e, file=sys.stderr)
             return 1
 
     parser = argparse.ArgumentParser()
