@@ -1,0 +1,14 @@
+diff -u 13-a/configure.ac 13-b/configure.ac
+--- 13-a/configure.ac	2024-05-08 05:21:00.000000000 -0400
++++ 13-b/configure.ac	2024-05-19 12:44:04.530770938 -0400
+@@ -1564,10 +1564,6 @@
+ fi
+ AC_MSG_RESULT([$LDLIBRARY])
+ 
+-if test "$cross_compiling" = yes; then
+-  RUNSHARED=
+-fi
+-
+ AC_MSG_CHECKING([HOSTRUNNER])
+ AC_ARG_VAR([HOSTRUNNER], [Program to run CPython for the host platform])
+ if test -z "$HOSTRUNNER"
