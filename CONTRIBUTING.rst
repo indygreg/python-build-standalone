@@ -2,6 +2,12 @@
 Contributing
 ============
 
+Building distributions
+======================
+
+See the [documentation](https://gregoryszorc.com/docs/python-build-standalone/main/building.html)
+for instructions on building distributions locally.
+
 Releases
 ========
 
