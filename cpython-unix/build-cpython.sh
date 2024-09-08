@@ -73,8 +73,7 @@ pushd Python-${PYTHON_VERSION}
 
 # configure doesn't support cross-compiling on Apple. Teach it.
 if [ "${PYTHON_MAJMIN_VERSION}" = "3.13" ]; then
-    # TODO: Add support for cross-compiling on 3.13
-    :
+    patch -p1 -i ${ROOT}/patch-apple-cross-3.13.patch
 elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
     patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
 else
