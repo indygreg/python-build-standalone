@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use std::str::FromStr;
+
 use crate::release::{bootstrap_llvm, produce_install_only_stripped};
 use {
     crate::release::{produce_install_only, RELEASE_TRIPLES},
@@ -355,8 +357,8 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     for version in python_versions {
         for (triple, release) in RELEASE_TRIPLES.iter() {
             if let Some(req) = &release.python_version_requirement {
-                let python_version = semver::Version::parse(version)?;
-                if !req.matches(&python_version) {
+                let python_version = pep440_rs::Version::from_str(version)?;
+                if !req.contains(&python_version) {
                     continue;
                 }
             }
