@@ -53,14 +53,14 @@ class ContainerContext(object):
         self.run(["/bin/tar", "-C", "/tools", "-xf", "/build/%s" % p.name])
 
     def install_artifact_archive(
-        self, build_dir, package_name, target_triple, optimizations
+        self, build_dir, package_name, target_triple, build_options
     ):
         entry = DOWNLOADS[package_name]
         basename = "%s-%s-%s-%s.tar" % (
             package_name,
             entry["version"],
             target_triple,
-            optimizations,
+            build_options,
         )
 
         p = build_dir / basename
@@ -174,14 +174,14 @@ class TempdirContext(object):
         extract_tar_to_directory(p, dest_path)
 
     def install_artifact_archive(
-        self, build_dir, package_name, target_triple, optimizations
+        self, build_dir, package_name, target_triple, build_options
     ):
         entry = DOWNLOADS[package_name]
         basename = "%s-%s-%s-%s.tar" % (
             package_name,
             entry["version"],
             target_triple,
-            optimizations,
+            build_options,
         )
 
         p = build_dir / basename

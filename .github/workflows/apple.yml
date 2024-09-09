@@ -47,80 +47,93 @@ jobs:
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.8'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.8'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.8'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.9'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.9'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.9'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.10'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.10'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.10'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.11'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.11'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.11'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.12'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.12'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.12'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.13'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.13'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
             py: 'cpython-3.13'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
+
+          - target_triple: 'aarch64-apple-darwin'
+            runner: macos-14
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'aarch64-apple-darwin'
+            runner: macos-14
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo'
+          - target_triple: 'aarch64-apple-darwin'
+            runner: macos-14
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo+lto'
 
           # macOS on Intel hardware. This is pretty straightforward. We exclude
           # noopt because it doesn't provide any compelling advantages over PGO
@@ -128,80 +141,92 @@ jobs:
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.8'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.8'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.8'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.9'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.9'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.9'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.10'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.10'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.10'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.11'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.11'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.11'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.12'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.12'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.12'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
 
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.13'
-            optimizations: 'debug'
+            options: 'debug'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.13'
-            optimizations: 'pgo'
+            options: 'pgo'
           - target_triple: 'x86_64-apple-darwin'
             runner: macos-13
             py: 'cpython-3.13'
-            optimizations: 'pgo+lto'
+            options: 'pgo+lto'
+          - target_triple: 'x86_64-apple-darwin'
+            runner: macos-13
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'x86_64-apple-darwin'
+            runner: macos-13
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo'
+          - target_triple: 'x86_64-apple-darwin'
+            runner: macos-13
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo+lto'
     needs:
       - pythonbuild
     runs-on: ${{ matrix.build.runner }}
@@ -232,12 +257,12 @@ jobs:
             exit 1
           fi
 
-          ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --optimizations ${{ matrix.build.optimizations }}
+          ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --options ${{ matrix.build.options }}
 
       - name: Upload Distributions
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}-${{ matrix.build.optimizations }}
+          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}-${{ matrix.build.options }}
           path: dist/*
 
       - uses: actions/checkout@v4

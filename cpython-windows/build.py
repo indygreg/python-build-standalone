@@ -876,7 +876,6 @@ def build_openssl_for_arch(
     openssl_version: str,
     nasm_archive,
     build_root: pathlib.Path,
-    profile: str,
     *,
     jom_archive,
 ):
@@ -968,7 +967,6 @@ def build_openssl(
     entry: str,
     perl_path: pathlib.Path,
     arch: str,
-    profile: str,
     dest_archive: pathlib.Path,
 ):
     """Build OpenSSL from sources using the Perl executable specified."""
@@ -995,7 +993,6 @@ def build_openssl(
                 openssl_version,
                 nasm_archive,
                 root_32,
-                profile,
                 jom_archive=jom_archive,
             )
         elif arch == "amd64":
@@ -1007,7 +1004,6 @@ def build_openssl(
                 openssl_version,
                 nasm_archive,
                 root_64,
-                profile,
                 jom_archive=jom_archive,
             )
         else:
@@ -1388,14 +1384,15 @@ def build_cpython(
     python_entry_name: str,
     target_triple: str,
     arch: str,
-    profile,
+    build_options: str,
     msvc_version: str,
     windows_sdk_version: str,
     openssl_archive,
     libffi_archive,
     openssl_entry: str,
 ) -> pathlib.Path:
-    pgo = profile == "pgo"
+    parsed_build_options = set(build_options.split("+"))
+    pgo = "pgo" in parsed_build_options
 
     msbuild = find_msbuild(msvc_version)
     log("found MSBuild at %s" % msbuild)
@@ -1749,16 +1746,17 @@ def build_cpython(
 
         crt_features = ["vcruntime:140"]
 
-        if profile == "pgo":
+        if pgo:
             optimizations = "pgo"
         else:
             optimizations = "noopt"
 
         # Create PYTHON.json file describing this distribution.
         python_info = {
-            "version": "7",
+            "version": "8",
             "target_triple": target_triple,
             "optimizations": optimizations,
+            "build_options": build_options,
             "python_tag": entry["python_tag"],
             "python_version": python_version,
             "python_symbol_visibility": python_symbol_visibility,
@@ -1812,7 +1810,7 @@ def build_cpython(
             % (
                 entry["version"],
                 target_triple,
-                profile,
+                build_options,
             )
         )
 
@@ -1865,11 +1863,13 @@ def main() -> None:
         default="cpython-3.11",
         help="Python distribution to build",
     )
+    # TODO: Rename this to `--options` to match the Unix build script
+    optimizations = {"debug", "noopt", "pgo", "lto", "pgo+lto"}
     parser.add_argument(
-        "--profile",
-        choices={"noopt", "pgo"},
+        "--options",
+        choices=optimizations.union({f"freethreaded+{o}" for o in optimizations}),
         default="noopt",
-        help="How to compile Python",
+        help="Build options to apply when compiling Python",
     )
     parser.add_argument(
         "--sh", required=True, help="Path to sh.exe in a cygwin or mingw installation"
@@ -1881,6 +1881,7 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    build_options = args.options
 
     log_path = BUILD / "build.log"
 
@@ -1905,7 +1906,7 @@ def main() -> None:
             openssl_entry = "openssl-3.0"
 
         openssl_archive = BUILD / (
-            "%s-%s-%s.tar" % (openssl_entry, target_triple, args.profile)
+            "%s-%s-%s.tar" % (openssl_entry, target_triple, build_options)
         )
         if not openssl_archive.exists():
             perl_path = fetch_strawberry_perl() / "perl" / "bin" / "perl.exe"
@@ -1914,11 +1915,10 @@ def main() -> None:
                 openssl_entry,
                 perl_path,
                 arch,
-                profile=args.profile,
                 dest_archive=openssl_archive,
             )
 
-        libffi_archive = BUILD / ("libffi-%s-%s.tar" % (target_triple, args.profile))
+        libffi_archive = BUILD / ("libffi-%s-%s.tar" % (target_triple, build_options))
         if not libffi_archive.exists():
             build_libffi(
                 args.python,
@@ -1933,7 +1933,7 @@ def main() -> None:
             args.python,
             target_triple,
             arch,
-            profile=args.profile,
+            build_options=build_options,
             msvc_version=args.vs,
             windows_sdk_version=args.windows_sdk_version,
             openssl_archive=openssl_archive,
@@ -1957,10 +1957,10 @@ def main() -> None:
         # The 'shared-' prefix is no longer needed, but we're double-publishing under
         # both names during the transition period.
         filename: str = dest_path.name
-        if not filename.endswith("-%s-%s.tar.zst" % (args.profile, release_tag)):
+        if not filename.endswith("-%s-%s.tar.zst" % (args.options, release_tag)):
             raise ValueError("expected filename to end with profile: %s" % filename)
-        filename = filename.removesuffix("-%s-%s.tar.zst" % (args.profile, release_tag))
-        filename = filename + "-shared-%s-%s.tar.zst" % (args.profile, release_tag)
+        filename = filename.removesuffix("-%s-%s.tar.zst" % (args.options, release_tag))
+        filename = filename + "-shared-%s-%s.tar.zst" % (args.options, release_tag)
         shutil.copy2(dest_path, dest_path.with_name(filename))
 
 

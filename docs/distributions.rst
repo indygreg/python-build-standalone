@@ -58,7 +58,16 @@ optimizations
    Known values include ``debug``, ``noopt``, ``pgo``, ``lto``, and
    ``pgo+lto``.
 
-   (Version 5 or above only.)
+   (Deprecated in version 8 in favor of ``build_options``.)
+
+build_options
+   String indicating what build options were used. Options are separated
+   by a ``+``.
+
+   Known values include ``debug``, ``noopt``, ``pgo``, ``lto``, and
+   ``freethreading``.
+
+   (Version 8 or above only.)
 
 os
    Target operating system for the distribution. e.g. ``linux``, ``macos``,

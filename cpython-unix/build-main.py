@@ -41,7 +41,7 @@ def main():
         else:
             raise Exception("unhandled macOS machine value: %s" % machine)
     else:
-        print("unsupport build platform: %s" % sys.platform)
+        print("Unsupported build platform: %s" % sys.platform)
         return 1
 
     parser = argparse.ArgumentParser()
@@ -53,11 +53,12 @@ def main():
         help="Target host triple to build for",
     )
 
+    optimizations = {"debug", "noopt", "pgo", "lto", "pgo+lto"}
     parser.add_argument(
-        "--optimizations",
-        choices={"debug", "noopt", "pgo", "lto", "pgo+lto"},
+        "--options",
+        choices=optimizations.union({f"freethreaded+{o}" for o in optimizations}),
         default="noopt",
-        help="Optimizations to apply when compiling Python",
+        help="Build options to apply when compiling Python",
     )
     parser.add_argument(
         "--python",
@@ -136,7 +137,7 @@ def main():
 
     env["PYBUILD_HOST_PLATFORM"] = host_platform
     env["PYBUILD_TARGET_TRIPLE"] = target_triple
-    env["PYBUILD_OPTIMIZATIONS"] = args.optimizations
+    env["PYBUILD_BUILD_OPTIONS"] = args.options
     env["PYBUILD_PYTHON_SOURCE"] = python_source
     if musl:
         env["PYBUILD_MUSL"] = "1"
@@ -163,10 +164,20 @@ def main():
     else:
         release_tag = release_tag_from_git()
 
+    # Guard against accidental misuse of the free-threaded flag with older versions
+    if "freethreaded" in args.options and env["PYBUILD_PYTHON_MAJOR_VERSION"] not in (
+        "3.13"
+    ):
+        print(
+            "Invalid build option: 'freethreaded' is only compatible with CPython 3.13+ (got %s)"
+            % env["PYBUILD_PYTHON_MAJOR_VERSION"]
+        )
+        return 1
+
     archive_components = [
         "cpython-%s" % cpython_version,
         target_triple,
-        args.optimizations,
+        args.options,
     ]
 
     build_basename = "-".join(archive_components) + ".tar"

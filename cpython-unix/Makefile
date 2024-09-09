@@ -9,8 +9,8 @@ ifndef PYBUILD_TARGET_TRIPLE
     $(error PYBUILD_TARGET_TRIPLE not defined)
 endif
 
-ifndef PYBUILD_OPTIMIZATIONS
-    $(error PYBUILD_OPTIMIZATIONS not defined)
+ifndef PYBUILD_BUILD_OPTIONS
+    $(error PYBUILD_BUILD_OPTIONS not defined)
 endif
 
 ifndef PYBUILD_HOST_PLATFORM
@@ -31,12 +31,12 @@ endif
 
 TARGET_TRIPLE := $(PYBUILD_TARGET_TRIPLE)
 HOST_PLATFORM := $(PYBUILD_HOST_PLATFORM)
-PACKAGE_SUFFIX := $(TARGET_TRIPLE)-$(PYBUILD_OPTIMIZATIONS)
+PACKAGE_SUFFIX := $(TARGET_TRIPLE)-$(PYBUILD_BUILD_OPTIONS)
 
 RUN_BUILD = $(BUILD) \
     --host-platform $(HOST_PLATFORM) \
     --target-triple $(TARGET_TRIPLE) \
-    --optimizations $(PYBUILD_OPTIMIZATIONS) \
+    --options $(PYBUILD_BUILD_OPTIONS) \
     --python-source $(PYBUILD_PYTHON_SOURCE) \
     --dest-archive $@ \
     $(NULL)
