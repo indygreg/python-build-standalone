@@ -170,25 +170,6 @@ jobs:
             py: 'cpython-3.12'
             options: 'lto'
 
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
-
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'armv7-unknown-linux-gnueabi'
             py: 'cpython-3.9'
@@ -229,25 +210,6 @@ jobs:
           - target_triple: 'armv7-unknown-linux-gnueabi'
             py: 'cpython-3.12'
             options: 'lto'
-
-          - target_triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'armv7-unknown-linux-gnueabi'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
 
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'armv7-unknown-linux-gnueabihf'
@@ -290,25 +252,6 @@ jobs:
             py: 'cpython-3.12'
             options: 'lto'
 
-          - target_triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'armv7-unknown-linux-gnueabihf'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
-
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'mips-unknown-linux-gnu'
             py: 'cpython-3.9'
@@ -349,25 +292,6 @@ jobs:
           - target_triple: 'mips-unknown-linux-gnu'
             py: 'cpython-3.12'
             options: 'lto'
-
-          - target_triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'mips-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
 
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'mipsel-unknown-linux-gnu'
@@ -410,25 +334,6 @@ jobs:
             py: 'cpython-3.12'
             options: 'lto'
 
-          - target_triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'mipsel-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
-
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 's390x-unknown-linux-gnu'
             py: 'cpython-3.9'
@@ -470,25 +375,6 @@ jobs:
             py: 'cpython-3.12'
             options: 'lto'
 
-          - target_triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 's390x-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
-
           # Cross-compiles can't do PGO and require Python 3.9.
           - target_triple: 'ppc64le-unknown-linux-gnu'
             py: 'cpython-3.9'
@@ -529,25 +415,6 @@ jobs:
           - target_triple: 'ppc64le-unknown-linux-gnu'
             py: 'cpython-3.12'
             options: 'lto'
-
-          - target_triple: 'ppc64le-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'ppc64le-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 'ppc64le-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 'ppc64le-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'ppc64le-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'ppc64le-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
 
           # We don't publish noopt builds when PGO is available.
           - target_triple: 'x86_64-unknown-linux-gnu'
@@ -615,31 +482,6 @@ jobs:
             options: 'pgo+lto'
             run: true
 
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'pgo'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'pgo+lto'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo+lto'
-            run: true
-
           - target_triple: 'x86_64_v2-unknown-linux-gnu'
             py: 'cpython-3.9'
             options: 'debug'
@@ -692,31 +534,6 @@ jobs:
             options: 'pgo+lto'
             run: true
 
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'pgo'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'pgo+lto'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo+lto'
-            run: true
-
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.9'
             options: 'debug'
@@ -767,31 +584,6 @@ jobs:
           - target_triple: 'x86_64_v3-unknown-linux-gnu'
             py: 'cpython-3.12'
             options: 'pgo+lto'
-            run: true
-
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'pgo'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'pgo+lto'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo+lto'
             run: true
 
           # GitHub Actions runners don't support x86-64-v4 so we can't PGO.
@@ -835,25 +627,6 @@ jobs:
           - target_triple: 'x86_64_v4-unknown-linux-gnu'
             py: 'cpython-3.12'
             options: 'lto'
-
-          - target_triple: 'x86_64_v4-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'x86_64_v4-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'noopt'
-          - target_triple: 'x86_64_v4-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'lto'
-          - target_triple: 'x86_64_v4-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'x86_64_v4-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'x86_64_v4-unknown-linux-gnu'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
 
           # musl doesn't support PGO.
           - target_triple: 'x86_64-unknown-linux-musl'
@@ -921,6 +694,433 @@ jobs:
             options: 'lto'
             run: true
 
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'noopt'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'lto'
+            run: true
+
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'debug'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'noopt'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.9'
+            options: 'lto'
+
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'debug'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'noopt'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.10'
+            options: 'lto'
+
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'debug'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'noopt'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.11'
+            options: 'lto'
+
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'debug'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'noopt'
+          - target_triple: 'x86_64_v4-unknown-linux-musl'
+            py: 'cpython-3.12'
+            options: 'lto'
+
+    needs:
+      - pythonbuild
+      - image
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download pythonbuild
+        uses: actions/download-artifact@v4
+        with:
+          name: pythonbuild
+          path: build
+
+      - name: Download images
+        uses: actions/download-artifact@v4
+        with:
+          pattern: image-*
+          path: build
+          merge-multiple: true
+
+      - name: Load Docker Images
+        run: |
+          for f in build/image-*.tar.zst; do
+            echo "decompressing $f"
+            zstd -d --rm ${f}
+          done
+
+          for f in build/image-*.tar; do
+            echo "loading $f"
+            docker load --input $f
+          done
+
+      - name: Build
+        run: |
+          # Do empty target so all generated files are touched.
+          ./build-linux.py --make-target empty
+
+          # Touch mtimes of all images so they are newer than autogenerated files above.
+          touch build/image-*
+
+          ./build-linux.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --options ${{ matrix.build.options }}
+
+      - name: Validate Distribution
+        run: |
+          chmod +x build/pythonbuild
+
+          if [ -n "${{matrix.build.run}}" ]; then
+            EXTRA_ARGS="--run"
+          fi
+
+          build/pythonbuild validate-distribution ${EXTRA_ARGS} dist/*.tar.zst
+
+      - name: Upload Distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}-${{ matrix.build.options }}
+          path: dist/*
+
+
+
+  # GitHub enforces a limit of 256 entries per matrix, which we exceeded above
+  # so the CPytho 3.13 jobs are split out
+  build-313:
+    strategy:
+      fail-fast: false
+      matrix:
+        build:
+
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'noopt'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'lto'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 'aarch64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
+
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.13'
+            options: 'debug'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.13'
+            options: 'noopt'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.13'
+            options: 'lto'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 'armv7-unknown-linux-gnueabi'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
+
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.13'
+            options: 'debug'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.13'
+            options: 'noopt'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.13'
+            options: 'lto'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 'armv7-unknown-linux-gnueabihf'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
+
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'noopt'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'lto'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 'mips-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
+
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'noopt'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'lto'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 'mipsel-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
+
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'noopt'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'lto'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 's390x-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
+
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'noopt'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'lto'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 'ppc64le-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
+
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'pgo'
+            run: true
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'pgo+lto'
+            run: true
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+            run: true
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo'
+            run: true
+          - target_triple: 'x86_64-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo+lto'
+            run: true
+
+          - target_triple: 'x86_64_v2-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'pgo'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'pgo+lto'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo'
+            run: true
+          - target_triple: 'x86_64_v2-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo+lto'
+            run: true
+
+          - target_triple: 'x86_64_v3-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'debug'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'pgo'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'pgo+lto'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo'
+            run: true
+          - target_triple: 'x86_64_v3-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+pgo+lto'
+            run: true
+
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.13'
             options: 'debug'
@@ -947,58 +1147,6 @@ jobs:
             run: true
 
           - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.9'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.9'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.9'
-            options: 'lto'
-            run: true
-
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'lto'
-            run: true
-
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'lto'
-            run: true
-
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'lto'
-            run: true
-
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.13'
             options: 'debug'
             run: true
@@ -1023,57 +1171,24 @@ jobs:
             options: 'freethreaded+lto'
             run: true
 
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.9'
+          - target_triple: 'x86_64_v4-unknown-linux-gnu'
+            py: 'cpython-3.13'
             options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.9'
+          - target_triple: 'x86_64_v4-unknown-linux-gnu'
+            py: 'cpython-3.13'
             options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.9'
+          - target_triple: 'x86_64_v4-unknown-linux-gnu'
+            py: 'cpython-3.13'
             options: 'lto'
-            run: true
-
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'lto'
-            run: true
-
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'lto'
-            run: true
-
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'lto'
-            run: true
+          - target_triple: 'x86_64_v4-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
+          - target_triple: 'x86_64_v4-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+noopt'
+          - target_triple: 'x86_64_v4-unknown-linux-gnu'
+            py: 'cpython-3.13'
+            options: 'freethreaded+lto'
 
           - target_triple: 'x86_64_v3-unknown-linux-musl'
             py: 'cpython-3.13'
@@ -1099,46 +1214,6 @@ jobs:
             py: 'cpython-3.13'
             options: 'freethreaded+lto'
             run: true
-
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.9'
-            options: 'debug'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.9'
-            options: 'noopt'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.9'
-            options: 'lto'
-
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'debug'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'noopt'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.10'
-            options: 'lto'
-
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'debug'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'noopt'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.11'
-            options: 'lto'
-
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'debug'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'noopt'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.12'
-            options: 'lto'
 
           - target_triple: 'x86_64_v4-unknown-linux-musl'
             py: 'cpython-3.13'
@@ -1163,6 +1238,8 @@ jobs:
       - pythonbuild
       - image
     runs-on: ubuntu-22.04
+
+    # The above should remain an exact duplicate of the `build` job
     steps:
       - uses: actions/checkout@v4
         with:
