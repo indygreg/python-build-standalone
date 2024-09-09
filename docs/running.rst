@@ -259,7 +259,7 @@ Extra Python Software
 Python installations have some additional software pre-installed:
 
 * `pip <https://pypi.org/project/pip/>`_
-* `setuptools <https://pypi.org/project/setuptools/>`_
+* `setuptools <https://pypi.org/project/setuptools/>`_ (for Python 3.11 and older)
 
 The intent of the pre-installed software is to facilitate end-user
 package installation without having to first bootstrap a packaging

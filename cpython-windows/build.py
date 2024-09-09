@@ -19,6 +19,7 @@ import zipfile
 
 from pythonbuild.cpython import (
     STDLIB_TEST_PACKAGES,
+    meets_python_maximum_version,
     meets_python_minimum_version,
     parse_config_c,
 )
@@ -1653,19 +1654,22 @@ def build_cpython(
             pip_env,
         )
 
-        exec_and_log(
-            [
-                str(install_dir / "python.exe"),
-                "-m",
-                "pip",
-                "install",
-                "--no-cache-dir",
-                "--no-index",
-                str(setuptools_wheel),
-            ],
-            td,
-            pip_env,
-        )
+        # Setuptools is only installed for Python 3.11 and older, for parity with
+        # `ensurepip` and `venv`: https://github.com/python/cpython/pull/101039
+        if meets_python_maximum_version(python_version, "3.11"):
+            exec_and_log(
+                [
+                    str(install_dir / "python.exe"),
+                    "-m",
+                    "pip",
+                    "install",
+                    "--no-cache-dir",
+                    "--no-index",
+                    str(setuptools_wheel),
+                ],
+                td,
+                pip_env,
+            )
 
         # The executables in the Scripts/ directory don't work because they reference
         # python.dll in the wrong path. You can run these via e.g. `python.exe -m pip`.
