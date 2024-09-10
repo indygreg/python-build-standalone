@@ -901,6 +901,14 @@ fn validate_elf<Elf: FileHeader<Endian = Endianness>>(
         "$ORIGIN/../lib/libpython{}d.so.1.0",
         python_major_minor
     ));
+    allowed_libraries.push(format!(
+        "$ORIGIN/../lib/libpython{}t.so.1.0",
+        python_major_minor
+    ));
+    allowed_libraries.push(format!(
+        "$ORIGIN/../lib/libpython{}td.so.1.0",
+        python_major_minor
+    ));
 
     // Allow the _crypt extension module - and only it - to link against libcrypt,
     // which is no longer universally present in Linux distros.
