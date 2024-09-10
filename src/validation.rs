@@ -1575,9 +1575,9 @@ fn validate_extension_modules(
 fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<Vec<String>> {
     let mut errors = vec![];
 
-    if json.version != "7" {
+    if json.version != "8" {
         errors.push(format!(
-            "expected version 7 in PYTHON.json; got {}",
+            "expected version 8 in PYTHON.json; got {}",
             json.version
         ));
     }
