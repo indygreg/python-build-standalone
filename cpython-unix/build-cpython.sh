@@ -662,7 +662,10 @@ import sys
 import sysconfig
 
 # When doing cross builds, sysconfig still picks up abiflags from the
-# host Python, which is never built in debug mode. Patch abiflags accordingly.
+# host Python, which is never built in debug or free-threaded mode. Patch abiflags accordingly.
+if os.environ.get("CPYTHON_FREETHREADED") and "t" not in sysconfig.get_config_var("abiflags"):
+    sys.abiflags += "t"
+    sysconfig._CONFIG_VARS["abiflags"] += "t"
 if os.environ.get("CPYTHON_DEBUG") and "d" not in sysconfig.get_config_var("abiflags"):
     sys.abiflags += "d"
     sysconfig._CONFIG_VARS["abiflags"] += "d"
