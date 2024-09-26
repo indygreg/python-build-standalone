@@ -798,7 +798,7 @@ def build_cpython(
 
         if "debug" in parsed_build_options:
             env["CPYTHON_DEBUG"] = "1"
-        if "pgo" in parsed_build_options or "lto" in parsed_build_options:
+        if "pgo" in parsed_build_options:
             env["CPYTHON_OPTIMIZED"] = "1"
         if "lto" in parsed_build_options:
             env["CPYTHON_LTO"] = "1"
