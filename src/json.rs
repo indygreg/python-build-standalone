@@ -62,6 +62,7 @@ pub struct PythonJsonMain {
     pub apple_sdk_platform: Option<String>,
     pub apple_sdk_version: Option<String>,
     pub build_info: PythonBuildInfo,
+    pub build_options: String,
     pub crt_features: Vec<String>,
     pub libpython_link_mode: String,
     pub licenses: Option<Vec<String>>,

@@ -299,6 +299,16 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
                 required: false,
             },
             MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.13t.dylib".to_string(),
+                max_compatibility_version: "3.13.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.13td.dylib".to_string(),
+                max_compatibility_version: "3.13.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
                 name: "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit".to_string(),
                 max_compatibility_version: "45.0.0".try_into().unwrap(),
                 required: true,
@@ -889,6 +899,14 @@ fn validate_elf<Elf: FileHeader<Endian = Endianness>>(
     ));
     allowed_libraries.push(format!(
         "$ORIGIN/../lib/libpython{}d.so.1.0",
+        python_major_minor
+    ));
+    allowed_libraries.push(format!(
+        "$ORIGIN/../lib/libpython{}t.so.1.0",
+        python_major_minor
+    ));
+    allowed_libraries.push(format!(
+        "$ORIGIN/../lib/libpython{}td.so.1.0",
         python_major_minor
     ));
 
@@ -1575,9 +1593,9 @@ fn validate_extension_modules(
 fn validate_json(json: &PythonJsonMain, triple: &str, is_debug: bool) -> Result<Vec<String>> {
     let mut errors = vec![];
 
-    if json.version != "7" {
+    if json.version != "8" {
         errors.push(format!(
-            "expected version 7 in PYTHON.json; got {}",
+            "expected version 8 in PYTHON.json; got {}",
             json.version
         ));
     }

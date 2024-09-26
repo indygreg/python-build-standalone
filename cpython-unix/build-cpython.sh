@@ -355,6 +355,10 @@ if [ -n "${CPYTHON_DEBUG}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-pydebug"
 fi
 
+if [ -n "${CPYTHON_FREETHREADED}" ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-gil --with-mimalloc"
+fi
+
 if [ -n "${CPYTHON_OPTIMIZED}" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --enable-optimizations"
     if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" && -n "${BOLT_CAPABLE}" ]]; then
@@ -493,10 +497,16 @@ make -j ${NUM_CPUS}
 make -j ${NUM_CPUS} sharedinstall DESTDIR=${ROOT}/out/python
 make -j ${NUM_CPUS} install DESTDIR=${ROOT}/out/python
 
-if [ -n "${CPYTHON_DEBUG}" ]; then
-    PYTHON_BINARY_SUFFIX=d
+
+if [ -n "${CPYTHON_FREETHREADED}" ]; then
+    PYTHON_BINARY_SUFFIX=t
+    PYTHON_LIB_SUFFIX=t
 else
     PYTHON_BINARY_SUFFIX=
+    PYTHON_LIB_SUFFIX=
+fi
+if [ -n "${CPYTHON_DEBUG}" ]; then
+    PYTHON_BINARY_SUFFIX="${PYTHON_BINARY_SUFFIX}d"
 fi
 
 # Python interpreter to use during the build. When cross-compiling,
@@ -515,10 +525,10 @@ fi
 # LD_LIBRARY_PATH pointing to the directory containing libpython.
 if [ "${PYBUILD_SHARED}" = "1" ]; then
     if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+        # There's only 1 dylib produced on macOS and it has the binary suffix.
         LIBPYTHON_SHARED_LIBRARY_BASENAME=libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.dylib
         LIBPYTHON_SHARED_LIBRARY=${ROOT}/out/python/install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME}
 
-        # There's only 1 dylib produced on macOS and it has the binary suffix.
         install_name_tool \
             -change /install/lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME} @executable_path/../lib/${LIBPYTHON_SHARED_LIBRARY_BASENAME} \
             ${ROOT}/out/python/install/bin/python${PYTHON_MAJMIN_VERSION}
@@ -594,7 +604,9 @@ import sysconfig
 
 ROOT = sys.argv[1]
 
+FREETHREADED = sysconfig.get_config_var("Py_GIL_DISABLED")
 MAJMIN = ".".join([str(sys.version_info[0]), str(sys.version_info[1])])
+LIB_SUFFIX = "t" if FREETHREADED else ""
 PYTHON_CONFIG = os.path.join(ROOT, "install", "bin", "python%s-config" % MAJMIN)
 PLATFORM_CONFIG = os.path.join(ROOT, sysconfig.get_config_var("LIBPL").lstrip("/"))
 MAKEFILE = os.path.join(PLATFORM_CONFIG, "Makefile")
@@ -602,7 +614,7 @@ SYSCONFIGDATA = os.path.join(
     ROOT,
     "install",
     "lib",
-    "python%s" % MAJMIN,
+    "python%s%s" % (MAJMIN, LIB_SUFFIX),
     "%s.py" % sysconfig._get_sysconfigdata_name(),
 )
 
@@ -654,7 +666,10 @@ import sys
 import sysconfig
 
 # When doing cross builds, sysconfig still picks up abiflags from the
-# host Python, which is never built in debug mode. Patch abiflags accordingly.
+# host Python, which is never built in debug or free-threaded mode. Patch abiflags accordingly.
+if os.environ.get("CPYTHON_FREETHREADED") and "t" not in sysconfig.get_config_var("abiflags"):
+    sys.abiflags += "t"
+    sysconfig._CONFIG_VARS["abiflags"] += "t"
 if os.environ.get("CPYTHON_DEBUG") and "d" not in sysconfig.get_config_var("abiflags"):
     sys.abiflags += "d"
     sysconfig._CONFIG_VARS["abiflags"] += "d"
@@ -739,7 +754,7 @@ fi
 find ${ROOT}/out/python/install -type d -name __pycache__ -print0 | xargs -0 rm -rf
 
 # Ensure lib-dynload exists, or Python complains on startup.
-LIB_DYNLOAD=${ROOT}/out/python/install/lib/python${PYTHON_MAJMIN_VERSION}/lib-dynload
+LIB_DYNLOAD=${ROOT}/out/python/install/lib/python${PYTHON_MAJMIN_VERSION}${PYTHON_LIB_SUFFIX}/lib-dynload
 mkdir -p "${LIB_DYNLOAD}"
 touch "${LIB_DYNLOAD}/.empty"
 
@@ -793,7 +808,7 @@ esac
 
 LIBPYTHON=libpython${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}.a
 ln -sf \
-    python${PYTHON_MAJMIN_VERSION}/config-${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}-${PYTHON_ARCH}/${LIBPYTHON} \
+    python${PYTHON_MAJMIN_VERSION}${PYTHON_LIB_SUFFIX}/config-${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}-${PYTHON_ARCH}/${LIBPYTHON} \
     ${ROOT}/out/python/install/lib/${LIBPYTHON}
 
 if [ -n "${PYTHON_BINARY_SUFFIX}" ]; then

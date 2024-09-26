@@ -16,9 +16,11 @@ To build a Python distribution for Linux x64::
 
     $ ./build-linux.py
     # With profile-guided optimizations (generated code should be faster):
-    $ ./build-linux.py --optimizations pgo
+    $ ./build-linux.py --options pgo
     # Produce a debug build.
-    $ ./build-linux.py --optimizations debug
+    $ ./build-linux.py --options debug
+    # Produce a free-threaded build without extra optimizations
+    $ ./build-linux.py --options freethreaded+noopt
 
 You can also build another version of Python. e.g.::
 
@@ -94,16 +96,16 @@ If building CPython 3.8+, there are the following additional requirements:
 
 To build a dynamically linked Python distribution for Windows x64::
 
-    $ py.exe build-windows.py --profile noopt
+    $ py.exe build-windows.py --options noopt
 
 It's also possible to build with optional PGO optimizations::
 
-   $ py.exe build-windows.py --profile pgo
+   $ py.exe build-windows.py --options pgo
 
 If building CPython 3.8+, you will need to specify the path to a
 ``sh.exe`` installed from cygwin. e.g.
 
-   $ py.exe build-windows.py --python cpython-3.8 --sh c:\cygwin\bin\sh.exe --profile noopt
+   $ py.exe build-windows.py --python cpython-3.8 --sh c:\cygwin\bin\sh.exe --options noopt
 
 To build a 32-bit x86 binary, simply use an ``x86 Native Tools
 Command Prompt`` instead of ``x64``.

@@ -53,8 +53,17 @@ jobs:
         vcvars:
           - 'vcvars32.bat'
           - 'vcvars64.bat'
-        profile:
+        options:
           - 'pgo'
+
+        include:
+          - py: 'cpython-3.13'
+            vcvars: 'vcvars32.bat'
+            options: 'freethreaded+pgo'
+          - py: 'cpython-3.13'
+            vcvars: 'vcvars64.bat'
+            options: 'freethreaded+pgo'
+
     needs: pythonbuild
     runs-on: 'windows-2019'
     steps:
@@ -87,7 +96,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ matrix.vcvars }}"
-          py.exe -3.9 build-windows.py --python ${{ matrix.py }} --sh c:\cygwin\bin\sh.exe --profile ${{ matrix.profile }}
+          py.exe -3.9 build-windows.py --python ${{ matrix.py }} --sh c:\cygwin\bin\sh.exe --options ${{ matrix.options }}
 
       - name: Validate Distribution
         run: |
@@ -97,5 +106,5 @@ jobs:
       - name: Upload Distributions
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.py }}-${{ matrix.vcvars }}-${{ matrix.profile }}
+          name: ${{ matrix.py }}-${{ matrix.vcvars }}-${{ matrix.options }}
           path: dist/*
