@@ -1133,18 +1133,19 @@ jobs:
             py: 'cpython-3.13'
             options: 'lto'
             run: true
-          - target_triple: 'x86_64-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
-            run: true
+          # TODO: Free-threaded musl builds are blocked by upgrading LLVM 14 -> 18.
+          # - target_triple: 'x86_64-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+debug'
+          #   run: true
+          # - target_triple: 'x86_64-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+noopt'
+          #   run: true
+          # - target_triple: 'x86_64-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+lto'
+          #   run: true
 
           - target_triple: 'x86_64_v2-unknown-linux-musl'
             py: 'cpython-3.13'
@@ -1158,18 +1159,19 @@ jobs:
             py: 'cpython-3.13'
             options: 'lto'
             run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-            run: true
-          - target_triple: 'x86_64_v2-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
-            run: true
+          # TODO: Free-threaded musl builds are blocked by upgrading LLVM 14 -> 18.
+          # - target_triple: 'x86_64_v2-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+debug'
+          #   run: true
+          # - target_triple: 'x86_64_v2-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+noopt'
+          #   run: true
+          # - target_triple: 'x86_64_v2-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+lto'
+          #   run: true
 
           - target_triple: 'x86_64_v4-unknown-linux-gnu'
             py: 'cpython-3.13'
@@ -1202,18 +1204,19 @@ jobs:
             py: 'cpython-3.13'
             options: 'lto'
             run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-            run: true
-          - target_triple: 'x86_64_v3-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
-            run: true
+          # TODO: Free-threaded musl builds are blocked by upgrading LLVM 14 -> 18.
+          # - target_triple: 'x86_64_v3-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+debug'
+          #   run: true
+          # - target_triple: 'x86_64_v3-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+noopt'
+          #   run: true
+          # - target_triple: 'x86_64_v3-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+lto'
+          #   run: true
 
           - target_triple: 'x86_64_v4-unknown-linux-musl'
             py: 'cpython-3.13'
@@ -1224,15 +1227,16 @@ jobs:
           - target_triple: 'x86_64_v4-unknown-linux-musl'
             py: 'cpython-3.13'
             options: 'lto'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+noopt'
-          - target_triple: 'x86_64_v4-unknown-linux-musl'
-            py: 'cpython-3.13'
-            options: 'freethreaded+lto'
+          # TODO: Free-threaded musl builds are blocked by upgrading LLVM 14 -> 18.
+          # - target_triple: 'x86_64_v4-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+debug'
+          # - target_triple: 'x86_64_v4-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+noopt'
+          # - target_triple: 'x86_64_v4-unknown-linux-musl'
+          #   py: 'cpython-3.13'
+          #   options: 'freethreaded+lto'
 
     needs:
       - pythonbuild
