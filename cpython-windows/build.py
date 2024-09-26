@@ -1867,8 +1867,7 @@ def main() -> None:
         default="cpython-3.11",
         help="Python distribution to build",
     )
-    # TODO: Rename this to `--options` to match the Unix build script
-    optimizations = {"debug", "noopt", "pgo", "lto", "pgo+lto"}
+    optimizations = {"noopt", "pgo"}
     parser.add_argument(
         "--options",
         choices=optimizations.union({f"freethreaded+{o}" for o in optimizations}),
