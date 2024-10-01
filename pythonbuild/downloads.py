@@ -73,7 +73,7 @@ DOWNLOADS = {
     "cpython-3.12": {
         "url": "https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tar.xz",
         "size": 20444032,
-        "sha256": "24887b92e2afd4a2ac602419ad4b596372f67ac9b077190f459aba390faf5550"
+        "sha256": "24887b92e2afd4a2ac602419ad4b596372f67ac9b077190f459aba390faf5550",
         "version": "3.12.7",
         "licenses": ["Python-2.0", "CNRI-Python"],
         "license_file": "LICENSE.cpython.txt",
