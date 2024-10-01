@@ -230,7 +230,7 @@ pub fn convert_to_install_only<W: Write>(reader: impl BufRead, writer: W) -> Res
     let mut json_data = vec![];
     entry.read_to_end(&mut json_data)?;
 
-    let json_main = parse_python_json(&json_data)?;
+    let json_main = parse_python_json(&json_data).context("failed to parse PYTHON.json")?;
 
     let stdlib_path = json_main
         .python_paths
@@ -383,7 +383,11 @@ pub fn convert_to_stripped<W: Write>(
 pub fn produce_install_only(tar_zst_path: &Path) -> Result<PathBuf> {
     let buf = std::fs::read(tar_zst_path)?;
 
-    let gz_data = convert_to_install_only(std::io::Cursor::new(buf), std::io::Cursor::new(vec![]))?
+    let gz_data = convert_to_install_only(std::io::Cursor::new(buf), std::io::Cursor::new(vec![]))
+        .context(format!(
+            "failed to convert `{}` to install_only",
+            tar_zst_path.display()
+        ))?
         .into_inner();
 
     let filename = tar_zst_path
@@ -417,7 +421,11 @@ pub fn produce_install_only_stripped(tar_gz_path: &Path, llvm_dir: &Path) -> Res
         std::io::Cursor::new(buf),
         std::io::Cursor::new(vec![]),
         llvm_dir,
-    )?
+    )
+    .context(format!(
+        "failed to convert `{}` to install_only_stripped",
+        tar_gz_path.display()
+    ))?
     .into_inner();
 
     let size_after = gz_data.len();
