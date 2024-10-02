@@ -234,11 +234,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
 
                 let build_suffix = &stripped_name[triple_start + triple.len() + 1..];
 
-                if !release
-                    .suffixes
-                    .iter()
-                    .any(|suffix| build_suffix == *suffix)
-                {
+                if !release.suffixes(None).any(|suffix| build_suffix == suffix) {
                     println!("{} not a release artifact for triple", name);
                     continue;
                 }
@@ -356,14 +352,14 @@ pub async fn command_upload_release_distributions(args: &ArgMatches) -> Result<(
     let mut wanted_filenames = BTreeMap::new();
     for version in python_versions {
         for (triple, release) in RELEASE_TRIPLES.iter() {
+            let python_version = pep440_rs::Version::from_str(version)?;
             if let Some(req) = &release.python_version_requirement {
-                let python_version = pep440_rs::Version::from_str(version)?;
                 if !req.contains(&python_version) {
                     continue;
                 }
             }
 
-            for suffix in &release.suffixes {
+            for suffix in release.suffixes(Some(&python_version)) {
                 wanted_filenames.insert(
                     format!(
                         "cpython-{}-{}-{}-{}.tar.zst",
