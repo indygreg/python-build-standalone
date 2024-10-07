@@ -33,7 +33,7 @@ async fn fetch_artifact(
     repo: &str,
     artifact: WorkflowListArtifact,
 ) -> Result<bytes::Bytes> {
-    println!("downloading {}", artifact.name);
+    println!("downloading artifact {}", artifact.name);
 
     let res = client
         .actions()
@@ -106,6 +106,8 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                 .to_string(),
         )
         .build()?;
+
+    let release_version_range = pep440_rs::VersionSpecifier::from_str(">=3.9")?;
 
     let workflows = client.workflows(org, repo);
 
@@ -208,9 +210,25 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
 
             let name = zf.name().to_string();
 
+            let parts = name.split('-').collect::<Vec<_>>();
+
+            if parts[0] != "cpython" {
+                println!("ignoring {} not a cpython artifact", name);
+                continue;
+            };
+
+            let python_version = pep440_rs::Version::from_str(parts[1])?;
+            if !release_version_range.contains(&python_version) {
+                println!(
+                    "{} not in release version range {}",
+                    name, release_version_range
+                );
+                continue;
+            }
+
             // Iterate over `RELEASE_TRIPLES` in reverse-order to ensure that if any triple is a
             // substring of another, the longest match is used.
-            if let Some((triple, release)) =
+            let Some((triple, release)) =
                 RELEASE_TRIPLES.iter().rev().find_map(|(triple, release)| {
                     if name.contains(triple) {
                         Some((triple, release))
@@ -218,39 +236,43 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
                         None
                     }
                 })
-            {
-                let stripped_name = if let Some(s) = name.strip_suffix(".tar.zst") {
-                    s
-                } else {
-                    println!("{} not a .tar.zst artifact", name);
-                    continue;
-                };
+            else {
+                println!(
+                    "ignoring {} does not match any registered release triples",
+                    name
+                );
+                continue;
+            };
 
-                let stripped_name = &stripped_name[0..stripped_name.len() - "-YYYYMMDDTHHMM".len()];
-
-                let triple_start = stripped_name
-                    .find(triple)
-                    .expect("validated triple presence above");
-
-                let build_suffix = &stripped_name[triple_start + triple.len() + 1..];
-
-                if !release.suffixes(None).any(|suffix| build_suffix == suffix) {
-                    println!("{} not a release artifact for triple", name);
-                    continue;
-                }
-
-                let dest_path = dest_dir.join(&name);
-                let mut buf = vec![];
-                zf.read_to_end(&mut buf)?;
-                std::fs::write(&dest_path, &buf)?;
-
-                println!("releasing {}", name);
-
-                if build_suffix == release.install_only_suffix {
-                    install_paths.push(dest_path);
-                }
+            let stripped_name = if let Some(s) = name.strip_suffix(".tar.zst") {
+                s
             } else {
-                println!("{} does not match any registered release triples", name);
+                println!("ignoring {} not a .tar.zst artifact", name);
+                continue;
+            };
+
+            let stripped_name = &stripped_name[0..stripped_name.len() - "-YYYYMMDDTHHMM".len()];
+
+            let triple_start = stripped_name
+                .find(triple)
+                .expect("validated triple presence above");
+
+            let build_suffix = &stripped_name[triple_start + triple.len() + 1..];
+
+            if !release.suffixes(None).any(|suffix| build_suffix == suffix) {
+                println!("ignoring {} not a release artifact for triple", name);
+                continue;
+            }
+
+            let dest_path = dest_dir.join(&name);
+            let mut buf = vec![];
+            zf.read_to_end(&mut buf)?;
+            std::fs::write(&dest_path, &buf)?;
+
+            println!("prepared {} for release", name);
+
+            if build_suffix == release.install_only_suffix {
+                install_paths.push(dest_path);
             }
         }
     }
@@ -271,7 +293,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
             let dest_path = produce_install_only(path)?;
 
             println!(
-                "releasing {}",
+                "prepared {} for release",
                 dest_path
                     .file_name()
                     .expect("should have file name")
@@ -290,7 +312,7 @@ pub async fn command_fetch_release_distributions(args: &ArgMatches) -> Result<()
             let dest_path = produce_install_only_stripped(&dest_path, &llvm_dir)?;
 
             println!(
-                "releasing {}",
+                "prepared {} for release",
                 dest_path
                     .file_name()
                     .expect("should have file name")
