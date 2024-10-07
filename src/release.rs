@@ -294,10 +294,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
             python_version_requirement: None,
-            conditional_suffixes: vec![ConditionalSuffixes {
-                python_version_requirement: VersionSpecifier::from_str(">=3.13").unwrap(),
-                suffixes: linux_suffixes_nopgo_freethreaded.clone(),
-            }],
+            conditional_suffixes: vec![],
         },
     );
     h.insert(
@@ -306,10 +303,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
             python_version_requirement: Some(VersionSpecifier::from_str(">=3.9").unwrap()),
-            conditional_suffixes: vec![ConditionalSuffixes {
-                python_version_requirement: VersionSpecifier::from_str(">=3.13").unwrap(),
-                suffixes: linux_suffixes_nopgo_freethreaded.clone(),
-            }],
+            conditional_suffixes: vec![],
         },
     );
     h.insert(
@@ -318,10 +312,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
             python_version_requirement: Some(VersionSpecifier::from_str(">=3.9").unwrap()),
-            conditional_suffixes: vec![ConditionalSuffixes {
-                python_version_requirement: VersionSpecifier::from_str(">=3.13").unwrap(),
-                suffixes: linux_suffixes_nopgo_freethreaded.clone(),
-            }],
+            conditional_suffixes: vec![],
         },
     );
     h.insert(
@@ -330,10 +321,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
             suffixes: linux_suffixes_nopgo.clone(),
             install_only_suffix: "lto",
             python_version_requirement: Some(VersionSpecifier::from_str(">=3.9").unwrap()),
-            conditional_suffixes: vec![ConditionalSuffixes {
-                python_version_requirement: VersionSpecifier::from_str(">=3.13").unwrap(),
-                suffixes: linux_suffixes_nopgo_freethreaded.clone(),
-            }],
+            conditional_suffixes: vec![],
         },
     );
 
