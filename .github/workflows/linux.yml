@@ -120,15 +120,6 @@ jobs:
       matrix:
         build:
           # Cross-compiles can't do PGO.
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.8'
-            options: 'debug'
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.8'
-            options: 'noopt'
-          - target_triple: 'aarch64-unknown-linux-gnu'
-            py: 'cpython-3.8'
-            options: 'lto'
 
           - target_triple: 'aarch64-unknown-linux-gnu'
             py: 'cpython-3.9'
@@ -415,20 +406,6 @@ jobs:
           - target_triple: 'ppc64le-unknown-linux-gnu'
             py: 'cpython-3.12'
             options: 'lto'
-
-          # We don't publish noopt builds when PGO is available.
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.8'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.8'
-            options: 'pgo'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-gnu'
-            py: 'cpython-3.8'
-            options: 'pgo+lto'
-            run: true
 
           - target_triple: 'x86_64-unknown-linux-gnu'
             py: 'cpython-3.9'
@@ -629,18 +606,6 @@ jobs:
             options: 'lto'
 
           # musl doesn't support PGO.
-          - target_triple: 'x86_64-unknown-linux-musl'
-            py: 'cpython-3.8'
-            options: 'debug'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-musl'
-            py: 'cpython-3.8'
-            options: 'noopt'
-            run: true
-          - target_triple: 'x86_64-unknown-linux-musl'
-            py: 'cpython-3.8'
-            options: 'lto'
-            run: true
 
           - target_triple: 'x86_64-unknown-linux-musl'
             py: 'cpython-3.9'
