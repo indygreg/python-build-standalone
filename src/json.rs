@@ -10,6 +10,7 @@ use {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 pub struct LinkEntry {
     pub name: String,
     pub path_static: Option<String>,
@@ -20,6 +21,7 @@ pub struct LinkEntry {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 pub struct PythonBuildExtensionInfo {
     pub in_core: bool,
     pub init_fn: String,
@@ -36,6 +38,7 @@ pub struct PythonBuildExtensionInfo {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 pub struct PythonBuildCoreInfo {
     pub objs: Vec<String>,
     pub links: Vec<LinkEntry>,
@@ -45,6 +48,7 @@ pub struct PythonBuildCoreInfo {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 pub struct PythonBuildInfo {
     pub core: PythonBuildCoreInfo,
     pub extensions: BTreeMap<String, Vec<PythonBuildExtensionInfo>>,
@@ -56,6 +60,7 @@ pub struct PythonBuildInfo {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[allow(dead_code)]
 pub struct PythonJsonMain {
     pub apple_sdk_canonical_name: Option<String>,
     pub apple_sdk_deployment_target: Option<String>,
