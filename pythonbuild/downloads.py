@@ -304,10 +304,10 @@ DOWNLOADS = {
         "license_public_domain": True,
     },
     "strawberryperl": {
-        "url": "http://strawberryperl.com/download/5.28.1.1/strawberry-perl-5.28.1.1-32bit-portable.zip",
-        "size": 143242779,
-        "sha256": "8b15c7c9574989568254a7859e473b7d5f68a1145d2e4418036600a81b13805c",
-        "version": "5.28.1.1",
+        "url": "https://strawberryperl.com/download/5.32.1.1/strawberry-perl-no64-5.32.1.1-32bit.zip",
+        "size": 154283631,
+        "sha256": "9854dc01f006d84e956075bec844fdb4657ce5dc2a1164304b32f5cbed5f8347",
+        "version": "5.32.1.1",
     },
     "tcl": {
         "url": "https://prdownloads.sourceforge.net/tcl/tcl8.6.12-src.tar.gz",
