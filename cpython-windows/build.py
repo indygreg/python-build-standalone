@@ -1248,6 +1248,20 @@ def collect_python_build_artifacts(
 
         return set()
 
+    if arch == "amd64":
+        abi_platform = "win_amd64"
+    elif arch == "x86":
+        abi_platform = "win32"
+    else:
+        raise ValueError("unhandled arch: %s" % arch)
+
+    if freethreaded:
+        abi_tag = ".cp%st-%s" % (python_majmin, abi_platform)
+        lib_suffix = "t"
+    else:
+        abi_tag = ""
+        lib_suffix = ""
+
     # Copy object files for core sources into their own directory.
     core_dir = out_dir / "build" / "core"
     core_dir.mkdir(parents=True)
@@ -1266,11 +1280,6 @@ def collect_python_build_artifacts(
     res["inittab_cflags"] = ["-DNDEBUG", "-DPy_BUILD_CORE"]
 
     exts = ("lib", "exp")
-
-    if freethreaded:
-        lib_suffix = "t"
-    else:
-        lib_suffix = ""
 
     for ext in exts:
         source = outputs_path / ("python%s%s.%s" % (python_majmin, lib_suffix, ext))
@@ -1364,12 +1373,15 @@ def collect_python_build_artifacts(
         res["extensions"][ext] = [entry]
 
         # Copy the extension static library.
-        ext_static = outputs_path / ("%s.lib" % ext)
-        dest = dest_dir / ("%s.lib" % ext)
+        ext_static = outputs_path / ("%s%s.lib" % (ext, abi_tag))
+        dest = dest_dir / ("%s%s.lib" % (ext, abi_tag))
         log("copying static extension %s" % ext_static)
         shutil.copyfile(ext_static, dest)
 
-        res["extensions"][ext][0]["shared_lib"] = "install/DLLs/%s.pyd" % ext
+        res["extensions"][ext][0]["shared_lib"] = "install/DLLs/%s%s.pyd" % (
+            ext,
+            abi_tag,
+        )
 
     lib_dir = out_dir / "build" / "lib"
     lib_dir.mkdir()
