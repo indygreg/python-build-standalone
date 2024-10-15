@@ -869,7 +869,7 @@ def run_msbuild(
     ]
 
     if freethreaded:
-        args.append("/property:IncludeFreethreaded=true")
+        args.append("/property:DisableGil=true")
 
     exec_and_log(args, str(pcbuild_path), os.environ)
 
