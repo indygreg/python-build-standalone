@@ -44,10 +44,10 @@ jobs:
       fail-fast: false
       matrix:
         py:
-          # - 'cpython-3.9'
-          # - 'cpython-3.10'
-          # - 'cpython-3.11'
-          # - 'cpython-3.12'
+          - 'cpython-3.9'
+          - 'cpython-3.10'
+          - 'cpython-3.11'
+          - 'cpython-3.12'
           - 'cpython-3.13'
         vcvars:
           - 'vcvars32.bat'
