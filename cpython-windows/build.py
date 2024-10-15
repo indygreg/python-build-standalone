@@ -1430,6 +1430,12 @@ def build_cpython(
         # as we do for Unix builds.
         mpdecimal_archive = None
 
+    if freethreaded:
+        (major, minor, _) = python_version.split(".")
+        python_exe = f"python{major}.{minor}t.exe"
+    else:
+        python_exe = "python.exe"
+
     if arch == "amd64":
         build_platform = "x64"
         build_directory = "amd64"
@@ -1532,7 +1538,7 @@ def build_cpython(
             # test execution. We work around this by invoking the test harness
             # separately for each test.
             instrumented_python = (
-                pcbuild_path / build_directory / "instrumented" / "python.exe"
+                pcbuild_path / build_directory / "instrumented" / python_exe
             )
 
             tests = subprocess.run(
@@ -1647,7 +1653,7 @@ def build_cpython(
         # Install pip and setuptools.
         exec_and_log(
             [
-                str(install_dir / "python.exe"),
+                str(install_dir / python_exe),
                 "-m",
                 "pip",
                 "install",
@@ -1664,7 +1670,7 @@ def build_cpython(
         if meets_python_maximum_version(python_version, "3.11"):
             exec_and_log(
                 [
-                    str(install_dir / "python.exe"),
+                    str(install_dir / python_exe),
                     "-m",
                     "pip",
                     "install",
