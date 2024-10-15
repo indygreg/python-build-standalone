@@ -845,6 +845,7 @@ def run_msbuild(
     platform: str,
     python_version: str,
     windows_sdk_version: str,
+    freethreaded: bool,
 ):
     args = [
         str(msbuild),
@@ -866,6 +867,9 @@ def run_msbuild(
         # SDK as of at least CPython 3.9.7.
         f"/property:DefaultWindowsSDKVersion={windows_sdk_version}",
     ]
+
+    if freethreaded:
+        args.append("/property:IncludeFreethreaded=true")
 
     exec_and_log(args, str(pcbuild_path), os.environ)
 
@@ -1394,6 +1398,7 @@ def build_cpython(
 ) -> pathlib.Path:
     parsed_build_options = set(build_options.split("+"))
     pgo = "pgo" in parsed_build_options
+    freethreaded = "freethreaded" in parsed_build_options
 
     msbuild = find_msbuild(msvc_version)
     log("found MSBuild at %s" % msbuild)
@@ -1507,6 +1512,7 @@ def build_cpython(
                 platform=build_platform,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
+                freethreaded=freethreaded,
             )
 
             # build-windows.py sets some environment variables which cause the
@@ -1572,6 +1578,7 @@ def build_cpython(
                 platform=build_platform,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
+                freethreaded=freethreaded,
             )
             artifact_config = "PGUpdate"
 
@@ -1583,6 +1590,7 @@ def build_cpython(
                 platform=build_platform,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
+                freethreaded=freethreaded,
             )
             artifact_config = "Release"
 
