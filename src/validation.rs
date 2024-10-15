@@ -126,6 +126,7 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "python311.dll",
     "python312.dll",
     "python313.dll",
+    "python313t.dll",
     "sqlite3.dll",
     "tcl86t.dll",
     "tk86t.dll",
@@ -2087,6 +2088,7 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
         .stdout_to_stderr()
         .unchecked()
         .env("TARGET_TRIPLE", &python_json.target_triple)
+        .env("BUILD_OPTIONS", &python_json.build_options)
         .run()?;
 
     if !output.status.success() {

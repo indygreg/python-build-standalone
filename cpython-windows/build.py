@@ -845,6 +845,7 @@ def run_msbuild(
     platform: str,
     python_version: str,
     windows_sdk_version: str,
+    freethreaded: bool,
 ):
     args = [
         str(msbuild),
@@ -866,6 +867,9 @@ def run_msbuild(
         # SDK as of at least CPython 3.9.7.
         f"/property:DefaultWindowsSDKVersion={windows_sdk_version}",
     ]
+
+    if freethreaded:
+        args.append("/property:DisableGil=true")
 
     exec_and_log(args, str(pcbuild_path), os.environ)
 
@@ -1118,6 +1122,7 @@ def collect_python_build_artifacts(
     arch: str,
     config: str,
     openssl_entry: str,
+    freethreaded: bool,
 ):
     """Collect build artifacts from Python.
 
@@ -1243,6 +1248,20 @@ def collect_python_build_artifacts(
 
         return set()
 
+    if arch == "amd64":
+        abi_platform = "win_amd64"
+    elif arch == "win32":
+        abi_platform = "win32"
+    else:
+        raise ValueError("unhandled arch: %s" % arch)
+
+    if freethreaded:
+        abi_tag = ".cp%st-%s" % (python_majmin, abi_platform)
+        lib_suffix = "t"
+    else:
+        abi_tag = ""
+        lib_suffix = ""
+
     # Copy object files for core sources into their own directory.
     core_dir = out_dir / "build" / "core"
     core_dir.mkdir(parents=True)
@@ -1263,12 +1282,12 @@ def collect_python_build_artifacts(
     exts = ("lib", "exp")
 
     for ext in exts:
-        source = outputs_path / ("python%s.%s" % (python_majmin, ext))
-        dest = core_dir / ("python%s.%s" % (python_majmin, ext))
+        source = outputs_path / ("python%s%s.%s" % (python_majmin, lib_suffix, ext))
+        dest = core_dir / ("python%s%s.%s" % (python_majmin, lib_suffix, ext))
         log("copying %s" % source)
         shutil.copyfile(source, dest)
 
-    res["core"]["shared_lib"] = "install/python%s.dll" % python_majmin
+    res["core"]["shared_lib"] = "install/python%s%s.dll" % (python_majmin, lib_suffix)
 
     # We hack up pythoncore.vcxproj and the list in it when this function
     # runs isn't totally accurate. We hardcode the list from the CPython
@@ -1354,12 +1373,15 @@ def collect_python_build_artifacts(
         res["extensions"][ext] = [entry]
 
         # Copy the extension static library.
-        ext_static = outputs_path / ("%s.lib" % ext)
-        dest = dest_dir / ("%s.lib" % ext)
+        ext_static = outputs_path / ("%s%s.lib" % (ext, abi_tag))
+        dest = dest_dir / ("%s%s.lib" % (ext, abi_tag))
         log("copying static extension %s" % ext_static)
         shutil.copyfile(ext_static, dest)
 
-        res["extensions"][ext][0]["shared_lib"] = "install/DLLs/%s.pyd" % ext
+        res["extensions"][ext][0]["shared_lib"] = "install/DLLs/%s%s.pyd" % (
+            ext,
+            abi_tag,
+        )
 
     lib_dir = out_dir / "build" / "lib"
     lib_dir.mkdir()
@@ -1394,6 +1416,7 @@ def build_cpython(
 ) -> pathlib.Path:
     parsed_build_options = set(build_options.split("+"))
     pgo = "pgo" in parsed_build_options
+    freethreaded = "freethreaded" in parsed_build_options
 
     msbuild = find_msbuild(msvc_version)
     log("found MSBuild at %s" % msbuild)
@@ -1424,6 +1447,12 @@ def build_cpython(
         # TODO: Consider using the built mpdecimal for earlier versions as well,
         # as we do for Unix builds.
         mpdecimal_archive = None
+
+    if freethreaded:
+        (major, minor, _) = python_version.split(".")
+        python_exe = f"python{major}.{minor}t.exe"
+    else:
+        python_exe = "python.exe"
 
     if arch == "amd64":
         build_platform = "x64"
@@ -1507,6 +1536,7 @@ def build_cpython(
                 platform=build_platform,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
+                freethreaded=freethreaded,
             )
 
             # build-windows.py sets some environment variables which cause the
@@ -1526,7 +1556,7 @@ def build_cpython(
             # test execution. We work around this by invoking the test harness
             # separately for each test.
             instrumented_python = (
-                pcbuild_path / build_directory / "instrumented" / "python.exe"
+                pcbuild_path / build_directory / "instrumented" / python_exe
             )
 
             tests = subprocess.run(
@@ -1572,6 +1602,7 @@ def build_cpython(
                 platform=build_platform,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
+                freethreaded=freethreaded,
             )
             artifact_config = "PGUpdate"
 
@@ -1583,6 +1614,7 @@ def build_cpython(
                 platform=build_platform,
                 python_version=python_version,
                 windows_sdk_version=windows_sdk_version,
+                freethreaded=freethreaded,
             )
             artifact_config = "Release"
 
@@ -1615,6 +1647,9 @@ def build_cpython(
             "--include-venv",
         ]
 
+        if freethreaded:
+            args.append("--include-freethreaded")
+
         # CPython 3.12 removed distutils.
         if not meets_python_minimum_version(python_version, "3.12"):
             args.append("--include-distutils")
@@ -1639,7 +1674,7 @@ def build_cpython(
         # Install pip and setuptools.
         exec_and_log(
             [
-                str(install_dir / "python.exe"),
+                str(install_dir / python_exe),
                 "-m",
                 "pip",
                 "install",
@@ -1656,7 +1691,7 @@ def build_cpython(
         if meets_python_maximum_version(python_version, "3.11"):
             exec_and_log(
                 [
-                    str(install_dir / "python.exe"),
+                    str(install_dir / python_exe),
                     "-m",
                     "pip",
                     "install",
@@ -1691,6 +1726,7 @@ def build_cpython(
             build_directory,
             artifact_config,
             openssl_entry=openssl_entry,
+            freethreaded=freethreaded,
         )
 
         for ext, init_fn in sorted(builtin_extensions.items()):
@@ -1775,7 +1811,7 @@ def build_cpython(
         }
 
         # Collect information from running Python script.
-        python_exe = out_dir / "python" / "install" / "python.exe"
+        python_exe = out_dir / "python" / "install" / python_exe
         metadata_path = td / "metadata.json"
         env = dict(os.environ)
         env["ROOT"] = str(out_dir / "python")

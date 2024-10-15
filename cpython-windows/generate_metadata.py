@@ -26,7 +26,7 @@ metadata = {
     ).decode("ascii"),
     "python_paths": {},
     "python_paths_abstract": sysconfig.get_paths(expand=False),
-    "python_exe": "install/python.exe",
+    "python_exe": f"install/{os.path.basename(sys.executable)}",
     "python_major_minor_version": sysconfig.get_python_version(),
     "python_config_vars": {k: str(v) for k, v in sysconfig.get_config_vars().items()},
 }

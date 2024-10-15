@@ -141,6 +141,20 @@ class TestPythonInterpreter(unittest.TestCase):
 
         ssl.create_default_context()
 
+    @unittest.skipIf(
+        sys.version_info[:2] < (3, 13),
+        "Free-threaded builds are only available in 3.13+",
+    )
+    def test_gil_disabled(self):
+        import sysconfig
+
+        if "freethreaded" in os.environ.get("BUILD_OPTIONS", "").split("+"):
+            wanted = 1
+        else:
+            wanted = 0
+
+        self.assertEqual(sysconfig.get_config_var("Py_GIL_DISABLED"), wanted)
+
     @unittest.skipIf("TCL_LIBRARY" not in os.environ, "TCL_LIBRARY not set")
     @unittest.skipIf("DISPLAY" not in os.environ, "DISPLAY not set")
     def test_tkinter(self):
