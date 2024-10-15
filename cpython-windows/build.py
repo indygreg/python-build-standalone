@@ -1629,6 +1629,9 @@ def build_cpython(
             "--include-venv",
         ]
 
+        if freethreaded:
+            args.append("--include-freethreaded")
+
         # CPython 3.12 removed distutils.
         if not meets_python_minimum_version(python_version, "3.12"):
             args.append("--include-distutils")
