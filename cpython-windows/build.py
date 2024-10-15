@@ -1122,6 +1122,7 @@ def collect_python_build_artifacts(
     arch: str,
     config: str,
     openssl_entry: str,
+    freethreaded: bool,
 ):
     """Collect build artifacts from Python.
 
@@ -1266,13 +1267,18 @@ def collect_python_build_artifacts(
 
     exts = ("lib", "exp")
 
+    if freethreaded:
+        lib_suffix = "t"
+    else:
+        lib_suffix = ""
+
     for ext in exts:
-        source = outputs_path / ("python%s.%s" % (python_majmin, ext))
-        dest = core_dir / ("python%s.%s" % (python_majmin, ext))
+        source = outputs_path / ("python%s%s.%s" % (python_majmin, lib_suffix, ext))
+        dest = core_dir / ("python%s%s.%s" % (python_majmin, lib_suffix, ext))
         log("copying %s" % source)
         shutil.copyfile(source, dest)
 
-    res["core"]["shared_lib"] = "install/python%s.dll" % python_majmin
+    res["core"]["shared_lib"] = "install/python%s%s.dll" % (python_majmin, lib_suffix)
 
     # We hack up pythoncore.vcxproj and the list in it when this function
     # runs isn't totally accurate. We hardcode the list from the CPython
@@ -1708,6 +1714,7 @@ def build_cpython(
             build_directory,
             artifact_config,
             openssl_entry=openssl_entry,
+            freethreaded=freethreaded,
         )
 
         for ext, init_fn in sorted(builtin_extensions.items()):
@@ -1792,7 +1799,7 @@ def build_cpython(
         }
 
         # Collect information from running Python script.
-        python_exe = out_dir / "python" / "install" / "python.exe"
+        python_exe = out_dir / "python" / "install" / python_exe
         metadata_path = td / "metadata.json"
         env = dict(os.environ)
         env["ROOT"] = str(out_dir / "python")
