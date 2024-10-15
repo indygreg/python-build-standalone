@@ -2087,6 +2087,7 @@ fn verify_distribution_behavior(dist_path: &Path) -> Result<Vec<String>> {
         .stdout_to_stderr()
         .unchecked()
         .env("TARGET_TRIPLE", &python_json.target_triple)
+        .env("BUILD_OPTIONS", &python_json.build_options)
         .run()?;
 
     if !output.status.success() {
