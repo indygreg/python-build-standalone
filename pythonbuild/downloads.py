@@ -104,10 +104,10 @@ DOWNLOADS = {
         "version": "2.3.2",
     },
     "jom-windows-bin": {
-        "url": "http://download.qt.io/official_releases/jom/jom_1_1_3.zip",
-        "size": 1213852,
-        "sha256": "128fdd846fe24f8594eed37d1d8929a0ea78df563537c0c1b1861a635013fff8",
-        "version": "1.1.3",
+        "url": "http://download.qt.io/official_releases/jom/jom_1_1_4.zip",
+        "size": 1696930,
+        "sha256": "d533c1ef49214229681e90196ed2094691e8c4a0a0bef0b2c901debcb562682b",
+        "version": "1.1.4",
     },
     "kbproto": {
         "url": "https://www.x.org/archive/individual/proto/kbproto-1.0.7.tar.gz",
