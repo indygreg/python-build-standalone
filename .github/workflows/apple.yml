@@ -201,6 +201,12 @@ jobs:
             runner: macos-13
             py: 'cpython-3.13'
             options: 'freethreaded+pgo+lto'
+
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+
     needs:
       - pythonbuild
     runs-on: ${{ matrix.build.runner }}
@@ -232,6 +238,11 @@ jobs:
           fi
 
           ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --options ${{ matrix.build.options }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: dist/*
 
       - name: Upload Distributions
         uses: actions/upload-artifact@v4
