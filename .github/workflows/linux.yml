@@ -14,6 +14,9 @@ concurrency:
 jobs:
   pythonbuild:
     runs-on: ubuntu-22.04
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     steps:
       - name: Install System Dependencies
         run: |
@@ -21,6 +24,9 @@ jobs:
           sudo apt install -y --no-install-recommends libssl-dev pkg-config
 
       - uses: actions/checkout@v4
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
 
       - name: Emit rustc version
         run: |

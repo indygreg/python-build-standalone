@@ -14,8 +14,14 @@ concurrency:
 jobs:
   pythonbuild:
     runs-on: 'windows-2019'
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     steps:
       - uses: actions/checkout@v4
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
 
       - name: Emit rustc version
         run: |
