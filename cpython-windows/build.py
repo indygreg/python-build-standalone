@@ -1718,6 +1718,15 @@ def build_cpython(
         with (install_dir / "Scripts" / ".empty").open("ab"):
             pass
 
+        # Rename to `python.exe` when an alternative executable is built, e.g., when
+        # free-threading is enabled the name is `python3.13t.exe`.
+        canonical_python_exe = install_dir / "python.exe"
+        if not canonical_python_exe.exists():
+            os.rename(
+                python_exe,
+                canonical_python_exe,
+            )
+
         # Now copy the build artifacts into the output directory.
         build_info = collect_python_build_artifacts(
             pcbuild_path,
@@ -1811,13 +1820,12 @@ def build_cpython(
         }
 
         # Collect information from running Python script.
-        python_exe = out_dir / "python" / "install" / python_exe
         metadata_path = td / "metadata.json"
         env = dict(os.environ)
         env["ROOT"] = str(out_dir / "python")
         subprocess.run(
             [
-                str(python_exe),
+                str(canonical_python_exe),
                 str(SUPPORT / "generate_metadata.py"),
                 str(metadata_path),
             ],
