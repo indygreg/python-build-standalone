@@ -1424,6 +1424,16 @@ def build_cpython(
     # The python.props file keys off MSBUILD, so it needs to be set.
     os.environ["MSBUILD"] = str(msbuild)
 
+    # Workaround for https://github.com/actions/runner-images/issues/10819
+    if not os.environ.get("VCToolsRedistDir"):
+        os.environ["VCToolsRedistDir"] = os.path.join(
+            os.environ["VCINSTALLDIR"],
+            "Redist",
+            "MSVC",
+            os.environ["VCToolsVersion"],
+            "",
+        )
+
     bzip2_archive = download_entry("bzip2", BUILD)
     sqlite_archive = download_entry("sqlite", BUILD)
     tk_bin_archive = download_entry(

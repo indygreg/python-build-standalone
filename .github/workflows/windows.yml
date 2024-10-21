@@ -65,6 +65,9 @@ jobs:
 
     needs: pythonbuild
     runs-on: 'windows-2019'
+    env:
+      # Workaround for https://github.com/actions/runner-images/issues/10819
+      VCToolsRedistDir: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Redist\MSVC\14.29.30156'
     steps:
       - uses: actions/checkout@v4
         with:
