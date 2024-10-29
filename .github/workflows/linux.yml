@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   pythonbuild:
+    if: ${{ github.repository_owner == 'indygreg' || github.event_name != 'schedule' }}
     runs-on: ubuntu-22.04
     steps:
       - name: Install System Dependencies
@@ -45,6 +46,7 @@ jobs:
           path: target/release/pythonbuild
 
   image:
+    if: ${{ github.repository_owner == 'indygreg' || github.event_name != 'schedule' }}
     strategy:
       fail-fast: false
       matrix:
@@ -115,6 +117,7 @@ jobs:
           path: build/image-*
 
   build:
+    if: ${{ github.repository_owner == 'indygreg' || github.event_name != 'schedule' }}
     strategy:
       fail-fast: false
       matrix:
@@ -871,8 +874,9 @@ jobs:
 
 
   # GitHub enforces a limit of 256 entries per matrix, which we exceeded above
-  # so the CPytho 3.13 jobs are split out
+  # so the CPython 3.13 jobs are split out
   build-313:
+    if: ${{ github.repository_owner == 'indygreg' || github.event_name != 'schedule' }}
     strategy:
       fail-fast: false
       matrix:

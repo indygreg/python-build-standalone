@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   pythonbuild:
+    if: ${{ github.repository_owner == 'indygreg' || github.event_name != 'schedule' }}
     runs-on: 'macos-13'
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +41,7 @@ jobs:
           path: target/release/pythonbuild
 
   build:
+    if: ${{ github.repository_owner == 'indygreg' || github.event_name != 'schedule' }}
     strategy:
       fail-fast: false
       matrix:
