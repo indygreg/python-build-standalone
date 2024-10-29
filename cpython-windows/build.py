@@ -1887,7 +1887,7 @@ def main() -> None:
     parser.add_argument(
         "--vs",
         choices={"2019", "2022"},
-        default="2019",
+        default="2022",
         help="Visual Studio version to use",
     )
     parser.add_argument(

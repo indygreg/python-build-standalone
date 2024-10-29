@@ -869,7 +869,7 @@ jobs:
 
 
   # GitHub enforces a limit of 256 entries per matrix, which we exceeded above
-  # so the CPytho 3.13 jobs are split out
+  # so the CPython 3.13 jobs are split out
   build-313:
     strategy:
       fail-fast: false

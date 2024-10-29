@@ -107,6 +107,7 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "USERENV.dll",
     "VERSION.dll",
     "VCRUNTIME140.dll",
+    "VCRUNTIME140_1.dll",
     "WINMM.dll",
     "WS2_32.dll",
     // Our libraries.
