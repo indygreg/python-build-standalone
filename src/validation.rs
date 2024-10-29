@@ -120,7 +120,6 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "libssl-3.dll",
     "libssl-3-x64.dll",
     "python3.dll",
-    "python38.dll",
     "python39.dll",
     "python310.dll",
     "python311.dll",
@@ -239,16 +238,6 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
 
 static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
     [
-            MachOAllowedDylib {
-                name: "@executable_path/../lib/libpython3.8.dylib".to_string(),
-                max_compatibility_version: "3.8.0".try_into().unwrap(),
-                required: false,
-            },
-            MachOAllowedDylib {
-                name: "@executable_path/../lib/libpython3.8d.dylib".to_string(),
-                max_compatibility_version: "3.8.0".try_into().unwrap(),
-                required: false,
-            },
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.9.dylib".to_string(),
                 max_compatibility_version: "3.9.0".try_into().unwrap(),
@@ -494,28 +483,6 @@ const ELF_BANNED_SYMBOLS: &[&str] = &[
     "pthread_yield",
 ];
 
-/// Mach-O symbols that can be weakly linked on Python 3.8.
-const MACHO_ALLOWED_WEAK_SYMBOLS_38_NON_AARCH64: &[&str] = &[
-    // Internal to Apple SDK. However, the symbol isn't guarded properly in some Apple
-    // SDKs. See https://github.com/indygreg/PyOxidizer/issues/373.
-    "___darwin_check_fd_set_overflow",
-    // Used by compiler-rt in 17.0.0. LLVM commit b653a2823fe4b4c9c6d85cfe119f31d8e70c2fa0.
-    "__availability_version_check",
-    // Appears to get inserted by Clang.
-    "_dispatch_once_f",
-    // Used by CPython. But is has runtime availability guards in 3.8 (one of the few
-    // symbols that does).
-    "__dyld_shared_cache_contains_path",
-    // Used by CPython without guards but the symbol is so old it doesn't matter.
-    "_inet_aton",
-    // Used by tk. It does availability guards properly.
-    "_NSAppearanceNameDarkAqua",
-    // Older than 10.9.
-    "_fstatvfs",
-    "_lchown",
-    "_statvfs",
-];
-
 /// Symbols defined in dependency packages.
 ///
 /// We use this list to spot test behavior of symbols belonging to dependency packages.
@@ -658,6 +625,7 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
     "_tracemalloc",
     "_warnings",
     "_weakref",
+    "_uuid",
     "array",
     "atexit",
     "binascii",
@@ -691,14 +659,11 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 // We didn't build ctypes_test until 3.9.
 // We didn't build some test extensions until 3.9.
 
-const GLOBAL_EXTENSIONS_PYTHON_3_8: &[&str] = &["audioop", "_sha256", "_sha512", "parser"];
-
 const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
     "audioop",
     "_peg_parser",
     "_sha256",
     "_sha512",
-    "_uuid",
     "_xxsubinterpreters",
     "_zoneinfo",
     "parser",
@@ -708,7 +673,6 @@ const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
     "audioop",
     "_sha256",
     "_sha512",
-    "_uuid",
     "_xxsubinterpreters",
     "_zoneinfo",
 ];
@@ -719,7 +683,6 @@ const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
     "_sha512",
     "_tokenize",
     "_typing",
-    "_uuid",
     "_xxsubinterpreters",
     "_zoneinfo",
 ];
@@ -1049,15 +1012,11 @@ fn validate_elf<Elf: FileHeader<Endian = Endianness>>(
 
                 // Ensure specific symbols in dynamic binaries have proper visibility.
                 if matches!(elf.e_type(endian), ET_EXEC | ET_DYN) {
-                    // Python 3.8 exports ffi symbols for legacy reasons.
-                    let is_exception = name == "ffi_type_void" && python_major_minor == "3.8";
-
                     // Non-local symbols belonging to dependencies should have hidden visibility
                     // to prevent them from being exported.
                     if DEPENDENCY_PACKAGE_SYMBOLS.contains(&name.as_ref())
                         && matches!(symbol.st_bind(), STB_GLOBAL | STB_WEAK)
                         && symbol.st_visibility() != STV_HIDDEN
-                        && !is_exception
                     {
                         context.errors.push(format!(
                             "{} contains non-hidden dependency symbol {}",
@@ -1236,12 +1195,8 @@ fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
                             name.as_str()
                         };
 
-                        // Python 3.8 exports ffi symbols for legacy reasons.
-                        let is_exception = name == "_ffi_type_void" && python_major_minor == "3.8";
-
                         if DEPENDENCY_PACKAGE_SYMBOLS.contains(&search_name)
                             && scope == SymbolScope::Dynamic
-                            && !is_exception
                         {
                             context.errors.push(format!(
                                 "{} contains dynamic symbol from dependency {}",
@@ -1478,9 +1433,6 @@ fn validate_extension_modules(
     let mut wanted = BTreeSet::from_iter(GLOBAL_EXTENSIONS.iter().copied());
 
     match python_major_minor {
-        "3.8" => {
-            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_8);
-        }
         "3.9" => {
             wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_9);
         }
@@ -1512,11 +1464,7 @@ fn validate_extension_modules(
     if is_windows {
         wanted.extend(GLOBAL_EXTENSIONS_WINDOWS);
 
-        if python_major_minor == "3.8" {
-            wanted.insert("_xxsubinterpreters");
-        }
-
-        if matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12") {
+        if matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
             wanted.extend(GLOBAL_EXTENSIONS_WINDOWS_PRE_3_13);
         }
 
@@ -1534,11 +1482,11 @@ fn validate_extension_modules(
         if python_major_minor == "3.13" {
             wanted.remove("_crypt");
         }
-        if matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12") {
+        if matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
             wanted.extend(GLOBAL_EXTENSIONS_LINUX_PRE_3_13);
         }
 
-        if !is_linux_musl && matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12")
+        if !is_linux_musl && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12")
         {
             wanted.insert("ossaudiodev");
         }
@@ -1564,15 +1512,6 @@ fn validate_extension_modules(
 
     if (is_linux || is_macos) && matches!(python_major_minor, "3.12" | "3.13") {
         wanted.insert("_testsinglephase");
-    }
-
-    // _uuid is POSIX only on 3.8. On 3.9, it is global.
-    if python_major_minor == "3.8" {
-        if is_linux || is_macos {
-            wanted.insert("_uuid");
-        }
-    } else {
-        wanted.insert("_uuid");
     }
 
     // _wmi is Windows only on 3.12+.
@@ -1689,9 +1628,7 @@ fn validate_distribution(
             )
         })?;
 
-    let python_major_minor = if dist_filename.starts_with("cpython-3.8.") {
-        "3.8"
-    } else if dist_filename.starts_with("cpython-3.9.") {
+    let python_major_minor = if dist_filename.starts_with("cpython-3.9.") {
         "3.9"
     } else if dist_filename.starts_with("cpython-3.10.") {
         "3.10"
@@ -1985,7 +1922,7 @@ fn validate_distribution(
             } else if name == "_warnings" {
                 // But not on Python 3.13 on Windows
                 if triple.contains("-windows-") {
-                    matches!(python_major_minor, "3.8" | "3.9" | "3.10" | "3.11" | "3.12")
+                    matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12")
                 } else {
                     true
                 }
@@ -2006,29 +1943,6 @@ fn validate_distribution(
                     ext.init_fn,
                     name
                 ));
-            }
-        }
-    }
-
-    // On Apple Python 3.8 we need to ban most weak symbol references because 3.8 doesn't have
-    // the proper runtime guards in place to prevent them from being resolved at runtime,
-    // which would lead to a crash. See
-    // https://github.com/indygreg/python-build-standalone/pull/122.
-    if python_major_minor == "3.8" && *triple != "aarch64-apple-darwin" {
-        for (lib, symbols) in &context.macho_undefined_symbols_weak.libraries {
-            for (symbol, paths) in &symbols.symbols {
-                if MACHO_ALLOWED_WEAK_SYMBOLS_38_NON_AARCH64.contains(&symbol.as_str()) {
-                    continue;
-                }
-
-                for path in paths {
-                    context.errors.push(format!(
-                        "{} has weak symbol {}:{}, which is not allowed on Python 3.8",
-                        path.display(),
-                        lib,
-                        symbol
-                    ));
-                }
             }
         }
     }

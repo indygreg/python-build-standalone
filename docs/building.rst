@@ -7,7 +7,7 @@ Building
 Linux
 =====
 
-The host system must be 64-bit. A Python 3.5+ interpreter must be
+The host system must be 64-bit. A Python 3.9+ interpreter must be
 available. The execution environment must have access to a Docker
 daemon (all build operations are performed in Docker containers for
 isolation from the host system).
@@ -24,7 +24,7 @@ To build a Python distribution for Linux x64::
 
 You can also build another version of Python. e.g.::
 
-    $ ./build-linux.py --python cpython-3.8
+    $ ./build-linux.py --python cpython-3.13
 
 To build a Python distribution for Linux x64 using musl libc::
 
@@ -75,20 +75,15 @@ The ``APPLE_SDK_PATH`` environment variable is recognized as the path
 to the Apple SDK to use. If not defined, the build will attempt to find
 an SDK by running ``xcrun --show-sdk-path``.
 
-``aarch64-apple-darwin`` builds require a macOS 11.0+ SDK and building
-Python 3.9+. It should be possible to build for ``aarch64-apple-darwin`` from
+``aarch64-apple-darwin`` builds require a macOS 11.0+ SDK.
+It should be possible to build for ``aarch64-apple-darwin`` from
 an Intel 10.15 machine (as long as the 11.0+ SDK is used).
-
-Python 3.8 may not build properly with a macOS 11.0+ SDK: try using the
-macOS 10.15 SDK instead.
 
 Windows
 =======
 
 Visual Studio 2017 (or later) is required. A compatible Windows SDK is required
 (10.0.17763.0 as per CPython 3.7.2).
-
-If building CPython 3.8+, there are the following additional requirements:
 
 * A ``git.exe`` on ``PATH`` (to clone ``libffi`` from source).
 * An installation of Cywgin with the ``autoconf``, ``automake``, ``libtool``,
@@ -102,10 +97,9 @@ It's also possible to build with optional PGO optimizations::
 
    $ py.exe build-windows.py --options pgo
 
-If building CPython 3.8+, you will need to specify the path to a
-``sh.exe`` installed from cygwin. e.g.
+You will need to specify the path to a ``sh.exe`` installed from cygwin. e.g.
 
-   $ py.exe build-windows.py --python cpython-3.8 --sh c:\cygwin\bin\sh.exe --options noopt
+   $ py.exe build-windows.py --python cpython-3.13 --sh c:\cygwin\bin\sh.exe --options noopt
 
 To build a 32-bit x86 binary, simply use an ``x86 Native Tools
 Command Prompt`` instead of ``x64``.

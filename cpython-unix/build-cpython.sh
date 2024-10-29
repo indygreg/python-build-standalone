@@ -111,10 +111,8 @@ fi
 if [ "${CC}" = "clang" ]; then
     if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
         patch -p1 -i ${ROOT}/patch-disable-multiarch-13.patch
-    elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" ]; then
-        patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     else
-        patch -p1 -i ${ROOT}/patch-disable-multiarch-legacy.patch
+        patch -p1 -i ${ROOT}/patch-disable-multiarch.patch
     fi
 elif [ "${CC}" = "musl-clang" ]; then
   # Similarly, this is a problem for musl Clang on Python 3.13+
@@ -164,9 +162,7 @@ fi
 # executable. This behavior is kinda suspect on all platforms, as it could be adding
 # library dependencies that shouldn't need to be there.
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
-    if [ "${PYTHON_MAJMIN_VERSION}" = "3.8" ]; then
-        patch -p1 -i ${ROOT}/patch-python-link-modules-3.8.patch
-    elif [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
+    if [ "${PYTHON_MAJMIN_VERSION}" = "3.9" ]; then
         patch -p1 -i ${ROOT}/patch-python-link-modules-3.9.patch
     elif [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
         patch -p1 -i ${ROOT}/patch-python-link-modules-3.10.patch
@@ -210,7 +206,7 @@ fi
 
 # iOS doesn't have system(). Teach posixmodule.c about that.
 # Python 3.11 makes this a configure time check, so we don't need the patch there.
-if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_9}" && -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_10}" ]]; then
+if [[ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_10}" ]]; then
     patch -p1 -i ${ROOT}/patch-posixmodule-remove-system.patch
 fi
 
@@ -393,11 +389,6 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     # However CPython lacks the runtime availability guards for most symbols.
     # This results in runtime failures when attempting to resolve/call the
     # symbol.
-    #
-    # Unfortunately, this means we need to ban weak symbols on CPython 3.8, to
-    # the detriment of performance. However, we can actually use most symbols
-    # on aarch64 because it targets macOS SDK 11.0, not 10.9. But more modern
-    # symbols do need to be banned.
     if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_9}" ]; then
         if [ "${TARGET_TRIPLE}" != "aarch64-apple-darwin" ]; then
             for symbol in clock_getres clock_gettime clock_settime faccessat fchmodat fchownat fdopendir fstatat futimens getentropy linkat mkdirat openat preadv pwritev readlinkat renameat symlinkat unlinkat utimensat; do
@@ -907,7 +898,7 @@ done
 mkdir ${ROOT}/out/python/build/lib
 cp -av ${TOOLS_PATH}/deps/lib/*.a ${ROOT}/out/python/build/lib/
 
-# On Apple, Python 3.9+ uses __builtin_available() to sniff for feature
+# On Apple, Python uses __builtin_available() to sniff for feature
 # availability. This symbol is defined by clang_rt, which isn't linked
 # by default. When building a static library, one must explicitly link
 # against clang_rt or you will get an undefined symbol error for
