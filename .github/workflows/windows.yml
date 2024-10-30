@@ -50,6 +50,7 @@ jobs:
         vcvars:
           - 'vcvars32.bat'
           - 'vcvars64.bat'
+          - 'vcvarsamd64_arm64.bat'
         options:
           - 'pgo'
 
