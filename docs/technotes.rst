@@ -135,7 +135,7 @@ Review Release Notes
 --------------------
 
 CPython's release notes often have a section on build system changes.
-e.g. https://docs.python.org/3/whatsnew/3.8.html#build-and-c-api-changes.
+e.g. https://docs.python.org/3/whatsnew/3.13.html#build-changes.
 These are a must review.
 
 ``Modules/Setup``

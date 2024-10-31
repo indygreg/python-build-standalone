@@ -162,45 +162,6 @@ run time, the ``TCL_LIBRARY`` environment variable is set from within
 the process before the Python interpreter is initialized. This ensures the
 ``.tcl`` files from the Python distribution are used.
 
-.. _quirk_macos_missing_weak_symbols:
-
-No Weak Symbols from Modern macOS on Python 3.8
-===============================================
-
-macOS has support for *weakly referenced symbols*. Essentially, a
-binary compiled with a newer SDK targeting an older target version
-(e.g. using the macOS 11.3 SDK to target for macOS 10.9) can include
-a *weak reference* to a symbol (read: function) introduced in a newer
-version than the minimally supported target version. Practically
-speaking, it lets you build binaries supporting older macOS but
-at run-time the binary can use features from modern macOS.
-
-CPython before 3.9 didn't implement weakly referenced symbols
-correctly: it generally lacked runtime guards to validate the
-current machine supports the weakly referenced symbol. What
-would happen is that at run-time Python would attempt to
-deference the weakly linked symbol during a function call,
-this dereference would fail, and the program would crash. This
-only happened if the application was run on an older version of
-macOS without the symbol in question.
-
-Because we target macOS 10.9 for x86-64 (Intel) builds and Python
-<3.9 doesn't implement weak references properly, we've disabled
-most weakly linked symbols from macOS.
-
-The unfortunate side-effect of this is that even if you run
-these builds on modern macOS which has the symbols, your Python
-won't use them. This means these builds of Python lack features
-that can make operations faster.
-
-If the lack of these symbols is a problem, our recommendation is
-to upgrade to Python 3.9+, which implement weak linking properly.
-Our builds of Python 3.9+ do not disable weak symbols.
-
-See https://github.com/indygreg/PyOxidizer/issues/373 and
-https://github.com/indygreg/python-build-standalone/pull/122
-for more discussion on this matter.
-
 .. _quirk_macos_no_tix:
 
 No tix on macOS

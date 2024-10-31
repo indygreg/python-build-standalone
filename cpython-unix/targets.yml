@@ -59,7 +59,6 @@ aarch64-apple-darwin:
   host_platforms:
     - macos
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -149,7 +148,6 @@ aarch64-unknown-linux-gnu:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -307,7 +305,6 @@ i686-unknown-linux-gnu:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -552,7 +549,6 @@ x86_64-apple-darwin:
   host_platforms:
     - macos
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -722,7 +718,6 @@ x86_64-unknown-linux-gnu:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -767,7 +762,6 @@ x86_64_v2-unknown-linux-gnu:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -813,7 +807,6 @@ x86_64_v3-unknown-linux-gnu:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -859,7 +852,6 @@ x86_64_v4-unknown-linux-gnu:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -905,7 +897,6 @@ x86_64-unknown-linux-musl:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -948,7 +939,6 @@ x86_64_v2-unknown-linux-musl:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -992,7 +982,6 @@ x86_64_v3-unknown-linux-musl:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'
@@ -1036,7 +1025,6 @@ x86_64_v4-unknown-linux-musl:
   host_platforms:
     - linux64
   pythons_supported:
-    - '3.8'
     - '3.9'
     - '3.10'
     - '3.11'

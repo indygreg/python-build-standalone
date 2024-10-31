@@ -255,9 +255,6 @@ PYTHON_HOST_DEPENDS := \
   $(OUTDIR)/m4-$(M4_VERSION)-$(PACKAGE_SUFFIX).tar \
   $(NULL)
 
-$(OUTDIR)/cpython-3.8-$(CPYTHON_3.8_VERSION)-$(HOST_PLATFORM).tar: $(PYTHON_HOST_DEPENDS)
-	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.8-host
-
 $(OUTDIR)/cpython-3.9-$(CPYTHON_3.9_VERSION)-$(HOST_PLATFORM).tar: $(PYTHON_HOST_DEPENDS)
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.9-host
 
@@ -305,9 +302,6 @@ ALL_PYTHON_DEPENDS = \
     $(HERE)/build-cpython.sh \
     $(PYTHON_DEPENDS) \
     $(NULL)
-
-$(OUTDIR)/cpython-$(CPYTHON_3.8_VERSION)-$(PACKAGE_SUFFIX).tar: $(ALL_PYTHON_DEPENDS)
-	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.8
 
 $(OUTDIR)/cpython-$(CPYTHON_3.9_VERSION)-$(PACKAGE_SUFFIX).tar: $(ALL_PYTHON_DEPENDS)
 	$(RUN_BUILD) --docker-image $(DOCKER_IMAGE_BUILD) cpython-3.9

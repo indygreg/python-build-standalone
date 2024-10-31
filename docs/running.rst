@@ -245,8 +245,7 @@ Windows
 Windows distributions model the requirements of the official Python
 distributions:
 
-* Windows 7 or Windows Server 2012 or newer on Python 3.8.
-* Windows 8 or Windows Server 2012 or newer on Python 3.9+.
+* Windows 8 or Windows Server 2012 or newer
 
 Windows binaries have a dependency on the Microsoft Visual C++ Redistributable,
 likely from MSVC 2015 (``vcruntime140.dll``). This dependency is not

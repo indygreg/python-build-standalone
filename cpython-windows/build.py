@@ -614,230 +614,6 @@ def hack_project_files(
         pass
 
 
-PYPORT_EXPORT_SEARCH_39 = b"""
-#if defined(__CYGWIN__)
-#       define HAVE_DECLSPEC_DLL
-#endif
-
-#include "exports.h"
-
-/* only get special linkage if built as shared or platform is Cygwin */
-#if defined(Py_ENABLE_SHARED) || defined(__CYGWIN__)
-#       if defined(HAVE_DECLSPEC_DLL)
-#               if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
-#                       define PyAPI_FUNC(RTYPE) Py_EXPORTED_SYMBOL RTYPE
-#                       define PyAPI_DATA(RTYPE) extern Py_EXPORTED_SYMBOL RTYPE
-        /* module init functions inside the core need no external linkage */
-        /* except for Cygwin to handle embedding */
-#                       if defined(__CYGWIN__)
-#                               define PyMODINIT_FUNC Py_EXPORTED_SYMBOL PyObject*
-#                       else /* __CYGWIN__ */
-#                               define PyMODINIT_FUNC PyObject*
-#                       endif /* __CYGWIN__ */
-#               else /* Py_BUILD_CORE */
-        /* Building an extension module, or an embedded situation */
-        /* public Python functions and data are imported */
-        /* Under Cygwin, auto-import functions to prevent compilation */
-        /* failures similar to those described at the bottom of 4.1: */
-        /* http://docs.python.org/extending/windows.html#a-cookbook-approach */
-#                       if !defined(__CYGWIN__)
-#                               define PyAPI_FUNC(RTYPE) Py_IMPORTED_SYMBOL RTYPE
-#                       endif /* !__CYGWIN__ */
-#                       define PyAPI_DATA(RTYPE) extern Py_IMPORTED_SYMBOL RTYPE
-        /* module init functions outside the core must be exported */
-#                       if defined(__cplusplus)
-#                               define PyMODINIT_FUNC extern "C" Py_EXPORTED_SYMBOL PyObject*
-#                       else /* __cplusplus */
-#                               define PyMODINIT_FUNC Py_EXPORTED_SYMBOL PyObject*
-#                       endif /* __cplusplus */
-#               endif /* Py_BUILD_CORE */
-#       endif /* HAVE_DECLSPEC_DLL */
-#endif /* Py_ENABLE_SHARED */
-
-/* If no external linkage macros defined by now, create defaults */
-#ifndef PyAPI_FUNC
-#       define PyAPI_FUNC(RTYPE) Py_EXPORTED_SYMBOL RTYPE
-#endif
-#ifndef PyAPI_DATA
-#       define PyAPI_DATA(RTYPE) extern Py_EXPORTED_SYMBOL RTYPE
-#endif
-#ifndef PyMODINIT_FUNC
-#       if defined(__cplusplus)
-#               define PyMODINIT_FUNC extern "C" Py_EXPORTED_SYMBOL PyObject*
-#       else /* __cplusplus */
-#               define PyMODINIT_FUNC Py_EXPORTED_SYMBOL PyObject*
-#       endif /* __cplusplus */
-#endif
-"""
-
-PYPORT_EXPORT_SEARCH_38 = b"""
-#if defined(__CYGWIN__)
-#       define HAVE_DECLSPEC_DLL
-#endif
-
-/* only get special linkage if built as shared or platform is Cygwin */
-#if defined(Py_ENABLE_SHARED) || defined(__CYGWIN__)
-#       if defined(HAVE_DECLSPEC_DLL)
-#               if defined(Py_BUILD_CORE) && !defined(Py_BUILD_CORE_MODULE)
-#                       define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
-#                       define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
-        /* module init functions inside the core need no external linkage */
-        /* except for Cygwin to handle embedding */
-#                       if defined(__CYGWIN__)
-#                               define PyMODINIT_FUNC __declspec(dllexport) PyObject*
-#                       else /* __CYGWIN__ */
-#                               define PyMODINIT_FUNC PyObject*
-#                       endif /* __CYGWIN__ */
-#               else /* Py_BUILD_CORE */
-        /* Building an extension module, or an embedded situation */
-        /* public Python functions and data are imported */
-        /* Under Cygwin, auto-import functions to prevent compilation */
-        /* failures similar to those described at the bottom of 4.1: */
-        /* http://docs.python.org/extending/windows.html#a-cookbook-approach */
-#                       if !defined(__CYGWIN__)
-#                               define PyAPI_FUNC(RTYPE) __declspec(dllimport) RTYPE
-#                       endif /* !__CYGWIN__ */
-#                       define PyAPI_DATA(RTYPE) extern __declspec(dllimport) RTYPE
-        /* module init functions outside the core must be exported */
-#                       if defined(__cplusplus)
-#                               define PyMODINIT_FUNC extern "C" __declspec(dllexport) PyObject*
-#                       else /* __cplusplus */
-#                               define PyMODINIT_FUNC __declspec(dllexport) PyObject*
-#                       endif /* __cplusplus */
-#               endif /* Py_BUILD_CORE */
-#       endif /* HAVE_DECLSPEC_DLL */
-#endif /* Py_ENABLE_SHARED */
-
-/* If no external linkage macros defined by now, create defaults */
-#ifndef PyAPI_FUNC
-#       define PyAPI_FUNC(RTYPE) RTYPE
-#endif
-#ifndef PyAPI_DATA
-#       define PyAPI_DATA(RTYPE) extern RTYPE
-#endif
-#ifndef PyMODINIT_FUNC
-#       if defined(__cplusplus)
-#               define PyMODINIT_FUNC extern "C" PyObject*
-#       else /* __cplusplus */
-#               define PyMODINIT_FUNC PyObject*
-#       endif /* __cplusplus */
-#endif
-"""
-
-PYPORT_EXPORT_SEARCH_37 = b"""
-#if defined(__CYGWIN__)
-#       define HAVE_DECLSPEC_DLL
-#endif
-
-/* only get special linkage if built as shared or platform is Cygwin */
-#if defined(Py_ENABLE_SHARED) || defined(__CYGWIN__)
-#       if defined(HAVE_DECLSPEC_DLL)
-#               if defined(Py_BUILD_CORE) || defined(Py_BUILD_CORE_BUILTIN)
-#                       define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
-#                       define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
-        /* module init functions inside the core need no external linkage */
-        /* except for Cygwin to handle embedding */
-#                       if defined(__CYGWIN__)
-#                               define PyMODINIT_FUNC __declspec(dllexport) PyObject*
-#                       else /* __CYGWIN__ */
-#                               define PyMODINIT_FUNC PyObject*
-#                       endif /* __CYGWIN__ */
-#               else /* Py_BUILD_CORE */
-        /* Building an extension module, or an embedded situation */
-        /* public Python functions and data are imported */
-        /* Under Cygwin, auto-import functions to prevent compilation */
-        /* failures similar to those described at the bottom of 4.1: */
-        /* http://docs.python.org/extending/windows.html#a-cookbook-approach */
-#                       if !defined(__CYGWIN__)
-#                               define PyAPI_FUNC(RTYPE) __declspec(dllimport) RTYPE
-#                       endif /* !__CYGWIN__ */
-#                       define PyAPI_DATA(RTYPE) extern __declspec(dllimport) RTYPE
-        /* module init functions outside the core must be exported */
-#                       if defined(__cplusplus)
-#                               define PyMODINIT_FUNC extern "C" __declspec(dllexport) PyObject*
-#                       else /* __cplusplus */
-#                               define PyMODINIT_FUNC __declspec(dllexport) PyObject*
-#                       endif /* __cplusplus */
-#               endif /* Py_BUILD_CORE */
-#       endif /* HAVE_DECLSPEC_DLL */
-#endif /* Py_ENABLE_SHARED */
-
-/* If no external linkage macros defined by now, create defaults */
-#ifndef PyAPI_FUNC
-#       define PyAPI_FUNC(RTYPE) RTYPE
-#endif
-#ifndef PyAPI_DATA
-#       define PyAPI_DATA(RTYPE) extern RTYPE
-#endif
-#ifndef PyMODINIT_FUNC
-#       if defined(__cplusplus)
-#               define PyMODINIT_FUNC extern "C" PyObject*
-#       else /* __cplusplus */
-#               define PyMODINIT_FUNC PyObject*
-#       endif /* __cplusplus */
-#endif
-"""
-
-PYPORT_EXPORT_REPLACE_NEW = b"""
-#include "exports.h"
-#define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
-#define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
-#define PyMODINIT_FUNC __declspec(dllexport) PyObject*
-"""
-
-PYPORT_EXPORT_REPLACE_OLD = b"""
-#define PyAPI_FUNC(RTYPE) __declspec(dllexport) RTYPE
-#define PyAPI_DATA(RTYPE) extern __declspec(dllexport) RTYPE
-#define PyMODINIT_FUNC __declspec(dllexport) PyObject*
-"""
-
-CTYPES_INIT_REPLACE = b"""
-if _os.name == "nt":
-    pythonapi = PyDLL("python dll", None, _sys.dllhandle)
-elif _sys.platform == "cygwin":
-    pythonapi = PyDLL("libpython%d.%d.dll" % _sys.version_info[:2])
-else:
-    pythonapi = PyDLL(None)
-"""
-
-SYSMODULE_WINVER_SEARCH = b"""
-#ifdef MS_COREDLL
-    SET_SYS("dllhandle", PyLong_FromVoidPtr(PyWin_DLLhModule));
-    SET_SYS_FROM_STRING("winver", PyWin_DLLVersionString);
-#endif
-"""
-
-SYSMODULE_WINVER_REPLACE = b"""
-#ifdef MS_COREDLL
-    SET_SYS("dllhandle", PyLong_FromVoidPtr(PyWin_DLLhModule));
-    SET_SYS_FROM_STRING("winver", PyWin_DLLVersionString);
-#else
-    SET_SYS_FROM_STRING("winver", "%s");
-#endif
-"""
-
-SYSMODULE_WINVER_SEARCH_38 = b"""
-#ifdef MS_COREDLL
-    SET_SYS_FROM_STRING("dllhandle",
-                        PyLong_FromVoidPtr(PyWin_DLLhModule));
-    SET_SYS_FROM_STRING("winver",
-                        PyUnicode_FromString(PyWin_DLLVersionString));
-#endif
-"""
-
-
-SYSMODULE_WINVER_REPLACE_38 = b"""
-#ifdef MS_COREDLL
-    SET_SYS_FROM_STRING("dllhandle",
-                        PyLong_FromVoidPtr(PyWin_DLLhModule));
-    SET_SYS_FROM_STRING("winver",
-                        PyUnicode_FromString(PyWin_DLLVersionString));
-#else
-    SET_SYS_FROM_STRING("winver", PyUnicode_FromString("%s"));
-#endif
-"""
-
-
 def run_msbuild(
     msbuild: pathlib.Path,
     pcbuild_path: pathlib.Path,
@@ -1301,15 +1077,9 @@ def collect_python_build_artifacts(
         {"name": "Ole32", "system": True},
         {"name": "OleAut32", "system": True},
         {"name": "User32", "system": True},
+        # Presence of pathcch drops support for Windows 7.
+        {"name": "pathcch", "system": True},
     ]
-
-    # pathcch is required on 3.9+ and its presence drops support for Windows 7.
-    if python_majmin != "38":
-        res["core"]["links"].append({"name": "pathcch", "system": True})
-
-    # shlwapi was dropped from 3.9.9+.
-    if python_majmin == "38":
-        res["core"]["links"].append({"name": "shlwapi", "system": True})
 
     # Copy files for extensions into their own directories.
     for ext in sorted(extension_projects):
@@ -1901,7 +1671,6 @@ def main() -> None:
     parser.add_argument(
         "--python",
         choices={
-            "cpython-3.8",
             "cpython-3.9",
             "cpython-3.10",
             "cpython-3.11",
@@ -1947,7 +1716,7 @@ def main() -> None:
         # CPython 3.11+ have native support for OpenSSL 3.x. We anticipate this
         # will change in a future minor release once OpenSSL 1.1 goes out of support.
         # But who knows.
-        if args.python in ("cpython-3.8", "cpython-3.9", "cpython-3.10"):
+        if args.python in ("cpython-3.9", "cpython-3.10"):
             openssl_entry = "openssl-1.1"
         else:
             openssl_entry = "openssl-3.0"
