@@ -427,17 +427,12 @@ _sha2:
   minimum-python-version: "3.12"
   sources:
     - sha2module.c
+    - _hacl/Hacl_Hash_SHA2.c
   includes:
     - Modules/_hacl/include
-    - Modules/_hacl/internal
   defines:
     - _BSD_SOURCE
     - _DEFAULT_SOURCE
-  links:
-    # Use the colon syntax to prevent the library dependency from getting
-    # recorded in JSON metadata. This relies on setting up a linker library
-    # path (-L) in LDFLAGS.
-    - ":libHacl_Hash_SHA2.a"
 
 _sha3:
   sources-conditional:
