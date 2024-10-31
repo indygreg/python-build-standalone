@@ -1759,6 +1759,15 @@ def build_cpython(
             log("copying %s to %s" % (source, dest))
             shutil.copyfile(source, dest)
 
+        # Rename to `python.exe` when an alternative executable is built, e.g., when
+        # free-threading is enabled the name is `python3.13t.exe`.
+        canonical_python_exe = install_dir / "python.exe"
+        if not canonical_python_exe.exists():
+            os.rename(
+                install_dir / python_exe,
+                canonical_python_exe,
+            )
+
         # CPython 3.13 removed `run_tests.py`, we provide a compatibility script
         # for now.
         if meets_python_minimum_version(python_version, "3.13"):
@@ -1811,13 +1820,12 @@ def build_cpython(
         }
 
         # Collect information from running Python script.
-        python_exe = out_dir / "python" / "install" / python_exe
         metadata_path = td / "metadata.json"
         env = dict(os.environ)
         env["ROOT"] = str(out_dir / "python")
         subprocess.run(
             [
-                str(python_exe),
+                str(canonical_python_exe),
                 str(SUPPORT / "generate_metadata.py"),
                 str(metadata_path),
             ],
