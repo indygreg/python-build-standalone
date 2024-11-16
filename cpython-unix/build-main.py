@@ -156,7 +156,7 @@ def main():
             return 1
         cpython_version = env["PYBUILD_PYTHON_VERSION"]
 
-    env["PYBUILD_PYTHON_MAJOR_VERSION"] = ".".join(cpython_version.split(".")[0:2])
+    python_majmin = ".".join(cpython_version.split(".")[0:2])
 
     if "PYBUILD_RELEASE_TAG" in os.environ:
         release_tag = os.environ["PYBUILD_RELEASE_TAG"]
@@ -164,12 +164,10 @@ def main():
         release_tag = release_tag_from_git()
 
     # Guard against accidental misuse of the free-threaded flag with older versions
-    if "freethreaded" in args.options and env["PYBUILD_PYTHON_MAJOR_VERSION"] not in (
-        "3.13"
-    ):
+    if "freethreaded" in args.options and python_majmin not in ("3.13",):
         print(
             "Invalid build option: 'freethreaded' is only compatible with CPython 3.13+ (got %s)"
-            % env["PYBUILD_PYTHON_MAJOR_VERSION"]
+            % cpython_version
         )
         return 1
 

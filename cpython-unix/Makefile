@@ -4,6 +4,7 @@ OUTDIR := $(ROOT)/build
 
 BUILD := $(HERE)/build.py
 NULL :=
+SPACE := $(subst ,, )
 
 ifndef PYBUILD_TARGET_TRIPLE
     $(error PYBUILD_TARGET_TRIPLE not defined)
@@ -25,9 +26,7 @@ ifndef PYBUILD_PYTHON_VERSION
     $(error PYBUILD_PYTHON_VERSION not defined)
 endif
 
-ifndef PYBUILD_PYTHON_MAJOR_VERSION
-    $(error PYBUILD_PYTHON_MAJOR_VERSION not defined)
-endif
+PYTHON_MAJOR_VERSION := $(subst $(SPACE),.,$(wordlist 1,2,$(subst .,$(SPACE),$(PYBUILD_PYTHON_VERSION))))
 
 TARGET_TRIPLE := $(PYBUILD_TARGET_TRIPLE)
 HOST_PLATFORM := $(PYBUILD_HOST_PLATFORM)
@@ -47,7 +46,7 @@ endif
 
 # Always write out settings files.
 $(shell $(RUN_BUILD) placeholder_archive makefiles)
-include $(OUTDIR)/Makefile.$(HOST_PLATFORM).$(TARGET_TRIPLE).$(PYBUILD_PYTHON_MAJOR_VERSION)
+include $(OUTDIR)/Makefile.$(HOST_PLATFORM).$(TARGET_TRIPLE).$(PYTHON_MAJOR_VERSION)
 include $(OUTDIR)/versions/VERSION.*
 
 # Always write out expanded Dockerfiles.
@@ -274,7 +273,7 @@ PYTHON_DEPENDS := \
     $(PYTHON_SUPPORT_FILES) \
     $(OUTDIR)/versions/VERSION.pip \
     $(OUTDIR)/versions/VERSION.setuptools \
-    $(OUTDIR)/cpython-$(PYBUILD_PYTHON_MAJOR_VERSION)-$(PYBUILD_PYTHON_VERSION)-$(HOST_PLATFORM).tar \
+    $(OUTDIR)/cpython-$(PYTHON_MAJOR_VERSION)-$(PYBUILD_PYTHON_VERSION)-$(HOST_PLATFORM).tar \
     $(if $(NEED_AUTOCONF),$(OUTDIR)/autoconf-$(AUTOCONF_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BDB),$(OUTDIR)/bdb-$(BDB_VERSION)-$(PACKAGE_SUFFIX).tar) \
     $(if $(NEED_BZIP2),$(OUTDIR)/bzip2-$(BZIP2_VERSION)-$(PACKAGE_SUFFIX).tar) \
