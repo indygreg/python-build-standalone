@@ -143,6 +143,12 @@ def write_triples_makefiles(
 
     for triple, settings in targets.items():
         for host_platform in settings["host_platforms"]:
+            # IMPORTANT: if we ever vary the content of these Makefiles by
+            # Python versions, the variable names will need add the Python
+            # version and the Makefile references updated to point to specific
+            # versions. If we don't do that, multi-version builds will fail
+            # to work correctly.
+
             makefile_path = dest_dir / ("Makefile.%s.%s" % (host_platform, triple))
 
             lines = []
