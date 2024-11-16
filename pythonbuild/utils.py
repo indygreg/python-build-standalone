@@ -12,7 +12,9 @@ import multiprocessing
 import os
 import pathlib
 import platform
+import random
 import stat
+import string
 import subprocess
 import sys
 import tarfile
@@ -269,7 +271,15 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
 
         path.unlink()
 
-    tmp = path.with_name("%s.tmp" % path.name)
+    # Need to write to random path to avoid race conditions. If there is a
+    # race, worst case we'll download the same file N>1 times. Meh.
+    tmp = path.with_name(
+        "%s.tmp%s"
+        % (
+            path.name,
+            "".join(random.choices(string.ascii_uppercase + string.digits, k=8)),
+        )
+    )
 
     for attempt in range(5):
         try:
