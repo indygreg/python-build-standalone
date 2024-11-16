@@ -63,6 +63,7 @@ def main():
     parser.add_argument(
         "--python",
         choices={
+            "all",
             "cpython-3.9",
             "cpython-3.10",
             "cpython-3.11",
@@ -117,12 +118,22 @@ def main():
 
     supported_pythons = {"cpython-%s" % p for p in settings["pythons_supported"]}
 
-    if args.python not in supported_pythons:
+    if args.python != "all" and args.python not in supported_pythons:
         print(
             "%s only supports following Pythons: %s"
             % (target_triple, ", ".join(supported_pythons))
         )
         return 1
+
+    if args.python == "all":
+        if args.python_source:
+            print("--python-source is not compatible with --python all")
+            return 1
+
+        # This can be removed once 3.13 is the minimum version.
+        if "freethreaded" in args.options:
+            print("freedthreaded builds not compatible with --python all")
+            return 1
 
     python_source = (
         (str(pathlib.Path(args.python_source).resolve()))
@@ -145,40 +156,39 @@ def main():
     if args.no_docker:
         env["PYBUILD_NO_DOCKER"] = "1"
 
-    if not args.python_source:
-        entry = DOWNLOADS[args.python]
-        env["PYBUILD_PYTHON_VERSION"] = cpython_version = entry["version"]
+    if args.python == "all":
+        cpython_versions = [
+            DOWNLOADS["cpython-%s" % p]["version"]
+            for p in settings["pythons_supported"]
+        ]
+
+    elif not args.python_source:
+        cpython_versions = [DOWNLOADS[args.python]["version"]]
     else:
         # TODO consider parsing version from source checkout. Or defining version
         # from CLI argument.
         if "PYBUILD_PYTHON_VERSION" not in env:
             print("PYBUILD_PYTHON_VERSION must be set when using `--python-source`")
             return 1
-        cpython_version = env["PYBUILD_PYTHON_VERSION"]
+        cpython_versions = [env["PYBUILD_PYTHON_VERSION"]]
 
-    python_majmin = ".".join(cpython_version.split(".")[0:2])
+    env["PYBUILD_PYTHON_VERSIONS"] = " ".join(cpython_versions)
+
+    python_majmins = [".".join(v.split(".")[0:2]) for v in cpython_versions]
 
     if "PYBUILD_RELEASE_TAG" in os.environ:
         release_tag = os.environ["PYBUILD_RELEASE_TAG"]
     else:
         release_tag = release_tag_from_git()
 
-    # Guard against accidental misuse of the free-threaded flag with older versions
-    if "freethreaded" in args.options and python_majmin not in ("3.13",):
+    # Guard against accidental misuse of the free-threaded flag with older versions.
+    if "freethreaded" in args.options and any(
+        v not in ("3.13",) for v in python_majmins
+    ):
         print(
-            "Invalid build option: 'freethreaded' is only compatible with CPython 3.13+ (got %s)"
-            % cpython_version
+            "Invalid build option: 'freethreaded' is only compatible with CPython 3.13+"
         )
         return 1
-
-    archive_components = [
-        "cpython-%s" % cpython_version,
-        target_triple,
-        args.options,
-    ]
-
-    build_basename = "-".join(archive_components) + ".tar"
-    dist_basename = "-".join(archive_components + [release_tag])
 
     # We run make with static parallelism no greater than the machine's CPU count
     # because we can get some speedup from parallel operations. But we also don't
@@ -195,7 +205,18 @@ def main():
     DIST.mkdir(exist_ok=True)
 
     if args.make_target == "default":
-        compress_python_archive(BUILD / build_basename, DIST, dist_basename)
+        # TODO this could be made parallel.
+        for version in cpython_versions:
+            archive_components = [
+                "cpython-%s" % version,
+                target_triple,
+                args.options,
+            ]
+
+            build_basename = "-".join(archive_components) + ".tar"
+            dist_basename = "-".join(archive_components + [release_tag])
+
+            compress_python_archive(BUILD / build_basename, DIST, dist_basename)
 
 
 if __name__ == "__main__":

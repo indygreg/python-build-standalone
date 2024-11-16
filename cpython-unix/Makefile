@@ -24,11 +24,11 @@ ifndef PYBUILD_PYTHON_SOURCE
     $(error PYBUILD_PYTHON_SOURCE not defined)
 endif
 
-ifndef PYBUILD_PYTHON_VERSION
-    $(error PYBUILD_PYTHON_VERSION not defined)
+ifndef PYBUILD_PYTHON_VERSIONS
+    $(error PYBUILD_PYTHON_VERSIONS not defined)
 endif
 
-PYTHON_MAJOR_VERSION := $(subst $(SPACE),.,$(wordlist 1,2,$(subst .,$(SPACE),$(PYBUILD_PYTHON_VERSION))))
+BUILD_MAJOR_VERSIONS := $(foreach version,$(PYBUILD_PYTHON_VERSIONS),$(subst $(SPACE),.,$(wordlist 1,2,$(subst .,$(SPACE),$(version)))))
 
 TARGET_TRIPLE := $(PYBUILD_TARGET_TRIPLE)
 HOST_PLATFORM := $(PYBUILD_HOST_PLATFORM)
@@ -70,7 +70,7 @@ PYTHON_DEP_DEPENDS := \
     $(TOOLCHAIN_DEPENDS) \
     $(NULL)
 
-default: $(OUTDIR)/cpython-$(CPYTHON_$(PYTHON_MAJOR_VERSION)_VERSION)-$(PACKAGE_SUFFIX).tar
+default: $(foreach version,$(BUILD_MAJOR_VERSIONS),$(OUTDIR)/cpython-$(CPYTHON_$(version)_VERSION)-$(PACKAGE_SUFFIX).tar)
 
 ifndef PYBUILD_NO_DOCKER
 $(OUTDIR)/image-%.tar: $(OUTDIR)/%.Dockerfile
