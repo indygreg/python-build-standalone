@@ -143,35 +143,31 @@ def write_triples_makefiles(
 
     for triple, settings in targets.items():
         for host_platform in settings["host_platforms"]:
-            for python in settings["pythons_supported"]:
-                makefile_path = dest_dir / (
-                    "Makefile.%s.%s.%s" % (host_platform, triple, python)
-                )
+            makefile_path = dest_dir / ("Makefile.%s.%s" % (host_platform, triple))
 
-                lines = []
-                for need in settings.get("needs", []):
-                    lines.append(
-                        "NEED_%s := 1\n"
-                        % need.upper().replace("-", "_").replace(".", "_")
-                    )
-
-                image_suffix = settings.get("docker_image_suffix", "")
-
-                lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
-                lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
-
-                entry = clang_toolchain(host_platform, triple)
+            lines = []
+            for need in settings.get("needs", []):
                 lines.append(
-                    "CLANG_FILENAME := %s-%s-%s.tar\n"
-                    % (entry, DOWNLOADS[entry]["version"], host_platform)
+                    "NEED_%s := 1\n" % need.upper().replace("-", "_").replace(".", "_")
                 )
 
-                lines.append(
-                    "PYTHON_SUPPORT_FILES := $(PYTHON_SUPPORT_FILES) %s\n"
-                    % (support_search_dir / "extension-modules.yml")
-                )
+            image_suffix = settings.get("docker_image_suffix", "")
 
-                write_if_different(makefile_path, "".join(lines).encode("ascii"))
+            lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
+            lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
+
+            entry = clang_toolchain(host_platform, triple)
+            lines.append(
+                "CLANG_FILENAME := %s-%s-%s.tar\n"
+                % (entry, DOWNLOADS[entry]["version"], host_platform)
+            )
+
+            lines.append(
+                "PYTHON_SUPPORT_FILES := $(PYTHON_SUPPORT_FILES) %s\n"
+                % (support_search_dir / "extension-modules.yml")
+            )
+
+            write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 
 def write_package_versions(dest_path: pathlib.Path):

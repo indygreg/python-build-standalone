@@ -46,7 +46,7 @@ endif
 
 # Always write out settings files.
 $(shell $(RUN_BUILD) placeholder_archive makefiles)
-include $(OUTDIR)/Makefile.$(HOST_PLATFORM).$(TARGET_TRIPLE).$(PYTHON_MAJOR_VERSION)
+include $(OUTDIR)/Makefile.$(HOST_PLATFORM).$(TARGET_TRIPLE)
 include $(OUTDIR)/versions/VERSION.*
 
 # Always write out expanded Dockerfiles.
