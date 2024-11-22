@@ -1493,12 +1493,7 @@ fn validate_extension_modules(
         }
     }
 
-    if (is_linux || is_macos)
-        && matches!(
-            python_major_minor,
-            "3.9" | "3.10" | "3.11" | "3.12" | "3.13"
-        )
-    {
+    if (is_linux || is_macos) {
         wanted.extend([
             "_testbuffer",
             "_testimportmultiple",

@@ -15,6 +15,9 @@ on:
         required: false
         type: boolean
 
+env:
+  FORCE_COLOR: 1
+
 permissions:
   contents: write
   packages: write
