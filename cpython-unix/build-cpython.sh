@@ -858,7 +858,8 @@ def fix_shebang(full):
 
         lines.extend([
             b"#!/bin/sh\n",
-            b'"exec" "\$(dirname \$0)/python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}" "\$0" "\$@"\n',
+            b"'''exec' \"$(dirname -- \"$(realpath -- \"$0\")\")\"/'python${PYTHON_MAJMIN_VERSION}${PYTHON_BINARY_SUFFIX}' \"$0\" \"$@\"\n",
+            b"' '''\n",
         ])
 
         lines.extend(fh)
