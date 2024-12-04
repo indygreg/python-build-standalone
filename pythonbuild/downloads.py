@@ -279,7 +279,7 @@ DOWNLOADS = {
     "setuptools": {
         "url": "https://files.pythonhosted.org/packages/55/21/47d163f615df1d30c094f6c8bbb353619274edccf0327b185cc2493c2c33/setuptools-75.6.0-py3-none-any.whl",
         "size": 1224032,
-        "sha256": "setuptools-75.6.0-py3-none-any.whl",
+        "sha256": "ce74b49e8f7110f9bf04883b730f4765b774ef3ef28f722cce7c273d253aaf7d",
         "version": "75.6.0",
     },
     # Remember to update verify_distribution.py when version changed.
