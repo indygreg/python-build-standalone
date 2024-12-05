@@ -51,7 +51,16 @@ SUPPORT = ROOT / "cpython-unix"
 EXTENSION_MODULES = SUPPORT / "extension-modules.yml"
 TARGETS_CONFIG = SUPPORT / "targets.yml"
 
-LINUX_ALLOW_SYSTEM_LIBRARIES = {"c", "crypt", "dl", "m", "pthread", "rt", "util"}
+LINUX_ALLOW_SYSTEM_LIBRARIES = {
+    "c",
+    "crypt",
+    "dl",
+    "m",
+    "pthread",
+    "rt",
+    "util",
+    "atomic",
+}
 MACOS_ALLOW_SYSTEM_LIBRARIES = {"dl", "m", "pthread"}
 MACOS_ALLOW_FRAMEWORKS = {"CoreFoundation"}
 

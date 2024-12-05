@@ -68,6 +68,7 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "libpthread.so.0",
     "librt.so.1",
     "libutil.so.1",
+    "libatomic.so.1",
 ];
 
 const PE_ALLOWED_LIBRARIES: &[&str] = &[
@@ -1487,8 +1488,7 @@ fn validate_extension_modules(
             wanted.extend(GLOBAL_EXTENSIONS_LINUX_PRE_3_13);
         }
 
-        if !is_linux_musl && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12")
-        {
+        if !is_linux_musl && matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
             wanted.insert("ossaudiodev");
         }
     }
