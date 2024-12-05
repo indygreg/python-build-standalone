@@ -58,8 +58,6 @@ pushd pip-tmp
 unzip "${PIP_WHEEL}"
 rm -f "${PIP_WHEEL}"
 
-patch -p1 -i ${ROOT}/patch-pip-static-binary.patch
-
 zip -r "${PIP_WHEEL}" *
 popd
 rm -rf pip-tmp

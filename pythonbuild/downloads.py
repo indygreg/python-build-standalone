@@ -262,10 +262,10 @@ DOWNLOADS = {
         "version": "0.13.1",
     },
     "pip": {
-        "url": "https://files.pythonhosted.org/packages/e7/54/0c1c068542cee73d8863336e974fc881e608d0170f3af15d0c0f28644531/pip-24.1.2-py3-none-any.whl",
-        "size": 1824406,
-        "sha256": "7cd207eed4c60b0f411b444cd1464198fe186671c323b6cd6d433ed80fc9d247",
-        "version": "24.1.2",
+        "url": "https://files.pythonhosted.org/packages/ef/7d/500c9ad20238fcfcb4cb9243eede163594d7020ce87bd9610c9e02771876/pip-24.3.1-py3-none-any.whl",
+        "size": 1822182,
+        "sha256": "3790624780082365f47549d032f3770eeb2b1e8bd1f7b2e02dace1afa361b4ed",
+        "version": "24.3.1",
     },
     "readline": {
         "url": "https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz",
@@ -277,10 +277,10 @@ DOWNLOADS = {
         "license_file": "LICENSE.readline.txt",
     },
     "setuptools": {
-        "url": "https://files.pythonhosted.org/packages/ff/ae/f19306b5a221f6a436d8f2238d5b80925004093fa3edea59835b514d9057/setuptools-75.1.0-py3-none-any.whl",
-        "size": 1248506,
-        "sha256": "35ab7fd3bcd95e6b7fd704e4a1539513edad446c097797f2985e0e4b960772f2",
-        "version": "75.1.0",
+        "url": "https://files.pythonhosted.org/packages/55/21/47d163f615df1d30c094f6c8bbb353619274edccf0327b185cc2493c2c33/setuptools-75.6.0-py3-none-any.whl",
+        "size": 1224032,
+        "sha256": "ce74b49e8f7110f9bf04883b730f4765b774ef3ef28f722cce7c273d253aaf7d",
+        "version": "75.6.0",
     },
     # Remember to update verify_distribution.py when version changed.
     "sqlite": {
