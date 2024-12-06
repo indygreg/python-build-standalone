@@ -68,7 +68,6 @@ const ELF_ALLOWED_LIBRARIES: &[&str] = &[
     "libpthread.so.0",
     "librt.so.1",
     "libutil.so.1",
-    "libatomic.so.1",
 ];
 
 const PE_ALLOWED_LIBRARIES: &[&str] = &[
@@ -223,8 +222,11 @@ static ELF_ALLOWED_LIBRARIES_BY_TRIPLE: Lazy<HashMap<&'static str, Vec<&'static 
                 vec!["ld-linux-armhf.so.3", "libgcc_s.so.1"],
             ),
             ("i686-unknown-linux-gnu", vec!["ld-linux-x86-64.so.2"]),
-            ("mips-unknown-linux-gnu", vec!["ld.so.1"]),
-            ("mipsel-unknown-linux-gnu", vec!["ld.so.1"]),
+            ("mips-unknown-linux-gnu", vec!["ld.so.1", "libatomic.so.1"]),
+            (
+                "mipsel-unknown-linux-gnu",
+                vec!["ld.so.1", "libatomic.so.1"],
+            ),
             ("mips64el-unknown-linux-gnuabi64", vec![]),
             ("ppc64le-unknown-linux-gnu", vec!["ld64.so.1", "ld64.so.2"]),
             ("s390x-unknown-linux-gnu", vec!["ld64.so.1"]),

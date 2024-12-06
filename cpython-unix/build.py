@@ -59,7 +59,6 @@ LINUX_ALLOW_SYSTEM_LIBRARIES = {
     "pthread",
     "rt",
     "util",
-    "atomic",
 }
 MACOS_ALLOW_SYSTEM_LIBRARIES = {"dl", "m", "pthread"}
 MACOS_ALLOW_FRAMEWORKS = {"CoreFoundation"}
@@ -543,6 +542,13 @@ def python_build_info(
 
     bi["object_file_format"] = object_file_format
 
+    # Determine allowed libaries on Linux
+    mips = target_triple.split("-")[0] in {"mips", "mipsel"}
+    linux_allowed_system_libraries = LINUX_ALLOW_SYSTEM_LIBRARIES.copy()
+    if mips and version == "3.13":
+        # See https://github.com/indygreg/python-build-standalone/issues/410
+        linux_allowed_system_libraries.add("atomic")
+
     # Add in core linking annotations.
     libs = extra_metadata["python_config_vars"].get("LIBS", "").split()
     skip = False
@@ -554,7 +560,7 @@ def python_build_info(
         if lib.startswith("-l"):
             lib = lib[2:]
 
-            if platform == "linux64" and lib not in LINUX_ALLOW_SYSTEM_LIBRARIES:
+            if platform == "linux64" and lib not in linux_allowed_system_libraries:
                 raise Exception("unexpected library in LIBS (%s): %s" % (libs, lib))
             elif platform == "macos" and lib not in MACOS_ALLOW_SYSTEM_LIBRARIES:
                 raise Exception("unexpected library in LIBS (%s): %s" % (libs, lib))
