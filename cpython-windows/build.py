@@ -1533,7 +1533,7 @@ def build_cpython(
         # free-threading is enabled the name is `python3.13t.exe`.
         canonical_python_exe = install_dir / "python.exe"
         if not canonical_python_exe.exists():
-            os.rename(
+            shutil.copy2(
                 install_dir / python_exe,
                 canonical_python_exe,
             )
