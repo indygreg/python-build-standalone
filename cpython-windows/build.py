@@ -1221,8 +1221,10 @@ def build_cpython(
     if freethreaded:
         (major, minor, _) = python_version.split(".")
         python_exe = f"python{major}.{minor}t.exe"
+        pythonw_exe = f"pythonw{major}.{minor}t.exe"
     else:
         python_exe = "python.exe"
+        pythonw_exe = "pythonw.exe"
 
     if arch == "amd64":
         build_platform = "x64"
@@ -1529,13 +1531,22 @@ def build_cpython(
             log("copying %s to %s" % (source, dest))
             shutil.copyfile(source, dest)
 
-        # Rename to `python.exe` when an alternative executable is built, e.g., when
+        # Create a `python.exe` copy when an alternative executable is built, e.g., when
         # free-threading is enabled the name is `python3.13t.exe`.
         canonical_python_exe = install_dir / "python.exe"
         if not canonical_python_exe.exists():
             shutil.copy2(
                 install_dir / python_exe,
                 canonical_python_exe,
+            )
+
+        # Create a `pythonw.exe` copy when an alternative executable is built, e.g., when
+        # free-threading is enabled the name is `pythonw3.13t.exe`.
+        canonical_pythonw_exe = install_dir / "pythonw.exe"
+        if not canonical_pythonw_exe.exists():
+            shutil.copy2(
+                install_dir / pythonw_exe,
+                canonical_pythonw_exe,
             )
 
         # CPython 3.13 removed `run_tests.py`, we provide a compatibility script
