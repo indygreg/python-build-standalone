@@ -12,7 +12,9 @@ import multiprocessing
 import os
 import pathlib
 import platform
+import random
 import stat
+import string
 import subprocess
 import sys
 import tarfile
@@ -141,35 +143,37 @@ def write_triples_makefiles(
 
     for triple, settings in targets.items():
         for host_platform in settings["host_platforms"]:
-            for python in settings["pythons_supported"]:
-                makefile_path = dest_dir / (
-                    "Makefile.%s.%s.%s" % (host_platform, triple, python)
-                )
+            # IMPORTANT: if we ever vary the content of these Makefiles by
+            # Python versions, the variable names will need add the Python
+            # version and the Makefile references updated to point to specific
+            # versions. If we don't do that, multi-version builds will fail
+            # to work correctly.
 
-                lines = []
-                for need in settings.get("needs", []):
-                    lines.append(
-                        "NEED_%s := 1\n"
-                        % need.upper().replace("-", "_").replace(".", "_")
-                    )
+            makefile_path = dest_dir / ("Makefile.%s.%s" % (host_platform, triple))
 
-                image_suffix = settings.get("docker_image_suffix", "")
-
-                lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
-                lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
-
-                entry = clang_toolchain(host_platform, triple)
+            lines = []
+            for need in settings.get("needs", []):
                 lines.append(
-                    "CLANG_FILENAME := %s-%s-%s.tar\n"
-                    % (entry, DOWNLOADS[entry]["version"], host_platform)
+                    "NEED_%s := 1\n" % need.upper().replace("-", "_").replace(".", "_")
                 )
 
-                lines.append(
-                    "PYTHON_SUPPORT_FILES := $(PYTHON_SUPPORT_FILES) %s\n"
-                    % (support_search_dir / "extension-modules.yml")
-                )
+            image_suffix = settings.get("docker_image_suffix", "")
 
-                write_if_different(makefile_path, "".join(lines).encode("ascii"))
+            lines.append("DOCKER_IMAGE_BUILD := build%s\n" % image_suffix)
+            lines.append("DOCKER_IMAGE_XCB := xcb%s\n" % image_suffix)
+
+            entry = clang_toolchain(host_platform, triple)
+            lines.append(
+                "CLANG_FILENAME := %s-%s-%s.tar\n"
+                % (entry, DOWNLOADS[entry]["version"], host_platform)
+            )
+
+            lines.append(
+                "PYTHON_SUPPORT_FILES := $(PYTHON_SUPPORT_FILES) %s\n"
+                % (support_search_dir / "extension-modules.yml")
+            )
+
+            write_if_different(makefile_path, "".join(lines).encode("ascii"))
 
 
 def write_package_versions(dest_path: pathlib.Path):
@@ -269,7 +273,15 @@ def download_to_path(url: str, path: pathlib.Path, size: int, sha256: str):
 
         path.unlink()
 
-    tmp = path.with_name("%s.tmp" % path.name)
+    # Need to write to random path to avoid race conditions. If there is a
+    # race, worst case we'll download the same file N>1 times. Meh.
+    tmp = path.with_name(
+        "%s.tmp%s"
+        % (
+            path.name,
+            "".join(random.choices(string.ascii_uppercase + string.digits, k=8)),
+        )
+    )
 
     for attempt in range(5):
         try:
