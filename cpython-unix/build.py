@@ -186,6 +186,8 @@ def add_target_env(env, build_platform, target_triple, build_env):
         if not os.path.exists(sdk_path):
             raise Exception("macOS SDK path %s does not exist" % sdk_path)
 
+        env["APPLE_SDK_PATH"] = sdk_path
+
         # Grab the version from the SDK so we can put it in PYTHON.json.
         sdk_settings_path = pathlib.Path(sdk_path) / "SDKSettings.json"
         with sdk_settings_path.open("rb") as fh:
