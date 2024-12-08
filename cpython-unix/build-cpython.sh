@@ -587,6 +587,7 @@ fi
 # that a) it works on as many machines as possible b) doesn't leak details
 # about the build environment, which is non-portable.
 cat > ${ROOT}/hack_sysconfig.py << EOF
+import json
 import os
 import sys
 import sysconfig
@@ -626,6 +627,33 @@ def replace_in_all(search, replace):
     replace_in_file(PYTHON_CONFIG, search, replace)
     replace_in_file(MAKEFILE, search, replace)
     replace_in_file(SYSCONFIGDATA, search, replace)
+
+
+def format_sysconfigdata():
+    """Reformat the sysconfigdata file to avoid implicit string concatenations.
+
+    In some Python versions, the sysconfigdata file contains implicit string
+    concatenations that extend over multiple lines, which make string replacement
+    much harder. This function reformats the file to avoid this issue.
+
+    See: https://github.com/python/cpython/blob/a03efb533a58fd13fb0cc7f4a5c02c8406a407bd/Mac/BuildScript/build-installer.py#L1360C1-L1385C15.
+    """
+    with open(SYSCONFIGDATA, "rb") as fh:
+        data = fh.read()
+
+    globals_dict = {}
+    locals_dict = {}
+    exec(data, globals_dict, locals_dict)
+    build_time_vars = locals_dict['build_time_vars']
+
+    with open(SYSCONFIGDATA, "wb") as fh:
+        fh.write(b'# system configuration generated and used by the sysconfig module\n')
+        fh.write(('build_time_vars = %s' % json.dumps(build_time_vars, indent=4)).encode("utf-8"))
+        fh.close()
+
+
+# Format sysconfig to ensure that string replacements take effect.
+format_sysconfigdata()
 
 # Remove the Xcode path from the compiler flags.
 #
