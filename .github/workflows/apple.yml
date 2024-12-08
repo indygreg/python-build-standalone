@@ -47,9 +47,8 @@ jobs:
         build:
           - target_triple: 'aarch64-apple-darwin'
             runner: macos-14
-            py: 'cpython-3.12'
-            options: 'debug'
-
+            py: 'cpython-3.13'
+            options: 'freethreaded+debug'
     needs:
       - pythonbuild
     runs-on: ${{ matrix.build.runner }}

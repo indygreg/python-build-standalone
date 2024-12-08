@@ -165,10 +165,28 @@ def add_target_env(env, build_platform, target_triple, build_env):
         # non-system (e.g. Homebrew) executables from being used.
         env["PATH"] = "/usr/bin:/bin"
 
-        sdk_path = os.environ["APPLE_SDK_PATH"]
+        if "APPLE_SDK_PATH" in os.environ:
+            sdk_path = os.environ["APPLE_SDK_PATH"]
+        else:
+            # macOS SDK has historically been in /usr courtesy of an
+            # installer provided by Xcode. But with Catalina, the files
+            # are now typically in
+            # /Applications/Xcode.app/Contents/Developer/Platforms/.
+            # The proper way to resolve this path is with xcrun, which
+            # will give us the headers that Xcode is configured to use.
+            res = subprocess.run(
+                ["xcrun", "--sdk", sdk_platform, "--show-sdk-path"],
+                check=True,
+                capture_output=True,
+                encoding="utf-8",
+            )
+
+            sdk_path = res.stdout.strip()
 
         if not os.path.exists(sdk_path):
             raise Exception("macOS SDK path %s does not exist" % sdk_path)
+
+        env["APPLE_SDK_PATH"] = sdk_path
 
         # Grab the version from the SDK so we can put it in PYTHON.json.
         sdk_settings_path = pathlib.Path(sdk_path) / "SDKSettings.json"
@@ -800,11 +818,6 @@ def build_cpython(
             env["CPYTHON_OPTIMIZED"] = "1"
         if "lto" in parsed_build_options:
             env["CPYTHON_LTO"] = "1"
-
-        sdk_path = os.environ["APPLE_SDK_PATH"]
-        if not os.path.exists(sdk_path):
-            raise Exception("macOS SDK path %s does not exist" % sdk_path)
-        env["APPLE_SDK_PATH"] = sdk_path
 
         add_target_env(env, host_platform, target_triple, build_env)
 
