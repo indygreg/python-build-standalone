@@ -627,6 +627,10 @@ def replace_in_all(search, replace):
     replace_in_file(MAKEFILE, search, replace)
     replace_in_file(SYSCONFIGDATA, search, replace)
 
+# Replace the XCode path with a generic value.
+xcode_path = os.getenv("APPLE_SDK_PATH")
+if xcode_path:
+    replace_in_all(xcode_path, "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk")
 
 # -fdebug-default-version is Clang only. Strip so compiling works on GCC.
 replace_in_all("-fdebug-default-version=4", "")
