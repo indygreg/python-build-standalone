@@ -648,7 +648,7 @@ def format_sysconfigdata():
 
     with open(SYSCONFIGDATA, "wb") as fh:
         fh.write(b'# system configuration generated and used by the sysconfig module\n')
-        fh.write(('build_time_vars = %s' % json.dumps(build_time_vars, indent=4)).encode("utf-8"))
+        fh.write(('build_time_vars = %s' % json.dumps(build_time_vars, indent=4, sort_keys=True)).encode("utf-8"))
         fh.close()
 
 
