@@ -177,24 +177,24 @@ DOWNLOADS = {
     },
     # Remember to update LLVM_URL in src/release.rs whenever upgrading.
     "llvm-18-x86_64-linux": {
-        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
-        "size": 242840506,
-        "sha256": "080c233fc7d75031b187bbfef62a4f9abc01188effb0c68fbc7dc4bc7370ee5b",
-        "version": "18.0.8+20240713",
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20241214/llvm-19.1.0+20241214-gnu_only-x86_64-unknown-linux-gnu.tar.zst",
+        "size": 251197833,
+        "sha256": "cbd9e41f582edd04d244421735d4269cda9d61fe485ec5f3c0e94913df3ba422",
+        "version": "19.1.0+20241214",
     },
     # Remember to update LLVM_URL in src/release.rs whenever upgrading.
     "llvm-aarch64-macos": {
-        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-aarch64-apple-darwin.tar.zst",
-        "size": 136598617,
-        "sha256": "320da8d639186e020e7d54cdc35b7a5473b36cef08fdf7b22c03b59a273ba593",
-        "version": "18.0.8+20240713",
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20241214/llvm-19.1.0+20241214-aarch64-apple-darwin.tar.zst",
+        "size": 143868620,
+        "sha256": "05ebc62e85e871c011f1d10411c5fb6dad2cc802233d46abc42e693a9b529778",
+        "version": "19.1.0+20241214",
     },
     # Remember to update LLVM_URL in src/release.rs whenever upgrading.
     "llvm-x86_64-macos": {
-        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20240713/llvm-18.0.8+20240713-x86_64-apple-darwin.tar.zst",
-        "size": 136599290,
-        "sha256": "3032161d1cadb8996b07fe5762444c956842b5a7d798b2fcfe5a04574fdf7549",
-        "version": "18.0.8+20240713",
+        "url": "https://github.com/indygreg/toolchain-tools/releases/download/toolchain-bootstrap%2F20241214/llvm-19.1.0+20241214-x86_64-apple-darwin.tar.zst",
+        "size": 143101266,
+        "sha256": "39e5e47df6c575d30298843d3bc2ecb9d8b413a902b55f5bec7b0fae87376d05",
+        "version": "19.1.0+20241214",
     },
     "m4": {
         "url": "https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz",
