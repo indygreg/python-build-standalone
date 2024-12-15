@@ -184,6 +184,8 @@ fi
 # See https://bugs.python.org/issue37060.
 patch -p1 -i ${ROOT}/patch-ctypes-static-binary.patch
 
+patch -p1 -i ${ROOT}/patch-tkinter.patch
+
 # Older versions of Python need patching to work with modern mpdecimal.
 if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_9}" ]; then
     patch -p1 -i ${ROOT}/patch-decimal-modern-mpdecimal.patch

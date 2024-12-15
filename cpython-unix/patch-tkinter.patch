@@ -1,0 +1,101 @@
+diff --git a/Lib/tkinter/__init__.py b/Lib/tkinter/__init__.py
+index bfec04bb6c1..6f3cfba6bbf 100644
+--- a/Lib/tkinter/__init__.py
++++ b/Lib/tkinter/__init__.py
+@@ -54,6 +54,12 @@
+ _magic_re = re.compile(r'([\\{}])')
+ _space_re = re.compile(r'([\s])', re.ASCII)
+ 
++# Facilitate discovery of the Tcl/Tk libraries.
++import os
++
++os.environ['TCL_LIBRARY'] = sys.base_prefix + '/tcl/tcl' + _tkinter.TCL_VERSION
++os.environ['TK_LIBRARY'] = sys.base_prefix + '/tcl/tk' + _tkinter.TK_VERSION
++
+ 
+ def _join(value):
+     """Internal function."""
+diff --git a/Modules/_tkinter.c b/Modules/_tkinter.c
+index 45897817a56..03652c86c1b 100644
+--- a/Modules/_tkinter.c
++++ b/Modules/_tkinter.c
+@@ -26,9 +26,8 @@ Copyright (C) 1994 Steen Lumholt.
+ #endif
+ 
+ #include "Python.h"
+-#ifdef MS_WINDOWS
+-#  include "pycore_fileutils.h"   // _Py_stat()
+-#endif
++
++#include "pycore_fileutils.h"   // _Py_stat()
+ 
+ #include "pycore_long.h"          // _PyLong_IsNegative()
+ 
+@@ -132,6 +131,7 @@ typedef int Tcl_Size;
+ #ifdef MS_WINDOWS
+ #include <conio.h>
+ #define WAIT_FOR_STDIN
++#endif
+ 
+ static PyObject *
+ _get_tcl_lib_path(void)
+@@ -149,7 +149,7 @@ _get_tcl_lib_path(void)
+         }
+ 
+         /* Check expected location for an installed Python first */
+-        tcl_library_path = PyUnicode_FromString("\\tcl\\tcl" TCL_VERSION);
++        tcl_library_path = PyUnicode_FromString("/tcl/tcl" TCL_VERSION);
+         if (tcl_library_path == NULL) {
+             return NULL;
+         }
+@@ -167,7 +167,7 @@ _get_tcl_lib_path(void)
+             errno = 0;
+ #ifdef Py_TCLTK_DIR
+             tcl_library_path = PyUnicode_FromString(
+-                                    Py_TCLTK_DIR "\\lib\\tcl" TCL_VERSION);
++                                    Py_TCLTK_DIR "/lib/tcl" TCL_VERSION);
+             if (tcl_library_path == NULL) {
+                 return NULL;
+             }
+@@ -189,7 +189,6 @@ _get_tcl_lib_path(void)
+     }
+     return tcl_library_path;
+ }
+-#endif /* MS_WINDOWS */
+ 
+ /* The threading situation is complicated.  Tcl is not thread-safe, except
+    when configured with --enable-threads.
+@@ -702,7 +701,6 @@ Tkapp_New(const char *screenName, const char *className,
+         PyMem_Free(args);
+     }
+ 
+-#ifdef MS_WINDOWS
+     {
+         PyObject *str_path;
+         PyObject *utf8_path;
+@@ -727,7 +725,6 @@ Tkapp_New(const char *screenName, const char *className,
+             }
+         }
+     }
+-#endif
+ 
+     if (Tcl_AppInit(v->interp) != TCL_OK) {
+         PyObject *result = Tkinter_Error(v);
+@@ -3520,7 +3517,6 @@ PyInit__tkinter(void)
+     if (uexe && PyUnicode_Check(uexe)) {   // sys.executable can be None
+         cexe = PyUnicode_EncodeFSDefault(uexe);
+         if (cexe) {
+-#ifdef MS_WINDOWS
+             int set_var = 0;
+             PyObject *str_path;
+             wchar_t *wcs_path;
+@@ -3551,9 +3547,6 @@ PyInit__tkinter(void)
+                 SetEnvironmentVariableW(L"TCL_LIBRARY", NULL);
+                 PyMem_Free(wcs_path);
+             }
+-#else
+-            Tcl_FindExecutable(PyBytes_AS_STRING(cexe));
+-#endif /* MS_WINDOWS */
+         }
+         Py_XDECREF(cexe);
+     }
