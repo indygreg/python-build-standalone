@@ -179,12 +179,19 @@ else
     patch -p1 -i ${ROOT}/patch-ctypes-callproc-legacy.patch
 fi
 
+# On Windows, CPython looks for the Tcl/Tk libraries relative to the base prefix,
+# with we want. But on Unix, it doesn't. This patch applies similar behavior on Unix,
+# thereby ensuring that the Tcl/Tk libraries are found in the correct location.
+# A similar patch could be applied to other CPython versions, but would require
+# customizations for each minor.
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    patch -p1 -i ${ROOT}/patch-tkinter-3.13.patch
+fi
+
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.
 # See https://bugs.python.org/issue37060.
 patch -p1 -i ${ROOT}/patch-ctypes-static-binary.patch
-
-patch -p1 -i ${ROOT}/patch-tkinter.patch
 
 # Older versions of Python need patching to work with modern mpdecimal.
 if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_9}" ]; then

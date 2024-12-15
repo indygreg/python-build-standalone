@@ -1,8 +1,20 @@
 diff --git a/Modules/_tkinter.c b/Modules/_tkinter.c
-index 45897817a56..c18808e10c7 100644
+index 45897817a56..671b3dfc3d0 100644
 --- a/Modules/_tkinter.c
 +++ b/Modules/_tkinter.c
-@@ -132,6 +132,7 @@ typedef int Tcl_Size;
+@@ -26,9 +26,8 @@ Copyright (C) 1994 Steen Lumholt.
+ #endif
+ 
+ #include "Python.h"
+-#ifdef MS_WINDOWS
+-#  include "pycore_fileutils.h"   // _Py_stat()
+-#endif
++
++#include "pycore_fileutils.h"     // _Py_stat()
+ 
+ #include "pycore_long.h"          // _PyLong_IsNegative()
+ 
+@@ -132,6 +131,7 @@ typedef int Tcl_Size;
  #ifdef MS_WINDOWS
  #include <conio.h>
  #define WAIT_FOR_STDIN
@@ -10,7 +22,7 @@ index 45897817a56..c18808e10c7 100644
  
  static PyObject *
  _get_tcl_lib_path(void)
-@@ -148,6 +149,7 @@ _get_tcl_lib_path(void)
+@@ -148,6 +148,7 @@ _get_tcl_lib_path(void)
              return NULL;
          }
  
@@ -18,12 +30,12 @@ index 45897817a56..c18808e10c7 100644
          /* Check expected location for an installed Python first */
          tcl_library_path = PyUnicode_FromString("\\tcl\\tcl" TCL_VERSION);
          if (tcl_library_path == NULL) {
-@@ -185,11 +187,31 @@ _get_tcl_lib_path(void)
+@@ -185,11 +186,31 @@ _get_tcl_lib_path(void)
              tcl_library_path = NULL;
  #endif
          }
 +#else
-+        /* Unix - check expected location for an installed Python */
++        /* Check expected location for an installed Python first */
 +        tcl_library_path = PyUnicode_FromString("/lib/tcl" TCL_VERSION);
 +        if (tcl_library_path == NULL) {
 +            return NULL;
@@ -51,7 +63,7 @@ index 45897817a56..c18808e10c7 100644
  
  /* The threading situation is complicated.  Tcl is not thread-safe, except
     when configured with --enable-threads.
-@@ -710,6 +732,30 @@ Tkapp_New(const char *screenName, const char *className,
+@@ -710,6 +731,30 @@ Tkapp_New(const char *screenName, const char *className,
  
          ret = GetEnvironmentVariableW(L"TCL_LIBRARY", NULL, 0);
          if (!ret && GetLastError() == ERROR_ENVVAR_NOT_FOUND) {
@@ -82,14 +94,6 @@ index 45897817a56..c18808e10c7 100644
              str_path = _get_tcl_lib_path();
              if (str_path == NULL && PyErr_Occurred()) {
                  return NULL;
-@@ -740,7 +786,6 @@ Tkapp_New(const char *screenName, const char *className,
-     return v;
- }
- 
--
- static void
- Tkapp_ThreadSend(TkappObject *self, Tcl_Event *ev,
-                  Tcl_Condition *cond, Tcl_Mutex *mutex)
 @@ -3552,7 +3597,27 @@ PyInit__tkinter(void)
                  PyMem_Free(wcs_path);
              }
@@ -118,3 +122,6 @@ index 45897817a56..c18808e10c7 100644
  #endif /* MS_WINDOWS */
          }
          Py_XDECREF(cexe);
+diff --git a/patch-tkinter.patch b/patch-tkinter.patch
+new file mode 100644
+index 00000000000..e69de29bb2d
