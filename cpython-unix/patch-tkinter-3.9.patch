@@ -1,5 +1,5 @@
 diff --git a/Modules/_tkinter.c b/Modules/_tkinter.c
-index e153047b778..5dbaf2e3e6e 100644
+index e153047b778..02f5d12db1a 100644
 --- a/Modules/_tkinter.c
 +++ b/Modules/_tkinter.c
 @@ -115,6 +115,7 @@ Copyright (C) 1994 Steen Lumholt.
@@ -82,7 +82,7 @@ index e153047b778..5dbaf2e3e6e 100644
              str_path = _get_tcl_lib_path();
              if (str_path == NULL && PyErr_Occurred()) {
                  return NULL;
-@@ -3631,7 +3677,27 @@ PyInit__tkinter(void)
+@@ -3631,7 +3677,32 @@ PyInit__tkinter(void)
                  PyMem_Free(wcs_path);
              }
  #else
@@ -97,6 +97,11 @@ index e153047b778..5dbaf2e3e6e 100644
 +                    return NULL;
 +                }
 +                if (str_path != NULL) {
++                    path = PyUnicode_AsUTF8(str_path);
++                    if (path == NULL) {
++                        Py_DECREF(m);
++                        return NULL;
++                    }
 +                    setenv("TCL_LIBRARY", path, 1);
 +                    set_var = 1;
 +                }

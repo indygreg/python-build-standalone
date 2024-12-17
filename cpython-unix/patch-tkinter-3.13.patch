@@ -1,5 +1,5 @@
 diff --git a/Modules/_tkinter.c b/Modules/_tkinter.c
-index 45897817a56..671b3dfc3d0 100644
+index 45897817a56..5633187730a 100644
 --- a/Modules/_tkinter.c
 +++ b/Modules/_tkinter.c
 @@ -26,9 +26,8 @@ Copyright (C) 1994 Steen Lumholt.
@@ -94,7 +94,7 @@ index 45897817a56..671b3dfc3d0 100644
              str_path = _get_tcl_lib_path();
              if (str_path == NULL && PyErr_Occurred()) {
                  return NULL;
-@@ -3552,7 +3597,27 @@ PyInit__tkinter(void)
+@@ -3552,7 +3597,32 @@ PyInit__tkinter(void)
                  PyMem_Free(wcs_path);
              }
  #else
@@ -109,6 +109,11 @@ index 45897817a56..671b3dfc3d0 100644
 +                    return NULL;
 +                }
 +                if (str_path != NULL) {
++                    path = PyUnicode_AsUTF8(str_path);
++                    if (path == NULL) {
++                        Py_DECREF(m);
++                        return NULL;
++                    }
 +                    setenv("TCL_LIBRARY", path, 1);
 +                    set_var = 1;
 +                }
@@ -122,6 +127,3 @@ index 45897817a56..671b3dfc3d0 100644
  #endif /* MS_WINDOWS */
          }
          Py_XDECREF(cexe);
-diff --git a/patch-tkinter.patch b/patch-tkinter.patch
-new file mode 100644
-index 00000000000..e69de29bb2d
