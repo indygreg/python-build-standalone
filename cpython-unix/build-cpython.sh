@@ -179,6 +179,21 @@ else
     patch -p1 -i ${ROOT}/patch-ctypes-callproc-legacy.patch
 fi
 
+# On Windows, CPython looks for the Tcl/Tk libraries relative to the base prefix,
+# which we want. But on Unix, it doesn't. This patch applies similar behavior on Unix,
+# thereby ensuring that the Tcl/Tk libraries are found in the correct location.
+if [ "${PYTHON_MAJMIN_VERSION}" = "3.13" ]; then
+    patch -p1 -i ${ROOT}/patch-tkinter-3.13.patch
+elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
+    patch -p1 -i ${ROOT}/patch-tkinter-3.12.patch
+elif [ "${PYTHON_MAJMIN_VERSION}" = "3.11" ]; then
+    patch -p1 -i ${ROOT}/patch-tkinter-3.11.patch
+elif [ "${PYTHON_MAJMIN_VERSION}" = "3.10" ]; then
+    patch -p1 -i ${ROOT}/patch-tkinter-3.10.patch
+else
+    patch -p1 -i ${ROOT}/patch-tkinter-3.9.patch
+fi
+
 # Code that runs at ctypes module import time does not work with
 # non-dynamic binaries. Patch Python to work around this.
 # See https://bugs.python.org/issue37060.
