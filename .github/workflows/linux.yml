@@ -722,6 +722,11 @@ jobs:
             py: 'cpython-3.12'
             options: 'lto'
 
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+
     needs:
       - pythonbuild
       - image
@@ -780,6 +785,11 @@ jobs:
           fi
 
           build/pythonbuild validate-distribution ${EXTRA_ARGS} dist/*.tar.zst
+      
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: dist/*
 
       - name: Upload Distribution
         uses: actions/upload-artifact@v4
