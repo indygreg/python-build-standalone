@@ -1235,7 +1235,10 @@ def build_cpython(
     else:
         raise ValueError("unhandled arch: %s" % arch)
 
-    with tempfile.TemporaryDirectory(prefix="python-build-") as td:
+    tempdir_opts = (
+        {"ignore_cleanup_errors": True} if sys.version_info >= (3, 12) else {}
+    )
+    with tempfile.TemporaryDirectory(prefix="python-build-", **tempdir_opts) as td:
         td = pathlib.Path(td)
 
         with concurrent.futures.ThreadPoolExecutor(10) as e:
