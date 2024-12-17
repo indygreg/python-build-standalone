@@ -644,6 +644,26 @@ def replace_in_all(search, replace):
     replace_in_file(SYSCONFIGDATA, search, replace)
 
 
+def replace_in_sysconfigdata(search, replace, keys):
+    """Replace a string in the sysconfigdata file for select keys."""
+    with open(SYSCONFIGDATA, "rb") as fh:
+        data = fh.read()
+
+    globals_dict = {}
+    locals_dict = {}
+    exec(data, globals_dict, locals_dict)
+    build_time_vars = locals_dict['build_time_vars']
+
+    for key in keys:
+        if key in build_time_vars:
+            build_time_vars[key] = build_time_vars[key].replace(search, replace)
+
+    with open(SYSCONFIGDATA, "wb") as fh:
+        fh.write(b'# system configuration generated and used by the sysconfig module\n')
+        fh.write(('build_time_vars = %s' % json.dumps(build_time_vars, indent=4, sort_keys=True)).encode("utf-8"))
+        fh.close()
+
+
 def format_sysconfigdata():
     """Reformat the sysconfigdata file to avoid implicit string concatenations.
 
@@ -669,6 +689,18 @@ def format_sysconfigdata():
 
 # Format sysconfig to ensure that string replacements take effect.
 format_sysconfigdata()
+
+# Remove `-Werror=unguarded-availability-new` from `CFLAGS` and `CPPFLAGS`.
+# These flags are passed along when building extension modules. In that context,
+# `-Werror=unguarded-availability-new` can cause builds that would otherwise
+# succeed to fail. While the issues raised by `-Werror=unguarded-availability-new`
+# are legitimate, enforcing them in extension modules is stricter than CPython's
+# own behavior.
+replace_in_sysconfigdata(
+    "-Werror=unguarded-availability-new",
+    "",
+    ["CFLAGS", "CPPFLAGS"],
+)
 
 # Remove the Xcode path from the compiler flags.
 #
