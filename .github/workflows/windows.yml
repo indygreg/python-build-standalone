@@ -65,7 +65,7 @@ jobs:
             options: 'freethreaded+pgo'
 
     needs: pythonbuild
-    runs-on: 'windows-latest-xlarge'
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
