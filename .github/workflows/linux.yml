@@ -14,7 +14,7 @@ env:
 
 jobs:
   pythonbuild:
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     steps:
       - name: Install System Dependencies
         run: |
@@ -55,7 +55,7 @@ jobs:
           - gcc
           - xcb
           - xcb.cross
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     permissions:
       packages: write
     steps:
@@ -725,7 +725,7 @@ jobs:
     needs:
       - pythonbuild
       - image
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1087,7 +1087,7 @@ jobs:
     needs:
       - pythonbuild
       - image
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
 
     # The above should remain an exact duplicate of the `build` job
     steps:
