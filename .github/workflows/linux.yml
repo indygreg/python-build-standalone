@@ -185,6 +185,7 @@ jobs:
           done
 
       - name: Build
+        if: ${{ ! matrix.dry-run }}
         run: |
           # Do empty target so all generated files are touched.
           ./build-linux.py --make-target empty
@@ -195,6 +196,7 @@ jobs:
           ./build-linux.py --target-triple ${{ matrix.target_triple }} --python cpython-${{ matrix.python }} --options ${{ matrix.build_options }}
 
       - name: Validate Distribution
+        if: ${{ ! matrix.dry-run }}
         run: |
           chmod +x build/pythonbuild
 
@@ -205,6 +207,7 @@ jobs:
           build/pythonbuild validate-distribution ${EXTRA_ARGS} dist/*.tar.zst
 
       - name: Upload Distribution
+        if: ${{ ! matrix.dry-run }}
         uses: actions/upload-artifact@v4
         with:
           name: cpython-${{ matrix.python }}-${{ matrix.target_triple }}-${{ matrix.build_options }}

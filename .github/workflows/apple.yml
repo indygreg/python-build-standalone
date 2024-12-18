@@ -90,6 +90,7 @@ jobs:
           path: build
 
       - name: Build
+        if: ${{ ! matrix.dry-run }}
         run: |
           if [ "${{ matrix.target_triple }}" = "aarch64-apple-darwin" ]; then
             export APPLE_SDK_PATH=/Applications/Xcode_15.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk
@@ -103,18 +104,22 @@ jobs:
           ./build-macos.py --target-triple ${{ matrix.target_triple }} --python cpython-${{ matrix.python }} --options ${{ matrix.build_options }}
 
       - name: Upload Distributions
+        if: ${{ ! matrix.dry-run }}
         uses: actions/upload-artifact@v4
         with:
           name: cpython-${{ matrix.python }}-${{ matrix.target_triple }}-${{ matrix.build_options }}
           path: dist/*
 
-      - uses: actions/checkout@v4
+      - name: Checkout macOS SDKs for validation
+        if: ${{ ! matrix.dry-run }}
+        uses: actions/checkout@v4
         with:
           repository: 'phracker/MacOSX-SDKs'
           ref: master
           path: macosx-sdks
 
       - name: Validate Distribution
+        if: ${{ ! matrix.dry-run }}
         run: |
           chmod +x build/pythonbuild
 
