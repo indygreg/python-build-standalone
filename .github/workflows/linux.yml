@@ -46,6 +46,9 @@ jobs:
           path: target/release/pythonbuild
 
   image:
+    needs:
+      - generate-matrix
+    if: ${{ needs.generate-matrix.outputs.any_builds }}
     strategy:
       fail-fast: false
       matrix:
@@ -138,6 +141,14 @@ jobs:
           uv run ci-matrix.py --platform linux --labels "${{ steps.get-labels.outputs.labels }}" > matrix.json && echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
           # Display the matrix for debugging too
           cat matrix.json | jq
+
+          if jq -e '.include | length > 0' matrix.json > /dev/null; then
+            # Build matrix has entries
+            echo "any_builds=true" >> $GITHUB_OUTPUT
+          else
+            # Build matrix is empty
+            echo "any_builds=true" >> $GITHUB_OUTPUT
+          fi
         
   build:
     needs:
