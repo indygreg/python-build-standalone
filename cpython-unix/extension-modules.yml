@@ -19,6 +19,7 @@ _bisect:
     - _bisectmodule.c
 
 _blake2:
+  maximum-python-version: "3.13"
   sources:
     - _blake2/blake2module.c
     - _blake2/blake2b_impl.c
