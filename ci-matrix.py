@@ -14,7 +14,7 @@ import yaml
 from packaging.version import Version
 
 CI_TARGETS_YAML = "ci-targets.yaml"
-CI_SKIP_LABELS = ["ci:skip", "documentation"]
+CI_EXTRA_SKIP_LABELS = ["documentation"]
 
 
 def meets_conditional_version(version: str, min_version: str) -> bool:
@@ -38,8 +38,8 @@ def parse_labels(labels: Optional[str]) -> dict[str, set[str]]:
     for label in labels.split(","):
         label = label.strip()
 
-        # Handle special directive labels
-        if label in CI_SKIP_LABELS:
+        # Handle special labels
+        if label in CI_EXTRA_SKIP_LABELS:
             result["directives"].add("skip")
             continue
 
@@ -47,6 +47,10 @@ def parse_labels(labels: Optional[str]) -> dict[str, set[str]]:
             continue
 
         category, value = label.split(":", 1)
+
+        if category == "ci":
+            category = "directives"
+
         if category in result:
             result[category].add(value)
 
@@ -95,6 +99,7 @@ def generate_matrix_entries(
                 target_triple,
                 target_config,
                 platform,
+                label_filters.get("directives", set()),
             )
 
     # Apply label filters if present
@@ -113,6 +118,7 @@ def add_matrix_entries_for_config(
     target_triple: str,
     config: dict[str, Any],
     platform: str,
+    directives: set[str],
 ) -> None:
     python_versions = config["python_versions"]
     build_options = config["build_options"]
@@ -134,6 +140,9 @@ def add_matrix_entries_for_config(
         base_entry["vcvars"] = config["vcvars"]
     if "run" in config:
         base_entry["run"] = str(config["run"]).lower()
+
+    if "dry-run" in directives:
+        base_entry["dry-run"] = "true"
 
     # Process regular build options
     for python_version in python_versions:
