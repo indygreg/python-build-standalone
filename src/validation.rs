@@ -129,6 +129,8 @@ const PE_ALLOWED_LIBRARIES: &[&str] = &[
     "python312.dll",
     "python313.dll",
     "python313t.dll",
+    "python314.dll",
+    "python314t.dll",
     "sqlite3.dll",
     "tcl86t.dll",
     "tk86t.dll",
@@ -302,6 +304,26 @@ static DARWIN_ALLOWED_DYLIBS: Lazy<Vec<MachOAllowedDylib>> = Lazy::new(|| {
             MachOAllowedDylib {
                 name: "@executable_path/../lib/libpython3.13td.dylib".to_string(),
                 max_compatibility_version: "3.13.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.14.dylib".to_string(),
+                max_compatibility_version: "3.14.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.14d.dylib".to_string(),
+                max_compatibility_version: "3.14.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.14t.dylib".to_string(),
+                max_compatibility_version: "3.14.0".try_into().unwrap(),
+                required: false,
+            },
+            MachOAllowedDylib {
+                name: "@executable_path/../lib/libpython3.14td.dylib".to_string(),
+                max_compatibility_version: "3.14.0".try_into().unwrap(),
                 required: false,
             },
             MachOAllowedDylib {
@@ -581,7 +603,6 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
     "_ast",
     "_asyncio",
     "_bisect",
-    "_blake2",
     "_bz2",
     "_codecs",
     "_codecs_cn",
@@ -667,6 +688,7 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
     "audioop",
+    "_blake2",
     "_peg_parser",
     "_sha256",
     "_sha512",
@@ -677,6 +699,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
     "audioop",
+    "_blake2",
     "_sha256",
     "_sha512",
     "_xxsubinterpreters",
@@ -685,6 +708,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
     "audioop",
+    "_blake2",
     "_sha256",
     "_sha512",
     "_tokenize",
@@ -695,6 +719,7 @@ const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
     "audioop",
+    "_blake2",
     "_sha2",
     "_tokenize",
     "_typing",
@@ -704,6 +729,18 @@ const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_13: &[&str] = &[
+    "_blake2",
+    "_interpchannels",
+    "_interpqueues",
+    "_interpreters",
+    "_sha2",
+    "_sysconfig",
+    "_tokenize",
+    "_typing",
+    "_zoneinfo",
+];
+
+const GLOBAL_EXTENSIONS_PYTHON_3_14: &[&str] = &[
     "_interpchannels",
     "_interpqueues",
     "_interpreters",
@@ -717,7 +754,6 @@ const GLOBAL_EXTENSIONS_PYTHON_3_13: &[&str] = &[
 const GLOBAL_EXTENSIONS_MACOS: &[&str] = &["_scproxy"];
 
 const GLOBAL_EXTENSIONS_POSIX: &[&str] = &[
-    "_crypt",
     "_ctypes_test",
     "_curses",
     "_curses_panel",
@@ -734,6 +770,8 @@ const GLOBAL_EXTENSIONS_POSIX: &[&str] = &[
     "syslog",
     "termios",
 ];
+
+const GLOBAL_EXTENSIONS_POSIX_PRE_3_13: &[&str] = &["_crypt"];
 
 const GLOBAL_EXTENSIONS_LINUX_PRE_3_13: &[&str] = &["spwd"];
 
@@ -1070,7 +1108,6 @@ fn parse_version_nibbles(v: u32) -> semver::Version {
 fn validate_macho<Mach: MachHeader<Endian = Endianness>>(
     context: &mut ValidationContext,
     target_triple: &str,
-    python_major_minor: &str,
     advertised_target_version: &str,
     advertised_sdk_version: &str,
     path: &Path,
@@ -1365,7 +1402,6 @@ fn validate_possible_object_file(
                 validate_macho(
                     &mut context,
                     triple,
-                    python_major_minor,
                     json.apple_sdk_deployment_target
                         .as_ref()
                         .expect("apple_sdk_deployment_target should be set"),
@@ -1383,7 +1419,6 @@ fn validate_possible_object_file(
                 validate_macho(
                     &mut context,
                     triple,
-                    python_major_minor,
                     json.apple_sdk_deployment_target
                         .as_ref()
                         .expect("apple_sdk_deployment_target should be set"),
@@ -1454,6 +1489,9 @@ fn validate_extension_modules(
         "3.13" => {
             wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_13);
         }
+        "3.14" => {
+            wanted.extend(GLOBAL_EXTENSIONS_PYTHON_3_14);
+        }
         _ => {
             panic!("unhandled Python version: {}", python_major_minor);
         }
@@ -1461,9 +1499,11 @@ fn validate_extension_modules(
 
     if is_macos {
         wanted.extend(GLOBAL_EXTENSIONS_POSIX);
-        if python_major_minor == "3.13" {
-            wanted.remove("_crypt");
+
+        if matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
+            wanted.extend(GLOBAL_EXTENSIONS_POSIX_PRE_3_13);
         }
+
         wanted.extend(GLOBAL_EXTENSIONS_MACOS);
     }
 
@@ -1483,11 +1523,11 @@ fn validate_extension_modules(
 
     if is_linux {
         wanted.extend(GLOBAL_EXTENSIONS_POSIX);
-        // TODO: If there are more differences for `GLOBAL_EXTENSIONS_POSIX` in future Python
-        // versions, we should move the `_crypt` special-case into a constant
-        if python_major_minor == "3.13" {
-            wanted.remove("_crypt");
+
+        if matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
+            wanted.extend(GLOBAL_EXTENSIONS_POSIX_PRE_3_13);
         }
+
         if matches!(python_major_minor, "3.9" | "3.10" | "3.11" | "3.12") {
             wanted.extend(GLOBAL_EXTENSIONS_LINUX_PRE_3_13);
         }
@@ -1497,7 +1537,7 @@ fn validate_extension_modules(
         }
     }
 
-    if (is_linux || is_macos) {
+    if is_linux || is_macos {
         wanted.extend([
             "_testbuffer",
             "_testimportmultiple",
@@ -1506,11 +1546,11 @@ fn validate_extension_modules(
         ]);
     }
 
-    if (is_linux || is_macos) && python_major_minor == "3.13" {
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.13" | "3.14") {
         wanted.extend(["_suggestions", "_testexternalinspection"]);
     }
 
-    if (is_linux || is_macos) && matches!(python_major_minor, "3.12" | "3.13") {
+    if (is_linux || is_macos) && matches!(python_major_minor, "3.12" | "3.13" | "3.14") {
         wanted.insert("_testsinglephase");
     }
 
