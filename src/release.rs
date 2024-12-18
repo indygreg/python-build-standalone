@@ -77,7 +77,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     let mut h = BTreeMap::new();
 
     // macOS.
-    let macos_suffixes = vec!["debug", "pgo", "pgo+lto"];
+    let macos_suffixes = vec!["debug", "pgo+lto"];
     let macos_suffixes_313 = vec![
         "freethreaded+debug",
         "freethreaded+pgo",
@@ -162,13 +162,9 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
     );
 
     // Linux.
-    let linux_suffixes_pgo = vec!["debug", "pgo", "pgo+lto"];
+    let linux_suffixes_pgo = vec!["debug", "pgo+lto"];
     let linux_suffixes_nopgo = vec!["debug", "lto", "noopt"];
-    let linux_suffixes_pgo_freethreaded = vec![
-        "freethreaded+debug",
-        "freethreaded+pgo",
-        "freethreaded+pgo+lto",
-    ];
+    let linux_suffixes_pgo_freethreaded = vec!["freethreaded+debug", "freethreaded+pgo+lto"];
     let linux_suffixes_nopgo_freethreaded = vec![
         "freethreaded+debug",
         "freethreaded+lto",

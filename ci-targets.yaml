@@ -11,12 +11,10 @@ darwin:
       - "3.13"
     build_options:
       - debug
-      - pgo
       - pgo+lto
     build_options_conditional:
       - options:
           - freethreaded+debug
-          - freethreaded+pgo
           - freethreaded+pgo+lto
         minimum-python-version: "3.13"
 
@@ -30,12 +28,10 @@ darwin:
       - "3.13"
     build_options:
       - debug
-      - pgo
       - pgo+lto
     build_options_conditional:
       - options:
           - freethreaded+debug
-          - freethreaded+pgo
           - freethreaded+pgo+lto
         minimum-python-version: "3.13"
 
@@ -151,12 +147,10 @@ linux:
       - "3.13"
     build_options:
       - debug
-      - pgo
       - pgo+lto
     build_options_conditional:
       - options:
           - freethreaded+debug
-          - freethreaded+pgo
           - freethreaded+pgo+lto
         minimum-python-version: "3.13"
     run: true
@@ -173,12 +167,10 @@ linux:
       - "3.13"
     build_options:
       - debug
-      - pgo
       - pgo+lto
     build_options_conditional:
       - options:
           - freethreaded+debug
-          - freethreaded+pgo
           - freethreaded+pgo+lto
         minimum-python-version: "3.13"
     run: true
@@ -195,12 +187,10 @@ linux:
       - "3.13"
     build_options:
       - debug
-      - pgo
       - pgo+lto
     build_options_conditional:
       - options:
           - freethreaded+debug
-          - freethreaded+pgo
           - freethreaded+pgo+lto
         minimum-python-version: "3.13"
     run: true
