@@ -240,6 +240,7 @@ def find_vs_path(path, msvc_version):
     p = subprocess.check_output(
         [
             str(vswhere),
+            "-utf8",
             # Visual Studio 2019.
             "-version",
             version,
@@ -250,7 +251,6 @@ def find_vs_path(path, msvc_version):
         ]
     )
 
-    # Strictly speaking the output may not be UTF-8.
     p = pathlib.Path(p.strip().decode("utf-8"))
 
     p = p / path
