@@ -48,7 +48,7 @@ jobs:
   image:
     needs:
       - generate-matrix
-    if: ${{ needs.generate-matrix.outputs.any_builds }}
+    if: ${{ needs.generate-matrix.outputs.any_builds == 'true' }}
     strategy:
       fail-fast: false
       matrix:
