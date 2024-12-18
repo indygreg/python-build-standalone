@@ -4,9 +4,10 @@
 
 use std::str::FromStr;
 
-use crate::release::{bootstrap_llvm, produce_install_only_stripped};
 use {
-    crate::release::{produce_install_only, RELEASE_TRIPLES},
+    crate::release::{
+        bootstrap_llvm, produce_install_only, produce_install_only_stripped, RELEASE_TRIPLES,
+    },
     anyhow::{anyhow, Result},
     bytes::Bytes,
     clap::ArgMatches,
