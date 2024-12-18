@@ -122,6 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      any_builds: ${{ steps.set-matrix.outputs.any_builds }}
     steps:
       - uses: actions/checkout@v4
       
@@ -147,7 +148,7 @@ jobs:
             echo "any_builds=true" >> $GITHUB_OUTPUT
           else
             # Build matrix is empty
-            echo "any_builds=true" >> $GITHUB_OUTPUT
+            echo "any_builds=false" >> $GITHUB_OUTPUT
           fi
         
   build:
