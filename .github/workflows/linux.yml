@@ -139,7 +139,7 @@ jobs:
       - name: Generate build matrix
         id: set-matrix
         run: |
-          uv run ci-matrix.py --platform linux --labels "${{ steps.get-labels.outputs.labels }}" > matrix.json && echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
+          uv run ci-matrix.py --platform linux --labels '${{ steps.get-labels.outputs.labels }}' > matrix.json && echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
           # Display the matrix for debugging too
           cat matrix.json | jq
 
