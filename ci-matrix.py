@@ -14,6 +14,7 @@ import yaml
 from packaging.version import Version
 
 CI_TARGETS_YAML = "ci-targets.yaml"
+CI_SKIP_LABELS = ["ci:skip", "documentation"]
 
 
 def meets_conditional_version(version: str, min_version: str) -> bool:
@@ -31,12 +32,20 @@ def parse_labels(labels: Optional[str]) -> dict[str, set[str]]:
         "build": set(),
         "arch": set(),
         "libc": set(),
+        "directives": set(),
     }
 
     for label in labels.split(","):
         label = label.strip()
+
+        # Handle special directive labels
+        if label in CI_SKIP_LABELS:
+            result["directives"].add("skip")
+            continue
+
         if not label or ":" not in label:
             continue
+
         category, value = label.split(":", 1)
         if category in result:
             result[category].add(value)
@@ -46,6 +55,9 @@ def parse_labels(labels: Optional[str]) -> dict[str, set[str]]:
 
 def should_include_entry(entry: dict[str, str], filters: dict[str, set[str]]) -> bool:
     """Check if an entry satisfies the label filters."""
+    if filters.get("directives") and "skip" in filters["directives"]:
+        return False
+
     if filters.get("platform") and entry["platform"] not in filters["platform"]:
         return False
 
