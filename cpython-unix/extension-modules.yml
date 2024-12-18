@@ -355,6 +355,9 @@ _multiprocessing:
 _opcode:
   sources:
     - _opcode.c
+  setup-enabled-conditional:
+    - enabled: true
+      minimum-python-version: "3.14"
 
 _operator:
   setup-enabled: true

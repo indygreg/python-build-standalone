@@ -1638,6 +1638,8 @@ fn validate_distribution(
         "3.12"
     } else if dist_filename.starts_with("cpython-3.13.") {
         "3.13"
+    } else if dist_filename.starts_with("cpython-3.14.") {
+        "3.14"
     } else {
         return Err(anyhow!("could not parse Python version from filename"));
     };
