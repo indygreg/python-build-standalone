@@ -40,32 +40,39 @@ jobs:
           name: pythonbuild
           path: target/release/pythonbuild.exe
 
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: astral-sh/setup-uv@v4
+
+      - name: Get pull request labels
+        id: get-labels
+        run: |
+          # Convert GitHub labels array to comma-separated string
+          LABELS=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r 'join(",")')
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+          
+      - name: Generate build matrix
+        id: set-matrix
+        run: |
+          uv run ci-matrix.py --platform windows --labels "${{ steps.get-labels.outputs.labels }}" > matrix.json && echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
+          # Display the matrix for debugging too
+          cat matrix.json | jq
+      
   build:
+    needs:
+      - generate-matrix
+      - pythonbuild
+    runs-on: windows-latest
     strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
       fail-fast: false
-      matrix:
-        py:
-          - 'cpython-3.9'
-          - 'cpython-3.10'
-          - 'cpython-3.11'
-          - 'cpython-3.12'
-          - 'cpython-3.13'
-        vcvars:
-          - 'vcvars32.bat'
-          - 'vcvars64.bat'
-        options:
-          - 'pgo'
-
-        include:
-          - py: 'cpython-3.13'
-            vcvars: 'vcvars32.bat'
-            options: 'freethreaded+pgo'
-          - py: 'cpython-3.13'
-            vcvars: 'vcvars64.bat'
-            options: 'freethreaded+pgo'
-
-    needs: pythonbuild
-    runs-on: windows-2022
+    name: ${{ matrix.target_triple }} / ${{ matrix.python }} / ${{ matrix.build_option }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -96,7 +103,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\${{ matrix.vcvars }}"
-          py.exe -3.9 build-windows.py --python ${{ matrix.py }} --sh c:\cygwin\bin\sh.exe --options ${{ matrix.options }}
+          py.exe -3.9 build-windows.py --python cpython-${{ matrix.python }} --sh c:\cygwin\bin\sh.exe --options ${{ matrix.build_options }}
 
       - name: Validate Distribution
         run: |
@@ -106,5 +113,5 @@ jobs:
       - name: Upload Distributions
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.py }}-${{ matrix.vcvars }}-${{ matrix.options }}
+          name: cpython-${{ matrix.python }}-${{ matrix.vcvars }}-${{ matrix.build_options }}
           path: dist/*

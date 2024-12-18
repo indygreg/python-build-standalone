@@ -40,135 +40,39 @@ jobs:
           name: pythonbuild
           path: target/release/pythonbuild
 
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: astral-sh/setup-uv@v4
+
+      - name: Get pull request labels
+        id: get-labels
+        run: |
+          # Convert GitHub labels array to comma-separated string
+          LABELS=$(echo '${{ toJson(github.event.pull_request.labels.*.name) }}' | jq -r 'join(",")')
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+
+      - name: Generate build matrix
+        id: set-matrix
+        run: |
+          uv run ci-matrix.py --platform darwin --labels "${{ steps.get-labels.outputs.labels }}" > matrix.json && echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
+          # Display the matrix for debugging too
+          cat matrix.json | jq
+
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        build:
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.9'
-            options: 'debug'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.9'
-            options: 'pgo'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.9'
-            options: 'pgo+lto'
-
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.10'
-            options: 'debug'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.10'
-            options: 'pgo'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.10'
-            options: 'pgo+lto'
-
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.11'
-            options: 'debug'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.11'
-            options: 'pgo'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.11'
-            options: 'pgo+lto'
-
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.12'
-            options: 'debug'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.12'
-            options: 'pgo'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.12'
-            options: 'pgo+lto'
-
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'pgo'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'pgo+lto'
-
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo'
-          - target_triple: 'aarch64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo+lto'
-
-          # macOS on Intel hardware. This is pretty straightforward. We exclude
-          # noopt because it doesn't provide any compelling advantages over PGO
-          # or LTO builds.
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.9'
-            options: 'debug'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.9'
-            options: 'pgo'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.9'
-            options: 'pgo+lto'
-
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.10'
-            options: 'debug'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.10'
-            options: 'pgo'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.10'
-            options: 'pgo+lto'
-
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.11'
-            options: 'debug'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.11'
-            options: 'pgo'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.11'
-            options: 'pgo+lto'
-
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.12'
-            options: 'debug'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.12'
-            options: 'pgo'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.12'
-            options: 'pgo+lto'
-
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'debug'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'pgo'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'pgo+lto'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'freethreaded+debug'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo'
-          - target_triple: 'x86_64-apple-darwin'
-            py: 'cpython-3.13'
-            options: 'freethreaded+pgo+lto'
     needs:
+      - generate-matrix
       - pythonbuild
-    runs-on: depot-macos-14
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      fail-fast: false
+    runs-on: macos-14
+    name: ${{ matrix.target_triple }} / ${{ matrix.python }} / ${{ matrix.build_options }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -187,21 +91,21 @@ jobs:
 
       - name: Build
         run: |
-          if [ "${{ matrix.build.target_triple }}" = "aarch64-apple-darwin" ]; then
+          if [ "${{ matrix.target_triple }}" = "aarch64-apple-darwin" ]; then
             export APPLE_SDK_PATH=/Applications/Xcode_15.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk
-          elif [ "${{ matrix.build.target_triple }}" = "x86_64-apple-darwin" ]; then
+          elif [ "${{ matrix.target_triple }}" = "x86_64-apple-darwin" ]; then
             export APPLE_SDK_PATH=/Applications/Xcode_15.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk
           else
-            echo "unhandled target triple: ${{ matrix.build.target_triple }}"
+            echo "unhandled target triple: ${{ matrix.target_triple }}"
             exit 1
           fi
 
-          ./build-macos.py --target-triple ${{ matrix.build.target_triple }} --python ${{ matrix.build.py }} --options ${{ matrix.build.options }}
+          ./build-macos.py --target-triple ${{ matrix.target_triple }} --python cpython-${{ matrix.python }} --options ${{ matrix.build_options }}
 
       - name: Upload Distributions
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.build.py }}-${{ matrix.build.target_triple }}-${{ matrix.build.options }}
+          name: cpython-${{ matrix.python }}-${{ matrix.target_triple }}-${{ matrix.build_options }}
           path: dist/*
 
       - uses: actions/checkout@v4
