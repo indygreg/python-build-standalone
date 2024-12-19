@@ -41,6 +41,11 @@ _blake2:
   links-conditional:
     - name: :libHacl_Hash_Blake2.a
       minimum-python-version: "3.14"
+  defines-conditional:
+    - define: _BSD_SOURCE
+      minimum-python-version: "3.14"
+    - define: _DEFAULT_SOURCE
+      minimum-python-version: "3.14"
 
 _bz2:
   sources:
