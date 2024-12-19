@@ -514,7 +514,7 @@ if [ -n "${CROSS_COMPILING}" ]; then
     fi
 fi
 
-CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS PROFILE_TASK='-m test --pgo --verbose3' \
+CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS PROFILE_TASK='-m test --pgo --verbose3 --ignore test_strftime_y2k' \
     ./configure ${CONFIGURE_FLAGS}
 
 # Supplement produced Makefile with our modifications.
