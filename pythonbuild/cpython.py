@@ -511,7 +511,10 @@ def derive_setup_local(
             )
 
             if target_match and (python_min_match and python_max_match):
-                line += f" {entry['source']}"
+                if source := entry.get("source"):
+                    line += f" {source}"
+                for source in entry.get("sources", []):
+                    line += f" {source}"
 
         for define in info.get("defines", []):
             line += f" -D{define}"
@@ -549,7 +552,11 @@ def derive_setup_local(
             )
 
             if target_match and (python_min_match and python_max_match):
-                line += f" -I{entry['path']}"
+                # TODO: Change to `include` and drop support for `path`
+                if include := entry.get("path"):
+                    line += f" -I{include}"
+                for include in entry.get("includes", []):
+                    line += f" -I{include}"
 
         for path in info.get("includes-deps", []):
             # Includes are added to global search path.
