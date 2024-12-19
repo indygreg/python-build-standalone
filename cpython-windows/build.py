@@ -430,6 +430,13 @@ def hack_props(
             rb"<tcltkDir>%s\$(ArchName)\</tcltkDir>" % tcltk_path,
         )
 
+    try:
+        static_replace_in_file(
+            tcltkprops_path, rb"<tclZlibDLLName>zlib1.dll</tclZlibDLLName>", rb""
+        )
+    except NoSearchStringError:
+        pass
+
     # We want to statically link against OpenSSL. This requires using our own
     # OpenSSL build. This requires some hacking of various files.
     openssl_props = pcbuild_path / "openssl.props"
@@ -566,7 +573,7 @@ def hack_project_files(
         rb'<ClCompile Include="$(opensslIncludeDir)\openssl\applink.c">',
     )
 
-    # We're still on the pre-built tk-windows-bin 8.6.12 which doesn't have a
+    # We're still on the pre-built tk-windows-bin 8.6.14 which doesn't have a
     # standalone zlib DLL. So remove references to it from 3.12+.
     if meets_python_minimum_version(python_version, "3.12"):
         static_replace_in_file(
