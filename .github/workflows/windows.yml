@@ -14,6 +14,9 @@ env:
 
 jobs:
   pythonbuild:
+    if: ${{ needs.generate-matrix.outputs.pythonbuild_changed == 'true' || needs.generate-matrix.outputs.any_builds == 'true' || github.ref == 'refs/heads/main' }}
+    needs:
+      - generate-matrix
     runs-on: 'windows-2022'
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      any_builds: ${{ steps.set-matrix.outputs.any_builds }}
+      pythonbuild_changed: ${{ steps.changed.outputs.pythonbuild_any_changed }}
     steps:
       - uses: actions/checkout@v4
       
@@ -63,7 +68,22 @@ jobs:
           uv run ci-matrix.py --platform windows --labels '${{ steps.get-labels.outputs.labels }}' > matrix.json && echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
           # Display the matrix for debugging too
           cat matrix.json | jq
-      
+
+          if jq -e '.include | length > 0' matrix.json > /dev/null; then
+            # Build matrix has entries
+            echo "any_builds=true" >> $GITHUB_OUTPUT
+          else
+            # Build matrix is empty
+            echo "any_builds=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: tj-actions/changed-files@v45
+        id: changed
+        with:
+          files_yaml: |
+            pythonbuild:
+              - "src/*.rs"
+
   build:
     needs:
       - generate-matrix
