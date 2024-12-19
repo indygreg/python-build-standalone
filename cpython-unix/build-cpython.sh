@@ -475,6 +475,12 @@ if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_ptsname_r=no"
 fi
 
+# explicit_bzero is only available in glibc 2.25+, but we target a lower version for compatibility.
+# it's only needed for the HACL Blake2 implementation in Python 3.14+
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_14}"  ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_explicit_bzero=no"
+fi
+
 # We use ndbm on macOS and BerkeleyDB elsewhere.
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-dbmliborder=ndbm"
