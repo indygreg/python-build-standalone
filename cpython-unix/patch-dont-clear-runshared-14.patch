@@ -1,15 +1,15 @@
-diff --git a/configure b/configure
-index 57be576e3ca..a87c6eb8f2e 100755
---- a/configure
-+++ b/configure
-@@ -7617,10 +7617,6 @@ fi
- { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $LDLIBRARY" >&5
- printf "%s\n" "$LDLIBRARY" >&6; }
+diff --git a/configure.ac b/configure.ac
+index bd0221481c5..f2fb52c1efc 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1605,10 +1605,6 @@ else # shared is disabled
+ fi
+ AC_MSG_RESULT([$LDLIBRARY])
  
 -if test "$cross_compiling" = yes; then
 -  RUNSHARED=
 -fi
 -
  # HOSTRUNNER - Program to run CPython for the host platform
- { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking HOSTRUNNER" >&5
- printf %s "checking HOSTRUNNER... " >&6; }
+ AC_MSG_CHECKING([HOSTRUNNER])
+ if test -z "$HOSTRUNNER"
