@@ -569,7 +569,19 @@ def derive_setup_local(
             line += " %s" % link_for_target(lib, target_triple)
 
         for entry in info.get("links-conditional", []):
-            if any(re.match(p, target_triple) for p in entry["targets"]):
+            if targets := entry.get("targets", []):
+                target_match = any(re.match(p, target_triple) for p in targets)
+            else:
+                target_match = True
+
+            python_min_match = meets_python_minimum_version(
+                python_version, entry.get("minimum-python-version", "1.0")
+            )
+            python_max_match = meets_python_maximum_version(
+                python_version, entry.get("maximum-python-version", "100.0")
+            )
+
+            if target_match and (python_min_match and python_max_match):
                 line += " %s" % link_for_target(entry["name"], target_triple)
 
         if "-apple-" in target_triple:
