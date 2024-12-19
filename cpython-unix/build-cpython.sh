@@ -255,6 +255,11 @@ if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_11}" ]; then
     patch -p1 -i ${ROOT}/patch-pgo-make-targets.patch
 fi
 
+# Allow debug output on PGO failures
+if [ -n "${PYTHON_MEETS_MAXIMUM_VERSION_3_14}" ]; then
+    patch -p1 -i ${ROOT}/patch-pgo-test-debug-output.patch
+fi
+
 # There's a post-build Python script that verifies modules were
 # built correctly. Ideally we'd invoke this. But our nerfing of
 # the configure-based module building and replacing it with our
@@ -509,7 +514,7 @@ if [ -n "${CROSS_COMPILING}" ]; then
     fi
 fi
 
-CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS \
+CFLAGS=$CFLAGS CPPFLAGS=$CFLAGS LDFLAGS=$LDFLAGS PROFILE_TASK='-m test --pgo --verbose3' \
     ./configure ${CONFIGURE_FLAGS}
 
 # Supplement produced Makefile with our modifications.

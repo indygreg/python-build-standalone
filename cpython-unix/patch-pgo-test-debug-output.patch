@@ -1,0 +1,12 @@
+diff --git a/Lib/test/libregrtest/cmdline.py b/Lib/test/libregrtest/cmdline.py
+index bf9a71efbdb..c388e1c85c1 100644
+--- a/Lib/test/libregrtest/cmdline.py
++++ b/Lib/test/libregrtest/cmdline.py
+@@ -480,8 +480,6 @@ def _parse_args(args, **kwargs):
+         ns.python = shlex.split(ns.python)
+     if ns.failfast and not (ns.verbose or ns.verbose3):
+         parser.error("-G/--failfast needs either -v or -W")
+-    if ns.pgo and (ns.verbose or ns.rerun or ns.verbose3):
+-        parser.error("--pgo/-v don't go together!")
+     if ns.pgo_extended:
+         ns.pgo = True  # pgo_extended implies pgo
