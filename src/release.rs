@@ -78,11 +78,7 @@ pub static RELEASE_TRIPLES: Lazy<BTreeMap<&'static str, TripleRelease>> = Lazy::
 
     // macOS.
     let macos_suffixes = vec!["debug", "pgo+lto"];
-    let macos_suffixes_313 = vec![
-        "freethreaded+debug",
-        "freethreaded+pgo",
-        "freethreaded+pgo+lto",
-    ];
+    let macos_suffixes_313 = vec!["freethreaded+debug", "freethreaded+pgo+lto"];
     h.insert(
         "aarch64-apple-darwin",
         TripleRelease {
