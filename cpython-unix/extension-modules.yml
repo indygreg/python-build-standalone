@@ -46,6 +46,9 @@ _blake2:
       minimum-python-version: "3.14"
     - define: _DEFAULT_SOURCE
       minimum-python-version: "3.14"
+    # Disable `explicit_bzero`, it requires glib 2.25+
+    - define: LINUX_NO_EXPLICIT_BZERO
+      minimum-python-version: "3.14"
 
 _bz2:
   sources:
