@@ -70,12 +70,14 @@ cat Makefile.extra
 pushd Python-${PYTHON_VERSION}
 
 # configure doesn't support cross-compiling on Apple. Teach it.
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.13" ]; then
-    patch -p1 -i ${ROOT}/patch-apple-cross-3.13.patch
-elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
-    patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
-else
-    patch -p1 -i ${ROOT}/patch-apple-cross.patch
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+        patch -p1 -i ${ROOT}/patch-apple-cross-3.13.patch
+    elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
+        patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
+    else
+        patch -p1 -i ${ROOT}/patch-apple-cross.patch
+    fi
 fi
 
 # This patch is slightly different on Python 3.10+.
@@ -94,7 +96,9 @@ fi
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_14}" ]; then
+        patch -p1 -i ${ROOT}/patch-dont-clear-runshared-14.patch
+    elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared-13.patch
     elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared.patch

@@ -9,6 +9,7 @@ darwin:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - pgo+lto
@@ -26,6 +27,7 @@ darwin:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - pgo+lto
@@ -45,6 +47,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - noopt
@@ -65,6 +68,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - noopt
@@ -85,6 +89,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - noopt
@@ -105,6 +110,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - noopt
@@ -125,6 +131,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - noopt
@@ -145,6 +152,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - pgo+lto
@@ -165,6 +173,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - pgo+lto
@@ -185,6 +194,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - pgo+lto
@@ -205,6 +215,7 @@ linux:
       - "3.11"
       - "3.12"
       - "3.13"
+      - "3.14"
     build_options:
       - debug
       - noopt
