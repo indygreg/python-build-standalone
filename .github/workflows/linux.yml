@@ -14,6 +14,9 @@ env:
 
 jobs:
   pythonbuild:
+    if: ${{ needs.generate-matrix.outputs.pythonbuild_changed == 'true' || needs.generate-matrix.outputs.any_builds == 'true' || github.ref == 'refs/heads/main' }}
+    needs:
+      - generate-matrix
     runs-on: depot-ubuntu-22.04
     steps:
       - name: Install System Dependencies
@@ -46,9 +49,9 @@ jobs:
           path: target/release/pythonbuild
 
   image:
+    if: ${{ needs.generate-matrix.outputs.any_builds == 'true' }}
     needs:
       - generate-matrix
-    if: ${{ needs.generate-matrix.outputs.any_builds == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -123,6 +126,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       any_builds: ${{ steps.set-matrix.outputs.any_builds }}
+      pythonbuild_changed: ${{ steps.changed.outputs.pythonbuild_any_changed }}
     steps:
       - uses: actions/checkout@v4
       
@@ -150,7 +154,14 @@ jobs:
             # Build matrix is empty
             echo "any_builds=false" >> $GITHUB_OUTPUT
           fi
-        
+
+      - uses: tj-actions/changed-files@v45
+        id: changed
+        with:
+          files_yaml: |
+            pythonbuild:
+              - "src/*.rs"
+
   build:
     needs:
       - generate-matrix
