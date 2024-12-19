@@ -483,6 +483,12 @@ if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_14}"  ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_explicit_bzero=no"
 fi
 
+# On 3.14+ `test_strftime_y2k` fails when cross-compiling for `x86_64_v2` and `x86_64_v3` targets on
+# Linux, so we ignore it. See https://github.com/python/cpython/issues/128104
+if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_14}" && -n "${CROSS_COMPILING}" && "${PYBUILD_PLATFORM}" != "macos" ]]; then
+    export PROFILE_TASK='-m test --pgo --ignore test_strftime_y2k'
+fi
+
 # We use ndbm on macOS and BerkeleyDB elsewhere.
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-dbmliborder=ndbm"
