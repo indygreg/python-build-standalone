@@ -572,7 +572,7 @@ x86_64-apple-darwin:
   target_cflags:
     - '-arch'
     - 'x86_64'
-    - '-mmacosx-version-min=10.9'
+    - '-mmacosx-version-min=10.15'
     # Suppress extremely verbose warnings we see with LLVM 10.
     - '-Wno-nullability-completeness'
     - '-Wno-expansion-to-defined'
@@ -587,7 +587,7 @@ x86_64-apple-darwin:
   target_ldflags:
     - '-arch'
     - 'x86_64'
-    - '-mmacosx-version-min=10.9'
+    - '-mmacosx-version-min=10.15'
   needs:
     - autoconf
     - bzip2
