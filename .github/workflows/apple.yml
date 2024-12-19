@@ -14,7 +14,7 @@ env:
 
 jobs:
   pythonbuild:
-    runs-on: 'macos-13'
+    runs-on: depot-macos-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -71,7 +71,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
       fail-fast: false
-    runs-on: macos-14
+    runs-on: depot-macos-latest
     name: ${{ matrix.target_triple }} / ${{ matrix.python }} / ${{ matrix.build_options }}
     steps:
       - uses: actions/checkout@v4
