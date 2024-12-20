@@ -19,10 +19,36 @@ _bisect:
     - _bisectmodule.c
 
 _blake2:
-  sources:
-    - _blake2/blake2module.c
-    - _blake2/blake2b_impl.c
-    - _blake2/blake2s_impl.c
+  # In 3.14+, Blake2 is provided by Hacl*
+  sources-conditional:
+    - sources:
+      - _blake2/blake2module.c
+      - _blake2/blake2b_impl.c
+      - _blake2/blake2s_impl.c
+      maximum-python-version: "3.13"
+    - sources:
+      - blake2module.c
+      - _hacl/Hacl_Hash_Blake2s.c
+      - _hacl/Hacl_Hash_Blake2b.c
+      - _hacl/Lib_Memzero0.c
+      minimum-python-version: "3.14"
+  includes-conditional:
+    - includes:
+      - Modules/_hacl
+      - Modules/_hacl/include
+      - Modules/_hacl/internal
+      minimum-python-version: "3.14"
+  links-conditional:
+    - name: :libHacl_Hash_Blake2.a
+      minimum-python-version: "3.14"
+  defines-conditional:
+    - define: _BSD_SOURCE
+      minimum-python-version: "3.14"
+    - define: _DEFAULT_SOURCE
+      minimum-python-version: "3.14"
+    # Disable `explicit_bzero`, it requires glib 2.25+
+    - define: LINUX_NO_EXPLICIT_BZERO
+      minimum-python-version: "3.14"
 
 _bz2:
   sources:
@@ -355,6 +381,9 @@ _multiprocessing:
 _opcode:
   sources:
     - _opcode.c
+  setup-enabled-conditional:
+    - enabled: true
+      minimum-python-version: "3.14"
 
 _operator:
   setup-enabled: true

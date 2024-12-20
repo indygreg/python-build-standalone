@@ -64,6 +64,7 @@ aarch64-apple-darwin:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -153,6 +154,7 @@ aarch64-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -232,6 +234,7 @@ armv7-unknown-linux-gnueabi:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -271,6 +274,7 @@ armv7-unknown-linux-gnueabihf:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -310,6 +314,7 @@ i686-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -354,6 +359,7 @@ mips-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -393,6 +399,7 @@ mipsel-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -432,6 +439,7 @@ ppc64le-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -471,6 +479,7 @@ s390x-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   docker_image_suffix: .cross
   host_cc: /usr/bin/x86_64-linux-gnu-gcc
   host_cxx: /usr/bin/x86_64-linux-gnu-g++
@@ -554,6 +563,7 @@ x86_64-apple-darwin:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   apple_sdk_platform: macosx
   host_cc: clang
@@ -562,7 +572,7 @@ x86_64-apple-darwin:
   target_cflags:
     - '-arch'
     - 'x86_64'
-    - '-mmacosx-version-min=10.9'
+    - '-mmacosx-version-min=10.15'
     # Suppress extremely verbose warnings we see with LLVM 10.
     - '-Wno-nullability-completeness'
     - '-Wno-expansion-to-defined'
@@ -577,7 +587,7 @@ x86_64-apple-darwin:
   target_ldflags:
     - '-arch'
     - 'x86_64'
-    - '-mmacosx-version-min=10.9'
+    - '-mmacosx-version-min=10.15'
   needs:
     - autoconf
     - bzip2
@@ -723,6 +733,7 @@ x86_64-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -767,6 +778,7 @@ x86_64_v2-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -812,6 +824,7 @@ x86_64_v3-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -857,6 +870,7 @@ x86_64_v4-unknown-linux-gnu:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -902,6 +916,7 @@ x86_64-unknown-linux-musl:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -944,6 +959,7 @@ x86_64_v2-unknown-linux-musl:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -987,6 +1003,7 @@ x86_64_v3-unknown-linux-musl:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++
@@ -1030,6 +1047,7 @@ x86_64_v4-unknown-linux-musl:
     - '3.11'
     - '3.12'
     - '3.13'
+    - '3.14'
   needs_toolchain: true
   host_cc: clang
   host_cxx: clang++

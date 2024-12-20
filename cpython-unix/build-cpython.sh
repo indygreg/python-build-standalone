@@ -70,12 +70,14 @@ cat Makefile.extra
 pushd Python-${PYTHON_VERSION}
 
 # configure doesn't support cross-compiling on Apple. Teach it.
-if [ "${PYTHON_MAJMIN_VERSION}" = "3.13" ]; then
-    patch -p1 -i ${ROOT}/patch-apple-cross-3.13.patch
-elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
-    patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
-else
-    patch -p1 -i ${ROOT}/patch-apple-cross.patch
+if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+        patch -p1 -i ${ROOT}/patch-apple-cross-3.13.patch
+    elif [ "${PYTHON_MAJMIN_VERSION}" = "3.12" ]; then
+        patch -p1 -i ${ROOT}/patch-apple-cross-3.12.patch
+    else
+        patch -p1 -i ${ROOT}/patch-apple-cross.patch
+    fi
 fi
 
 # This patch is slightly different on Python 3.10+.
@@ -94,7 +96,9 @@ fi
 # Configure nerfs RUNSHARED when cross-compiling, which prevents PGO from running when
 # we can in fact run the target binaries (e.g. x86_64 host and i686 target). Undo that.
 if [ -n "${CROSS_COMPILING}" ]; then
-    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
+    if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_14}" ]; then
+        patch -p1 -i ${ROOT}/patch-dont-clear-runshared-14.patch
+    elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_13}" ]; then
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared-13.patch
     elif [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_11}" ]; then
         patch -p1 -i ${ROOT}/patch-dont-clear-runshared.patch
@@ -469,6 +473,18 @@ fi
 # ptsrname_r is only available in SDK 13.4+, but we target a lower version for compatibility.
 if [ "${PYBUILD_PLATFORM}" = "macos" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_ptsname_r=no"
+fi
+
+# explicit_bzero is only available in glibc 2.25+, but we target a lower version for compatibility.
+# it's only needed for the HACL Blake2 implementation in Python 3.14+
+if [ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_14}"  ]; then
+    CONFIGURE_FLAGS="${CONFIGURE_FLAGS} ac_cv_func_explicit_bzero=no"
+fi
+
+# On 3.14+ `test_strftime_y2k` fails when cross-compiling for `x86_64_v2` and `x86_64_v3` targets on
+# Linux, so we ignore it. See https://github.com/python/cpython/issues/128104
+if [[ -n "${PYTHON_MEETS_MINIMUM_VERSION_3_14}" && -n "${CROSS_COMPILING}" && "${PYBUILD_PLATFORM}" != "macos" ]]; then
+    export PROFILE_TASK='-m test --pgo --ignore test_strftime_y2k'
 fi
 
 # We use ndbm on macOS and BerkeleyDB elsewhere.

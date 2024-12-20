@@ -11,6 +11,7 @@ import platform
 import subprocess
 import sys
 
+from pythonbuild.cpython import meets_python_minimum_version
 from pythonbuild.downloads import DOWNLOADS
 from pythonbuild.utils import (
     compress_python_archive,
@@ -68,6 +69,7 @@ def main():
             "cpython-3.11",
             "cpython-3.12",
             "cpython-3.13",
+            "cpython-3.14",
         },
         default="cpython-3.11",
         help="Python distribution to build",
@@ -164,7 +166,9 @@ def main():
         release_tag = release_tag_from_git()
 
     # Guard against accidental misuse of the free-threaded flag with older versions
-    if "freethreaded" in args.options and python_majmin not in ("3.13",):
+    if "freethreaded" in args.options and not meets_python_minimum_version(
+        python_majmin, "3.13"
+    ):
         print(
             "Invalid build option: 'freethreaded' is only compatible with CPython 3.13+ (got %s)"
             % cpython_version

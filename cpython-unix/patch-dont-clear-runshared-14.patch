@@ -1,0 +1,15 @@
+diff --git a/configure.ac b/configure.ac
+index bd0221481c5..f2fb52c1efc 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1605,10 +1605,6 @@ else # shared is disabled
+ fi
+ AC_MSG_RESULT([$LDLIBRARY])
+ 
+-if test "$cross_compiling" = yes; then
+-  RUNSHARED=
+-fi
+-
+ # HOSTRUNNER - Program to run CPython for the host platform
+ AC_MSG_CHECKING([HOSTRUNNER])
+ if test -z "$HOSTRUNNER"

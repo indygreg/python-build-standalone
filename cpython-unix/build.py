@@ -465,7 +465,7 @@ def build_cpython_host(
 
         # Set environment variables allowing convenient testing for Python
         # version ranges.
-        for v in ("3.9", "3.10", "3.11", "3.12", "3.13"):
+        for v in ("3.9", "3.10", "3.11", "3.12", "3.13", "3.14"):
             normal_version = v.replace(".", "_")
 
             if meets_python_minimum_version(python_version, v):
@@ -801,7 +801,7 @@ def build_cpython(
 
         # Set environment variables allowing convenient testing for Python
         # version ranges.
-        for v in ("3.9", "3.10", "3.11", "3.12", "3.13"):
+        for v in ("3.9", "3.10", "3.11", "3.12", "3.13", "3.14"):
             normal_version = v.replace(".", "_")
 
             if meets_python_minimum_version(python_version, v):
@@ -1223,6 +1223,7 @@ def main():
             "cpython-3.11",
             "cpython-3.12",
             "cpython-3.13",
+            "cpython-3.14",
         ):
             build_cpython(
                 settings,

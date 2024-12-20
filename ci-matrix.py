@@ -71,7 +71,11 @@ def should_include_entry(entry: dict[str, str], filters: dict[str, set[str]]) ->
     if filters.get("arch") and entry["arch"] not in filters["arch"]:
         return False
 
-    if filters.get("libc") and entry.get("libc") not in filters["libc"]:
+    if (
+        filters.get("libc")
+        and entry.get("libc")
+        and entry["libc"] not in filters["libc"]
+    ):
         return False
 
     if filters.get("build"):
