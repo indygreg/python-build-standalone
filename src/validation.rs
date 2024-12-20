@@ -603,6 +603,7 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
     "_ast",
     "_asyncio",
     "_bisect",
+    "_blake2",
     "_bz2",
     "_codecs",
     "_codecs_cn",
@@ -688,7 +689,6 @@ const GLOBAL_EXTENSIONS: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
     "audioop",
-    "_blake2",
     "_peg_parser",
     "_sha256",
     "_sha512",
@@ -699,7 +699,6 @@ const GLOBAL_EXTENSIONS_PYTHON_3_9: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
     "audioop",
-    "_blake2",
     "_sha256",
     "_sha512",
     "_xxsubinterpreters",
@@ -708,7 +707,6 @@ const GLOBAL_EXTENSIONS_PYTHON_3_10: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
     "audioop",
-    "_blake2",
     "_sha256",
     "_sha512",
     "_tokenize",
@@ -719,7 +717,6 @@ const GLOBAL_EXTENSIONS_PYTHON_3_11: &[&str] = &[
 
 const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
     "audioop",
-    "_blake2",
     "_sha2",
     "_tokenize",
     "_typing",
@@ -729,7 +726,6 @@ const GLOBAL_EXTENSIONS_PYTHON_3_12: &[&str] = &[
 ];
 
 const GLOBAL_EXTENSIONS_PYTHON_3_13: &[&str] = &[
-    "_blake2",
     "_interpchannels",
     "_interpqueues",
     "_interpreters",
